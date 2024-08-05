@@ -1,0 +1,758 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300..700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Quicksand", sans-serif;
+}
+
+body {
+    background: url('https://st2.depositphotos.com/1001335/9340/i/450/depositphotos_93401314-stock-photo-concept-of-construction-and-design.jpg') no-repeat center center fixed;
+    background-size: cover;
+    font-family: "Quicksand", Arial, sans-serif;
+    margin: 0;
+    height: calc(100vh - 100px);
+    overflow: auto;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    /* Opacidad del fondo */
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.full-height {
+    position: relative;
+    height: calc(100vh - 100px);
+    margin-top: 0px;
+    z-index: 3;
+}
+
+.header {
+    top: 0;
+    width: 100%;
+    /* Fondo semi-transparente */
+    color: white;
+    padding: 10px 0;
+    z-index: 3;
+    /* Asegurarse de que el header esté por encima del overlay */
+}
+
+.header-text {
+    margin: 0;
+    font-size: 1.9em;
+    text-shadow: 4px 4px 5px rgba(0, 0, 0, 0.6);
+    font-weight: 600;
+}
+
+.circle {
+    z-index: 2;
+    position: absolute;
+    width: 180px;
+    /* Tamaño aumentado */
+    height: 180px;
+    /* Tamaño aumentado */
+    border-radius: 50px;
+    background-color: #e2e2e2;
+    color: rgb(17, 17, 17);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 1.1em;
+    /* Tamaño de texto ajustado */
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 6px 6px 24px #3d3d3d, -6px -6px 24px #5f5a5a;
+    text-decoration: none;
+    /* Eliminar subrayado de los enlaces */
+    transition: transform 0.3s;
+    transform-origin: center;
+}
+
+.circle:hover {
+    transform: scale(1.1);
+    text-decoration: none;
+    color: #9b2d2d;
+    cursor: pointer;
+    /* Efecto hover para agrandar ligeramente */
+}
+
+.circle img {
+    width: 60px;
+    /* Tamaño aumentado */
+    height: 60px;
+    /* Tamaño aumentado */
+    margin-bottom: 10px;
+    /* Añadir sombra a la imagen */
+    filter: drop-shadow(0 1px 3px rgba(109, 91, 91, 0.7));
+}
+
+.central {
+    top: 50%;
+    left: 50%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
+.top-left {
+    top: 20%;
+    left: 20%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
+.top-right {
+    top: 20%;
+    left: 80%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
+.bottom-left {
+    top: 80%;
+    left: 20%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
+.bottom-right {
+    top: 80%;
+    left: 80%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
+/**/
+.nodo {
+    z-index: 2;
+    margin: 20px;
+    min-width: 180px;
+    max-width: 50px;
+    min-height: 180px;
+    max-height: 50px;
+    border-radius: 50px;
+    background-color: #e2e2e2;
+    color: rgb(17, 17, 17);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 1.1em;
+    /* Tamaño de texto ajustado */
+    font-weight: bold;
+    text-align: center;
+    padding: 10px;
+    box-shadow: 6px 6px 24px #3d3d3d, -6px -6px 24px #5f5a5a;
+    text-decoration: none;
+    /* Eliminar subrayado de los enlaces */
+    transition: transform 0.3s;
+    transform-origin: center;
+}
+
+.nodo:hover {
+    transform: scale(1.1);
+    text-decoration: none;
+    color: #9b2d2d;
+    /* Efecto hover para agrandar ligeramente */
+}
+
+.nodo img {
+    width: 60px;
+    /* Tamaño aumentado */
+    height: 60px;
+    /* Tamaño aumentado */
+    margin-bottom: 10px;
+    /* Añadir sombra a la imagen */
+    filter: drop-shadow(0 1px 3px rgba(109, 91, 91, 0.7));
+}
+
+.card-rounded {
+    width: 180px !important;
+    height: 180px !important;
+    border-radius: 25% 25% 25% 25% / 25% 25% 25% 25%;
+}
+
+
+/* profile menu */
+.profile {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-align: end;
+}
+
+.profile h3 {
+    text-align: end;
+    line-height: 1;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.profile p {
+    line-height: 1;
+    font-size: 14px;
+    opacity: .6;
+}
+
+.profile .img-box {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: white;
+}
+
+.profile .img-box img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* menu (the right one) */
+
+.menu {
+    position: absolute;
+    top: calc(100% + 24px);
+    right: 16px;
+    width: 200px;
+    min-height: 100px;
+    background: #fff;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
+    opacity: 0;
+    transform: translateY(-10px);
+    visibility: hidden;
+    transition: 300ms;
+    z-index: 4;
+}
+
+.menu::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: 14px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    transform: rotate(45deg);
+    z-index: -1;
+}
+
+.menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    visibility: visible;
+}
+
+/* menu links */
+
+.menu ul {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    z-index: 10;
+    background: #fff;
+}
+
+.menu ul li {
+    list-style: none;
+}
+
+.menu ul li:hover {
+    background: #eee;
+}
+
+.menu ul li a {
+    text-decoration: none;
+    color: #000;
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    gap: 0px;
+}
+
+.menu ul li a i {
+    font-size: 1.2em;
+}
+
+/* button circle*/
+.btn-circle {
+    width: 50px;
+    height: 50px;
+    padding: 10px;
+    border-radius: 50%;
+    text-align: center;
+    font-size: 20px;
+    line-height: 30px;
+}
+
+::-webkit-input-placeholder {
+    /* WebKit browsers */
+    text-transform: none;
+}
+
+:-moz-placeholder {
+    /* Mozilla Firefox 4 to 18 */
+    text-transform: none;
+}
+
+::-moz-placeholder {
+    /* Mozilla Firefox 19+ */
+    text-transform: none;
+}
+
+:-ms-input-placeholder {
+    /* Internet Explorer 10+ */
+    text-transform: none;
+}
+
+::placeholder {
+    /* Recent browsers */
+    text-transform: none;
+}
+
+textarea {
+    resize: none;
+}
+
+.btn-options {
+    min-height: 50px !important;
+    min-width: 15%;
+}
+
+
+.btn-h50 {
+    display: inline-flex;
+    min-height: 50px !important;
+    min-width: 15%;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-space {
+    margin-right: 10px;
+    /* Ajusta el espacio entre los botones */
+}
+
+.action-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.table-actions {
+    white-space: nowrap;
+    width: 1%;
+}
+
+
+/* Input con icono a la izquierda */
+.form-icon .form-control {
+    padding-left: 2.375rem;
+}
+
+.form-icon .form-control-icon {
+    position: absolute;
+    z-index: 2;
+    display: block;
+    width: 2.375rem;
+    height: 2.375rem;
+    line-height: 2.375rem;
+    text-align: center;
+    pointer-events: none;
+}
+
+/* 
+** Style no access page
+*/
+#notfound {
+    position: relative;
+    height: 100vh;
+}
+
+#notfound .notfound {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+}
+
+.notfound {
+    max-width: 410px;
+    width: 100%;
+    text-align: center;
+}
+
+.notfound .notfound-404 {
+    height: 280px;
+    position: relative;
+    z-index: -1;
+}
+
+.notfound .notfound-404 h1 {
+    font-size: 230px;
+    margin: 0px;
+    font-weight: 900;
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    -ms-transform: translateX(-50%);
+    transform: translateX(-50%);
+    /*background: url('https://st2.depositphotos.com/1001335/9340/i/450/depositphotos_93401314-stock-photo-concept-of-construction-and-design.jpg') no-repeat;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 5px #fff;*/
+    background-size: cover;
+    background-position: center;
+    color: white;
+
+}
+
+
+.notfound h2 {
+    color: #ffeaea;
+    font-size: 24px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 0;
+}
+
+.notfound p {
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 400;
+    margin-bottom: 20px;
+    margin-top: 0px;
+}
+
+.notfound a {
+    font-size: 14px;
+    text-decoration: none;
+    text-transform: uppercase;
+    background: #0046d5;
+    display: inline-block;
+    padding: 15px 30px;
+    border-radius: 40px;
+    color: #fff;
+    font-weight: 700;
+    -webkit-box-shadow: 0px 4px 15px -5px #0046d5;
+    box-shadow: 0px 4px 15px -5px #0046d5;
+}
+
+
+/**/
+.content-card {
+    width: 350px;
+    padding: 15px .5rem;
+}
+
+.text-truncate-max-line-3 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
+}
+
+.neumorphism {
+
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.neumorphism img {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px 10px 0 0;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+th {
+    white-space: nowrap;
+}
+
+
+/**
+ * FilePond Custom Styles
+ */
+#preview-portada {
+    max-height: 250px;
+    min-height: 250px;
+}
+
+#input-file {
+    cursor: pointer;
+}
+
+#input-file img,
+#input-file label {
+    cursor: inherit;
+}
+
+.file-input-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+.file-input-wrapper:hover .file-input-label {
+    opacity: 1;
+}
+
+.file-input-wrapper:hover img {
+    opacity: 0.5;
+    /* Ajusta la opacidad de la imagen al pasar el cursor por el label */
+}
+
+.file-input-container {
+    padding: 20px;
+    border: 2px dashed #ccc;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.file-input-container input[type="file"] {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: -1;
+}
+
+
+.file-input-container button {
+    pointer-events: none;
+}
+
+.file-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.file-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.file-list li .remove-file {
+    cursor: pointer;
+    color: rgb(99, 96, 96);
+}
+
+.no-margin-bottom {
+    margin-bottom: 0;
+}
+
+@media only screen and (max-width: 767px) {
+    .notfound .notfound-404 {
+        height: 142px;
+    }
+
+    .notfound .notfound-404 h1 {
+        font-size: 112px;
+    }
+}
+
+
+/* mobile devices */
+@media only screen and (max-width: 767px) {
+    .circle {
+        width: 120px;
+        /* Tamaño reducido */
+        height: 120px;
+        /* Tamaño reducido */
+        font-size: 0.9em;
+        /* Tamaño de texto ajustado */
+    }
+
+    .circle img {
+        width: 40px;
+        /* Tamaño reducido */
+        height: 40px;
+        /* Tamaño reducido */
+        margin-bottom: 5px;
+    }
+
+    .central,
+    .top-left,
+    .top-right,
+    .bottom-left,
+    .bottom-right {
+        margin-top: -60px;
+        /* Ajustar según el nuevo tamaño del nodo */
+        margin-left: -60px;
+        /* Ajustar según el nuevo tamaño del nodo */
+    }
+
+    .full-height {
+        margin-top: 0px;
+    }
+
+    .header-text {
+        font-size: 1.5em;
+    }
+
+    .user {
+        display: none;
+    }
+
+    .profile .img-box {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        background-color: white;
+    }
+
+    .nodo {
+        justify-content: center;
+        align-items: center;
+        width: 120px;
+        /* Tamaño reducido */
+        height: 120px;
+        position: relative;
+    }
+
+    .nodo img {
+        width: 40px;
+        /* Tamaño reducido */
+        height: 40px;
+        /* Tamaño reducido */
+        margin-bottom: 5px;
+    }
+
+    .circle-container {
+        width: 400px;
+        height: 400px;
+    }
+
+
+}
+
+/* Tablets */
+@media only screen and (min-width:768px) and (max-width: 991px) {
+    .circle {
+        width: 120px;
+        /* Tamaño reducido */
+        height: 120px;
+        /* Tamaño reducido */
+        font-size: 0.9em;
+        /* Tamaño de texto ajustado */
+    }
+
+    .circle img {
+        width: 40px;
+        /* Tamaño reducido */
+        height: 40px;
+        /* Tamaño reducido */
+        margin-bottom: 5px;
+    }
+
+    .central,
+    .top-left,
+    .top-right,
+    .bottom-left,
+    .bottom-right {
+        margin-top: -60px;
+        /* Ajustar según el nuevo tamaño del nodo */
+        margin-left: -60px;
+        /* Ajustar según el nuevo tamaño del nodo */
+    }
+
+    .full-height {
+        margin-top: 0px;
+    }
+
+    .header-text {
+        font-size: 1.5em;
+    }
+
+    .user {
+        display: none;
+    }
+
+    .profile .img-box {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        background-color: white;
+    }
+
+    .nodo {
+        justify-content: center;
+        align-items: center;
+        width: 120px;
+        /* Tamaño reducido */
+        height: 120px;
+        position: relative;
+    }
+
+    .nodo img {
+        width: 50px;
+        /* Tamaño reducido */
+        height: 50px;
+        /* Tamaño reducido */
+        margin-bottom: 5px;
+    }
+
+    .circle-container {
+        width: 400px;
+        height: 400px;
+    }
+}
+
+/* Laptops */
+@media only screen and (min-width:992px) and (max-width: 1199px) {}
+
+/* Desktop */
+@media only screen and (min-width:1200px) {}
