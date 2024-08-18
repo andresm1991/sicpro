@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,7 @@ define('LARAVEL_START', microtime(true));
 | instead of starting the framework, which could cause an exception.
 |
 */
-if (file_exists($maintenance = __DIR__.'/../../sicpro-laravel/storage/framework/maintenance.php')) {
+if (file_exists($maintenance = __DIR__ . '/../../sicpro-laravel/storage/framework/maintenance.php')) {
     require $maintenance;
 }
 
@@ -29,7 +30,7 @@ if (file_exists($maintenance = __DIR__.'/../../sicpro-laravel/storage/framework/
 |
 */
 
-require __DIR__.'/../../sicpro-laravel/vendor/autoload.php';
+require __DIR__ . '/../../sicpro-laravel/vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -42,7 +43,7 @@ require __DIR__.'/../../sicpro-laravel/vendor/autoload.php';
 |
 */
 
-$app = require_once __DIR__.'/../../sicpro-laravel/bootstrap/app.php';
+$app = require_once __DIR__ . '/../../sicpro-laravel/bootstrap/app.php';
 
 $kernel = $app->make(Kernel::class);
 
@@ -51,4 +52,3 @@ $response = $kernel->handle(
 )->send();
 
 $kernel->terminate($request, $response);
-

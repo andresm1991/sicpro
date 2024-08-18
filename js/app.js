@@ -97,8 +97,15 @@ $(function () {
 
     });
 
+    $('.select2-basic-single').select2({
+        placeholder: function () {
+            $(this).data('placeholder');
+        },
+        allowClear: true
+    });
+
     /// Solo numeros
-    $(".solo-numeros").on('input', function (evt) {
+    $(document).on('input', ".solo-numeros", function (evt) {
         // Allow only numbers.
         $(this).val(jQuery(this).val().replace(/[^0-9]/g, ''));
     });
@@ -166,6 +173,29 @@ $(function () {
         updateFileList();
     });
 
+
+    $('#form_proyectos').on('submit', function (event) {
+        var form = event.target; // Puede ser $(this) para jQuery
+        selectedFiles.forEach(function (file) {
+            var fileInput = $('<input>').attr({
+                type: 'file',
+                name: 'archivos[]'
+            }).css('display', 'none')[0];
+
+            // Asigna los archivos al nuevo input
+            fileInput.files = createFileList(file);
+
+            // Añadir el input al formulario
+            $(form).append(fileInput);
+        });
+    });
+
+    $('#fileList-actuales').on('click', '.remove-file-actuales', function () {
+        // Eliminar el elemento li padre del icono de basura
+        $(this).closest('li').remove();
+        mostrarOcultarSinArchivos();
+    });
+
     function updateFileList() {
         var $fileListDisplay = $('#fileList');
 
@@ -190,22 +220,6 @@ $(function () {
         mostrarOcultarSinArchivos();
     }
 
-    $('#form_proyectos').on('submit', function (event) {
-        var form = event.target; // Puede ser $(this) para jQuery
-        selectedFiles.forEach(function (file) {
-            var fileInput = $('<input>').attr({
-                type: 'file',
-                name: 'archivos[]'
-            }).css('display', 'none')[0];
-
-            // Asigna los archivos al nuevo input
-            fileInput.files = createFileList(file);
-
-            // Añadir el input al formulario
-            $(form).append(fileInput);
-        });
-    });
-
     function createFileList(file) {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
@@ -220,9 +234,8 @@ $(function () {
         }
     }
 
-    $('#fileList-actuales').on('click', '.remove-file-actuales', function () {
-        // Eliminar el elemento li padre del icono de basura
-        $(this).closest('li').remove();
-        mostrarOcultarSinArchivos();
-    });
+    function imageLoaded(img) {
+        img.parentElement.classList.add('loaded');
+    }
+
 });
