@@ -50,3 +50,26 @@ if (!function_exists('dateFormat')) {
         }
     }
 }
+
+if (!function_exists('generateProductCode')) {
+    function generateProductCode($type)
+    {
+        // Define the prefix based on the type
+        $prefix = $type === 'bien' ? 'B-' : 'S-';
+
+        // Define the length of the random part of the code
+        $randomLength = 8; // Change this value as needed
+
+        // Generate a random alphanumeric string
+        $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $randomString = '';
+        for ($i = 0; $i < $randomLength; $i++) {
+            $randomString .= $characters[rand(0, strlen($characters) - 1)];
+        }
+
+        // Combine the prefix and the random string to form the product code
+        $productCode = $prefix . $randomString;
+
+        return $productCode;
+    }
+}

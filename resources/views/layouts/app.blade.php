@@ -17,6 +17,8 @@
     <link href="{{ asset('plugins/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <!-- Bootstrap Selected -->
     <link href="{{ asset('plugins/bootstrap-select/css/bootstrap-select.min.css') }}" rel="stylesheet">
+    <!-- Selected2 -->
+    <link href="{{ asset('plugins/select2-4.0.13/css/select2.min.css') }}" rel="stylesheet">
     <!-- DatePicker-->
     {!! Html::style('plugins/bootstrap-datepicker/css/bootstrap-datepicker.min.css') !!}
     <!-- daterange picker -->
@@ -50,6 +52,8 @@
 <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
 <!-- Bootstrap-Select -->
 <script src="{{ asset('plugins/bootstrap-select/js/bootstrap-select.min.js') }}"></script>
+<!-- Select2 -->
+<script src="{{ asset('plugins/select2-4.0.13/js/select2.full.min.js') }}"></script>
 <!-- DatePicker js -->
 {!! Html::script('plugins/bootstrap-datepicker/js/bootstrap-datepicker.min.js') !!}
 {!! Html::script('plugins/bootstrap-datepicker/locales/bootstrap-datepicker.es.min.js') !!}

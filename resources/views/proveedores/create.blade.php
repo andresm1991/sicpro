@@ -5,7 +5,7 @@
 @section('content')
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px;">
-        <div class="container">
+        <div class="container-fluid">
             <div class="card">
                 <div class="card-body">
                     @include('partials.alerts')

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use DateTime;
+use Exception;
 use Throwable;
 use Carbon\Carbon;
 use App\Models\Proyecto;
@@ -16,6 +17,7 @@ use App\Http\Requests\ProyectoStoreRequest;
 class ProyectoController extends Controller
 {
     private $path_files;
+
     public function __construct()
     {
         $environment = env('APP_ENV');
@@ -77,6 +79,7 @@ class ProyectoController extends Controller
         $back_route = route('proyecto.list', ['tipo' => $tipo, 'tipo_id' => $tipo_id]);
         $tipo_proyectos = CatalogoDato::getChildrenCatalogo('tipo.proyectos')->pluck('descripcion', 'id');
 
+
         return view('proyectos.create', compact('proyecto', 'tipo_proyectos', 'tipo', 'tipo_id', 'title_page', 'back_route'));
     }
 
@@ -112,22 +115,26 @@ class ProyectoController extends Controller
             ];
 
             if ($proyecto = Proyecto::create($param)) {
-                if ($request->file('archivos')) {
-                    foreach ($request->archivos as $archivo) {
-                        $path_archivos = Storage::disk('digitalocean')->put($this->path_files . '/' . str_replace(' ', '_', $nombre_proyecto), $archivo);
-                        ArchivoProyecto::create([
-                            'proyecto_id' => $proyecto->id,
-                            'nombre' => $archivo->getClientOriginalName(),
-                            'ruta_archivo' => $path_archivos,
-                            'tipo_archivo' => $archivo->getClientOriginalExtension(),
-                            'size' => $archivo->getSize(),
-                        ]);
+                // Verificar si hay archivos en el request
+                if ($request->file('archivos_proyecto')) {
+                    $result_upload_files = $this->subirArchivos($request->file('archivos_proyecto'), $nombre_proyecto);
+                    if (count($result_upload_files) > 0) {
+                        foreach ($result_upload_files as $archivo) {
+                            ArchivoProyecto::create([
+                                'proyecto_id' => $proyecto->id,
+                                'nombre' => $archivo['nombre_archivo'],
+                                'ruta_archivo' => $archivo['path'],
+                                'tipo_archivo' => $archivo['categoria'],
+                                'size' => $archivo['size'],
+                            ]);
+                        }
                     }
                 }
+
                 DB::commit();
                 return redirect()->route('proyecto.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('success', 'La información ingresada se ha guardado con éxito.');
             } else {
-                throw 'Error al intentar guardar la información.';
+                throw new Exception('Error al intentar guardar la información.');
             }
         } catch (Throwable $e) {
             DB::rollBack();
@@ -137,13 +144,8 @@ class ProyectoController extends Controller
                 Storage::disk('digitalocean')->delete($path_portada);
             }
             // Si existen varios archivos se eliminan
-            if ($request->file('archivos')) {
-                foreach ($request->archivos as $archivo) {
-                    $path_archivos = $this->path_files.'/' . str_replace(' ', '_', $nombre_proyecto) . '/' . $archivo;
-                    if (Storage::disk('digitalocean')->exists($path_archivos)) {
-                        Storage::disk('digitalocean')->delete($path_archivos);
-                    }
-                }
+            if ($request->file('archivos_proyecto')) {
+                $this->eliminarArchivos($request->file('archivos_proyecto'), $nombre_proyecto);
             }
             return redirect()->route('proyecto.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('error', $e->getMessage());
         }
@@ -159,7 +161,6 @@ class ProyectoController extends Controller
     }
     public function update(Request $request, $tipo, $tipo_id, Proyecto $proyecto)
     {
-
         try {
             DB::beginTransaction();
             $nombre_proyecto = $request->nombre_proyecto;
@@ -168,7 +169,6 @@ class ProyectoController extends Controller
             $path = $this->path_files . '/' .  str_replace(' ', '_', $nombre_proyecto);
             $archivos_db = $proyecto->archivos_proyecto->pluck('ruta_archivo', 'id')->toArray();
             $archivos_actuales = isset($request->archivos_actuales) ? $request->archivos_actuales : [];
-            $archivos_diff = array_diff($archivos_db, $archivos_actuales);
             $proyecto->nombre_proyecto = $nombre_proyecto;
             $proyecto->nombre_propietario = $request->propietario;
             $proyecto->ubicacion = $request->ubicacion_proyecto;
@@ -186,6 +186,13 @@ class ProyectoController extends Controller
             $proyecto->fecha_inicio = $fecha_inicio;
             $proyecto->fecha_finalizacion = $fecha_fin;
             $proyecto->observacion = $request->observaciones;
+
+            $archivos_combinados = [];
+
+            foreach ($archivos_actuales['id'] as $key => $id) {
+                $archivos_combinados[$id] = $archivos_actuales['path'][$key];
+            }
+            $archivos_diff = array_diff($archivos_db, $archivos_combinados);
 
             // Si se cambio la portada
             if ($request->file('portada')) {
@@ -209,19 +216,21 @@ class ProyectoController extends Controller
                         Storage::disk('digitalocean')->delete($borrar);
                     }
                 }
-                if ($request->file('archivos')) {
-                    $nuevos_archivos = $request->archivos;
-                    foreach ($nuevos_archivos as $archivo) {
-                        $path_archivos = Storage::disk('digitalocean')->put($path, $archivo);
-                        ArchivoProyecto::create([
-                            'proyecto_id' => $proyecto->id,
-                            'nombre' => $archivo->getClientOriginalName(),
-                            'ruta_archivo' => $path_archivos,
-                            'tipo_archivo' => $archivo->getClientOriginalExtension(),
-                            'size' => $archivo->getSize(),
-                        ]);
+                if ($request->file('archivos_proyecto')) {
+                    $result_upload_files = $this->subirArchivos($request->file('archivos_proyecto'), $nombre_proyecto);
+                    if (count($result_upload_files) > 0) {
+                        foreach ($result_upload_files as $archivo) {
+                            ArchivoProyecto::create([
+                                'proyecto_id' => $proyecto->id,
+                                'nombre' => $archivo['nombre_archivo'],
+                                'ruta_archivo' => $archivo['path'],
+                                'tipo_archivo' => $archivo['categoria'],
+                                'size' => $archivo['size'],
+                            ]);
+                        }
                     }
                 }
+
                 DB::commit();
                 return redirect()->route('proyecto.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])->with('success', 'Información se ha actualizado con éxito.');
             } else {
@@ -230,26 +239,36 @@ class ProyectoController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             // Verifica si el archivo existe antes de intentar eliminarlo
-            if (isset($path_portada)) {
-                if (Storage::disk('digitalocean')->exists($path_portada)) {
-                    // Elimina el archivo
-                    Storage::disk('digitalocean')->delete($path_portada);
-                }
+            if (Storage::disk('digitalocean')->exists($path_portada)) {
+                // Elimina el archivo
+                Storage::disk('digitalocean')->delete($path_portada);
             }
-
             // Si existen varios archivos se eliminan
-            if ($request->file('archivos')) {
-                foreach ($request->archivos as $archivo) {
-                    $path_archivos = $this->path_files.'/' . str_replace(' ', '_', $nombre_proyecto) . '/' . $archivo;
-                    if (Storage::disk('digitalocean')->exists($path_archivos)) {
-                        Storage::disk('digitalocean')->delete($path_archivos);
-                    }
-                }
+            if ($request->file('archivos_proyecto')) {
+                $this->eliminarArchivos($request->file('archivos_proyecto'), $nombre_proyecto);
             }
             return redirect()->route('proyecto.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])->with('error', $e->getMessage());
         }
     }
 
+    private function subirArchivos($archivos_proyecto, $proyecto)
+    {
+        $result_archivos = [];
+        foreach ($archivos_proyecto as $categoria => $archivos) {
+            foreach ($archivos as $archivo) {
+                // subir archivo al Space DigitalOcean
+                $path_files = Storage::disk('digitalocean')->put($this->path_files . '/' . str_replace(' ', '_', $proyecto), $archivo);
+                $fileName = $archivo->getClientOriginalName();
+                $categoria_archivo = strtolower(substr($categoria, 9));
+                $file_size = $archivo->getSize();
+
+                $upload_file = ['nombre_archivo' => $fileName, 'path' => $path_files, 'categoria' => $categoria_archivo, 'size' => $file_size];
+                $result_archivos[] = $upload_file;
+            }
+        }
+
+        return $result_archivos;
+    }
     public function downloadFiles(Request $request)
     {
         $fileName = $request->archivo;
@@ -266,5 +285,17 @@ class ProyectoController extends Controller
         return response($fileContent, 200)
             ->header('Content-Type', $mimeType)
             ->header('Content-Disposition', 'attachment; filename="' . basename($fileName) . '"');
+    }
+
+    private function eliminarArchivos($archivos_proyecto, $proyecto)
+    {
+        foreach ($archivos_proyecto as $archivos) {
+            foreach ($archivos as $archivo) {
+                $path_archivos = $this->path_files . '/' . str_replace(' ', '_', $proyecto) . '/' . $archivo;
+                if (Storage::disk('digitalocean')->exists($path_archivos)) {
+                    Storage::disk('digitalocean')->delete($path_archivos);
+                }
+            }
+        }
     }
 }

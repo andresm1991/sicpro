@@ -12,14 +12,13 @@ use App\Models\Articulo;
 use App\Models\Banco;
 use App\Models\Proveedor;
 use App\Models\ProveedorArticulo;
+use App\Services\LogService;
 
 class ProveedorController extends Controller
 {
     protected $menu_id;
 
-    function __construct()
-    {
-    }
+    function __construct() {}
 
     public function index($menu_id)
     {
@@ -36,7 +35,9 @@ class ProveedorController extends Controller
     public function create($menu_id)
     {
         $menu_data = CatalogoDato::where('id', $menu_id)->first();
-        $articulos = Articulo::where('activo', 1)->pluck('descripcion', 'id');
+        $articulos = Articulo::where('activo', 1)
+            ->where('categoria_id', $menu_id != 2 ? 19 : 18)
+            ->pluck('descripcion', 'id');
         $bancos = Banco::where('activo', true)->pluck('descripcion', 'id');
         $tipo_cuenta = CatalogoDato::getChildrenCatalogo('tipo.cuentas')->pluck('descripcion', 'id');
         $title_page = $menu_data->descripcion;
@@ -81,10 +82,12 @@ class ProveedorController extends Controller
                     }
                 }
                 DB::commit();
+                LogService::log('info', 'Proveedor creado con éxito', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('sistema.proveedor.create', Crypt::encrypt($menu_id))->with('success', 'La información ingresada se ha guardado con éxito.');
             }
         } catch (Throwable $e) {
             DB::rollBack();
+            LogService::log('error', 'Error al crear Proveedor', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('sistema.proveedor.create', Crypt::encrypt($menu_id))->with('error', 'Error al intentar guardar la información.');
         }
     }
@@ -96,7 +99,9 @@ class ProveedorController extends Controller
         $tipo_cuenta = CatalogoDato::getChildrenCatalogo('tipo.cuentas')->pluck('descripcion', 'id');
         $title_page = $menu_data->descripcion;
         $slug = $menu_data->slug;
-        $articulos = Articulo::where('categoria_id', $menu_id)->pluck('descripcion', 'id');
+        $articulos = Articulo::where('activo', 1)
+            ->where('categoria_id', $menu_id != 2 ? 19 : 18)
+            ->pluck('descripcion', 'id');
 
         $back_route = encrypted_route('sistema.proveedor.index', ['menu_id' => $menu_id]);
 
@@ -107,6 +112,7 @@ class ProveedorController extends Controller
     {
         $telefonos =  implode(',', $request->get('telefono'));
         $calificacion = $request->has('calificacion') ? $request->get('calificacion') : null;
+        $old_proveedor = Proveedor::find($proveedor->id);
 
         DB::beginTransaction();
         try {
@@ -127,10 +133,12 @@ class ProveedorController extends Controller
 
             if ($proveedor->save()) {
                 DB::commit();
+                LogService::log('info', 'Proveedor actualizado con éxito.', ['user_id' => auth()->id(), 'action' => 'update', 'old_data' => $old_proveedor, 'new_data' => $proveedor]);
                 return redirect()->route('sistema.proveedor.edit', ['menu_id' => $menu_id, 'proveedor' => $proveedor->id])->with('success', 'La información ingresada se ha guardado con éxito.');
             }
         } catch (Throwable $e) {
             DB::rollBack();
+            LogService::log('info', 'Error al actualizar Proveedor', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('sistema.proveedor.edit', ['menu_id' => $menu_id, 'proveedor' => $proveedor->id])->with('error', 'Error al intentar guardar la información.');
         }
     }
@@ -138,10 +146,13 @@ class ProveedorController extends Controller
 
     public function delete($menu_id, $proveedor)
     {
-        $is_delete = Proveedor::find($proveedor)->delete();
+        $proveedor = Proveedor::find($proveedor);
+        $is_delete = $proveedor->delete();
         if ($is_delete) {
+            LogService::log('info', 'Proveedor eliminado con éxito.', ['user_id' => auth()->id(), 'action' => 'delete', 'data' => $proveedor]);
             return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
         } else {
+            LogService::log('info', 'Error al eliminar Proveedor', ['user_id' => auth()->id(), 'action' => 'delete']);
             return response()->json(['success' => false, 'message' => 'Error al intentar eliminar el registro.']);
         }
     }

@@ -15,20 +15,24 @@
                 @forelse ($proyectos as $proyecto)
                     <div class="content-card">
                         <div class="card neumorphism ">
-                            <img src="{{ showImage($proyecto->portada) }}" class="card-img-top" alt="portada">
+                            <div class="image-container">
+                                <div class="loader"></div>
+                                <img src="{{ showImage($proyecto->portada) }}" class="card-img-top" alt="portada"
+                                    onload="imageLoaded(this)">
+                            </div>
                             <div class="card-body">
                                 <div class="card-title">
                                     <h5 class="text-truncate text-capitalize">{{ $proyecto->nombre_proyecto }}</h5>
                                     <small class="badge badge-warning">Nuevo</small>
                                 </div>
-                                <h6 class="card-text text-truncate-max-line-3 no-margin-bottom">
+                                <h6 class="card-text text-truncate-max-line-1 no-margin-bottom">
                                     Tipo proyecto:
                                     <span class="font-weight-normal">{{ $proyecto->tipo_proyecto->descripcion }}</span>
                                 </h6>
-                                <h6 class="card-text text-truncate-max-line-3 no-margin-bottom">Dirección:
+                                <h6 class="card-text text-truncate-max-line-1 no-margin-bottom">Dirección:
                                     <span class="font-weight-normal">{{ $proyecto->direccion }}</span>
                                 </h6>
-                                <h6 class="card-text text-truncate-max-line-3 ">Fecha Finalización:
+                                <h6 class="card-text text-truncate-max-line-1 ">Fecha Finalización:
                                     <span class="font-weight-normal">{{ $proyecto->fecha_finalizacion }}</span>
                                 </h6>
                                 <div class="col-12 text-center">

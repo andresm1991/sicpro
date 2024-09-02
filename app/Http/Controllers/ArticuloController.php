@@ -21,7 +21,7 @@ class ArticuloController extends Controller
     {
         $title_page = 'Productos';
         $back_route = route('sistema.index');
-        $categorias = CatalogoDato::getChildrenCatalogo('adquisiciones');
+        $categorias = CatalogoDato::getChildrenCatalogo('tipo.adquisiciones');
         $articulos = Articulo::orderBy('categoria_id', 'asc')->paginate(15);
 
         return view('articulos.index', compact('articulos', 'categorias', 'title_page', 'back_route'));
@@ -48,7 +48,7 @@ class ArticuloController extends Controller
         if ($request->ajax()) {
             $param = [
                 'categoria_id' => $request->get('categoria'),
-                'codigo' => $request->get('codigo') ?$request->get('codigo') :'',
+                'codigo' => $request->get('codigo'),
                 'descripcion' => $request->get('descripcion'),
                 'activo' => $request->get('status'),
             ];

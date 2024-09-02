@@ -12,7 +12,15 @@
         </label>
 
         <div class="{{ $slug == 'contratista' || $slug == 'mano.obra' ? 'col-sm-6' : 'col-sm-10' }}">
-            {{ Form::select('articulos[]', $articulos, old('articulos', $proveedor->proveedor_articulos->pluck('articulo_id')), ['class' => 'selectpicker show-tick show-menu-arrow form-control border ', 'id' => 'mySelect', 'data-style' => '', 'title' => 'Seleccione opción', 'data-header' => count($articulos) > 0 ? 'Seleccione opción' : 'No existen datos registrados.', 'multiple', 'data-selected-text-format' => 'count > 3']) }}
+            <select name="articulos[]" id="productos" class="col-12 form-control select2-multiple" multiple="multiple"
+                data-placeholder = "Seleccione opción">
+                <option></option>
+                @foreach ($articulos as $id => $nombre)
+                    <option value="{{ $id }}"
+                        {{ $proveedor->proveedor_articulos()->where('id', $id)->exists() ? 'selected' : '' }}>
+                        {{ $nombre }}</option>
+                @endforeach
+            </select>
 
             {!! $errors->first('articulos', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
@@ -22,7 +30,7 @@
                     <label for="inputCalifi" class="col-sm-6 col-form-label text-right">Calificación <i
                             class="fa-regular fa-asterisk fa-2xs"></i></label>
                     <div class="col-sm-6">
-                        {{ Form::number('calificacion', old('calificacion', 0), ['class' => 'form-control', 'id' => 'calificacion', 'min' => '1', 'max' => '5', 'step' => '1']) }}
+                        {{ Form::number('calificacion', old('calificacion', $proveedor->calificacion), ['class' => 'form-control', 'id' => 'calificacion', 'min' => '1', 'max' => '10', 'step' => '1']) }}
                         {!! $errors->first('productos', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                     </div>
                 </div>
