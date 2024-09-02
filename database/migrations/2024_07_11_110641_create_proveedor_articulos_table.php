@@ -20,7 +20,7 @@ class CreateProveedorArticulosTable extends Migration
             $table->timestamps();
 
             $table->foreign('proveedor_id')->references('id')->on('proveedores')->onDelete('cascade');
-            $table->foreign('articulo_id')->references('id')->on('catalogo_datos')->onDelete('cascade');
+            $table->foreign('articulo_id')->references('id')->on('articulos')->onDelete('cascade');
         });
     }
 

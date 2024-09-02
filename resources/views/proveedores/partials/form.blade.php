@@ -28,7 +28,7 @@
 
 
 <div class="form-group row">
-    <label for="inputEmail" class="col-sm-2 col-form-label">Email <i class="fa-regular fa-asterisk fa-2xs"></i></label>
+    <label for="inputEmail" class="col-sm-2 col-form-label">Email {!! $slug != 'mano.obra' ? '<i class="fa-regular fa-asterisk fa-2xs"></i>' : '' !!}</label>
     <div class="col-sm-10">
         {{ Form::text('email', old('email', $proveedor->correo), ['class' => 'form-control', 'placeholder' => 'Ingrese dirección de correo electrónico']) }}
         {!! $errors->first('email', '<span class="help-block text-quicksand text-danger">:message</span>') !!}

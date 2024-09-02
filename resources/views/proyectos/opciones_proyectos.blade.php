@@ -14,7 +14,8 @@
                         <span>Información</span>
                         <span>General</span>
                     </a>
-                    <a href="#" class="circle top-left">
+                    <a href="{{ route('proyecto.adquisiciones.menu', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]) }}"
+                        class="circle top-left">
                         <img src="{{ asset('images/icons/adquisicion.png') }}" alt="">
                         <span>Adquisiciones</span>
                     </a>

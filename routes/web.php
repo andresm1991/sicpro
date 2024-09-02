@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdquisicionController;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\BaseDatoController;
 use App\Http\Controllers\CatalogoDatoController;
+use App\Http\Controllers\GenerarPdfController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
@@ -39,6 +41,16 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/{tipo}/{tipo_id}/editar/{proyecto}', [ProyectoController::class, 'edit'])->name('edit');
         Route::put('/{tipo}/{tipo_id}/actualizar/{proyecto}', [ProyectoController::class, 'update'])->name('update');
         Route::post('/download-file', [ProyectoController::class, 'downloadFiles'])->name('download.files');
+        // Adquisiciones
+        Route::group(['prefix' => '/{tipo}/{tipo_id}/adquisiciones/{proyecto}/tipo-adquisicion', 'as' => 'adquisiciones.'], function () {
+            Route::get('/', [AdquisicionController::class, 'index'])->name('menu');
+            Route::get('/{tipo_adquisicion}', [AdquisicionController::class, 'tipoAquisicion'])->name('tipo');
+            Route::get('/{tipo_adquisicion}/list/{tipo_etapa}', [AdquisicionController::class, 'listTipoAquisicion'])->name('tipo.etapa');
+            Route::get('/{tipo_adquisicion}/etapa/{tipo_etapa}/nuevo', [AdquisicionController::class, 'create'])->name('tipo.create');
+            Route::post('/{tipo_adquisicion}/{tipo_etapa}/guardar', [AdquisicionController::class, 'store'])->name('store');
+            Route::get('/{tipo_adquisicion}/etapa/{tipo_etapa}/orden-recepcion/{pedido}', [AdquisicionController::class, 'ordenRecepcion'])->name('orden.recepcion');
+            Route::post('/{tipo_adquisicion}/{tipo_etapa}/orden-recepcion/{pedido}/guardar', [AdquisicionController::class, 'storeOrdenRecepcion'])->name('orden.recepcion.store');
+        });
     });
     // Perfil Usuario
     Route::group(['prefix' => 'mi-perfil', 'as' => 'perfil.'], function () {
@@ -79,6 +91,12 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/buscar', [ArticuloController::class, 'buscar']);
             Route::delete('/eliminar/{id}', [ArticuloController::class, 'destroy']);
         });
+    });
+
+
+    // Controllador para generar los pdf del sistema
+    Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
+        Route::get('/adquisicion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfPedido'])->name('adquisicion');
     });
 
 

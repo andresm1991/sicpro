@@ -21,7 +21,7 @@ class ArticuloController extends Controller
     {
         $title_page = 'Productos';
         $back_route = route('sistema.index');
-        $categorias = CatalogoDato::getChildrenCatalogo('adquisiciones');
+        $categorias = CatalogoDato::getChildrenCatalogo('tipo.adquisiciones');
         $articulos = Articulo::orderBy('categoria_id', 'asc')->paginate(15);
 
         return view('articulos.index', compact('articulos', 'categorias', 'title_page', 'back_route'));

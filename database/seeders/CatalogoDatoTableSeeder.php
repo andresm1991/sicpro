@@ -149,11 +149,11 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
 
-        // Aquisiciones
+        // Tipo de Aquisiciones
         $padre = CatalogoDato::create([
-            'descripcion' => 'Adquisiciones',
+            'descripcion' => 'Tipo de Adquisiciones',
             'detalle' => '',
-            'slug' => 'adquisiciones',
+            'slug' => 'tipo.adquisiciones',
             'padre_id' => null,
             'activo' => true,
         ]);
@@ -161,7 +161,7 @@ class CatalogoDatoTableSeeder extends Seeder
         CatalogoDato::create([
             'descripcion' => 'Bienes',
             'detalle' => '',
-            'slug' => 'adquisiciones.bienes',
+            'slug' => 'tipo.adquisiciones.bienes',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
@@ -169,7 +169,106 @@ class CatalogoDatoTableSeeder extends Seeder
         CatalogoDato::create([
             'descripcion' => 'Servicios',
             'detalle' => '',
-            'slug' => 'adquisiciones.servicios',
+            'slug' => 'tipo.adquisiciones.servicios',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        // Adquisiciones Menu
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Menu Adquisiciones',
+            'detalle' => '',
+            'slug' => 'menu.adquisiciones',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Diseño y aprobación de planos',
+            'detalle' => '{"icono": "images/icons/diseno_planos.png"}',
+            'slug' => 'menu.adquisciones.diseño.aprobacion.planos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Estructural',
+            'detalle' => '{"icono": "images/icons/estructural.png"}',
+            'slug' => 'menu.adquisciones.estructural',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Obra gris',
+            'detalle' => '{"icono": "images/icons/pared-de-ladrillo.png"}',
+            'slug' => 'menu.adquisciones.obra.gris',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Acabados',
+            'detalle' => '{"icono": "images/icons/renovacion.png"}',
+            'slug' => 'menu.adquisciones.acabados',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        // Formas de pagos
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Formas de pagos',
+            'detalle' => '',
+            'slug' => 'formas.pagos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Contado',
+            'detalle' => '',
+            'slug' => 'forma.pago.contado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Credito',
+            'detalle' => '',
+            'slug' => 'forma.pago.credito',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        // Informacion general
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Información General',
+            'detalle' => '',
+            'slug' => 'informacion.general',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Nombre de la Empresa',
+            'detalle' => 'PrimeJP Construcciones',
+            'slug' => 'informacion.general.nombre.empresa',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Dirección',
+            'detalle' => 'Av. 6 de noviembre S/N y Augusto Gachet',
+            'slug' => 'informacion.general.direccion',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Teléfono',
+            'detalle' => '099999999',
+            'slug' => 'informacion.general.telefono',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Correo',
+            'detalle' => 'mail@example.com',
+            'slug' => 'informacion.general.correo',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

@@ -8,7 +8,7 @@
                     <a href="{{ isset($back_route) ? $back_route : route('home') }}"
                         class="text-decoration-none text-white">
                         <i class="fa-solid fa-arrow-left-from-line fa-2x"></i> <span
-                            class="text-white header-text">{{ isset($title_page) ? $title_page : 'Bienvenido al Sistema de Control de Proyectos' }}</span></a>
+                            class="text-white header-text text-capitalize">{{ isset($title_page) ? $title_page : 'Bienvenido al Sistema de Control de Proyectos' }}</span></a>
                 @endif
 
             </div>

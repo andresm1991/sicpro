@@ -31,9 +31,11 @@ class ProveedorCreateRequest extends FormRequest
             })],
             'nombres' => 'required',
             'direccion' => 'required',
-            'email' => 'email',
         ];
 
+        if ($this->route('menu_id') != 5) {
+            $rules = array_merge($rules, ['email' => 'email']);
+        }
 
         return $rules;
     }

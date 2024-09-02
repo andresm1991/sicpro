@@ -38,4 +38,9 @@ class Proyecto extends Model
     {
         return $this->hasMany(ArchivoProyecto::class);
     }
+
+    public function adquisiciones()
+    {
+        return $this->hasMany(Adquisicion::class);
+    }
 }
