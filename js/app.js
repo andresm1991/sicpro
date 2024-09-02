@@ -101,7 +101,31 @@ $(function () {
         placeholder: function () {
             $(this).data('placeholder');
         },
-        allowClear: true
+        allowClear: false,
+    });
+
+    $('.select2-multiple').select2({
+        minimumResultsForSearch: 0,
+        placeholder: function () {
+            $(this).data('placeholder');
+        },
+        allowClear: false,
+        tags: true, // Permite agregar nuevas opciones
+        createTag: function (params) {
+            var term = $.trim(params.term);
+            if (term === '') {
+                return null;
+            }
+            return {
+                id: term,
+                text: term,
+                newTag: true // add additional parameters
+            }
+        },
+        insertTag: function (data, tag) {
+            // Insertar la nueva opción al principio
+            data.unshift(tag);
+        }
     });
 
     /// Solo numeros
@@ -110,33 +134,25 @@ $(function () {
         $(this).val(jQuery(this).val().replace(/[^0-9]/g, ''));
     });
 
-    $('#calificacion').on('focus', function () {
-        if ($(this).val() == 0) {
-            $(this).val('');
-        }
-    });
-
-    $('#calificacion').on('blur', function () {
-        if ($(this).val() === '') {
-            $(this).val(0);
-        }
-    });
-
     $('#calificacion').on('input', function () {
-        const value = $(this).val();
-        // Remover cualquier número fuera del rango 1-5
-        if (value < 1 || value > 5) {
-            $(this).val('');
+        let value = $(this).val();
+        // Remueve cualquier caracter no numérico
+        value = value.replace(/[^0-9]/g, '');
+        // Si el número es mayor a 10, lo corta a 10
+        if (value > 10) {
+            value = '10';
         }
+
+        $(this).val(value); // Establece el valor validado
     });
 
-    $('#calificacion').on('keypress', function (e) {
-        const char = String.fromCharCode(e.which);
-        // Permitir solo dígitos 1-5
-        if (!/[1-5]/.test(char)) {
-            e.preventDefault();
-        }
-    });
+    /* $('#calificacion').on('keypress', function (e) {
+         const char = String.fromCharCode(e.which);
+         // Permitir solo dígitos 1-5
+         if (!/[1-10]/.test(char)) {
+             e.preventDefault();
+         }
+     });*/
 
     $('.not_blank_space').on('keypress', function (event) {
         if (event.which === 32) {
@@ -174,7 +190,7 @@ $(function () {
     });
 
 
-    $('#form_proyectos').on('submit', function (event) {
+    /*$('#form_proyectos').on('submit', function (event) {
         var form = event.target; // Puede ser $(this) para jQuery
         selectedFiles.forEach(function (file) {
             var fileInput = $('<input>').attr({
@@ -194,7 +210,7 @@ $(function () {
         // Eliminar el elemento li padre del icono de basura
         $(this).closest('li').remove();
         mostrarOcultarSinArchivos();
-    });
+    });*/
 
     function updateFileList() {
         var $fileListDisplay = $('#fileList');
@@ -216,23 +232,13 @@ $(function () {
 
 
         });
-
-        mostrarOcultarSinArchivos();
     }
 
-    function createFileList(file) {
+    /*function createFileList(file) {
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         return dataTransfer.files;
-    }
-
-    function mostrarOcultarSinArchivos() {
-        if ($('#fileList-actuales').children('li').length == 0 && selectedFiles.length == 0) {
-            $('#sin-archivos').css('display', 'block');
-        } else {
-            $('#sin-archivos').css('display', 'none');
-        }
-    }
+    }*/
 
     function imageLoaded(img) {
         img.parentElement.classList.add('loaded');

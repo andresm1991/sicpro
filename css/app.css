@@ -478,6 +478,13 @@ textarea {
     overflow: hidden;
 }
 
+.text-truncate-max-line-1 {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    overflow: hidden;
+}
+
 .neumorphism {
 
     box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
@@ -547,6 +554,7 @@ th {
     justify-content: center;
     align-items: center;
     position: relative;
+    min-height: 110px;
 }
 
 .file-input-container input[type="file"] {
@@ -596,6 +604,13 @@ th {
     /* Ajustar según el tamaño de la imagen */
     height: 200px;
     /* Ajustar según el tamaño de la imagen */
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .loader {
@@ -781,8 +796,91 @@ legend span {
     font-weight: 400;
 }
 
+.error_mensajes {
+    font-weight: bold;
+}
+
+/* Estilo para las pestañas con borde persistente */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-item .nav-link {
+    /* Borde persistente alrededor de cada pestaña */
+    border: 2px solid #dee2e6;
+    /* Bordes redondeados en la parte superior */
+    border-radius: 4px 4px 0 0;
+    /* Espacio entre las pestañas */
+    margin-right: 5px;
+    /* Fondo ligeramente gris para las pestañas inactivas */
+    background-color: #f8f9fa;
+    /* Color del texto para las pestañas inactivas */
+    color: #393a3a;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+    /* Fondo blanco para la pestaña activa */
+    background-color: var(--primary-color);
+    /* Eliminar el borde inferior de la pestaña activa */
+    border-bottom-color: #fff;
+    /* Cambia el color del texto de la pestaña activa */
+    color: white;
+    /* Quitar el borde inferior de la pestaña activa */
+    border-bottom: none;
+}
+
+/* Estilo para el contenedor de contenido de las pestañas */
+.tab-content {
+    border: 2px solid #dee2e6;
+    padding: 15px;
+    border-top: none;
+    /* Quitar el borde superior para fusionarse con la pestaña activa */
+    border-radius: 0 0 4px 4px;
+    /* Bordes redondeados en la parte inferior */
+    background-color: #fff;
+    /* Fondo blanco para el contenido */
+}
+
+.label-btn-file-input {
+    background-color: indigo;
+    color: white;
+    padding: 0.5rem;
+    font-family: sans-serif;
+    border-radius: 0.3rem;
+    cursor: pointer;
+    margin-top: 1rem;
+}
+
+/* CSS para agregar la flecha al select2 múltiple */
+.select2-container--default .select2-selection--multiple::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #333;
+    pointer-events: none;
+    /* Para asegurarse de que la flecha no interfiera con las interacciones del usuario */
+}
+
+.select2-container--default .select2-selection--multiple {
+    position: relative;
+    padding-right: 20px;
+    /* Espacio para la flecha */
+}
+
+/* Cambiar la dirección de la flecha cuando se abre el select2 */
+.select2-container--default.select2-container--open .select2-selection--multiple::after {
+    border-top: none;
+    border-bottom: 5px solid #333;
+}
 
 /* Aqui inicia css para responsive*/
+/* mobile devices */
 @media only screen and (max-width: 767px) {
     .notfound .notfound-404 {
         height: 142px;
@@ -791,11 +889,7 @@ legend span {
     .notfound .notfound-404 h1 {
         font-size: 112px;
     }
-}
 
-
-/* mobile devices */
-@media only screen and (max-width: 767px) {
     .circle {
         width: 120px;
         /* Tamaño reducido */
@@ -949,3 +1043,8 @@ legend span {
 
 /* Desktop */
 @media only screen and (min-width:1200px) {}
+
+:root {
+    --primary-color: #343a40;
+    --border-primary-color: #343a40;
+}
