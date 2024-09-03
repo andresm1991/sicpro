@@ -1,6 +1,8 @@
 <?php
 
 use Carbon\Carbon;
+use App\Models\Articulo;
+use App\Models\CatalogoDato;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,5 +73,18 @@ if (!function_exists('generateProductCode')) {
         $productCode = $prefix . $randomString;
 
         return $productCode;
+    }
+}
+
+if (!function_exists('registrarProducto')) {
+    function registrarProducto($tipo, $descripcion)
+    {
+        $tipo_producto = $tipo->slug == 'meteriales.herramientas' ? 'tipo.adquisiciones.bienes' : 'tipo.adquisiciones.servicios';
+        $categoria = CatalogoDato::where('slug', $tipo_producto)->first();
+        $type = $tipo->slug == 'meteriales.herramientas' ? 'B-' : 'S-';
+        $code = generateProductCode($type);
+        $create =  Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'activo' => true]);
+
+        return $create;
     }
 }

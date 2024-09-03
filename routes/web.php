@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\AdquisicionController;
 use App\Http\Controllers\ArticuloController;
-use App\Http\Controllers\BaseDatoController;
 use App\Http\Controllers\CatalogoDatoController;
 use App\Http\Controllers\GenerarPdfController;
 use Illuminate\Support\Facades\Auth;

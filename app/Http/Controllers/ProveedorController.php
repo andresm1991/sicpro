@@ -54,6 +54,8 @@ class ProveedorController extends Controller
     {
         $telefonos = $request->has('telefono') ? implode(',', $request->get('telefono')) : null;
         $calificacion = $request->has('calificacion') ? $request->get('calificacion') : null;
+        $tipo = CatalogoDato::find($menu_id);
+
 
         DB::beginTransaction();
         try {
@@ -74,11 +76,24 @@ class ProveedorController extends Controller
             if ($proveedor = Proveedor::create($parametros)) {
                 if ($request->get('articulos')) {
                     $articulos = $request->get('articulos');
-                    foreach ($articulos as $key => $articulo) {
-                        ProveedorArticulo::create([
-                            'proveedor_id' => $proveedor->id,
-                            'articulo_id' => $articulo,
-                        ]);
+                    $filter_articulos = array_filter($articulos, function ($elemento) {
+                        return !is_int($elemento);
+                    });
+                    if (!empty($filter_articulos)) {
+                        foreach ($articulos as $articulo) {
+                            $new_articulo = registrarProducto($tipo, $articulo);
+                            ProveedorArticulo::create([
+                                'proveedor_id' => $proveedor->id,
+                                'articulo_id' => $new_articulo->id,
+                            ]);
+                        }
+                    } else {
+                        foreach ($articulos as $articulo) {
+                            ProveedorArticulo::create([
+                                'proveedor_id' => $proveedor->id,
+                                'articulo_id' => $articulo,
+                            ]);
+                        }
                     }
                 }
                 DB::commit();

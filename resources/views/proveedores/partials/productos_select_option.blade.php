@@ -17,7 +17,7 @@
                 <option></option>
                 @foreach ($articulos as $id => $nombre)
                     <option value="{{ $id }}"
-                        {{ $proveedor->proveedor_articulos()->where('id', $id)->exists() ? 'selected' : '' }}>
+                        {{ $proveedor->proveedor_articulos()->where('articulo_id', $id)->exists() ? 'selected' : '' }}>
                         {{ $nombre }}</option>
                 @endforeach
             </select>
