@@ -36,6 +36,22 @@
                                 <tr>
                                     <th scope="col">RUC-CI</th>
                                     <th scope="col">Nombre</th>
+                                    @if ($slug != 'meteriales.herramientas')
+                                        <th scope="col">
+                                            @switch($slug)
+                                                @case('mano.obra')
+                                                    Categoría
+                                                @break
+
+                                                @case('profecionales')
+                                                    Especialidad
+                                                @break
+
+                                                @default
+                                                    Producto
+                                            @endswitch
+                                        </th>
+                                    @endif
                                     <th scope="col">Teléfono 1</th>
                                     <th scope="col">Teléfono 2</th>
                                     <th scope="col">Teléfono 3</th>
@@ -48,6 +64,13 @@
                                     <tr id="{{ $proveedor->id }}">
                                         <td class="align-middle">{{ $proveedor->documento }}</td>
                                         <td class="align-middle text-capitalize">{{ $proveedor->razon_social }}</td>
+                                        @if ($slug != 'meteriales.herramientas')
+                                            <td class="align-middle text-capitalize">
+                                                @foreach ($proveedor->proveedor_articulos as $proveedor_articulo)
+                                                    {{ $proveedor_articulo->articulo->descripcion }}
+                                                @endforeach
+                                            </td>
+                                        @endif
                                         @foreach (explode_param($proveedor->telefono) as $telefono)
                                             <td class="align-middle">{{ $telefono }}</td>
                                         @endforeach

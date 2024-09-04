@@ -56,7 +56,6 @@ class ProveedorController extends Controller
         $calificacion = $request->has('calificacion') ? $request->get('calificacion') : null;
         $tipo = CatalogoDato::find($menu_id);
 
-
         DB::beginTransaction();
         try {
             $parametros = [
@@ -76,22 +75,17 @@ class ProveedorController extends Controller
             if ($proveedor = Proveedor::create($parametros)) {
                 if ($request->get('articulos')) {
                     $articulos = $request->get('articulos');
-                    $filter_articulos = array_filter($articulos, function ($elemento) {
-                        return !is_int($elemento);
-                    });
-                    if (!empty($filter_articulos)) {
-                        foreach ($articulos as $articulo) {
+                    foreach ($articulos as $articulo) {
+                        if (is_numeric($articulo)) {
+                            ProveedorArticulo::create([
+                                'proveedor_id' => $proveedor->id,
+                                'articulo_id' => $articulo,
+                            ]);
+                        } else {
                             $new_articulo = registrarProducto($tipo, $articulo);
                             ProveedorArticulo::create([
                                 'proveedor_id' => $proveedor->id,
                                 'articulo_id' => $new_articulo->id,
-                            ]);
-                        }
-                    } else {
-                        foreach ($articulos as $articulo) {
-                            ProveedorArticulo::create([
-                                'proveedor_id' => $proveedor->id,
-                                'articulo_id' => $articulo,
                             ]);
                         }
                     }
@@ -128,6 +122,10 @@ class ProveedorController extends Controller
         $telefonos =  implode(',', $request->get('telefono'));
         $calificacion = $request->has('calificacion') ? $request->get('calificacion') : null;
         $old_proveedor = Proveedor::find($proveedor->id);
+        $tipo = CatalogoDato::find($menu_id);
+
+        // ids de articulos actuales del proveedor
+        $proveedor_articulos = $proveedor->proveedor_articulos->pluck('articulo_id')->toArray();
 
         DB::beginTransaction();
         try {
@@ -147,6 +145,37 @@ class ProveedorController extends Controller
             }
 
             if ($proveedor->save()) {
+                if ($request->get('articulos')) {
+                    $articulos = $request->get('articulos');
+                    $array_articulos = [];
+
+                    foreach ($articulos as $articulo) {
+                        if (is_numeric($articulo)) {
+                            ProveedorArticulo::firstOrCreate([
+                                'proveedor_id' => $proveedor->id,
+                                'articulo_id' => $articulo,
+                            ]);
+                            $array_articulos[] = $articulo;
+                        } else {
+                            $new_articulo = registrarProducto($tipo, $articulo);
+                            ProveedorArticulo::firstOrCreate([
+                                'proveedor_id' => $proveedor->id,
+                                'articulo_id' => $new_articulo->id,
+                            ]);
+                            $array_articulos[] = $new_articulo->id;
+                        }
+                    }
+
+                    // Eliminar los artículos que ya no están en la lista
+                    $articulos_a_eliminar = array_values(array_diff($proveedor_articulos, $array_articulos));
+
+                    // Si hay artículos a eliminar
+                    if (!empty($articulos_a_eliminar)) {
+                        ProveedorArticulo::where('proveedor_id', $proveedor->id)
+                            ->whereIn('articulo_id', $articulos_a_eliminar)
+                            ->delete();
+                    }
+                }
                 DB::commit();
                 LogService::log('info', 'Proveedor actualizado con éxito.', ['user_id' => auth()->id(), 'action' => 'update', 'old_data' => $old_proveedor, 'new_data' => $proveedor]);
                 return redirect()->route('sistema.proveedor.edit', ['menu_id' => $menu_id, 'proveedor' => $proveedor->id])->with('success', 'La información ingresada se ha guardado con éxito.');

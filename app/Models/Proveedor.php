@@ -10,7 +10,17 @@ class Proveedor extends Model
     use HasFactory;
     protected $table = 'proveedores';
     protected $fillable = [
-        'categoria_proveedor_id', 'documento', 'razon_social', 'telefono', 'correo', 'direccion', 'banco_id', 'tipo_cuenta_id', 'numero_cuenta', 'observacion', 'calificacion'
+        'categoria_proveedor_id',
+        'documento',
+        'razon_social',
+        'telefono',
+        'correo',
+        'direccion',
+        'banco_id',
+        'tipo_cuenta_id',
+        'numero_cuenta',
+        'observacion',
+        'calificacion'
     ];
 
     public function proveedor_articulos()

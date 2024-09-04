@@ -15,4 +15,9 @@ class ProveedorArticulo extends Model
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
+
+    public function articulo()
+    {
+        return $this->belongsTo(Articulo::class);
+    }
 }
