@@ -92,7 +92,7 @@ $(function () {
         format: 'dd-mm-yyyy',
         autoclose: true,
         todayBtn: "linked",
-        startDate: new Date(),
+        //startDate: new Date(),
         todayHighlight: true,
 
     });
