@@ -18,7 +18,7 @@ class CreateProyectosTable extends Migration
             $table->unsignedBigInteger('catalogo_proyecto_id')->index();
             $table->string('nombre_proyecto');
             $table->string('nombre_propietario');
-            $table->string('ubicacion')->nullable();
+            $table->text('ubicacion')->nullable();
             $table->string('direccion')->nullable();
             $table->string('telefono', 10);
             $table->string('correo');

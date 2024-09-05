@@ -16,7 +16,7 @@ class CreateArticulosTable extends Migration
         Schema::create('articulos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('categoria_id')->index();
-            $table->string('codigo', 10);
+            $table->string('codigo', 10)->nullable();
             $table->string('descripcion');
             $table->boolean('activo');
             $table->timestamps();
