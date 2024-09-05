@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use DateTime;
 use Exception;
 use Throwable;
-use Carbon\Carbon;
 use App\Models\Proyecto;
 use App\Models\CatalogoDato;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use App\Models\ArchivoProyecto;
 use Illuminate\Support\Facades\DB;
+use App\Constants\MessagesConstant;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\ProyectoStoreRequest;
 
@@ -132,6 +132,7 @@ class ProyectoController extends Controller
                 }
 
                 DB::commit();
+                LogService::log('info', 'Proyecto creado con éxito', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('proyecto.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('success', 'La información ingresada se ha guardado con éxito.');
             } else {
                 throw new Exception('Error al intentar guardar la información.');
@@ -147,7 +148,8 @@ class ProyectoController extends Controller
             if ($request->file('archivos_proyecto')) {
                 $this->eliminarArchivos($request->file('archivos_proyecto'), $nombre_proyecto);
             }
-            return redirect()->route('proyecto.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('error', $e->getMessage());
+            LogService::log('error', 'Error al crear proyecto', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
+            return redirect()->route('proyecto.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('error', MessagesConstant::CATCH_ERROR);
         }
     }
 
@@ -162,6 +164,7 @@ class ProyectoController extends Controller
     public function update(Request $request, $tipo, $tipo_id, Proyecto $proyecto)
     {
         try {
+            $old_data = Proyecto::find($proyecto->id);
             DB::beginTransaction();
             $nombre_proyecto = $request->nombre_proyecto;
             $fecha_inicio = dateFormat('d-m-Y', 'Y-m-d', $request->fecha_inicio);
@@ -189,9 +192,12 @@ class ProyectoController extends Controller
 
             $archivos_combinados = [];
 
-            foreach ($archivos_actuales['id'] as $key => $id) {
-                $archivos_combinados[$id] = $archivos_actuales['path'][$key];
+            if (!empty($archivos_actuales)) {
+                foreach ($archivos_actuales['id'] as $key => $id) {
+                    $archivos_combinados[$id] = $archivos_actuales['path'][$key];
+                }
             }
+
             $archivos_diff = array_diff($archivos_db, $archivos_combinados);
 
             // Si se cambio la portada
@@ -232,6 +238,7 @@ class ProyectoController extends Controller
                 }
 
                 DB::commit();
+                LogService::log('info', 'Proyecto actualizado', ['user_id' => auth()->id(), 'action' => 'update', 'old_data' => $old_data, 'new_data' => $proyecto]);
                 return redirect()->route('proyecto.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])->with('success', 'Información se ha actualizado con éxito.');
             } else {
                 throw 'Error al intentar actualizar la información.';
@@ -247,7 +254,9 @@ class ProyectoController extends Controller
             if ($request->file('archivos_proyecto')) {
                 $this->eliminarArchivos($request->file('archivos_proyecto'), $nombre_proyecto);
             }
-            return redirect()->route('proyecto.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])->with('error', $e->getMessage());
+
+            LogService::log('error', 'Error al actualizar Proyecto', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+            return redirect()->route('proyecto.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])->with('error', MessagesConstant::CATCH_ERROR);
         }
     }
 

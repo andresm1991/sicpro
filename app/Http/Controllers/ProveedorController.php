@@ -3,16 +3,17 @@
 namespace App\Http\Controllers;
 
 use Throwable;
+use App\Models\Banco;
+use App\Models\Articulo;
+use App\Models\Proveedor;
 use App\Models\CatalogoDato;
+use App\Services\LogService;
 use Illuminate\Http\Request;
+use App\Models\ProveedorArticulo;
 use Illuminate\Support\Facades\DB;
+use App\Constants\MessagesConstant;
 use Illuminate\Support\Facades\Crypt;
 use App\Http\Requests\ProveedorCreateRequest;
-use App\Models\Articulo;
-use App\Models\Banco;
-use App\Models\Proveedor;
-use App\Models\ProveedorArticulo;
-use App\Services\LogService;
 
 class ProveedorController extends Controller
 {
@@ -97,7 +98,7 @@ class ProveedorController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             LogService::log('error', 'Error al crear Proveedor', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
-            return redirect()->route('sistema.proveedor.create', Crypt::encrypt($menu_id))->with('error', 'Error al intentar guardar la información.');
+            return redirect()->route('sistema.proveedor.create', Crypt::encrypt($menu_id))->with('error', MessagesConstant::CATCH_ERROR);
         }
     }
 
@@ -182,7 +183,7 @@ class ProveedorController extends Controller
             }
         } catch (Throwable $e) {
             DB::rollBack();
-            LogService::log('info', 'Error al actualizar Proveedor', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+            LogService::log('info', 'Error al actualizar Proveedor', ['user_id' => auth()->id(), 'action' => 'update', 'message' => MessagesConstant::CATCH_ERROR]);
             return redirect()->route('sistema.proveedor.edit', ['menu_id' => $menu_id, 'proveedor' => $proveedor->id])->with('error', 'Error al intentar guardar la información.');
         }
     }
