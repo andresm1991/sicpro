@@ -8,7 +8,8 @@ return [
         ['label' => 'Seleccionar Videos', 'id' => 'fileInputVideos'],
         ['label' => 'Seleccionar Presupuesto Aprobado', 'id' => 'fileInputPresupuesto'],
         ['label' => 'Seleccionar Estudio de suelo', 'id' => 'fileInputEstudioSuelo'],
-        ['label' => 'Seleccionar Valores Acordados de Contratistas', 'id' => 'fileInputValoresContratista'],
+    ],
+    'valores_contratista' => [
         ['label' => 'Seleccionar Carpintero', 'id' => 'fileInputCarpintero'],
         ['label' => 'Seleccionar Aluminiero', 'id' => 'fileInputAluminiero'],
         ['label' => 'Seleccionar Mesones', 'id' => 'fileInputMesones'],

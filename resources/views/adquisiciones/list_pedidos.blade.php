@@ -6,6 +6,7 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="mi">
+            @include('partials.alerts')
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
@@ -61,7 +62,8 @@
                                                 data-content ="
                                                 <a href='#' class='dropdown-item'>Editar</a>
                                                 <a href='#' class='dropdown-item'>Eliminar</a>
-                                                <a href='{{ route('pdf.adquisicion', $pedido->id) }}' class='dropdown-item'>PDF</a>
+                                                <a href='{{ route('pdf.adquisicion', $pedido->id) }}' class='dropdown-item'>PDF Orden Pedido</a>
+                                                <a href='{{ route('pdf.recepcion', $pedido->id) }}' class='dropdown-item'>PDF Orden Recepción</a>
                                                 <a href='{{ route('proyecto.adquisiciones.orden.recepcion', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $pedido->id]) }}' class='dropdown-item'>Orden de Recepción</a>">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>

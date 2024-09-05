@@ -32,8 +32,8 @@ if (!function_exists('explode_param')) {
         return $array;
     }
 }
-if (!function_exists('showImage')) {
-    function showImage($fileName)
+if (!function_exists('doTemporaryUrl')) {
+    function doTemporaryUrl($fileName)
     {
         // Define la duración de validez de la URL firmada
         $expiresAt = Carbon::now()->addMinutes(5);

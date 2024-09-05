@@ -96,6 +96,7 @@ Route::group(['middleware' => ['auth']], function () {
     // Controllador para generar los pdf del sistema
     Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
         Route::get('/adquisicion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfPedido'])->name('adquisicion');
+        Route::get('/recepcion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfRecepcion'])->name('recepcion');
     });
 
 

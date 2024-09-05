@@ -16,4 +16,9 @@ class OrdenRecepcion extends Model
     {
         return $this->belongsTo(CatalogoDato::class, 'forma_pago_id');
     }
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
 }

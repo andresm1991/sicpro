@@ -17,7 +17,7 @@
                         <div class="card neumorphism ">
                             <div class="image-container">
                                 <div class="loader"></div>
-                                <img src="{{ showImage($proyecto->portada) }}" class="card-img-top" alt="portada"
+                                <img src="{{ doTemporaryUrl($proyecto->portada) }}" class="card-img-top" alt="portada"
                                     onload="imageLoaded(this)">
                             </div>
                             <div class="card-body">

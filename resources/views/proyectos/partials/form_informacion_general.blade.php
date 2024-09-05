@@ -11,6 +11,9 @@
             <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab">Archivos Administrativos</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#tabs-4" role="tab">Archivos Valores Contratista</a>
+            </li>
         </ul><!-- Tab panes -->
         <div class="tab-content">
             <div class="tab-pane active" id="tabs-1" role="tabpanel">
@@ -186,7 +189,7 @@
                                         <h5 class="col-form-label">Portada del Proyecto</h5>
                                     </div>
                                     <div class="col-lg-12 file-input-wrapper">
-                                        <img src="{{ $proyecto->portada ? showImage($proyecto->portada) : asset('images/no-fotos.png') }}"
+                                        <img src="{{ $proyecto->portada ? doTemporaryUrl($proyecto->portada) : asset('images/no-fotos.png') }}"
                                             class="card-img-top" id="preview-portada" alt="portada">
                                         <label for="singleFileInput" class="file-input-label">Elige otro
                                             archivo...</label>
@@ -206,6 +209,9 @@
             </div>
             <div class="tab-pane" id="tabs-3" role="tabpanel">
                 @include('proyectos.partials.archivos_administrativos')
+            </div>
+            <div class="tab-pane" id="tabs-4" role="tabpanel">
+                @include('proyectos.partials.archivos_valores_contratista')
             </div>
         </div>
     </div>
