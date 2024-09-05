@@ -239,7 +239,7 @@ class ProyectoController extends Controller
         } catch (Throwable $e) {
             DB::rollBack();
             // Verifica si el archivo existe antes de intentar eliminarlo
-            if (Storage::disk('digitalocean')->exists($path_portada)) {
+            if (isset($path_portada) && Storage::disk('digitalocean')->exists($path_portada)) {
                 // Elimina el archivo
                 Storage::disk('digitalocean')->delete($path_portada);
             }
