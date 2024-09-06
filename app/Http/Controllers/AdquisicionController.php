@@ -2,19 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\MessagesConstant;
+use PDF;
 use Exception;
 use Throwable;
 use App\Models\Articulo;
 use App\Models\Proyecto;
+use App\Models\Proveedor;
 use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
-use App\Models\AdquisicionDetalle;
 use App\Models\OrdenRecepcion;
-use App\Models\Proveedor;
+use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use PDF;
+use App\Http\Requests\OrdenRecepcionStoreRequest;
+use App\Http\Requests\OrdenRecepcionUpdateRequest;
 
 class AdquisicionController extends Controller
 {
@@ -137,29 +140,32 @@ class AdquisicionController extends Controller
         $orden = OrdenRecepcion::where('adquisicion_id', $pedido->id)->first();
         $params = array_merge($params, ['pedido' => $pedido, 'orden_recepcion' => $orden, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'title_page' => $title_page, 'back_route' => $back_route]);
 
-        return view('adquisiciones.orden_recepcion', $params);
+        return $orden ? view('adquisiciones.orden_recepcion.edit', $params) : view('adquisiciones.orden_recepcion.create', $params);
     }
 
-    public function storeOrdenRecepcion(Request $request)
+    public function storeOrdenRecepcion(OrdenRecepcionStoreRequest $request)
     {
-        $request->validate(
-            ['proveedor' => 'required|numeric', 'pedido' => 'required|numeric', 'cantidad_recibida' => 'required|numeric', 'forma_pago' => 'required'],
-            ['proveedor.required' => 'Selecione el proveedor.', 'cantidad_recibida.required' => 'Ingrese un valor.', 'cantidad_recibida.numeric' => 'El valor debe ser numerico.', 'forma_pago' => 'Seleccione la forma de pago.'],
-        );
         $routeParametres = $this->getRouteParameters($request);
         $routeParametres = array_merge($routeParametres, ['pedido' => $request->pedido]);
+        $orden_completa = $request->has('orden_completa') ? true : false;
+
         $param = [
             'fecha' => date('Y-m-d'),
             'adquisicion_id' => $request->pedido,
             'proveedor_id' => $request->proveedor,
             'forma_pago_id' => $request->forma_pago,
+            'completado' => $orden_completa,
+            'editar' => $orden_completa ? false : true,
         ];
+
 
         try {
             DB::beginTransaction();
             if (OrdenRecepcion::create($param)) {
                 /// Actualiza el estado del pedido
-                Adquisicion::find($request->pedido)->update(['estado' => 'Finalizado']);
+                if ($orden_completa) {
+                    Adquisicion::find($request->pedido)->update(['estado' => 'Finalizado']);
+                }
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $request->cantidad_recibida]);
                 // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
@@ -176,7 +182,53 @@ class AdquisicionController extends Controller
             DB::rollBack();
             return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
-        return $request->all();
+    }
+
+    public function updateOrdenRecepcion(OrdenRecepcionUpdateRequest $request)
+    {
+        $orden_recepcion_id = $request->route('orden_recepcion');
+        $pedido_id = $request->pedido;
+        $pedido = Adquisicion::find($pedido_id);
+        $orden_recepcion = OrdenRecepcion::find($orden_recepcion_id);
+
+        $routeParametres = $this->getRouteParameters($request);
+        $routeParametres = array_merge($routeParametres, ['pedido' => $request->pedido]);
+
+        if ($orden_recepcion->completado) {
+            return back()->with('toast_error', 'No es posible editar la información de esta orden porque esta  ha sido completada.');
+        }
+
+        $orden_completa = $request->has('orden_completa') ? true : false;
+
+        $orden_recepcion->proveedor_id = $request->proveedor;
+        $orden_recepcion->forma_pago_id = $request->forma_pago;
+        $orden_recepcion->completado = $orden_completa;
+        $orden_recepcion->editar = false;
+
+        try {
+            DB::beginTransaction();
+            if ($orden_recepcion->save()) {
+                /// Actualiza el estado del pedido
+                if ($orden_completa) {
+                    Adquisicion::find($request->pedido)->update(['estado' => 'Finalizado']);
+                }
+
+                // Actualiza la cantidad recibiba en el detalle del pedido
+                $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $request->cantidad_recibida]);
+                // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
+                if ($update_detalle_pedido) {
+                    DB::commit();
+                    return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
+                } else {
+                    throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
+                }
+            } else {
+                throw new Exception('Error al intentar guardar la orden de recepcion');
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', MessagesConstant::CATCH_ERROR);
+        }
     }
 
     /**
@@ -225,12 +277,14 @@ class AdquisicionController extends Controller
     // Método para obtener los parámetros comunes
     private function getRouteParameters($request)
     {
-        return [
+        $parametros = [
             'tipo' => $request->route('tipo'),
             'tipo_id' => $request->route('tipo_id'),
             'proyecto' => Proyecto::find($request->route('proyecto')),
             'tipo_adquisicion' => CatalogoDato::find($request->route('tipo_adquisicion')),
             'tipo_etapa' => CatalogoDato::find($request->route('tipo_etapa')),
         ];
+
+        return $parametros;
     }
 }

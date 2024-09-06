@@ -10,7 +10,7 @@ class OrdenRecepcion extends Model
     use HasFactory;
 
     protected $table = 'orden_recepciones';
-    protected $fillable = ['fecha', 'adquisicion_id', 'proveedor_id', 'forma_pago_id'];
+    protected $fillable = ['fecha', 'adquisicion_id', 'proveedor_id', 'forma_pago_id', 'completado', 'editar'];
 
     public function forma_pago()
     {
