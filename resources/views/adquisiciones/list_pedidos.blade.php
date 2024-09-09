@@ -60,7 +60,7 @@
                                             <button type="button" class="btn btn-outline-dark" data-container="body"
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
-                                                <a href='#' class='dropdown-item'>Editar</a>
+                                                <a href='{{ route('proyecto.adquisiciones.orden.pedido.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $pedido->id]) }}' class='dropdown-item'>Editar</a>
                                                 <a href='#' class='dropdown-item'>Eliminar</a>
                                                 <a href='{{ route('pdf.adquisicion', $pedido->id) }}' class='dropdown-item'>PDF Orden Pedido</a>
                                                 <a href='{{ route('pdf.recepcion', $pedido->id) }}' class='dropdown-item'>PDF Orden Recepción</a>

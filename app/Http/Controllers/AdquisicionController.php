@@ -129,6 +129,63 @@ class AdquisicionController extends Controller
         }
     }
 
+    public function editarPedido(Request $request)
+    {
+        $route_params = $this->getRouteParameters($request);
+        $pedido_id = $request->route('pedido');
+        $pedido = Adquisicion::find($pedido_id);
+
+        if ($pedido->estado != 'Finalizado') {
+            $title_page = $route_params['proyecto']->nombre_proyecto;
+            $back_route = route('proyecto.adquisiciones.tipo.etapa', $route_params);
+            $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
+            $orden_pedido = $pedido;
+            $numero_orden = $pedido->numero;
+            $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
+
+            $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'back_route' => $back_route]);
+            return view('adquisiciones.edit',  $route_params);
+        } else {
+            return back()->with('toast_error', 'No es posible editar una adquisición que ya esta finalizada.');
+        }
+    }
+
+    public function updateAdquisicion(Request $request)
+    {
+        $route_params = $this->getRouteParameters($request);
+        try {
+            DB::beginTransaction();
+            $pedido_id = $request->route('pedido');
+            $result = array_map(function ($producto, $cantidad, $necesidad) {
+                return [
+                    'articulo_id' => $producto,
+                    'cantidad_solicitada' => $cantidad,
+                    'necesidad' => $necesidad
+                ];
+            }, $request->productos, $request->cantidad, $request->necesidad);
+
+            foreach ($result as $data) {
+                AdquisicionDetalle::updateOrCreate(
+                    [
+                        'articulo_id' => $data['articulo_id'],
+                        'adquisicion_id' => $pedido_id
+                    ],
+                    [
+                        'cantidad_solicitada' => $data['cantidad_solicitada'],
+                        'necesidad' => $data['necesidad']
+                    ]
+                );
+            }
+
+            DB::commit();
+            $route_params = array_merge($route_params, ['pedido' => $pedido_id]);
+            return redirect()->route('proyecto.adquisiciones.orden.pedido.edit', $route_params)->with('success', 'Orden de pedido actualizada con éxito.');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return back()->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
+    }
+
     public function ordenRecepcion(Request $request)
     {
         $params = $this->getRouteParameters($request);

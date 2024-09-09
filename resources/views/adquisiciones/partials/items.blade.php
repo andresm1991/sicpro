@@ -46,9 +46,47 @@
             </tr>
         </thead>
         <tbody>
-            <tr id="tr-default">
+            @foreach ($orden_pedido->adquisiciones_detalle as $index => $element)
+                <tr class="elementos-agregados">
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $element->producto->descripcion }}</td>
+                    <td class="edit-item">
+                        <span>{{ $element->cantidad_solicitada }}</span>
+                        <div class="d-flex align-items-center hidden">
+                            <input type="text" class="form-control mr-2 solo-numeros" name="cantidad[]"
+                                value="{{ $element->cantidad_solicitada }}">
+                            <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
+                                    class="fa-solid fa-check"></i></button>
+                            <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </td>
+                    <td class="edit-item">
+                        <span>{{ $element->necesidad }}</span>
+                        <div class="d-flex align-items-center hidden">
+                            <input type="text" class="form-control mr-2" name="necesidad[]"
+                                value="{{ $element->necesidad }}">
+                            <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
+                                    class="fa-solid fa-check"></i></button>
+                            <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </td>
+                    <td class="align-middle table-actions">
+                        <div class="action-buttons">
+                            <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                id="">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
+                    <input type="hidden" name="productos[]" value="{{ $element->articulo_id }}">
+                </tr>
+            @endforeach
+            <tr id="tr-default" style="display:{{ $orden_pedido->id ? 'none' : '' }}">
                 <td colspan="5" class="text-center">No existen elementos en la lista...</td>
             </tr>
+
         </tbody>
     </table>
 </div>
