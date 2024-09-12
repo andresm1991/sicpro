@@ -23,11 +23,16 @@ class ArticuloStoreRequest extends FormRequest
      */
     public function rules()
     {
-        return [
+        $rules = [
             'categoria' => 'required',
-            'codigo' => 'unique:articulos',
             'descripcion' => 'required',
         ];
+
+        if ($this->get('codigo')) {
+            $rules = array_merge($rules, ['codigo' => 'unique:articulos']);
+        }
+
+        return $rules;
     }
 
     public function messages()

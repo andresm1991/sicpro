@@ -27,6 +27,8 @@
     <link rel="stylesheet" href="{{ asset('plugins/sweetalert2/sweetalert2.min.css') }}">
     <!-- Animate Css -->
     <link rel="stylesheet" href="{{ asset('css/animate.min.css') }}">
+    <!-- Datables Css -->
+    <link rel="stylesheet" href="{{ asset('plugins/dataTables/datatables.min.css') }}">
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @yield('styles')
@@ -63,6 +65,7 @@
 <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
 
 <script src="{{ asset('js/app.js') }}"></script>
+<script src="{{ asset('plugins/dataTables/datatables.min.js') }}"></script>
 
 @yield('scripts')
 

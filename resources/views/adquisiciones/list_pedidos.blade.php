@@ -32,7 +32,7 @@
                         </div>
                     </div>
                     <div class="table-responsive" id="table">
-                        <table class="table table-bordered table-hover">
+                        <table id="table-list-pedidos" class="table table-bordered table-hover">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
@@ -61,7 +61,7 @@
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
                                                 <a href='{{ route('proyecto.adquisiciones.orden.pedido.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $pedido->id]) }}' class='dropdown-item'>Editar</a>
-                                                <a href='#' class='dropdown-item'>Eliminar</a>
+                                                <a href='#' class='dropdown-item eliminar-pedido' id='{{ $pedido->id }}'>Eliminar</a>
                                                 <a href='{{ route('pdf.adquisicion', $pedido->id) }}' class='dropdown-item'>PDF Orden Pedido</a>
                                                 <a href='{{ route('pdf.recepcion', $pedido->id) }}' class='dropdown-item'>PDF Orden Recepción</a>
                                                 <a href='{{ route('proyecto.adquisiciones.orden.recepcion', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $pedido->id]) }}' class='dropdown-item'>Orden de Recepción</a>">
@@ -87,4 +87,12 @@
             </div>
         </div>
     </section>
+@endsection
+
+@section('scripts')
+    <script>
+        var url =
+            "{{ route('proyecto.adquisiciones.tipo.etapa', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
+    </script>
+    <script src="{{ asset('js/adquisiciones_script.js') }}"></script>
 @endsection

@@ -52,8 +52,11 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('/{tipo_adquisicion}/{tipo_etapa}/orden-recepcion/{pedido}/guardar', [AdquisicionController::class, 'storeOrdenRecepcion'])->name('orden.recepcion.store');
             Route::put('/{tipo_adquisicion}/{tipo_etapa}/orden-recepcion/{pedido}/actualizar/{orden_recepcion}', [AdquisicionController::class, 'updateOrdenRecepcion'])->name('orden.recepcion.update');
             Route::get('/{tipo_adquisicion}/{tipo_etapa}/orden-adquisicion/{pedido}/editar', [AdquisicionController::class, 'editarPedido'])->name('orden.pedido.edit');
+            Route::delete('/{tipo_adquisicion}/{tipo_etapa}/eliminar-adquisicion/{pedido}', [AdquisicionController::class, 'destroyPedido']);
+            Route::get('/{tipo_adquisicion}/list/{tipo_etapa}/buscar-pedido', [AdquisicionController::class, 'buscarPedido']);
         });
     });
+
     // Perfil Usuario
     Route::group(['prefix' => 'mi-perfil', 'as' => 'perfil.'], function () {
         Route::get('/', [UserController::class, 'perfil'])->name('show');

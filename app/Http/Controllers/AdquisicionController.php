@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
+use App\Services\LogService;
 
 class AdquisicionController extends Controller
 {
@@ -118,13 +119,16 @@ class AdquisicionController extends Controller
                     AdquisicionDetalle::create($param_detalle_adquisicion);
                 }
                 DB::commit();
+                LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('success', 'Orden de pedido generada con éxito.');
             } else {
                 DB::rollback();
+                LogService::log('error', 'Error al crear Adquisición', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'ocurrio un error al intentar crear la adquisición']);
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('error', 'Ocurrió un error al generar el pedido, por favor vuela a intentarlo. Si el problema persiste, comuníquese con el administrador del sistema.');
             }
         } catch (Throwable $e) {
             DB::rollBack();
+            LogService::log('error', 'Error al crear Adquisición', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
@@ -178,11 +182,40 @@ class AdquisicionController extends Controller
             }
 
             DB::commit();
+            LogService::log('info', 'Adquisición actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
             $route_params = array_merge($route_params, ['pedido' => $pedido_id]);
             return redirect()->route('proyecto.adquisiciones.orden.pedido.edit', $route_params)->with('success', 'Orden de pedido actualizada con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();
+            LogService::log('error', 'Error al actualizar Adquisición', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return back()->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
+    }
+
+    public function destroyPedido(Request $request)
+    {
+        $pedido = Adquisicion::find($request->route('pedido'));
+
+        if ($pedido->estado != 'Finalizado') {
+            if ($pedido->delete()) {
+                LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
+                return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Ocurrió un error al intentar eliminar el registro, por favor vuelva a intentar si el problema persiste comuníquese con el administrador del sistema.']);
+            }
+        } else {
+            return response()->json(['success' => false, 'message' => 'No es posible eliminar esta adquisición porque ha sido finalizada.']);
+        }
+    }
+
+    public function buscarPedido(Request $request)
+    {
+        if ($request->ajax()) {
+            $buscar = $request->buscar;
+            $tipo_proyecto_id = $request->tipo_id;
+            $proyecto_id = $request->proyecto;
+            $etapa_id = $request->tipo_etapa;
+            $tipo_adquisicion_id = $request->tipo_adquisicion;
         }
     }
 
@@ -228,6 +261,7 @@ class AdquisicionController extends Controller
                 // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
                 if ($update_detalle_pedido) {
                     DB::commit();
+                    LogService::log('info', 'Orden recepción creada', ['user_id' => auth()->id(), 'action' => 'create']);
                     return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción generada con éxito.');
                 } else {
                     throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
@@ -237,6 +271,7 @@ class AdquisicionController extends Controller
             }
         } catch (Throwable $e) {
             DB::rollBack();
+            LogService::log('error', 'Error al crear orden de recepción', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
@@ -275,6 +310,7 @@ class AdquisicionController extends Controller
                 // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
                 if ($update_detalle_pedido) {
                     DB::commit();
+                    LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
                     return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
                 } else {
                     throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
@@ -284,40 +320,9 @@ class AdquisicionController extends Controller
             }
         } catch (Throwable $e) {
             DB::rollBack();
+            LogService::log('error', 'Error al actualizar orden de recepción', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', MessagesConstant::CATCH_ERROR);
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 
     private function registrarNuevoProducto($tipo, $descripcion)
@@ -327,6 +332,7 @@ class AdquisicionController extends Controller
         $type = $tipo->slug == 'meteriales.herramientas' ? 'B-' : 'S-';
         $code = generateProductCode($type);
         $create =  Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'activo' => true]);
+        LogService::log('info', 'Articulo creado', ['user_id' => auth()->id(), 'action' => 'create']);
 
         return $create;
     }
