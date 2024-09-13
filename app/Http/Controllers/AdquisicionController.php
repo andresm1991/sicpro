@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\MessagesConstant;
 use PDF;
 use Exception;
 use Throwable;
@@ -11,14 +10,16 @@ use App\Models\Proyecto;
 use App\Models\Proveedor;
 use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use App\Models\OrdenRecepcion;
+use Yajra\DataTables\DataTables;
 use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\DB;
+use App\Constants\MessagesConstant;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
-use App\Services\LogService;
 
 class AdquisicionController extends Controller
 {
@@ -54,6 +55,38 @@ class AdquisicionController extends Controller
 
         return view('adquisiciones.list_pedidos', compact('list_pedidos', 'aquisiciones', 'tipo_adquisicion', 'title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto', 'tipo_etapa'));
     }
+    /*
+    public function getAdquisiciones(Request $request)
+    {
+        $query = Adquisicion::with(['proyecto', 'etapa', 'tipo_etapa'])
+            ->where('proyecto_id', $request->proyecto)
+            ->where('etapa_id', $request->tipo_adquisicion)
+            ->where('tipo_etapa_id', $request->tipo_etapa)
+            ->orderBy('fecha', 'asc');
+
+        // Retornar los datos con DataTables
+        return DataTables::of($query)
+            ->addColumn('acciones', function ($adquisicion) {
+                return '
+                <a href="/adquisiciones/' . $adquisicion->id . '/edit" class="btn btn-sm btn-primary">Editar</a>
+                <a href="/adquisiciones/' . $adquisicion->id . '/delete" class="btn btn-sm btn-danger">Eliminar</a>
+            ';
+            })
+            ->editColumn('proyecto', function ($adquisicion) {
+                return $adquisicion->proyecto->nombre_proyecto; // Asegúrate de que la relación exista y el campo sea correcto
+            })
+            ->editColumn('etapa', function ($adquisicion) {
+                return $adquisicion->etapa->descripcion; // Lo mismo para las otras relaciones
+            })
+            ->editColumn('tipo_etapa', function ($adquisicion) {
+                return $adquisicion->tipo_etapa->descripcion; // Lo mismo para las otras relaciones
+            })
+            ->rawColumns(['acciones']) // Permitir HTML en la columna de acciones
+            ->make(true);
+    }
+    */
+
+
 
     /**
      * Show the form for creating a new resource.
@@ -211,11 +244,69 @@ class AdquisicionController extends Controller
     public function buscarPedido(Request $request)
     {
         if ($request->ajax()) {
+
             $buscar = $request->buscar;
             $tipo_proyecto_id = $request->tipo_id;
             $proyecto_id = $request->proyecto;
-            $etapa_id = $request->tipo_etapa;
-            $tipo_adquisicion_id = $request->tipo_adquisicion;
+            $etapa_id = $request->tipo_adquisicion;
+            $tipo_adquisicion_id =  $request->tipo_etapa;
+            $output = "";
+
+            $list_pedidos = Adquisicion::with(['proyecto', 'etapa', 'tipo_etapa'])
+                ->where('proyecto_id', $proyecto_id)
+                ->where('etapa_id', $etapa_id)
+                ->where('tipo_etapa_id', $tipo_adquisicion_id)
+                ->where(function ($query) use ($buscar) {
+                    $query->where('fecha', 'LIKE', '%' . $buscar . '%') // Búsqueda en campos de Adquisicion
+                        ->orWhere('numero', 'LIKE', '%' . $buscar . '%')
+                        ->orWhere('estado', 'LIKE', '%' . $buscar . '%')
+                        ->orWhereHas('proyecto', function ($q) use ($buscar) {
+                            $q->where('nombre_proyecto', 'LIKE', '%' . $buscar . '%'); // Búsqueda en el nombre del proyecto
+                        })
+                        ->orWhereHas('etapa', function ($q) use ($buscar) {
+                            $q->where('descripcion', 'LIKE', '%' . $buscar . '%'); // Búsqueda en el nombre de la etapa
+                        })
+                        ->orWhereHas('tipo_etapa', function ($q) use ($buscar) {
+                            $q->where('descripcion', 'LIKE', '%' . $buscar . '%'); // Búsqueda en el tipo de etapa
+                        });
+                })
+                ->orderBy('fecha', 'asc')
+                ->get();
+
+            if ($list_pedidos) {
+                $route_parametres = $this->getRouteParameters($request);
+                foreach ($list_pedidos as $pedido) {
+                    $route_parametres = array_merge($route_parametres, ['pedido' => $pedido->id]);
+                    $editar_button = "<a href='" . route('proyecto.adquisiciones.orden.pedido.edit', $route_parametres) . "' class='dropdown-item'>Editar</a>";
+                    $destroy_button = "<a href='#' class='dropdown-item eliminar-pedido' id='" . $pedido->id . "'>Eliminar</a>";
+                    $pdf_orden_adquisicion_button = "<a href='" . route('pdf.adquisicion', $pedido->id) . "' class='dropdown-item'>PDF Orden Pedido</a>";
+                    $pdf_orden_recepcion_button = "<a href='" . route('pdf.recepcion', $pedido->id) . "' class='dropdown-item'>PDF Orden Recepción</a>";
+                    $orden_recepcion_button = "<a href='" . route('proyecto.adquisiciones.orden.recepcion', $route_parametres) . "' class='dropdown-item'>Orden de Recepción</a>";
+
+                    $estado = $pedido->estado ? '<span class="badge badge-success">' . $pedido->estado . '</span>' : '<span class="badge badge-warning">' . $pedido->estado . '</span>';
+                    $output .= '<tr id="' . $pedido->id . '">' .
+                        '<td class="align-middle">' . $pedido->numero . '</td>' .
+                        '<td class="align-middle">' . date('d-m-Y', strtotime($pedido->fecha)) . '</td>' .
+                        '<td class="align-middle">' . $pedido->proyecto->nombre_proyecto . '</td>' .
+                        '<td class="align-middle">' . $pedido->etapa->descripcion . '</td>' .
+                        '<td class="align-middle">' . $pedido->tipo_etapa->descripcion . '</td>' .
+                        '<td class="align-middle">' . $estado . '</td>' .
+                        '<td class="align-middle align-middle text-right text-truncate">' .
+                        '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar_button . $destroy_button . $pdf_orden_adquisicion_button . $pdf_orden_recepcion_button . $orden_recepcion_button . '"><i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                            </button>' .
+                        '</td>' .
+                        '</tr>';
+                }
+
+                if (empty($output)) {
+                    $output .= '<tr>' .
+                        '<td colspan="7" class="text-center">' .
+                        '<span class="text-danger">No existen datos para mostrar.</span>' .
+                        '</td>' .
+                        '</tr>';
+                }
+                return Response($output);
+            }
         }
     }
 

@@ -45,6 +45,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/', [AdquisicionController::class, 'index'])->name('menu');
             Route::get('/{tipo_adquisicion}', [AdquisicionController::class, 'tipoAquisicion'])->name('tipo');
             Route::get('/{tipo_adquisicion}/list/{tipo_etapa}', [AdquisicionController::class, 'listTipoAquisicion'])->name('tipo.etapa');
+            //Route::get('/{tipo_adquisicion}/list/{tipo_etapa}/data-adquisiciones', [AdquisicionController::class, 'getAdquisiciones']);
             Route::get('/{tipo_adquisicion}/etapa/{tipo_etapa}/nuevo', [AdquisicionController::class, 'create'])->name('tipo.create');
             Route::post('/{tipo_adquisicion}/{tipo_etapa}/guardar', [AdquisicionController::class, 'store'])->name('store');
             Route::put('/{tipo_adquisicion}/{tipo_etapa}/actualizar/{pedido}', [AdquisicionController::class, 'updateAdquisicion'])->name('update');

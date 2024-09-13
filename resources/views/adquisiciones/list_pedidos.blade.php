@@ -81,7 +81,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     @include('partials.pagination', ['paginator' => $list_pedidos, 'interval' => 5])
                 </div>
             </div>
