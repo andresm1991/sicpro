@@ -37,20 +37,25 @@
                                     <th scope="col">RUC-CI</th>
                                     <th scope="col">Nombre</th>
                                     @if ($slug != 'meteriales.herramientas')
-                                        <th scope="col">
-                                            @switch($slug)
-                                                @case('mano.obra')
+                                        @switch($slug)
+                                            @case('mano.obra')
+                                                <th scope="col">
                                                     Categoría
-                                                @break
+                                                </th>
+                                                <th scope="col">
+                                                    Calificación
+                                                </th>
+                                            @break
 
-                                                @case('profecionales')
+                                            @case('profecionales')
+                                                <th scope="col">
                                                     Especialidad
-                                                @break
+                                                </th>
+                                            @break
 
-                                                @default
-                                                    Producto
-                                            @endswitch
-                                        </th>
+                                            @default
+                                                Producto
+                                        @endswitch
                                     @endif
                                     <th scope="col">Teléfono 1</th>
                                     <th scope="col">Teléfono 2</th>
@@ -69,6 +74,18 @@
                                                 @foreach ($proveedor->proveedor_articulos as $proveedor_articulo)
                                                     {{ $proveedor_articulo->articulo->descripcion }}
                                                 @endforeach
+                                            </td>
+                                            <td class="align-middle text-capitalize">
+                                                <div class="progress">
+                                                    <div class="progress-bar @if ($proveedor->calificacion <= 3) bg-danger @elseif ($proveedor->calificacion <= 7) bg-warning @else bg-success @endif  "
+                                                        role="progressbar"
+                                                        style="width: {{ ($proveedor->calificacion / 10) * 100 }}%;"
+                                                        aria-valuenow="{{ $proveedor->calificacion }}" aria-valuemin="0"
+                                                        aria-valuemax="10">
+                                                        {{ $proveedor->calificacion }}/10
+                                                    </div>
+                                                </div>
+
                                             </td>
                                         @endif
                                         @foreach (explode_param($proveedor->telefono) as $telefono)
