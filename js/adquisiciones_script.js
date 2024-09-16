@@ -134,7 +134,7 @@ $(function () {
                 <td class="edit-item">
                     <span>${cantidad}</span>
                     <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2 solo-numeros" name="cantidad[]"
+                        <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
                             value="${cantidad}">
                         <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
                                 class="fa-solid fa-check"></i></button>

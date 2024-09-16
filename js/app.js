@@ -128,6 +128,17 @@ $(function () {
         }
     });
 
+    // Input mask
+    $('.input-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ".",   // Definir el punto decimal
+        groupSeparator: ",",  // Separador de miles (opcional)
+        digits: 2,         // Número de dígitos decimales
+        autoGroup: true,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: false   // Permitir números negativos
+    });
+
     /// Solo numeros
     $(document).on('input', ".solo-numeros", function (evt) {
         // Allow only numbers.
