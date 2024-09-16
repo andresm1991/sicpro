@@ -15,7 +15,7 @@
             <ul class="pagination">
                 @if ($paginator->currentPage() > 1)
                     <li class="page-item">
-                        <a class="page-link" href="{{ $paginator->url($paginator->currentPage() - 1) }}"
+                        <a class="page-link text-dark" href="{{ $paginator->url($paginator->currentPage() - 1) }}"
                             aria-label="Previous">
                             <span aria-hidden="true">&laquo;</span>
                             <span class="sr-only">Previous</span>
@@ -38,7 +38,7 @@
 
                 @if ($paginator->currentPage() < $paginator->lastPage())
                     <li class="page-item ">
-                        <a class="page-link" href="{{ $paginator->url($paginator->currentPage() + 1) }}"
+                        <a class="page-link text-dark" href="{{ $paginator->url($paginator->currentPage() + 1) }}"
                             aria-label="Next">
                             <span aria-hidden="true">&raquo;</span>
                             <span class="sr-only">Next</span>
