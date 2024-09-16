@@ -6,7 +6,6 @@ use PDF;
 use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
 use App\Models\OrdenRecepcion;
-use Illuminate\Http\Request;
 
 class GenerarPdfController extends Controller
 {
