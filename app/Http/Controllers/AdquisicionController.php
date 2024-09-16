@@ -80,15 +80,16 @@ class AdquisicionController extends Controller
     {
         $route_parametres = $this->getRouteParameters($request);
         $proyecto = $route_parametres['proyecto'];
-
         $title_page = $proyecto->nombre_proyecto;
-        $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
+        $tipo_adquisicion = $route_parametres['tipo_etapa']->slug != 'meteriales.herramientas' ? 19 : 18;
         $orden_pedido = new Adquisicion();
 
         $ultimo_registro = Adquisicion::latest()->first();
         $ultimo_id = $ultimo_registro ? $ultimo_registro->id + 1 : 1;
         $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
-        $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
+        $productos = Articulo::where('activo', true)
+            ->where('categoria_id', $tipo_adquisicion)
+            ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -97,7 +98,7 @@ class AdquisicionController extends Controller
         ];
 
 
-        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'aquisiciones' => $aquisiciones, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
+        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
         return view('adquisiciones.create', $route_parametres);
     }
 
@@ -320,11 +321,9 @@ class AdquisicionController extends Controller
         $route_params = $this->getRouteParameters($request);
 
         $title_page = $route_params['proyecto']->nombre_proyecto . ' - Orden de Recepción';
-        $back_route = route('proyecto.adquisiciones.tipo.etapa', $route_params);
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
         $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
         $pedido = Adquisicion::find($request->route('pedido'));
-
         $orden = OrdenRecepcion::where('adquisicion_id', $pedido->id)->first();
 
         $breadcrumbs = [
