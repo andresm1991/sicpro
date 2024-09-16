@@ -940,6 +940,46 @@ legend span {
     display: none !important;
 }
 
+/* Estilos para los elementos inactivos */
+.pagination .page-item .page-link {
+    background-color: transparent;
+    /* Fondo transparente para los números inactivos */
+    color: var(--primary-color);
+    /* Color del texto para los números inactivos */
+    border: 1px solid #dee2e6;
+    /* Color del borde para los elementos inactivos */
+}
+
+/* Estilo para los números inactivos cuando se hace hover */
+.pagination .page-item .page-link:hover {
+    background-color: #f8f9fa;
+    /* Fondo al hacer hover en números inactivos */
+    color: var(--primary-color);
+    /* Color del texto al hacer hover */
+    border-color: #dee2e6;
+    /* Borde al hacer hover */
+}
+
+/* Cambiar el color del fondo y del texto del item activo */
+.pagination .page-item.active .page-link {
+    background-color: var(--primary-color);
+    /* Cambiar el fondo del item activo (color de tu elección) */
+    border-color: var(--primary-color);
+    /* Cambiar el borde del item activo */
+    color: #ffffff !important;
+    /* Cambiar el color del texto del item activo */
+}
+
+/* Opcional: Cambiar el color del hover sobre el item activo */
+.pagination .page-item.active .page-link:hover {
+    background-color: var(--primary-color);
+    /* Cambiar el fondo cuando se hace hover sobre el item activo */
+    border-color: var(--primary-color);
+    /* Cambiar el borde cuando se hace hover sobre el item activo */
+    color: #ffffff;
+    /* Cambiar el color del texto cuando se hace hover sobre el item activo */
+}
+
 /* Aqui inicia css para responsive*/
 /* mobile devices */
 @media only screen and (max-width: 767px) {
