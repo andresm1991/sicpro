@@ -47,11 +47,6 @@
                     @include('adquisiciones.partials.form')
 
                     {!! Form::close() !!}
-
-                    <div class="col-12 mt-4">
-                        <p class="font-italic">Los campos con (*) son obligatorios, por favor complétalos
-                            corretéame</p>
-                    </div>
                 </div>
             </div>
         </div>

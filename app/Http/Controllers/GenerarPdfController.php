@@ -48,12 +48,11 @@ class GenerarPdfController extends Controller
             'cliente' => $cliente,
             'items' => $items,
         ];
-
+        //return view('pdf.adquiscion', compact('orden'));
         $pdf = PDF::loadView('pdf.adquiscion', compact('orden'));
 
-        return $pdf->download('orden_pedido.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
+        return $pdf->download('orden_pedido_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
 
-        return view('pdf.adquiscion', compact('orden'));
     }
 
     public function generarPdfRecepcion(Adquisicion $pedido)

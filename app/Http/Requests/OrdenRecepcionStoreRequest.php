@@ -24,7 +24,9 @@ class OrdenRecepcionStoreRequest extends FormRequest
         $rules =  [
             'proveedor' => 'required|numeric',
             'pedido' => 'required|numeric',
-            'cantidad_recibida' => 'required|numeric'
+            'cantidad_recibida' => 'required|array', // Valida que sea un array
+            'cantidad_recibida.*' => 'required|numeric', // Valida que cada elemento dentro del array sea numérico'cantidad_recibida' => 'required|array|numeric',
+            'forma_pago' => 'required',
         ];
 
         if ($this->get('orden_completa')) {
@@ -36,10 +38,14 @@ class OrdenRecepcionStoreRequest extends FormRequest
     public function messages()
     {
         return [
-            'proveedor.required' => 'Selecione el proveedor.',
-            'cantidad_recibida.required' => 'Ingrese un valor.',
-            'cantidad_recibida.numeric' => 'El valor debe ser numerico.',
-            'forma_pago' => 'Seleccione la forma de pago.'
+            'proveedor.required' => 'Seleccione el proveedor.',
+
+            // Mensajes personalizados para los elementos del array cantidad_recibida
+            'cantidad_recibida.required' => 'Ingrese al menos un valor de cantidad recibida.',
+            'cantidad_recibida.*.required' => 'Ingrese el valor de cantidad recibida.',
+            'cantidad_recibida.*.numeric' => 'El valor de cada cantidad recibida debe ser numérico.',
+
+            'forma_pago.required' => 'Seleccione la forma de pago.'
         ];
     }
 }

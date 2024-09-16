@@ -31,6 +31,7 @@ class ArticuloUpdateRequest extends FormRequest
         if ($this->get('codigo')) {
             $rules = array_merge($rules, ['codigo' => 'unique:articulos,codigo,' . $this->articulo->id]);
         }
+
         return $rules;
     }
 

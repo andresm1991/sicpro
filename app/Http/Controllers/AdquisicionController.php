@@ -51,57 +51,31 @@ class AdquisicionController extends Controller
         $list_pedidos = Adquisicion::where('proyecto_id', $proyecto->id)
             ->where('etapa_id', $tipo_adquisicion->id)
             ->where('tipo_etapa_id', $tipo_etapa->id)
-            ->orderBy('fecha', 'asc')->paginate(15);
+            ->orderBy('id', 'desc')->paginate(15);
 
         return view('adquisiciones.list_pedidos', compact('list_pedidos', 'aquisiciones', 'tipo_adquisicion', 'title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto', 'tipo_etapa'));
     }
-    /*
-    public function getAdquisiciones(Request $request)
-    {
-        $query = Adquisicion::with(['proyecto', 'etapa', 'tipo_etapa'])
-            ->where('proyecto_id', $request->proyecto)
-            ->where('etapa_id', $request->tipo_adquisicion)
-            ->where('tipo_etapa_id', $request->tipo_etapa)
-            ->orderBy('fecha', 'asc');
-
-        // Retornar los datos con DataTables
-        return DataTables::of($query)
-            ->addColumn('acciones', function ($adquisicion) {
-                return '
-                <a href="/adquisiciones/' . $adquisicion->id . '/edit" class="btn btn-sm btn-primary">Editar</a>
-                <a href="/adquisiciones/' . $adquisicion->id . '/delete" class="btn btn-sm btn-danger">Eliminar</a>
-            ';
-            })
-            ->editColumn('proyecto', function ($adquisicion) {
-                return $adquisicion->proyecto->nombre_proyecto; // Asegúrate de que la relación exista y el campo sea correcto
-            })
-            ->editColumn('etapa', function ($adquisicion) {
-                return $adquisicion->etapa->descripcion; // Lo mismo para las otras relaciones
-            })
-            ->editColumn('tipo_etapa', function ($adquisicion) {
-                return $adquisicion->tipo_etapa->descripcion; // Lo mismo para las otras relaciones
-            })
-            ->rawColumns(['acciones']) // Permitir HTML en la columna de acciones
-            ->make(true);
-    }
-    */
-
-
 
     /**
      * Show the form for creating a new resource.
      */
-    public function create($tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
+    public function create(Request $request)
     {
+        $route_parametres = $this->getRouteParameters($request);
+        $proyecto = $route_parametres['proyecto'];
+
         $title_page = $proyecto->nombre_proyecto;
-        $back_route = route('proyecto.adquisiciones.tipo.etapa', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa]);
+        $back_route = route('proyecto.adquisiciones.tipo.etapa', $route_parametres);
         $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
         $orden_pedido = new Adquisicion();
-        $numero_orden = date('Ymd') . '-' . str_pad((Adquisicion::all()->count() + 1), 3, '0', STR_PAD_LEFT);
+
+        $ultimo_registro = Adquisicion::latest()->first();
+        $ultimo_id = $ultimo_registro ? $ultimo_registro->id + 1 : 1;
+        $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
-
-        return view('adquisiciones.create',  compact('numero_orden', 'orden_pedido', 'productos', 'aquisiciones', 'tipo_adquisicion', 'title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto', 'tipo_etapa'));
+        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'aquisiciones' => $aquisiciones, 'title_page' => $title_page, 'back_route' => $back_route]);
+        return view('adquisiciones.create', $route_parametres);
     }
 
     /**
@@ -310,6 +284,9 @@ class AdquisicionController extends Controller
         }
     }
 
+    /** 
+     * Aqui empieza la orden de recepcion
+     */
     public function ordenRecepcion(Request $request)
     {
         $params = $this->getRouteParameters($request);
@@ -318,6 +295,7 @@ class AdquisicionController extends Controller
         $proveedores = Proveedor::pluck('razon_social', 'id');
         $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
         $pedido = Adquisicion::find($request->route('pedido'));
+
         $orden = OrdenRecepcion::where('adquisicion_id', $pedido->id)->first();
         $params = array_merge($params, ['pedido' => $pedido, 'orden_recepcion' => $orden, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'title_page' => $title_page, 'back_route' => $back_route]);
 
@@ -329,6 +307,7 @@ class AdquisicionController extends Controller
         $routeParametres = $this->getRouteParameters($request);
         $routeParametres = array_merge($routeParametres, ['pedido' => $request->pedido]);
         $orden_completa = $request->has('orden_completa') ? true : false;
+        $cantidades_recibidas = $request->cantidad_recibida;
 
         $param = [
             'fecha' => date('Y-m-d'),
@@ -339,6 +318,16 @@ class AdquisicionController extends Controller
             'editar' => $orden_completa ? false : true,
         ];
 
+        if ($orden_completa) {
+            // Buscar el registro en la base de datos que contiene cantidad_solicitada
+            $cantidades_solicitadas = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->pluck('cantidad_solicitada')->toArray();
+            foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
+                if ($cantidad_recibida != $cantidades_solicitadas[$index]) {
+                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual a la cantidad solicitada.'])
+                        ->withInput();
+                }
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -348,20 +337,24 @@ class AdquisicionController extends Controller
                     Adquisicion::find($request->pedido)->update(['estado' => 'Finalizado']);
                 }
                 // Actualiza la cantidad recibiba en el detalle del pedido
-                $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $request->cantidad_recibida]);
-                // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
-                if ($update_detalle_pedido) {
-                    DB::commit();
-                    LogService::log('info', 'Orden recepción creada', ['user_id' => auth()->id(), 'action' => 'create']);
-                    return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción generada con éxito.');
-                } else {
-                    throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
+                foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
+                    $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $cantidad_recibida]);
+                    // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
+                    if ($update_detalle_pedido) {
+                        DB::commit();
+                        LogService::log('info', 'Orden recepción creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                        return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción generada con éxito.');
+                    } else {
+                        throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
+                    }
                 }
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
             }
         } catch (Throwable $e) {
+
             DB::rollBack();
+            return $e->getMessage();
             LogService::log('error', 'Error al crear orden de recepción', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
@@ -369,24 +362,29 @@ class AdquisicionController extends Controller
 
     public function updateOrdenRecepcion(OrdenRecepcionUpdateRequest $request)
     {
-        $orden_recepcion_id = $request->route('orden_recepcion');
-        $pedido_id = $request->pedido;
-        $pedido = Adquisicion::find($pedido_id);
-        $orden_recepcion = OrdenRecepcion::find($orden_recepcion_id);
-
         $routeParametres = $this->getRouteParameters($request);
         $routeParametres = array_merge($routeParametres, ['pedido' => $request->pedido]);
 
-        if ($orden_recepcion->completado) {
-            return back()->with('toast_error', 'No es posible editar la información de esta orden porque esta  ha sido completada.');
-        }
-
+        $orden_recepcion_id = $request->route('orden_recepcion');
+        $orden_recepcion = OrdenRecepcion::find($orden_recepcion_id);
         $orden_completa = $request->has('orden_completa') ? true : false;
+        $cantidades_recibidas = $request->cantidad_recibida;
+
+        if ($orden_completa) {
+            // Buscar el registro en la base de datos que contiene cantidad_solicitada
+            $cantidades_solicitadas = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->pluck('cantidad_solicitada')->toArray();
+            foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
+                if ($cantidad_recibida != $cantidades_solicitadas[$index]) {
+                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual a la cantidad solicitada.'])
+                        ->withInput();
+                }
+            }
+        }
 
         $orden_recepcion->proveedor_id = $request->proveedor;
         $orden_recepcion->forma_pago_id = $request->forma_pago;
         $orden_recepcion->completado = $orden_completa;
-        $orden_recepcion->editar = false;
+        $orden_recepcion->editar = $orden_completa ? false : true;
 
         try {
             DB::beginTransaction();
@@ -397,14 +395,16 @@ class AdquisicionController extends Controller
                 }
 
                 // Actualiza la cantidad recibiba en el detalle del pedido
-                $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $request->cantidad_recibida]);
-                // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
-                if ($update_detalle_pedido) {
-                    DB::commit();
-                    LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
-                    return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
-                } else {
-                    throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
+                foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
+                    $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $cantidad_recibida]);
+                    // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
+                    if ($update_detalle_pedido) {
+                        DB::commit();
+                        LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
+                        return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
+                    } else {
+                        throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
+                    }
                 }
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
