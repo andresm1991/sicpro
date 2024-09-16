@@ -15,7 +15,7 @@
         <div class="col-sm-2">
             <div class="form-group">
                 {{ Form::label('', 'Cantidad', ['class' => 'col-form-label']) }}
-                {{ Form::text('cantidad', old('cantidad'), ['class' => 'form-control solo-numeros', 'id' => 'cantidad']) }}
+                {{ Form::text('cantidad', old('cantidad'), ['class' => 'form-control input-double', 'id' => 'cantidad']) }}
             </div>
         </div>
         <div class="col-sm-5">
@@ -53,8 +53,8 @@
                     <td class="edit-item">
                         <span>{{ $element->cantidad_solicitada }}</span>
                         <div class="d-flex align-items-center hidden">
-                            <input type="text" class="form-control mr-2 solo-numeros" name="cantidad[]"
-                                value="{{ $element->cantidad_solicitada }}">
+                            <input type="numbre" class="form-control mr-2 input-double" name="cantidad[]"
+                                value="{{ $element->cantidad_solicitada }}" step="0.01">
                             <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
                                     class="fa-solid fa-check"></i></button>
                             <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i

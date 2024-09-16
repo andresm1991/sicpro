@@ -17,7 +17,7 @@
                     <td class="align-middle">{{ $detalle->producto->descripcion }}</td>
                     <td class="align-middle">{{ $detalle->cantidad_solicitada }}</td>
                     <td class="align-middle">
-                        {{ Form::text('cantidad_recibida[' . $index . ']', old('cantidad_recibida.' . $index, $detalle->cantidad_recibida), ['class' => 'form-control solo-numeros', isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '']) }}
+                        {{ Form::text('cantidad_recibida[' . $index . ']', old('cantidad_recibida.' . $index, $detalle->cantidad_recibida), ['class' => 'form-control input-double', isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '']) }}
                         {!! $errors->first(
                             'cantidad_recibida.' . $index,
                             '<small class="help-block text-danger error_mensajes">:message</small>',
