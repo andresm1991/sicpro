@@ -45,9 +45,54 @@ body {
 
 .header-text {
     margin: 0;
-    font-size: 1.9em;
+    font-size: 24px;
     text-shadow: 4px 4px 5px rgba(0, 0, 0, 0.6);
-    font-weight: 600;
+    font-weight: 500;
+}
+
+/* Hacer el fondo del breadcrumb transparente */
+.custom-breadcrumb {
+    background-color: transparent;
+    /* Fondo transparente */
+    padding: 10px;
+    /* Ajustar el padding si es necesario */
+    margin-bottom: 0;
+    /* Elimina el espacio adicional */
+}
+
+/* Cambiar el color del item activo a blanco */
+.custom-breadcrumb .breadcrumb-item.active {
+    color: #ffffff;
+    /* Color blanco para el item activo */
+    font-weight: 500;
+    /* Opcional: añadir negrita */
+}
+
+/* Cambiar el color de los enlaces */
+.custom-breadcrumb .breadcrumb-item a {
+    color: var(--gray-color);
+    /* Cambiar color del enlace (azul Bootstrap por defecto) */
+    text-decoration: none;
+    /* Opcional: quitar el subrayado del enlace */
+}
+
+.custom-breadcrumb .breadcrumb-item a:hover {
+    text-decoration: underline;
+    /* Añadir subrayado al pasar el mouse (opcional) */
+}
+
+/* Personalizar el separador entre items (barra divisora) */
+.custom-breadcrumb .breadcrumb-item::before {
+    content: "/";
+    /* Usar una barra inclinada como separador */
+    color: #ffffff;
+    /* Color blanco para el separador */
+}
+
+/* Eliminar el separador antes del primer item */
+.custom-breadcrumb .breadcrumb-item:first-child::before {
+    content: "";
+    /* No mostrar separador en el primer item */
 }
 
 .circle {
@@ -1063,4 +1108,5 @@ legend span {
 :root {
     --primary-color: #343a40;
     --border-primary-color: #343a40;
+    --gray-color: #d4d4d4;
 }
