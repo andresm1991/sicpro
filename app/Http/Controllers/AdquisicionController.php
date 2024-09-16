@@ -29,23 +29,34 @@ class AdquisicionController extends Controller
     public function  index($tipo, $tipo_id, Proyecto $proyecto)
     {
         $title_page = $proyecto->nombre_proyecto . ' - Aquisiciones';
-        $back_route = route('proyecto.view', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]);
         $menu_adquisiciones = CatalogoDato::getChildrenCatalogo('menu.adquisiciones');
-        return view('adquisiciones.index', compact('menu_adquisiciones', 'title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto'));
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $proyecto->nombre_proyecto, 'url' => route('proyecto.view', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])],
+            ['name' => 'Aquisiciones', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('adquisiciones.index', compact('menu_adquisiciones', 'title_page', 'breadcrumbs', 'tipo', 'tipo_id', 'proyecto'));
     }
 
     public function tipoAquisicion($tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion)
     {
         $title_page = 'Aquisiciones - ' . $tipo_adquisicion->descripcion;
-        $back_route = route('proyecto.adquisiciones.menu', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]);
         $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
-        return view('adquisiciones.tipo_adquisicion', compact('aquisiciones', 'tipo_adquisicion', 'title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto'));
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Adquisiciones', 'url' => route('proyecto.adquisiciones.menu', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])],
+            ['name' => $tipo_adquisicion->descripcion, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('adquisiciones.tipo_adquisicion', compact('aquisiciones', 'tipo_adquisicion', 'title_page', 'breadcrumbs', 'tipo', 'tipo_id', 'proyecto'));
     }
 
     public function listTipoAquisicion($tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
     {
-        $title_page = $tipo_adquisicion->descripcion . ' - ' . $tipo_etapa->descripcion;
-        $back_route = route('proyecto.adquisiciones.tipo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion]);
+        $title_page = 'Aquisiciones';
         $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
 
         $list_pedidos = Adquisicion::where('proyecto_id', $proyecto->id)
@@ -53,7 +64,13 @@ class AdquisicionController extends Controller
             ->where('tipo_etapa_id', $tipo_etapa->id)
             ->orderBy('id', 'desc')->paginate(15);
 
-        return view('adquisiciones.list_pedidos', compact('list_pedidos', 'aquisiciones', 'tipo_adquisicion', 'title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto', 'tipo_etapa'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $tipo_adquisicion->descripcion, 'url' => route('proyecto.adquisiciones.tipo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion])],
+            ['name' => $tipo_etapa->descripcion, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('adquisiciones.list_pedidos', compact('list_pedidos', 'aquisiciones', 'tipo_adquisicion', 'title_page', 'breadcrumbs', 'tipo', 'tipo_id', 'proyecto', 'tipo_etapa'));
     }
 
     /**
@@ -65,7 +82,6 @@ class AdquisicionController extends Controller
         $proyecto = $route_parametres['proyecto'];
 
         $title_page = $proyecto->nombre_proyecto;
-        $back_route = route('proyecto.adquisiciones.tipo.etapa', $route_parametres);
         $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
         $orden_pedido = new Adquisicion();
 
@@ -74,7 +90,14 @@ class AdquisicionController extends Controller
         $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
-        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'aquisiciones' => $aquisiciones, 'title_page' => $title_page, 'back_route' => $back_route]);
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $route_parametres['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_parametres)],
+            ['name' => 'Nuevo', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+
+        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'aquisiciones' => $aquisiciones, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
         return view('adquisiciones.create', $route_parametres);
     }
 
@@ -148,16 +171,21 @@ class AdquisicionController extends Controller
 
         if ($pedido->estado != 'Finalizado') {
             $title_page = $route_params['proyecto']->nombre_proyecto;
-            $back_route = route('proyecto.adquisiciones.tipo.etapa', $route_params);
             $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
             $orden_pedido = $pedido;
             $numero_orden = $pedido->numero;
             $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
-            $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'back_route' => $back_route]);
+            $breadcrumbs = [
+                ['name' => 'Inicio', 'url' => route('home')],
+                ['name' => $route_params['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_params)],
+                ['name' => 'Editar', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+            ];
+
+            $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
             return view('adquisiciones.edit',  $route_params);
         } else {
-            return back()->with('toast_error', 'No es posible editar una adquisición que ya esta finalizada.');
+            return back()->with('toast_error', 'Esta orden de pedido ya esta finalizada por lo cual no puede ser editada.');
         }
     }
 
@@ -289,17 +317,25 @@ class AdquisicionController extends Controller
      */
     public function ordenRecepcion(Request $request)
     {
-        $params = $this->getRouteParameters($request);
-        $title_page = $params['proyecto']->nombre_proyecto . ' - Orden de Recepción';
-        $back_route = route('proyecto.adquisiciones.tipo.etapa', $params);
-        $proveedores = Proveedor::pluck('razon_social', 'id');
+        $route_params = $this->getRouteParameters($request);
+
+        $title_page = $route_params['proyecto']->nombre_proyecto . ' - Orden de Recepción';
+        $back_route = route('proyecto.adquisiciones.tipo.etapa', $route_params);
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
         $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
         $pedido = Adquisicion::find($request->route('pedido'));
 
         $orden = OrdenRecepcion::where('adquisicion_id', $pedido->id)->first();
-        $params = array_merge($params, ['pedido' => $pedido, 'orden_recepcion' => $orden, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'title_page' => $title_page, 'back_route' => $back_route]);
 
-        return $orden ? view('adquisiciones.orden_recepcion.edit', $params) : view('adquisiciones.orden_recepcion.create', $params);
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $route_params['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_params)],
+            ['name' => 'Orden de Recepción', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        $route_params = array_merge($route_params, ['pedido' => $pedido, 'orden_recepcion' => $orden, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
+
+        return $orden ? view('adquisiciones.orden_recepcion.edit', $route_params) : view('adquisiciones.orden_recepcion.create', $route_params);
     }
 
     public function storeOrdenRecepcion(OrdenRecepcionStoreRequest $request)

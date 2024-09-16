@@ -24,7 +24,14 @@ class ArticuloController extends Controller
         $categorias = CatalogoDato::getChildrenCatalogo('tipo.adquisiciones');
         $articulos = Articulo::orderBy('categoria_id', 'asc')->paginate(15);
 
-        return view('articulos.index', compact('articulos', 'categorias', 'title_page', 'back_route'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Sistema', 'url' => route('sistema.index')],
+            ['name' => 'Productos', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+
+        return view('articulos.index', compact('articulos', 'categorias', 'title_page', 'breadcrumbs'));
     }
 
     /**

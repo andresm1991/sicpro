@@ -32,7 +32,11 @@ class ProyectoController extends Controller
     {
         $title_page = 'Proyectos';
         $tipo_proyectos = CatalogoDato::getChildrenCatalogo('proyectos');
-        return view('proyectos.index', compact('tipo_proyectos', 'title_page'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+        return view('proyectos.index', compact('tipo_proyectos', 'title_page', 'breadcrumbs'));
     }
 
     /**
@@ -43,10 +47,15 @@ class ProyectoController extends Controller
     public function proyectos($tipo, $tipo_id)
     {
         $title_page = str_replace('-', ' ', $tipo);
-        $back_route = route('proyecto.index');
         $proyectos = Proyecto::where('catalogo_proyecto_id', $tipo_id)->paginate(15);
 
-        return view('proyectos.list_proyectos', compact('proyectos', 'tipo', 'tipo_id', 'title_page', 'back_route'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Proyectos', 'url' => route('proyecto.index')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('proyectos.list_proyectos', compact('proyectos', 'tipo', 'tipo_id', 'title_page', 'breadcrumbs'));
     }
 
     /**
@@ -57,10 +66,13 @@ class ProyectoController extends Controller
      */
     public function opcionesProyecto($tipo, $tipo_id, Proyecto $proyecto)
     {
-        $title_page = 'Opciones';
-        $back_route = route('proyecto.list', ['tipo' => $tipo, 'tipo_id' => $tipo_id]);
-
-        return view('proyectos.opciones_proyectos', compact('title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto'));
+        $title_page = $proyecto->nombre_proyecto;
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => str_replace('-', ' ', $tipo), 'url' => route('proyecto.list', ['tipo' => $tipo, 'tipo_id' => $tipo_id])],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+        return view('proyectos.opciones_proyectos', compact('title_page', 'tipo', 'tipo_id', 'proyecto', 'breadcrumbs'));
     }
 
 
@@ -69,18 +81,28 @@ class ProyectoController extends Controller
         $title_page = 'Información General';
         $back_route = route('proyecto.view', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]);
 
-        return view('proyectos.informacion_general', compact('title_page', 'back_route', 'tipo', 'tipo_id', 'proyecto'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $proyecto->nombre_proyecto, 'url' => route('proyecto.view', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('proyectos.informacion_general', compact('title_page', 'breadcrumbs', 'tipo', 'tipo_id', 'proyecto'));
     }
 
     public function create($tipo, $tipo_id)
     {
         $proyecto = new Proyecto();
         $title_page = str_replace('-', ' ', $tipo);
-        $back_route = route('proyecto.list', ['tipo' => $tipo, 'tipo_id' => $tipo_id]);
         $tipo_proyectos = CatalogoDato::getChildrenCatalogo('tipo.proyectos')->pluck('descripcion', 'id');
 
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $title_page, 'url' => route('proyecto.list', ['tipo' => $tipo, 'tipo_id' => $tipo_id])],
+            ['name' => 'Nuevo', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
 
-        return view('proyectos.create', compact('proyecto', 'tipo_proyectos', 'tipo', 'tipo_id', 'title_page', 'back_route'));
+        return view('proyectos.create', compact('proyecto', 'tipo_proyectos', 'tipo', 'tipo_id', 'title_page', 'breadcrumbs'));
     }
 
     public function store(ProyectoStoreRequest $request, $tipo, $tipo_id)
@@ -133,7 +155,7 @@ class ProyectoController extends Controller
 
                 DB::commit();
                 LogService::log('info', 'Proyecto creado con éxito', ['user_id' => auth()->id(), 'action' => 'create']);
-                return redirect()->route('proyecto.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('success', 'La información ingresada se ha guardado con éxito.');
+                return redirect()->route('proyecto.list', ['tipo' => $tipo, 'tipo_id' => $tipo_id])->with('toast_success', 'El proyecto se a creado con éxito.');
             } else {
                 throw new Exception('Error al intentar guardar la información.');
             }
@@ -155,11 +177,17 @@ class ProyectoController extends Controller
 
     public function edit($tipo, $tipo_id, Proyecto $proyecto)
     {
-        $title_page = str_replace('-', ' ', $tipo) . ' - Editar';
+        $title_page = str_replace('-', ' ', $tipo);
         $back_route = route('proyecto.view', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]);
         $tipo_proyectos = CatalogoDato::getChildrenCatalogo('tipo.proyectos')->pluck('descripcion', 'id');
 
-        return view('proyectos.edit', compact('proyecto', 'tipo_proyectos', 'tipo', 'tipo_id', 'title_page', 'back_route'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $proyecto->nombre_proyecto, 'url' => route('proyecto.view', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id])],
+            ['name' => 'Editar', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('proyectos.edit', compact('proyecto', 'tipo_proyectos', 'tipo', 'tipo_id', 'title_page', 'breadcrumbs'));
     }
     public function update(Request $request, $tipo, $tipo_id, Proyecto $proyecto)
     {

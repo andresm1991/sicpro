@@ -5,10 +5,29 @@
                 @if (request()->routeIs('home'))
                     <div class="text-white header-text">Bienvenido al Sistema de Control de Proyectos </div>
                 @else
-                    <a href="{{ isset($back_route) ? $back_route : route('home') }}"
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb custom-breadcrumb">
+                            @foreach ($breadcrumbs as $breadcrumb)
+                                @if (!$loop->last)
+                                    <!-- Si no es el último, es un enlace -->
+                                    <li class="breadcrumb-item header-text">
+                                        <a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['name'] }}</a>
+                                    </li>
+                                @else
+                                    <!-- Si es el último, es el actual -->
+                                    <li class="breadcrumb-item header-text active" aria-current="page">
+                                        {{ $breadcrumb['name'] }}</li>
+                                @endif
+                            @endforeach
+
+                        </ol>
+                    </nav>
+
+                    {{--  <a href="{{ isset($back_route) ? $back_route : route('home') }}"
                         class="text-decoration-none text-white">
                         <i class="fa-solid fa-arrow-left-from-line fa-2x"></i> <span
                             class="text-white header-text text-capitalize">{{ isset($title_page) ? $title_page : 'Bienvenido al Sistema de Control de Proyectos' }}</span></a>
+                            --}}
                 @endif
 
             </div>

@@ -21,4 +21,13 @@
             });
         }
     </script>
+@elseif(session('toast_success'))
+    <script type="text/javascript">
+        window.onload = function() {
+            Toast.fire({
+                icon: 'success',
+                title: '{{ session('toast_success') }}'
+            });
+        }
+    </script>
 @endif

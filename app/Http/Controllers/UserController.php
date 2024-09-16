@@ -25,7 +25,14 @@ class UserController extends Controller
         $title_page = 'Sistema - Usuario';
         $back_route = route('sistema.index');
         $users = User::with('roles')->orderBy('nombre', 'asc')->paginate(15);
-        return view('user.index', compact('title_page', 'back_route', 'users'));
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Sistema', 'url' => route('sistema.index')],
+            ['name' => 'Usuarios', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('user.index', compact('title_page', 'breadcrumbs', 'users'));
     }
 
     public function perfil()
@@ -43,11 +50,16 @@ class UserController extends Controller
     public function create()
     {
         $title_page = 'Usuario - Nuevo';
-        $back_route = route('sistema.users.index');
         $user = new User();
         $roles = Role::all()->pluck('name', 'id');
 
-        return view('user.create', compact('title_page', 'back_route', 'user', 'roles'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Usuarios', 'url' => route('sistema.users.index')],
+            ['name' => 'Nuevo', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('user.create', compact('title_page', 'breadcrumbs', 'user', 'roles'));
     }
 
     /**
@@ -108,7 +120,13 @@ class UserController extends Controller
         $back_route = route('sistema.users.index');
         $roles = Role::all()->pluck('name', 'id');
 
-        return view('user.edit', compact('title_page', 'back_route', 'user', 'roles'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Usuarios', 'url' => route('sistema.users.index')],
+            ['name' => 'Editar', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('user.edit', compact('title_page', 'breadcrumbs', 'user', 'roles'));
     }
 
     /**

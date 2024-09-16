@@ -29,13 +29,18 @@ class ProveedorController extends Controller
 
         $proveedores = Proveedor::where('categoria_proveedor_id', $menu_id)->orderBy('razon_social', 'asc')->paginate(15);
 
-        $back_route = route('sistema.proveedor.menu');
-        return view('proveedores.index', compact('proveedores', 'menu_id', 'title_page', 'slug', 'back_route'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Proveedores', 'url' => route('sistema.proveedor.menu')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+        return view('proveedores.index', compact('proveedores', 'menu_id', 'title_page', 'slug', 'breadcrumbs'));
     }
 
     public function create($menu_id)
     {
         $menu_data = CatalogoDato::where('id', $menu_id)->first();
+
         $articulos = Articulo::where('activo', 1)
             ->where('categoria_id', $menu_id != 2 ? 19 : 18)
             ->pluck('descripcion', 'id');
@@ -46,9 +51,14 @@ class ProveedorController extends Controller
 
 
         $proveedor = new Proveedor();
-        $back_route = encrypted_route('sistema.proveedor.index', ['menu_id' => $menu_id]);
 
-        return view('proveedores.create', compact('proveedor', 'menu_id', 'title_page', 'slug', 'back_route', 'bancos', 'tipo_cuenta', 'articulos'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $menu_data->descripcion, 'url' => encrypted_route('sistema.proveedor.index', ['menu_id' => $menu_id])],
+            ['name' => 'Nuevo', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('proveedores.create', compact('proveedor', 'menu_id', 'title_page', 'slug', 'breadcrumbs', 'bancos', 'tipo_cuenta', 'articulos'));
     }
 
     public function store(ProveedorCreateRequest $request, $menu_id)
@@ -113,9 +123,14 @@ class ProveedorController extends Controller
             ->where('categoria_id', $menu_id != 2 ? 19 : 18)
             ->pluck('descripcion', 'id');
 
-        $back_route = encrypted_route('sistema.proveedor.index', ['menu_id' => $menu_id]);
 
-        return view('proveedores.edit', compact('proveedor', 'menu_id', 'title_page', 'slug', 'back_route', 'bancos', 'tipo_cuenta', 'articulos'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $menu_data->descripcion, 'url' => encrypted_route('sistema.proveedor.index', ['menu_id' => $menu_id])],
+            ['name' => 'Editar', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('proveedores.edit', compact('proveedor', 'menu_id', 'title_page', 'slug', 'breadcrumbs', 'bancos', 'tipo_cuenta', 'articulos'));
     }
 
     public function update(Request $request, $menu_id, Proveedor $proveedor)

@@ -10,15 +10,24 @@ class SistemaController extends Controller
     public function index()
     {
         $title_page = 'Sistema';
-        return view('sistema.index', compact('title_page'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+        return view('sistema.index', compact('title_page', 'breadcrumbs'));
     }
 
     public function proveedores()
     {
         $menus = CatalogoDato::where('padre_id', 1)->get();
-        $title_page = 'Sistema / Proveedores';
-        $back_route = route('sistema.index');
+        $title_page = 'Proveedores';
 
-        return view('proveedores.menu', compact('menus', 'title_page', 'back_route'));
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Sistema', 'url' => route('sistema.index')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('proveedores.menu', compact('menus', 'title_page', 'breadcrumbs'));
     }
 }

@@ -58,7 +58,7 @@ class GenerarPdfController extends Controller
     {
         $informacion_empresa = CatalogoDato::getChildrenCatalogo('informacion.general');
         $order_recepcion = OrdenRecepcion::where('adquisicion_id', $pedido->id)->first();
-        if (!$order_recepcion) {
+        if (!isset($order_recepcion) || !$order_recepcion->completado) {
             return back()->with(
                 'toast_error',
                 'No se ha completado la orden de recepción, complétela para poder generar el archivo.',

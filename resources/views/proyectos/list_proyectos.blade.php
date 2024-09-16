@@ -5,6 +5,7 @@
 @section('content')
     @include('partials.header_page')
     <section>
+        @include('partials.alerts')
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-sm-12 text-center">

@@ -31,7 +31,7 @@
             <div class="col-sm-9">
                 <select name="proveedor" class="form-control select2-basic-single"
                     data-placeholder="Selecione proveedor"
-                    {{ isset($orden_recepcion->editar) && !$orden_recepcion->editar ? 'disabled' : '' }}>
+                    {{ isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '' }}>
                     <option></option>
                     @foreach ($proveedores as $id => $nombre)
                         <option value="{{ $id }}"
