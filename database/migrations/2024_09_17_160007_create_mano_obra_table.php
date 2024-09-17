@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('mano_obra', function (Blueprint $table) {
+        Schema::create('mano_obra', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
             $table->foreignId('proveedor_id')->references('id')->on('proveedores'); 
@@ -32,7 +32,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('mano_obra', function (Blueprint $table) {
+        Schema::create('mano_obra', function (Blueprint $table) {
             Schema::dropIfExists('mano_obra');
         });
     }
