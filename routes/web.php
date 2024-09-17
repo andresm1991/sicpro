@@ -7,6 +7,7 @@ use App\Http\Controllers\GenerarPdfController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SistemaController;
@@ -55,6 +56,10 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{tipo_adquisicion}/{tipo_etapa}/orden-adquisicion/{pedido}/editar', [AdquisicionController::class, 'editarPedido'])->name('orden.pedido.edit');
             Route::delete('/{tipo_adquisicion}/{tipo_etapa}/eliminar-adquisicion/{pedido}', [AdquisicionController::class, 'destroyPedido']);
             Route::get('/{tipo_adquisicion}/list/{tipo_etapa}/buscar-pedido', [AdquisicionController::class, 'buscarPedido']);
+
+            // Mano de obra
+            Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}', [ManoObraController::class, 'index'])->name('mano.obra');
+            Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}', [ManoObraController::class, 'index'])->name('contratista');
         });
     });
 
