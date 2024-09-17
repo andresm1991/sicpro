@@ -1,3 +1,4 @@
 /storage/*
 storage/*
 /index.php
+.DS_Store
