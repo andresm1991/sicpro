@@ -136,7 +136,8 @@ $(function () {
         digits: 2,         // Número de dígitos decimales
         autoGroup: true,   // Agrupar los miles
         rightAlign: false, // Alinear a la izquierda
-        allowMinus: false   // Permitir números negativos
+        allowMinus: false,   // Permitir números negativos
+        placeholder: $('.input-double').data('placeholder')
     });
 
     /// Solo numeros
