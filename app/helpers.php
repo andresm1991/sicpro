@@ -51,6 +51,21 @@ if (!function_exists('dateFormat')) {
             return Carbon::createFromFormat($format_origin, $fecha)->format($format_result);
         }
     }
+
+    function dateFormatHumans($date){
+        Carbon::setLocale('es');
+        // Obtener y formatear la fecha
+        $fecha = Carbon::parse($date);
+        $fechaFormateada = $fecha->isoFormat('dddd D [de] MMMM [de] YYYY');
+        // Convertir a título solo las palabras necesarias
+        $fechaFormateada = preg_replace_callback('/\b(?:[^\s]*)\b/u', function ($matches) {
+            $palabra = $matches[0];
+            // Mantener 'de' en minúsculas
+            return in_array(strtolower($palabra), ['de']) ? $palabra : ucfirst($palabra);
+        }, $fechaFormateada);
+
+        return $fechaFormateada;
+    }
 }
 
 if (!function_exists('generateProductCode')) {
