@@ -54,9 +54,7 @@
                                         data-content ="
                                         <a href='{{ route('proyecto.adquisiciones.orden.pedido.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $mano_obra->id]) }}' class='dropdown-item'>Editar</a>
                                         <a href='#' class='dropdown-item eliminar-pedido' id='{{ $mano_obra->id }}'>Eliminar</a>
-                                        <a href='{{ route('pdf.adquisicion', $mano_obra->id) }}' class='dropdown-item'>PDF Orden Pedido</a>
-                                        <a href='{{ route('pdf.recepcion', $mano_obra->id) }}' class='dropdown-item'>PDF Orden Recepción</a>
-                                        <a href='{{ route('proyecto.adquisiciones.orden.recepcion', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $mano_obra->id]) }}' class='dropdown-item'>Orden de Recepción</a>">
+                                        <a href='{{ route('pdf.adquisicion', $mano_obra->id) }}' class='dropdown-item'>PDF</a>">
                                         <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                     </button>
                                 </td>

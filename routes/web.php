@@ -60,7 +60,8 @@ Route::group(['middleware' => ['auth']], function () {
             // Mano de obra
             Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}', [ManoObraController::class, 'index'])->name('mano.obra');
             Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/nuevo', [ManoObraController::class, 'create'])->name('mano.obra.create');
-            Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/guardar', [ManoObraController::class, 'store'])->name('mano.obra.store');
+            Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/proveedor-articulos', [ManoObraController::class, 'proveedorArticulos']); // ajax provedor_articulos
+            Route::post('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/guardar', [ManoObraController::class, 'store'])->name('mano.obra.store');
             // Contratista
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}', [ManoObraController::class, 'index'])->name('contratista');
         });

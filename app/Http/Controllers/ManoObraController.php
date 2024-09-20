@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Proyecto;
-use App\Models\CatalogoDato;
+use Throwable;
 use App\Models\ManoObra;
+use App\Models\Proyecto;
 use App\Models\Proveedor;
+use App\Models\CatalogoDato;
+use App\Services\LogService;
 use Illuminate\Http\Request;
+use App\Models\ProveedorArticulo;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ManoObraController extends Controller
 {
@@ -24,12 +29,28 @@ class ManoObraController extends Controller
             ['name' => 'Mano de obra', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
         ];
 
-        $list_mano_obra = ManoObra::where('proveedor_id', $route_params['proyecto']->id)
-        ->orderBy('id', 'desc')
-        ->paginate(15);
+        $list_mano_obra = ManoObra::where('proyecto_id', $route_params['proyecto']->id)
+            ->orderBy('id', 'desc')
+            ->paginate(15);
 
-        $route_params = array_merge($route_params, ['list_mano_obra' => $list_mano_obra,'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        $route_params = array_merge($route_params, ['list_mano_obra' => $list_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.index', $route_params);
+    }
+
+    public function proveedorArticulos(Request $request)
+    {
+        if ($request->ajax()) {
+            $proveedor_articulos = ProveedorArticulo::where('proveedor_id', $request->proveedor)->get();
+            foreach ($proveedor_articulos as $element) {
+                $proveedor[] = ['id' => $element->articulo_id, 'nombre' => $element->articulo->descripcion];
+            }
+
+            if (isset($proveedor)) {
+                return response()->json(['success' => true, 'articulos' => $proveedor]);
+            } else {
+                return response()->json(['success' => false, 'articulos' => ['id' => '', 'nombre' => 'No existen categorias asociadas a la persona selecionada.']]);
+            }
+        }
     }
 
     /**
@@ -48,8 +69,8 @@ class ManoObraController extends Controller
 
         $mano_obra = new ManoObra();
 
-        $proveedores = Proveedor::where('categoria_proveedor_id',$route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
-        
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
+
 
         $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.create', $route_params);
@@ -60,7 +81,57 @@ class ManoObraController extends Controller
      */
     public function store(Request $request)
     {
-        
+        $personal = $request->personal;
+        $categoria = $request->categoria;
+        $jornada = $request->jornada;
+        $valor = $request->valor;
+        $adicional = $request->adicional;
+        $descuento = $request->descuento;
+        $detalle_adicional = $request->detalle_adicional;
+        $detalle_descuento = $request->detalle_descuento;
+        $observaciones = $request->observaciones;
+
+        $data = [];
+
+        try {
+            DB::beginTransaction();
+            foreach ($personal as $index => $value) {
+                $data[] = [
+                    'fecha' => date('Y-m-d'),
+                    'proyecto_id' => $request->proyecto_id,
+                    'proveedor_id' => $value,
+                    'articulo_id' => $categoria[$index],
+                    'etapa_id' => $request->tipo_adquisicion,
+                    'tipo_etapa_id' => $request->tipo_etapa,
+                    'usuario_id' => Auth::user()->id,
+                    'jornada' => $jornada[$index],
+                    'valor' => $valor[$index],
+                    'adicional' => $adicional[$index],
+                    'descuento' => $descuento[$index],
+                    'detalle_adicional' => $detalle_adicional[$index],
+                    'detalle_descuento' => $detalle_descuento[$index],
+                    'observacion' => $observaciones[$index],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ];
+            }
+
+            if (ManoObra::insert($data)) {
+                DB::commit();
+                LogService::log('info', 'Se creo planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
+                return redirect()->back()->with('success', 'Se creo planificación de mano de obra');
+            }
+
+            DB::rollBack();
+            LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'no se creo planificacion']);
+            return redirect()->back()->with('error', 'Ocurrió un error inesperado.');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return $e->getMessage();
+
+            LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
     }
 
     /**
