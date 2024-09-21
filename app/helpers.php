@@ -52,7 +52,8 @@ if (!function_exists('dateFormat')) {
         }
     }
 
-    function dateFormatHumans($date){
+    function dateFormatHumans($date)
+    {
         Carbon::setLocale('es');
         // Obtener y formatear la fecha
         $fecha = Carbon::parse($date);
@@ -64,6 +65,24 @@ if (!function_exists('dateFormat')) {
             return in_array(strtolower($palabra), ['de']) ? $palabra : ucfirst($palabra);
         }, $fechaFormateada);
 
+        return $fechaFormateada;
+    }
+
+    function dateFormatHumansManoObra($date_start, $date_end)
+    {
+        Carbon::setLocale('es');
+        // Convertir las fechas de cadena a objetos Carbon
+        $fechaInicio = Carbon::createFromFormat('Y-m-d', $date_start);
+        $fechaFin = Carbon::createFromFormat('Y-m-d',  is_null($date_end) ? date('Y-m-d') : $date_end);
+
+        // Formatear las fechas al estilo solicitado
+        $formato = 'D [de] MMMM';
+        $fechaFormateada = 'Del ' . $fechaInicio->isoFormat($formato) . ' al ' . $fechaFin->isoFormat($formato . ' YYYY');
+        $fechaFormateada = preg_replace_callback('/\b(?:[^\s]*)\b/u', function ($matches) {
+            $palabra = $matches[0];
+            // Mantener 'de' en minúsculas
+            return in_array(strtolower($palabra), ['de', 'al']) ? $palabra : ucfirst($palabra);
+        }, $fechaFormateada);
         return $fechaFormateada;
     }
 }

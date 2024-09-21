@@ -10,9 +10,19 @@ class ManoObra extends Model
     use HasFactory;
     protected $table = 'mano_obra';
     protected $fillable = [
-        'fecha', 'proyecto_id', 'proveedor_id', 'articulo_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'jornada', 'valor', 'adicional', 'descuento', 'detalle_adicional', 'detalle_descuento', 'observacion'
+        'semana',
+        'fecha_inicio',
+        'fecha_fin',
+        'proyecto_id',
+        'etapa_id',
+        'tipo_etapa_id',
+        'usuario_id'
     ];
 
+    public function detalle_mano_obra()
+    {
+        return $this->hasMany(DetalleManoObra::class);
+    }
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');

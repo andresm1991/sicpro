@@ -13,20 +13,13 @@ return new class extends Migration
     {
         Schema::create('mano_obra', function (Blueprint $table) {
             $table->id();
-            $table->date('fecha');
+            $table->smallInteger('semana');
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin')->nullable();
             $table->foreignId('proyecto_id')->references('id')->on('proyectos');
-            $table->foreignId('proveedor_id')->references('id')->on('proveedores');
-            $table->foreignId('articulo_id')->references('id')->on('articulos');
             $table->foreignId('etapa_id')->references('id')->on('catalogo_datos');
             $table->foreignId('tipo_etapa_id')->references('id')->on('catalogo_datos');
             $table->foreignId('usuario_id')->references('id')->on('usuarios');
-            $table->enum('jornada', ['COMPLETA', 'MEDIO TIEMPO']);
-            $table->double('valor');
-            $table->double('adicional')->nullable()->default(0);
-            $table->double('descuento')->nullable()->default(0);
-            $table->string('detalle_adicional')->nullable();
-            $table->string('detalle_descuento')->nullable();
-            $table->string('observacion')->nullable();
             $table->timestamps();
         });
     }

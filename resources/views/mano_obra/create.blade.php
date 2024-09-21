@@ -31,6 +31,7 @@
                                 'tipo_adquisicion' => $tipo_adquisicion->id,
                                 'tipo_etapa' => $tipo_etapa->id,
                                 'proyecto' => $proyecto->id,
+                                'mano_obra' => $mano_obra->id,
                             ],
                         ],
                         'class' => 'form-horizontal',

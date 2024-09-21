@@ -60,8 +60,11 @@ Route::group(['middleware' => ['auth']], function () {
             // Mano de obra
             Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}', [ManoObraController::class, 'index'])->name('mano.obra');
             Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/nuevo', [ManoObraController::class, 'create'])->name('mano.obra.create');
+            Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/edit/{mano_obra}', [ManoObraController::class, 'create'])->name('mano.obra.edit');
+            Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/agergar-trabajadores/{mano_obra}', [ManoObraController::class, 'registroTrabajadores'])->name('mano.obra.agregar.trabajadores');
             Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/proveedor-articulos', [ManoObraController::class, 'proveedorArticulos']); // ajax provedor_articulos
-            Route::post('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/guardar', [ManoObraController::class, 'store'])->name('mano.obra.store');
+            Route::post('/{tipo_adquisicion}/{tipo_etapa}/crear-planificacion', [ManoObraController::class, 'storePlanificacion']); // ajax post crear planificacion
+            Route::post('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/guardar/{mano_obra}', [ManoObraController::class, 'store'])->name('mano.obra.store');
             // Contratista
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}', [ManoObraController::class, 'index'])->name('contratista');
         });

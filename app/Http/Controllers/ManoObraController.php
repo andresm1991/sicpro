@@ -3,18 +3,29 @@
 namespace App\Http\Controllers;
 
 use Throwable;
+use Carbon\Carbon;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
+use App\Models\DetalleManoObra;
+use Illuminate\Validation\Rule;
 use App\Models\ProveedorArticulo;
+use PhpParser\Node\Expr\FuncCall;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class ManoObraController extends Controller
 {
+    private $fecha_actual;
+
+    public function __construct()
+    {
+        $this->fecha_actual = Carbon::now()->format('Y-m-d');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -30,7 +41,7 @@ class ManoObraController extends Controller
         ];
 
         $list_mano_obra = ManoObra::where('proyecto_id', $route_params['proyecto']->id)
-            ->orderBy('id', 'desc')
+            ->orderBy('semana', 'desc')
             ->paginate(15);
 
         $route_params = array_merge($route_params, ['list_mano_obra' => $list_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
@@ -91,36 +102,47 @@ class ManoObraController extends Controller
         $detalle_descuento = $request->detalle_descuento;
         $observaciones = $request->observaciones;
 
-        $data = [];
-
         try {
             DB::beginTransaction();
-            foreach ($personal as $index => $value) {
-                $data[] = [
-                    'fecha' => date('Y-m-d'),
-                    'proyecto_id' => $request->proyecto_id,
-                    'proveedor_id' => $value,
-                    'articulo_id' => $categoria[$index],
-                    'etapa_id' => $request->tipo_adquisicion,
-                    'tipo_etapa_id' => $request->tipo_etapa,
-                    'usuario_id' => Auth::user()->id,
-                    'jornada' => $jornada[$index],
-                    'valor' => $valor[$index],
-                    'adicional' => $adicional[$index],
-                    'descuento' => $descuento[$index],
-                    'detalle_adicional' => $detalle_adicional[$index],
-                    'detalle_descuento' => $detalle_descuento[$index],
-                    'observacion' => $observaciones[$index],
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ];
-            }
 
-            if (ManoObra::insert($data)) {
-                DB::commit();
-                LogService::log('info', 'Se creo planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
-                return redirect()->back()->with('success', 'Se creo planificación de mano de obra');
+            $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)->pluck('proveedor_id')->toArray();
+            // Eliminar todos los registros del personal
+            if (empty($personal)) {
+                DetalleManoObra::where('mano_obra_id', $request->mano_obra)->delete();
+            } else {
+                // Encontrar los IDs que están en la base de datos pero no en el formulario            
+                $personalEliminar = array_diff($personalExistente, $personal);
+
+                // Eliminar los registros que no están en el formulario
+                if (!empty($personalEliminar)) {
+                    DetalleManoObra::whereIn('proveedor_id', $personalEliminar)->delete();
+                }
+
+                foreach ($personal as $index => $value) {
+                    DetalleManoObra::updateOrCreate(
+                        [
+                            'mano_obra_id' => $request->mano_obra,
+                            'proveedor_id' => $value,
+                        ],
+                        [
+                            'fecha' => $this->fecha_actual,
+                            'mano_obra_id' => $request->mano_obra,
+                            'proveedor_id' => $value,
+                            'articulo_id' => $categoria[$index],
+                            'jornada' => $jornada[$index],
+                            'valor' => $valor[$index],
+                            'adicional' => $adicional[$index],
+                            'descuento' => $descuento[$index],
+                            'detalle_adicional' => $detalle_adicional[$index],
+                            'detalle_descuento' => $detalle_descuento[$index],
+                            'observacion' => $observaciones[$index],
+                        ]
+                    );
+                }
             }
+            DB::commit();
+            LogService::log('info', 'Se creo planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
+            return redirect()->back()->with('success', 'Se creo planificación de mano de obra');
 
             DB::rollBack();
             LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'no se creo planificacion']);
@@ -132,6 +154,133 @@ class ManoObraController extends Controller
             LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
+    }
+
+    public function storePlanificacion(Request $request)
+    {
+        if ($request->ajax()) {
+            $semana = ManoObra::where('proyecto_id', $request->proyecto_id)->count();
+            $request->merge([
+                'fecha_inicio' => Carbon::createFromFormat('d-m-Y', $request->fecha_inicio)->format('Y-m-d'),
+                'fecha_fin' => Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d'),
+            ]);
+
+            $fechaInicio = $request->fecha_inicio;
+            $fechaFin = $request->fecha_fin;
+
+            // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
+            $fechasExistentes = ManoObra::where(function ($query) use ($fechaInicio, $fechaFin) {
+                $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                    ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
+                    ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
+                        $query->where('fecha_inicio', '<=', $fechaInicio)
+                            ->where('fecha_fin', '>=', $fechaFin);
+                    });
+            })->exists();
+
+            if ($fechasExistentes) {
+                throw ValidationException::withMessages([
+                    'fecha_inicio' => 'La fecha inicio esta dentro del rago ya registrado.',
+                    'fecha_fin' => 'La fecha fin esta dentro del rago ya registrado.',
+                ]);
+            }
+
+            $request->validate([
+                'fecha_inicio' => [
+                    'required',
+                    'date',
+                    Rule::unique('mano_obra', 'fecha_inicio'),
+                ],
+                'fecha_fin' => [
+                    'required',
+                    'date',
+                    'after:fecha_inicio',
+                    Rule::unique('mano_obra', 'fecha_fin'),
+                ],
+            ], [
+                'fecha_fin.after' => 'La fecha de fin de ser mayor a la fecha de inicio.',
+                'fecha_inicio.unique' => 'La fecha inicio ya se encuentra registrada.',
+                'fecha_fin.unique' => 'La fecha fin ya se encuentra registrada.'
+            ]);
+
+            try {
+                DB::beginTransaction();
+                $mano_obra = [
+                    'semana' => $semana + 1,
+                    'fecha_inicio' => $fechaInicio,
+                    'fecha_fin' => $fechaFin,
+                    'proyecto_id' => $request->proyecto_id,
+                    'etapa_id' => $request->tipo_adquisicion,
+                    'tipo_etapa_id' => $request->tipo_etapa,
+                    'usuario_id' => Auth::user()->id,
+                ];
+
+                if (ManoObra::create($mano_obra)) {
+                    DB::commit();
+                    $list_mano_obra = ManoObra::where('proyecto_id', $request->proyecto_id)
+                        ->orderBy('semana', 'desc')
+                        ->paginate(15);
+
+                    $route_params = $this->getRouteParameters($request);
+                    $response = $this->htmlTable($list_mano_obra, $route_params);
+
+                    LogService::log('info', 'Se creo planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
+                    return response()->json(['success' => true, 'mensaje' => 'Planificación creada correctamente.', 'planificacion' => $response]);
+                }
+
+                DB::rollBack();
+                LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'no se creo planificacion']);
+                return response()->json(['success' => false, 'mensaje' => 'Ocurrió un error por favor vuelva a intentarlo.']);
+            } catch (Throwable $e) {
+                DB::rollBack();
+                return $e->getMessage();
+
+                LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
+                return response()->json(['success' => false, 'mensaje' => 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.']);
+            }
+        }
+    }
+
+    public function registroTrabajadores(Request $request)
+    {
+        /*// Obtener la fecha actual
+        $fecha_actual = Carbon::today();
+        $fechaDB = Carbon::parse($mano_obra->fecha_inicio); // Parsear la fecha si es un string
+        if ($fechaDB->eq($fecha_actual)) {
+            //return back()->with(['sweetalert' => true, 'title' => 'Error', 'message' => 'Ya existe una plaficicacion para este dia.', 'icon' => 'error']);
+        }
+        */
+
+        $mano_obra = ManoObra::find($request->mano_obra);
+
+        // Obtener la fecha actual
+        $fecha_actual = Carbon::now()->format('Y-m-d');
+
+        // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
+        $permiso = ManoObra::where('id', $request->mano_obra)
+            ->where(function ($query) use ($fecha_actual) {
+                $query->where('fecha_inicio', '<=', $fecha_actual)
+                    ->where('fecha_fin', '>=', $fecha_actual);
+            })->first();
+
+        if (!$permiso) {
+            return back()->with(['sweetalert' => true, 'title' => 'Error', 'message' => 'No puede agregar personal a esta planificación porque está fuera del rango de fechas planificadas.', 'icon' => 'error']);
+        }
+
+        $title_page = 'Mano de obra - Nuevo';
+        $route_params = $this->getRouteParameters($request);
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Mano de Obra', 'url' => route('proyecto.adquisiciones.mano.obra', ['tipo' => $request->route('tipo'), 'tipo_id' => $request->route('tipo_id'), 'proyecto' => $request->route('proyecto'), 'tipo_adquisicion' => $request->route('tipo_adquisicion'), 'tipo_etapa' => $request->route('tipo_etapa')])],
+            ['name' => 'Planificación', 'url' => '']
+        ];
+
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
+
+
+        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        return view('mano_obra.create', $route_params);
     }
 
     /**
@@ -168,14 +317,43 @@ class ManoObraController extends Controller
 
     private function getRouteParameters($request)
     {
+
+        $tipo_etapa = is_numeric($request->route('tipo_etapa')) ? $request->route('tipo_etapa') : $request->tipo_etapa;
+
         $parametros = [
             'tipo' => $request->route('tipo'),
             'tipo_id' => $request->route('tipo_id'),
             'proyecto' => Proyecto::find($request->route('proyecto')),
             'tipo_adquisicion' => CatalogoDato::find($request->route('tipo_adquisicion')),
-            'tipo_etapa' => CatalogoDato::find($request->route('tipo_etapa')),
+            'tipo_etapa' => CatalogoDato::find($tipo_etapa),
         ];
 
         return $parametros;
+    }
+
+    private function htmlTable($data, $route_params, $out = null)
+    {
+        foreach ($data as $mano_obra) {
+            $route_params  = array_merge($route_params, ['mano_obra' => $mano_obra->id]);
+            $nuevo = "<a href='" . route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', $route_params) . "' class='dropdown-item'>Agregar Personal</a>";
+            $editar = "<a href='" . route('proyecto.adquisiciones.mano.obra.edit', $route_params) . "' class='dropdown-item'>Editar</a>";
+            $eliminar = "<a href='#' class='dropdown-item eliminar-pedido' id='" . $mano_obra->id . "'>Eliminar</a>";
+            $pdf = "<a href='" . route('pdf.adquisicion', $mano_obra->id) . "' class='dropdown-item'>PDF</a>";
+
+            $out .= '<tr id="' . $mano_obra->id . '">' .
+                '<td class="align-middle">' . $mano_obra->semana . '</td>' .
+                '<td class="align-middle">' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
+                '<td class="align-middle">' . $mano_obra->proyecto->nombre_proyecto . '</td>' .
+                '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
+                '<td class="align-middle">' . $mano_obra->tipo_etapa->descripcion . '</td>' .
+                '<td class="align-middle align-middle text-right text-truncate">' .
+                '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $nuevo . $editar . $eliminar . $pdf . '">
+                                        <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                    </button>' .
+                '</td>' .
+                '</tr>';
+        }
+
+        return $out;
     }
 }

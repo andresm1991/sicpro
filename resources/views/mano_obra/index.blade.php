@@ -4,6 +4,7 @@
 
 @section('content')
     @include('partials.header_page')
+    @include('partials.alerts')
     <div class="card">
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
@@ -14,8 +15,8 @@
             <div class="row">
                 <div class="col-md-4 col-12">
                     <div class="form-group">
-                        <a href="{{ route('proyecto.adquisiciones.mano.obra.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'tipo_etapa' => $tipo_etapa->id]) }}"
-                            class="btn btn-dark btn-sm">
+                        <a class="btn btn-dark btn-sm" data-toggle="modal" data-backdrop="static" data-keyboard="false"
+                            data-target="#modalPlanificacionManoObra">
                             <i class="fa-regular fa-plus"></i> Nueva Planificación
                         </a>
                     </div>
@@ -32,7 +33,7 @@
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
-                            <th scope="col">#</th>
+                            <th style="width: 1px">Semana</th>
                             <th scope="col">Fecha</th>
                             <th scope="col">Proyecto</th>
                             <th scope="col">Etapa</th>
@@ -43,8 +44,9 @@
                     <tbody>
                         @forelse ($list_mano_obra as $mano_obra)
                             <tr id="{{ $mano_obra->id }}">
-                                <td class="align-middle">{{ $mano_obra->id }}</td>
-                                <td class="align-middle">{{ date('d-m-Y', strtotime($mano_obra->fecha)) }}</td>
+                                <td class="align-middle">{{ $mano_obra->semana }}</td>
+                                <td class="align-middle">
+                                    {{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}</td>
                                 <td class="align-middle">{{ $mano_obra->proyecto->nombre_proyecto }}</td>
                                 <td class="align-middle">{{ $mano_obra->etapa->descripcion }}</td>
                                 <td class="align-middle">{{ $mano_obra->tipo_etapa->descripcion }}</td>
@@ -52,9 +54,10 @@
                                     <button type="button" class="btn btn-outline-dark" data-container="body"
                                         data-toggle="popover" data-placement="left" data-trigger="focus"
                                         data-content ="
+                                        <a href='{{ route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'mano_obra' => $mano_obra->id]) }}' class='dropdown-item'>Agregar Personal</a>
                                         <a href='{{ route('proyecto.adquisiciones.orden.pedido.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $mano_obra->id]) }}' class='dropdown-item'>Editar</a>
                                         <a href='#' class='dropdown-item eliminar-pedido' id='{{ $mano_obra->id }}'>Eliminar</a>
-                                        <a href='{{ route('pdf.adquisicion', $mano_obra->id) }}' class='dropdown-item'>PDF</a>">
+                                        <a href='{{ route('pdf.adquisicion', $mano_obra->id) }}' class='dropdown-item'>PDF Planificación</a>">
                                         <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                     </button>
                                 </td>
@@ -74,4 +77,15 @@
             @include('partials.pagination', ['paginator' => $list_mano_obra, 'interval' => 5])
         </div>
     </div>
+    @include('modals.planificacion_mano_obra', [
+        'tipo' => $tipo,
+        'tipo_id' => $tipo_id,
+        'proyecto' => $proyecto,
+        'tipo_adquisicion' => $tipo_adquisicion,
+        'tipo_etapa' => $tipo_etapa,
+    ])
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/mano_obra_scripts.js') }}" type="module"></script>
 @endsection

@@ -30,4 +30,23 @@
             });
         }
     </script>
+@elseif (session('sweetalert'))
+    <script type="text/javascript">
+        window.onload = function() {
+            const swalWithBootstrapButtons = Swal.mixin({
+                customClass: {
+                    confirmButton: "btn btn-dark",
+                    cancelButton: "btn btn-danger"
+                },
+                buttonsStyling: false
+            });
+            swalWithBootstrapButtons.fire({
+                title: '{{ session('title') }}',
+                text: '{{ session('message') }}',
+                icon: '{{ session('icon') }}',
+                confirmButtonText: "Aceptar",
+                //width: '600px'
+            });
+        }
+    </script>
 @endif
