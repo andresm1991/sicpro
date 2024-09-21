@@ -1,16 +1,112 @@
+import { getFormData } from './helpers.js';
+
 $(function () {
     $(":input").inputmask();
     var csrf = $('meta[name="csrf-token"]').attr('content');
+
+    $('#guardar-planificacion').on('click', function () {
+        var fecha_inicio = $('input[name=fecha_inicio]').val();
+        var fecha_fin = $('input[name=fecha_fin]').val();
+        var fecha_inicio_obj = new Date(fecha_inicio);
+        var fecha_fin_obj = new Date(fecha_fin);
+        var form = $("#form_planificacion_mano_obra");
+        var data = getFormData(form);
+        var valid = true;
+
+        // Eliminar cualquier borde de error previo
+        $('input[name=fecha_inicio], input[name=fecha_fin]').removeClass('error-border');
+        $('.error-message').remove();  // Elimina los mensajes de error anteriores
+        $('#message').html('');
+
+        if (!fecha_inicio) {
+            valid = false;
+            $('input:text[name=fecha_inicio]').addClass('error-border');
+            $('input:text[name=fecha_inicio]').parent().append('<span class="error-message">Ingrese fecha.</span>');
+        }
+
+        if (!fecha_fin) {
+            valid = false;
+            $('input:text[name=fecha_fin]').addClass('error-border');
+            $('input:text[name=fecha_fin]').parent().append('<span class="error-message">Ingrese fecha.</span>');
+        }
+
+        if (valid) {
+            $.ajax({
+                url: 'crear-planificacion',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                type: 'POST',
+                data: data,
+                beforeSend: function () {
+                    $('#modal-overlay').show();
+                },
+                success: function (response) {
+                    var alert = response.success ? 'success' : 'error';
+                    var icon = response.success ? '<i class="fa-regular fa-circle-check"></i> ' : '<i class="fa-regular fa-circle-exclamation"></i> ';
+
+                    if (response.success) {
+                        $('tbody').html(response.planificacion);
+                    }
+                    $('#message').html('<div class="alert alert-' + alert + ' alert-dismissible">' +
+                        '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>' +
+                        '<h6>' + icon + response.mensaje + '</h6>' +
+                        '</div>');
+
+                    $('#modal-overlay').hide();
+                    $('[data-toggle="tooltip"]').tooltip();
+                    $('[data-toggle="popover"]').popover({ html: true });
+                }
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                $('#modal-overlay').hide();
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.addClass('error-border');
+                            el.after($('<span class="error-message">' + error[0] + '</span> '));
+                        });
+                        break;
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        var errors = JSON.parse(jqXHR.responseText);
+                        $('#message').html('<div class="alert alert-danger alert-dismissible">' +
+                            '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>' +
+                            '<h5><i class="icon fas fa-ban"></i> ' + errors + '</h5>' +
+                            '</div>');
+                }
+            });
+        }
+
+    });
+
+    $('#modalPlanificacionManoObra').on('hidden.bs.modal', function (e) {
+        $('input[name=fecha_inicio], input[name=fecha_fin]').removeClass('error-border');
+        $('.error-message').remove();  // Elimina los mensajes de error anteriores
+        $('#message').html('');
+        $("#form_planificacion_mano_obra")[0].reset();
+        //$('#titleArticuloFormModal').text('Nuevo Producto');
+        //articulo_id = 0;
+    });
 
     /**
      * Cargar la categoria cuando se seleciona al proveedor
      */
     $('.select2-basic-single').on('change', function (e) {
+        // Remueve la clase 'error-border' del contenedor generado por select2
+        $(this).closest('.form-group').find('.select2-selection').removeClass('error-border');
+
+        // Elimina solo el mensaje de error asociado con este select2
+        $(this).closest('.form-group').find('.error-message').remove();
+
+        if ($(this).attr('id') != 'personal') {
+            return;
+        }
         // Obtén el valor seleccionado
         var selected_value = $(this).val();
-
         $.ajax({
-            url: 'proveedor-articulos',
+            url: '../proveedor-articulos',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'proveedor': selected_value },
@@ -32,6 +128,12 @@ $(function () {
                     $select.select2({
                         width: '100%'
                     });
+
+                    // Remueve la clase 'error-border' del contenedor generado por select2
+                    $($select).closest('.form-group').find('.select2-selection').removeClass('error-border');
+
+                    // Elimina solo el mensaje de error asociado con este select2
+                    $($select).closest('.form-group').find('.error-message').remove();
                 }
 
             }
@@ -43,6 +145,11 @@ $(function () {
 
     // Evento al hacer clic en el botón para clonar
     $('#add-personal').on('click', function () {
+        // Eliminar cualquier borde de error previo
+        $('#personal, #categoria, #jornada, input[name=valor], input[name=adicional], input[name=descuento], input[name=detalle_adicional], input[name=detalle_descuento]').removeClass('error-border');
+        $('.select2-selection').removeClass('error-border');  // Remover borde rojo en select2
+        $('.error-message').remove();  // Elimina los mensajes de error anteriores
+
         var personal = $('#personal option:selected').val();
         var categoria = $('#categoria option:selected').val();
         var jornada = $('#jornada option:selected').val();
@@ -52,7 +159,48 @@ $(function () {
         var detalle_adicional = $('input:text[name=detalle_adicional]').val();
         var detalle_descuento = $('input:text[name=detalle_descuento]').val();
 
+        var valid = true;
 
+        if (!personal) {
+            valid = false;
+            $('#personal').next('.select2-container').find('.select2-selection').addClass('error-border'); // Agregar borde rojo a select2
+            $('#personal').parent().append('<span class="error-message">Por favor seleccione el personal.</span>');  // Añadir mensaje de error
+        }
+
+        if (!categoria) {
+            valid = false;
+            $('#categoria').next('.select2-container').find('.select2-selection').addClass('error-border'); // Agregar borde rojo a select2
+            $('#categoria').parent().append('<span class="error-message">Por favor seleccione la categoría.</span>');  // Añadir mensaje de error
+        }
+
+        if (!jornada) {
+            valid = false;
+            $('#jornada').next('.select2-container').find('.select2-selection').addClass('error-border'); // Agregar borde rojo a select2
+            $('#jornada').parent().append('<span class="error-message">Por favor seleccione la jornada.</span>');  // Añadir mensaje de error
+        }
+
+        if (!valor) {
+            valid = false;
+            $('input:text[name=valor]').addClass('error-border');
+            $('input:text[name=valor]').parent().append('<span class="error-message">Ingrese valor.</span>');  // Añadir mensaje de error
+        }
+
+        if (adicional && !detalle_adicional) {
+            valid = false;
+            $('input:text[name=detalle_adicional]').addClass('error-border');
+            $('input:text[name=detalle_adicional]').parent().append('<span class="error-message">Por favor ingrese un detalle adicional.</span>');  // Añadir mensaje de error
+        }
+
+        if (descuento && !detalle_descuento) {
+            valid = false;
+            $('input:text[name=detalle_descuento]').addClass('error-border');
+            $('input:text[name=detalle_descuento]').parent().append('<span class="error-message">Por favor ingrese un detalle de descuento.</span>');  // Añadir mensaje de error
+        }
+
+
+        if (!valid) {
+            return;
+        }
         var opcionesPersonal = "", opcionesCategoria, opcionesJornada;
         $('#personal option').each(function () {
             // Clona el option actual
@@ -147,7 +295,7 @@ $(function () {
      */
     $(document).on('click', '.btn-remove', function () {
         $(this).closest('tr').remove();
-        numeroFila = $('.elementos-agregados').length;
+        var numeroFila = $('.elementos-agregados').length;
         // Mostrar el mensaje de que no hay elementos si no hay filas
         if (numeroFila == 0) {
             $('#tr-default').show();

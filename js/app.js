@@ -97,6 +97,16 @@ $(function () {
 
     });
 
+    $('.datepicker-no-back').datepicker({
+        language: "es",
+        format: 'dd-mm-yyyy',
+        autoclose: true,
+        todayBtn: "linked",
+        startDate: new Date(),
+        todayHighlight: true,
+
+    });
+
     $('.select2-basic-single').select2({
         placeholder: function () {
             $(this).data('placeholder');
