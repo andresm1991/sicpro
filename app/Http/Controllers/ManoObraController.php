@@ -48,6 +48,9 @@ class ManoObraController extends Controller
         return view('mano_obra.index', $route_params);
     }
 
+    /**
+     * Ajax para obtener los articulos cuando se selecciona el proveedor
+     */
     public function proveedorArticulos(Request $request)
     {
         if ($request->ajax()) {
@@ -60,6 +63,29 @@ class ManoObraController extends Controller
                 return response()->json(['success' => true, 'articulos' => $proveedor]);
             } else {
                 return response()->json(['success' => false, 'articulos' => ['id' => '', 'nombre' => 'No existen categorias asociadas a la persona selecionada.']]);
+            }
+        }
+    }
+
+    /**
+     * Ajax para obtener las fechas para editar
+     */
+    public function fechasDetalleManoObra(Request $request)
+    {
+        if ($request->ajax()) {
+            $list_fechas = DetalleManoObra::select('fecha')
+                ->where('mano_obra_id', $request->mano_obra)
+                ->groupBy('fecha')
+                ->get();
+
+            foreach ($list_fechas as $mano_obra) {
+                $fechas[] = ['id' => $mano_obra->fecha, 'nombre' => $mano_obra->fecha];
+            }
+
+            if (isset($fechas)) {
+                return response()->json(['success' => true, 'fechas' => $fechas]);
+            } else {
+                return response()->json(['success' => false, 'fechas' => ['id' => '', 'nombre' => 'No existen personal asociadas a la fecha selecionada.']]);
             }
         }
     }
@@ -108,7 +134,8 @@ class ManoObraController extends Controller
             $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)->pluck('proveedor_id')->toArray();
             // Eliminar todos los registros del personal
             if (empty($personal)) {
-                DetalleManoObra::where('mano_obra_id', $request->mano_obra)->delete();
+                DetalleManoObra::where('mano_obra_id', $request->mano_obra)
+                    ->where('fecha', $this->fecha_actual)->delete();
             } else {
                 // Encontrar los IDs que están en la base de datos pero no en el formulario            
                 $personalEliminar = array_diff($personalExistente, $personal);
@@ -123,6 +150,7 @@ class ManoObraController extends Controller
                         [
                             'mano_obra_id' => $request->mano_obra,
                             'proveedor_id' => $value,
+                            'fecha' => $this->fecha_actual,
                         ],
                         [
                             'fecha' => $this->fecha_actual,
@@ -250,11 +278,16 @@ class ManoObraController extends Controller
             //return back()->with(['sweetalert' => true, 'title' => 'Error', 'message' => 'Ya existe una plaficicacion para este dia.', 'icon' => 'error']);
         }
         */
-
-        $mano_obra = ManoObra::find($request->mano_obra);
-
         // Obtener la fecha actual
         $fecha_actual = Carbon::now()->format('Y-m-d');
+        $mano_obra = ManoObra::find($request->mano_obra);
+
+        /*
+          $mano_obra = ManoObra::whereHas('detalle_mano_obra', function ($query) use ($fecha_actual) {
+            $query->where('fecha', $fecha_actual);
+        })->where('id', $request->mano_obra)->get();
+         */
+
 
         // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
         $permiso = ManoObra::where('id', $request->mano_obra)
@@ -279,7 +312,32 @@ class ManoObraController extends Controller
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
 
 
-        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha' => $fecha_actual, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        return view('mano_obra.create', $route_params);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function editarPlanificacionTrabajadores(Request $request)
+    {
+        // Obtener la fecha actual
+        $fecha = $request->fecha;
+        $mano_obra = ManoObra::find($request->mano_obra);
+
+        $title_page = 'Mano de obra - Editar';
+        $route_params = $this->getRouteParameters($request);
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Mano de Obra', 'url' => route('proyecto.adquisiciones.mano.obra', ['tipo' => $request->route('tipo'), 'tipo_id' => $request->route('tipo_id'), 'proyecto' => $request->route('proyecto'), 'tipo_adquisicion' => $request->route('tipo_adquisicion'), 'tipo_etapa' => $request->route('tipo_etapa')])],
+            ['name' => 'Planificación', 'url' => '']
+        ];
+
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
+
+
+        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha' =>  $fecha, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.create', $route_params);
     }
 

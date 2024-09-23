@@ -11,7 +11,7 @@
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-md-10">
-                                <h5>Fecha: {{ dateFormatHumans(date('Y-m-d')) }}</h5>
+                                <h5>Fecha: {{ dateFormatHumans($fecha) }}</h5>
                             </div>
 
                             <div class="col-md-2 ">

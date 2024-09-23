@@ -20,7 +20,7 @@
 <div class="row">
     <div class="col-12">
         <div class="form-group">
-            <legend class="custom-legend"><span>Agregar Personal</span></legend>
+            <legend class="custom-legend"><span>Datos Personal</span></legend>
             <fieldset class="custom-fieldset">
                 <div class="row">
                     <div class="col-sm-4 col-12">
@@ -124,7 +124,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($mano_obra->detalle_mano_obra as $detalle_mano_obra)
+            @foreach ($mano_obra->detalle_mano_obra->where('fecha', $fecha) as $detalle_mano_obra)
                 <tr class="elementos-agregados">
                     <td>
                         <select name="personal[]" class="form-control select2-basic-single"
@@ -163,8 +163,9 @@
                         </select>
                     </td>
                     <td>
-                        <input name="valor[]" value="{{ $detalle_mano_obra->valor }}" type="text"
-                            class="form-control input-double" placeholder="$ 0.00" data-inputmask="'alias': 'currency'">
+                        <input name="valor[]" type="text" class="form-control input-double"
+                            value="{{ $detalle_mano_obra->valor }}" placeholder="$ 0.00"
+                            data-inputmask="'alias': 'currency'">
                     </td>
                     <td>
                         <input name="adicional[]" type="text" class="form-control input-double" placeholder="$ 0.00"
@@ -199,5 +200,9 @@
 </div>
 
 @section('scripts')
+    <script>
+        var url =
+            "{{ route('proyecto.adquisiciones.mano.obra', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
+    </script>
     <script src="{{ asset('js/mano_obra_scripts.js') }}" type="module"></script>
 @endsection

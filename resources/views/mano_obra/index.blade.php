@@ -54,8 +54,8 @@
                                     <button type="button" class="btn btn-outline-dark" data-container="body"
                                         data-toggle="popover" data-placement="left" data-trigger="focus"
                                         data-content ="
-                                        <a href='{{ route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'mano_obra' => $mano_obra->id]) }}' class='dropdown-item'>Agregar Personal</a>
-                                        <a href='{{ route('proyecto.adquisiciones.orden.pedido.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $mano_obra->id]) }}' class='dropdown-item'>Editar</a>
+                                        <a href='{{ route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'mano_obra' => $mano_obra->id]) }}' class='dropdown-item' >Agregar Personal</a>
+                                        <a href='javascript:void(0);' class='dropdown-item editar-empleados-mano-obra' id='{{ $mano_obra->id }}'>Editar</a>
                                         <a href='#' class='dropdown-item eliminar-pedido' id='{{ $mano_obra->id }}'>Eliminar</a>
                                         <a href='{{ route('pdf.adquisicion', $mano_obra->id) }}' class='dropdown-item'>PDF Planificación</a>">
                                         <i class="fas fa-caret-left font-weight-normal"></i> Opciones
@@ -87,5 +87,9 @@
 @endsection
 
 @section('scripts')
+    <script>
+        var url =
+            "{{ route('proyecto.adquisiciones.mano.obra', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
+    </script>
     <script src="{{ asset('js/mano_obra_scripts.js') }}" type="module"></script>
 @endsection
