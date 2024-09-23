@@ -368,9 +368,16 @@ class ManoObraController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request)
     {
-        //
+        $id = $request->mano_obra;
+        $is_delete = ManoObra::find($id)->delete();
+        if ($is_delete) {
+            LogService::log('info', 'Planificacion mano obra eliminado', ['user' => auth()->id(), 'action' => 'destroy ' . $id]);
+            return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+        }
     }
 
     private function getRouteParameters($request)
@@ -394,8 +401,8 @@ class ManoObraController extends Controller
         foreach ($data as $mano_obra) {
             $route_params  = array_merge($route_params, ['mano_obra' => $mano_obra->id]);
             $nuevo = "<a href='" . route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', $route_params) . "' class='dropdown-item'>Agregar Personal</a>";
-            $editar = "<a href='" . route('proyecto.adquisiciones.mano.obra.edit', $route_params) . "' class='dropdown-item'>Editar</a>";
-            $eliminar = "<a href='#' class='dropdown-item eliminar-pedido' id='" . $mano_obra->id . "'>Eliminar</a>";
+            $editar = "<a href='javascriopt:void(0);' class='dropdown-item editar-empleados-mano-obra' id='" . $mano_obra->id . "'>Editar</a>";
+            $eliminar = "<a href='#' class='dropdown-item eliminar-planificacion' id='" . $mano_obra->id . "'>Eliminar</a>";
             $pdf = "<a href='" . route('pdf.adquisicion', $mano_obra->id) . "' class='dropdown-item'>PDF</a>";
 
             $out .= '<tr id="' . $mano_obra->id . '">' .

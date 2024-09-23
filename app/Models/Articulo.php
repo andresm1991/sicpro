@@ -26,4 +26,9 @@ class Articulo extends Model
     {
         return $this->hasMany(ProveedorArticulo::class);
     }
+
+    public function detalle_mano_obra()
+    {
+        return $this->hasMany(DetalleManoObra::class);
+    }
 }

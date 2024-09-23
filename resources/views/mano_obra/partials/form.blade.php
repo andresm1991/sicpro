@@ -184,7 +184,7 @@
                             value="{{ $detalle_mano_obra->detalle_descuento }}">
                     </td>
                     <td>
-                        <input name="observaciones[]" type="text" class="form-control input-double"
+                        <input name="observaciones[]" type="text" class="form-control"
                             value="{{ $detalle_mano_obra->observaciones }}">
                     </td>
                     <td>

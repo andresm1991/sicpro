@@ -37,4 +37,8 @@ class DetalleManoObra extends Model
     {
         return $this->belongsTo(ProveedorArticulo::class, 'articulo_id');
     }
+
+    public function articulo (){
+        return $this->belongsTo(Articulo::class, 'articulo_id');
+    }
 }
