@@ -106,7 +106,7 @@ $(function () {
         // Obtén el valor seleccionado
         var selected_value = $(this).val();
         $.ajax({
-            url: '../proveedor-articulos',
+            url: url + '/proveedor-articulos',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'proveedor': selected_value },
@@ -300,5 +300,92 @@ $(function () {
         if (numeroFila == 0) {
             $('#tr-default').show();
         }
+    });
+
+    /**
+     * Editar mano de obra
+     */
+
+    $(document).on('click', '.editar-empleados-mano-obra', function () {
+        var id = $(this).attr('id');
+
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-dark mx-2",
+                cancelButton: "btn btn-danger"
+            },
+            buttonsStyling: false
+        });
+        swalWithBootstrapButtons.fire({
+            title: "Seleccione una fecha",
+            html: `
+                <select id="select2-dropdown" class="form-control">
+                    <option value="" disabled selected>Cargando...</option>
+                </select>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Aceptar",
+            cancelButtonText: "Cancelar",
+            showLoaderOnConfirm: true,
+            preConfirm: () => {
+                // Obtener el valor seleccionado de Select2
+                let selectedValue = $('#select2-dropdown').val();
+
+                // Validar si el valor es nulo o vacío
+                if (!selectedValue) {
+                    Swal.showValidationMessage('Debe seleccionar una fecha antes de continuar');
+                    return false; // Evita que se cierre el modal
+                }
+
+                // Si se seleccionó una opción, devuelve el valor
+                return selectedValue;
+            },
+            didOpen: () => {
+                // Inicializar Select2 en el dropdown dentro del SweetAlert2
+                $('#select2-dropdown').select2({
+                    dropdownParent: $('.swal2-container') // Asegura que el dropdown se muestre correctamente
+                });
+                $.ajax({
+                    url: url + '/fechas-planificacion',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'GET',
+                    data: { 'mano_obra': id },
+                    success: function (data) {
+                        // Limpiar el select
+                        $('#select2-dropdown').empty();
+                        if (data.success) {
+                            // Agregar un placeholder
+                            $('#select2-dropdown').append('<option value="" disabled selected>Seleccione una fecha</option>');
+                            // Rellenar el select con las opciones obtenidas
+                            $.each(data.fechas, function (key, value) {
+                                $('#select2-dropdown').append('<option value="' + value.id + '">' + value.nombre + '</option>');
+                            });
+                        } else {
+                            $('#select2-dropdown').append('<option value="" disabled selected>Seleccione una fecha</option>');
+                            $('#select2-dropdown').attr('disabled', true)
+                            Swal.showValidationMessage('No existen fechas programadas');
+                        }
+                    },
+                    error: function () {
+                        $('#select2-dropdown').empty();
+                        $('#select2-dropdown').append('<option value="">Error al cargar fechas</option>');
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    var errors = JSON.parse(jqXHR.responseText);
+                    console.log(errors)
+                });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Obtener el valor seleccionado de Select2
+                let selectedValue = $('#select2-dropdown').val();
+                if (selectedValue != null) {
+                    window.location.href = url + '/editar-planificacion-trabajadores/' + id + '/' + selectedValue;
+                } else {
+                    $('#select2-dropdown').find('<pand>seleciones una fecha</spand>')
+                }
+
+            }
+        });
     });
 });

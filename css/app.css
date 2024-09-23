@@ -26,6 +26,25 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+/* Estilo para el mensaje de validación de SweetAlert2 */
+.swal2-validation-message {
+    background: none !important;
+    /* Quitar el color de fondo */
+    color: red;
+    /* Cambiar el color del texto, opcional */
+    font-size: 14px;
+    /* Ajustar el tamaño de la fuente, opcional */
+    padding: 0px 0px 0px 25px;
+    /* Quitar padding */
+    margin-top: 10px;
+    /* Espaciado superior */
+    text-align: left !important;
+    /* Alinear el texto a la izquierda */
+    display: none;
+    /* Asegúrate de que el mensaje esté oculto inicialmente */
+    justify-content: left !important;
+}
+
 #modal-overlay {
     position: absolute;
     top: 0;
