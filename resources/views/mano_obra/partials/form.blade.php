@@ -124,7 +124,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($mano_obra->detalle_mano_obra->where('fecha', $fecha) as $detalle_mano_obra)
+            @foreach ($mano_obra->detalle_mano_obra->where('fecha', $fecha_anterior) as $detalle_mano_obra)
                 <tr class="elementos-agregados">
                     <td>
                         <select name="personal[]" class="form-control select2-basic-single"

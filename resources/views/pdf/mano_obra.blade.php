@@ -13,6 +13,13 @@
             color: #333;
         }
 
+        .page-title {
+            text-align: center;
+            font-size: 24px; /* Tamaño del título */
+            font-weight: bold; /* Grosor del título */
+            margin: 20px 0; /* Margen superior e inferior */
+        }
+
         .header {
             margin-bottom: 20px;
             display: flex;
@@ -24,16 +31,6 @@
         .header img {
             max-width: 150px;
             height: auto;
-        }
-
-        .header .order-number {
-            flex-grow: 1;
-            text-align: center;
-            font-size: 20px;
-            font-weight: bold;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
         }
 
         .content {
@@ -69,7 +66,7 @@
         .clear {
             clear: both;
         }
-
+        /* CSS Table */
         .items table {
             width: 100%;
             border-collapse: collapse;
@@ -78,15 +75,15 @@
 
         .items th,
         .items td {
-            padding: 8px;
+            padding: 5px;
             border: 1px solid #ddd;
-            text-align: left;
+            text-align: center;
         }
 
         .items th {
             background-color: #f2f2f2;
         }
-
+        /* end */
         .footer {
             text-align: center;
             margin-top: 50px;
@@ -97,7 +94,9 @@
 </head>
 
 <body>
+    
     <div class="content">
+        <h1 class="page-title">{{ $info_mano_obra['proyecto'] }}</h1>
         <div class="details">
             <div class="left">
                 <strong class="text-danger">Fecha:</strong> {{ $info_mano_obra['fecha'] }}<br>
@@ -120,6 +119,7 @@
                         <th>M</th>
                         <th>J</th>
                         <th>V</th>
+                        <th>S</th>
                         <th>Adicionales</th>
                         <th>TOTAL</th>
                         <th>Descuento</th>
@@ -129,10 +129,59 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($info_mano_obra['detalle'] as $index => $detalle)
+                    @php
+                        $lastName = '';
+                        $rowspan = 1;
+                        $index = 1;
+                        $totalDias = 0;
+                        $liquidoRecibirTotal = 0;
+                    @endphp
+        
+                    @foreach ($info_mano_obra['detalle'] as $detalle)
+                        @php
+                            // Verificar si el nombre es diferente al anterior
+                            $isFirstRowForName = ($detalle['nombre'] !== $lastName);
+
+                            if ($isFirstRowForName) {
+                                // Contar cuántas filas pertenecen al mismo nombre
+                                $rowspan = collect($info_mano_obra['detalle'])->where('nombre', $detalle['nombre'])->count();
+                                
+                                // Calcular el total de días trabajados + adicionales para todas las filas de este trabajador
+                                $totalDias = collect($info_mano_obra['detalle'])
+                                    ->where('nombre', $detalle['nombre'])
+                                    ->sum(function($d) {
+                                        return array_sum($d['dias']) + $d['total_adicional'];
+                                    });
+                                
+                                // Calcular el total del líquido a recibir (total - descuento)
+                                $liquidoRecibirTotal = collect($info_mano_obra['detalle'])
+                                    ->where('nombre', $detalle['nombre'])
+                                    ->sum(function($d) {
+                                        return ($d['total'] - $d['total_descuento']);
+                                    });
+                            }
+                        @endphp
                         <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $detalle['nombre'] }}</td>
+                            @if($isFirstRowForName)
+                                <td rowspan="{{ $rowspan }}">{{ $index}}</td>
+                                <td rowspan="{{ $rowspan }}">{{ $detalle['nombre'] }}</td>
+                                @php $lastName = $detalle['nombre']; $index ++; @endphp
+                            @endif
+        
+                            <td>{{ $detalle['cargo']}}</td>
+                            @foreach($detalle['dias'] as $dia)
+                                <td>$ {{ number_format($dia, 2) }}</td>
+                            @endforeach
+                            <td>$ {{ number_format($detalle['total_adicional'], 2) }}</td>
+                            @if($isFirstRowForName)
+                                <td rowspan="{{ $rowspan }}">$ {{ number_format($totalDias, 2) }}</td>
+                            @endif
+                            <td>$ {{ number_format($detalle['total_descuento'], 2) }}</td>
+                            @if($isFirstRowForName)
+                                <td rowspan="{{ $rowspan }}">$ {{ number_format($liquidoRecibirTotal, 2) }}</td>
+                            @endif
+                            <td>{{ $detalle['observacion'] }}</td>
+                            <td></td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -141,7 +190,7 @@
     </div>
 
     <div class="footer">
-        Esta es una orden de pedido generada electrónicamente. No requiere firma.
+        Esta es un informe generado electrónicamente. No requiere firma.
     </div>
 </body>
 

@@ -54,7 +54,9 @@
                                             @break
 
                                             @default
+                                            <th scope="col">
                                                 Producto
+                                            </th>
                                         @endswitch
                                     @endif
                                     <th scope="col">Teléfono 1</th>
@@ -72,7 +74,9 @@
                                         @if ($slug != 'meteriales.herramientas')
                                             <td class="align-middle text-capitalize">
                                                 @foreach ($proveedor->proveedor_articulos as $proveedor_articulo)
+                                                <span class="badge badge-secondary">
                                                     {{ $proveedor_articulo->articulo->descripcion }}
+                                                </span>
                                                 @endforeach
                                             </td>
                                             <td class="align-middle text-capitalize">

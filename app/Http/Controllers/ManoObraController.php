@@ -19,13 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ManoObraController extends Controller
-{
-    private $fecha_actual;
-
-    public function __construct()
-    {
-        $this->fecha_actual = Carbon::now()->format('Y-m-d');
-    }
+{    
     /**
      * Display a listing of the resource.
      */
@@ -118,6 +112,7 @@ class ManoObraController extends Controller
      */
     public function store(Request $request)
     {
+        $fecha = $request->fecha;
         $personal = $request->personal;
         $categoria = $request->categoria;
         $jornada = $request->jornada;
@@ -131,18 +126,20 @@ class ManoObraController extends Controller
         try {
             DB::beginTransaction();
 
-            $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)->pluck('proveedor_id')->toArray();
+            $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
+            ->where('fecha', $fecha)->pluck('proveedor_id')->toArray();
             // Eliminar todos los registros del personal
             if (empty($personal)) {
                 DetalleManoObra::where('mano_obra_id', $request->mano_obra)
-                    ->where('fecha', $this->fecha_actual)->delete();
+                    ->where('fecha', $fecha)->delete();
             } else {
                 // Encontrar los IDs que están en la base de datos pero no en el formulario            
                 $personalEliminar = array_diff($personalExistente, $personal);
 
                 // Eliminar los registros que no están en el formulario
                 if (!empty($personalEliminar)) {
-                    DetalleManoObra::whereIn('proveedor_id', $personalEliminar)->delete();
+                    DetalleManoObra::where('fecha', $fecha)
+                    ->whereIn('proveedor_id', $personalEliminar)->delete();
                 }
 
                 foreach ($personal as $index => $value) {
@@ -150,10 +147,10 @@ class ManoObraController extends Controller
                         [
                             'mano_obra_id' => $request->mano_obra,
                             'proveedor_id' => $value,
-                            'fecha' => $this->fecha_actual,
+                            'fecha' => $fecha,
                         ],
                         [
-                            'fecha' => $this->fecha_actual,
+                            'fecha' => $fecha,
                             'mano_obra_id' => $request->mano_obra,
                             'proveedor_id' => $value,
                             'articulo_id' => $categoria[$index],
@@ -278,10 +275,15 @@ class ManoObraController extends Controller
             //return back()->with(['sweetalert' => true, 'title' => 'Error', 'message' => 'Ya existe una plaficicacion para este dia.', 'icon' => 'error']);
         }
         */
+        $mano_obra = ManoObra::find($request->mano_obra);
         // Obtener la fecha actual
         $fecha_actual = Carbon::now()->format('Y-m-d');
-        $mano_obra = ManoObra::find($request->mano_obra);
-
+        // Obtener el ultimo registro para saber la fecha
+        $ultimo_registro = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
+        ->orderBy('fecha', 'desc')
+        ->first();
+        
+        $fecha_anterior = $ultimo_registro->fecha;
         /*
           $mano_obra = ManoObra::whereHas('detalle_mano_obra', function ($query) use ($fecha_actual) {
             $query->where('fecha', $fecha_actual);
@@ -312,7 +314,7 @@ class ManoObraController extends Controller
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
 
 
-        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha' => $fecha_actual, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha_actual' => $fecha_actual,'fecha_anterior' => $fecha_anterior, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.create', $route_params);
     }
 
@@ -337,7 +339,7 @@ class ManoObraController extends Controller
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
 
 
-        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha' =>  $fecha, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha_actual' =>  $fecha, 'fecha_anterior' =>  $fecha, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.create', $route_params);
     }
 

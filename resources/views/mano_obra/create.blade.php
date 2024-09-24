@@ -11,7 +11,7 @@
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-md-10">
-                                <h5>Fecha: {{ dateFormatHumans($fecha) }}</h5>
+                                <h5>Fecha: {{ dateFormatHumans($fecha_actual) }}</h5>
                             </div>
 
                             <div class="col-md-2 ">
@@ -42,6 +42,7 @@
                     {{ Form::hidden('proyecto_id', $proyecto->id) }}
                     {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}
                     {{ Form::hidden('tipo_etapa', $tipo_etapa->id) }}
+                    {{ Form::hidden('fecha', $fecha_actual) }}
 
                     @include('mano_obra.partials.form')
 
