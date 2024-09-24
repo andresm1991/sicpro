@@ -185,7 +185,7 @@
                     </td>
                     <td>
                         <input name="observaciones[]" type="text" class="form-control"
-                            value="{{ $detalle_mano_obra->observaciones }}">
+                            value="{{ $detalle_mano_obra->observacion }}">
                     </td>
                     <td>
                         <button type="button" class="btn btn-dark btn-remove"> - </button>
