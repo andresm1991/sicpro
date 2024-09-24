@@ -129,7 +129,12 @@
                     </tr>
                 </thead>
                 <tbody>
-
+                    @foreach ($info_mano_obra['detalle'] as $index => $detalle)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $detalle['nombre'] }}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>

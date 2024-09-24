@@ -118,67 +118,59 @@ class GenerarPdfController extends Controller
             ->get()
             ->groupBy('proveedor_id');
 
-        $resultado = [];
-        return $detalles;
+        $info_mano_obra = [
+            'fecha' => dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin),
+            'semana' => $mano_obra->semana,
+        ];
+
         foreach ($detalles as $proveedor_id => $registros) {
-            return $registros;
-            $proveedor = Proveedor::find($proveedor_id); // Aquí obtienes los detalles del proveedor
             $semanas = [];
 
-            // Inicializar la estructura de cada día de la semana
-            $diasSemana = ['S', 'L', 'M', 'M', 'J', 'V'];
+            // Inicializar la estructura de cada día de la semana (Lunes a Sábado)
+            $diasSemana = ['L', 'M', 'M', 'J', 'V', 'S'];
+
 
             // Inicializa los valores para la fila del trabajador
             $fila = [
-                'nombre' => $proveedor->nombre,  // Nombre del trabajador
-                'cargo' => $proveedor->proveedor_articulo->descripcion,    // Cargo del trabajador
-                'dias' => array_fill(0, 7, 0),   // Días de la semana en blanco
+                'nombre' => '',
+                'cargo' => '',
+                'dias' => array_fill(0, 6, 0),   // Días de la semana en blanco
                 'total_adicional' => 0,
                 'total_descuento' => 0,
                 'liquido_recibir' => 0,
                 'observacion' => '',
             ];
 
-            foreach ($registros as $registro) {
+            foreach ($registros as $detalle) {
+                $articulo = $detalle->articulo;
+                $proveedor = $detalle->proveedor;
+                $fila['nombre'] = $proveedor->razon_social;
+                $fila['cargo'] = $articulo->descripcion;
                 // Convertir la fecha a día de la semana
-                $diaSemana = \Carbon\Carbon::parse($registro->fecha)->dayOfWeek;  // 0 = domingo, 1 = lunes, etc.
+                $diaSemana = \Carbon\Carbon::parse($detalle->fecha)->dayOfWeek;  // 0 = domingo, 1 = lunes, etc.
 
                 // Si el día de la semana está dentro de los días válidos (lunes a viernes)
-                if ($diaSemana >= 1 && $diaSemana <= 5) {
-                    // Incrementar el valor del día en la tabla
-                    $fila['dias'][$diaSemana] += $registro->valor; // Asigna el valor al día correspondiente
+                if ($diaSemana >= 1 && $diaSemana <= 6) {
+                    // Restamos 1 para alinear los días con el índice de la matriz (lunes es 0)
+                    $fila['dias'][$diaSemana - 1] += $detalle->valor;
                 }
 
                 // Acumular adicionales y descuentos
-                $fila['total_adicional'] += $registro->adicional;
-                $fila['total_descuento'] += $registro->descuento;
+                $fila['total_adicional'] += $detalle->adicional;
+                $fila['total_descuento'] += $detalle->descuento;
 
                 // Guardar la observación si la hay
-                $fila['observacion'] = $registro->observacion;
+                $fila['observacion'] = $detalle->observacion;
             }
 
             // Calcular el líquido a recibir
             $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
 
             // Añadir la fila al resultado final
-            $resultado[] = $fila;
+            $info_mano_obra['detalle'][] = $fila;
         }
 
-        return $resultado;
-        $info_mano_obra = [
-            'fecha' => dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin),
-            'semana' => $mano_obra->semana,
-        ];
-
-        foreach ($mano_obra->detalle_mano_obra as $detalle) {
-            $detalle_mano_obra[] = [
-                'nombres' => $detalle->proveedor->razon_social,
-                'cargo' => $detalle->articulo->descripcion,
-                'dia' => Carbon::parse($detalle->fecha)->isoFormat('dddd'),
-            ];
-        }
-
-        return $detalle_mano_obra;
+        //return $info_mano_obra;
         $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra'))->setPaper('a4', 'landscape');
         return $pdf->stream('reporte_mano_obra.pdf');
     }
