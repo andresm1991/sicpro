@@ -158,6 +158,7 @@ $(function () {
         var descuento = $('input:text[name=descuento]').val();
         var detalle_adicional = $('input:text[name=detalle_adicional]').val();
         var detalle_descuento = $('input:text[name=detalle_descuento]').val();
+        var observaciones = $('input:text[name=observaciones]').val();
 
         var valid = true;
 
@@ -262,7 +263,7 @@ $(function () {
                         <input name="detalle_descuento[]" type="text" class="form-control" value="${detalle_descuento}">
                     </td>
                     <td>
-                        <input name="observaciones[]" type="text" class="form-control input-double">
+                        <input name="observaciones[]" type="text" class="form-control" value="${observaciones}">
                     </td>
                     <td>
                         <button type="button" class="btn btn-dark btn-remove"> - </button>
@@ -288,6 +289,8 @@ $(function () {
         nuevoSelectCategoria.val(categoria).trigger('change');
         nuevoSelectJornada.val(jornada).trigger('change');
         $(":input").inputmask();
+
+        limpiarCampos();
     });
 
     /**
@@ -443,4 +446,16 @@ $(function () {
             }
         });
     });
+
+    function limpiarCampos() {
+        $('.custom-fieldset').find('input:text, select').each(function () {
+            if ($(this).is('select')) {
+                // Restablecer los selects a la opción predeterminada
+                $(this).val('').trigger('change'); // Para select2
+            } else {
+                // Limpiar el valor de los inputs de texto
+                $(this).val('');
+            }
+        });
+    }
 });
