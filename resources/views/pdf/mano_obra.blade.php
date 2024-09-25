@@ -19,6 +19,28 @@
             font-weight: bold; /* Grosor del título */
             margin: 20px 0; /* Margen superior e inferior */
         }
+        .title{
+            font-size: 16px; /* Tamaño del título */
+            font-weight: bold; /* Grosor del título */
+        }
+        .text-content{
+            font-size: 16px;
+        }
+
+        /* Estilos para la marca de agua */
+        .watermark {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.2; /* Transparencia */
+            background-image: url('{{ public_path('images/logo_empresa.jpg') }}');
+            background-position: center;
+            background-size: contain;
+            background-repeat: no-repeat;
+        }
 
         .header {
             margin-bottom: 20px;
@@ -52,17 +74,6 @@
             /* text-align: right;*/
         }
 
-        .details table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .details th,
-        .details td {
-            padding: 8px;
-            border: 1px solid #ddd;
-        }
-
         .clear {
             clear: both;
         }
@@ -78,10 +89,42 @@
             padding: 5px;
             border: 1px solid #ddd;
             text-align: center;
+            background-color: #ffffff;
         }
 
         .items th {
             background-color: #f2f2f2;
+        }
+
+        /* Definir ancho fijo para las nuevas columnas */
+        th:nth-child(11), td:nth-child(11), /* Detalle Adicional */
+        th:nth-child(14), td:nth-child(14), /* Detalle Descuento */
+        th:nth-child(16), td:nth-child(16)   {
+            width: 100px; /* Ajustar el ancho según sea necesario */
+            word-wrap: break-word; /* Ajustar contenido largo */
+        }
+
+        th:nth-child(1), td:nth-child(1), /* Detalle Adicional */
+        th:nth-child(12), td:nth-child(12)  /* Detalle Descuento */ {
+            width: 20px; /* Ajustar el ancho según sea necesario */
+        }
+
+        /* Definir un ancho mínimo para otras columnas */
+        th, td {
+            min-width: 50px; /* Asegura que las columnas no se encojan demasiado */
+        }
+
+        /* Asegura que las columnas principales mantengan su tamaño adecuado */
+       
+        th:nth-child(2), td:nth-child(2), /* Nombres y Apellidos */
+        th:nth-child(3), td:nth-child(3), /* Cargo */
+        th:nth-child(10), td:nth-child(10), /* Adicionales */
+        th:nth-child(12), td:nth-child(12), /* Descuentos */
+        th:nth-child(13), td:nth-child(13), /* TOTAL */
+        th:nth-child(15), td:nth-child(15), /* Liquido a Recibir */
+        th:nth-child(16), td:nth-child(16),
+        th:nth-child(17), td:nth-child(17)   {
+            min-width: 80px;
         }
         /* end */
         .footer {
@@ -94,13 +137,15 @@
 </head>
 
 <body>
-    
+    <!-- Marca de agua -->
+    <div class="watermark"></div>
+
     <div class="content">
         <h1 class="page-title">{{ $info_mano_obra['proyecto'] }}</h1>
         <div class="details">
             <div class="left">
-                <strong class="text-danger">Fecha:</strong> {{ $info_mano_obra['fecha'] }}<br>
-                <strong class="text-danger">Semana:</strong> {{ $info_mano_obra['semana'] }}<br>
+                <strong class="title">Fecha:</strong> <span class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
+                <strong class="title">Semana:</strong> <span class="text-content"> {{ $info_mano_obra['semana'] }}</span><br>
             </div>
 
             <div class="clear"></div>
@@ -121,8 +166,10 @@
                         <th>V</th>
                         <th>S</th>
                         <th>Adicionales</th>
+                        <th>Detalle Adicionales</th>
                         <th>TOTAL</th>
                         <th>Descuento</th>
+                        <th>Detalle Descuento</th>
                         <th>Liquido a Recibir</th>
                         <th>Observaciones</th>
                         <th>Firma</th>
@@ -173,10 +220,16 @@
                                 <td>$ {{ number_format($dia, 2) }}</td>
                             @endforeach
                             <td>$ {{ number_format($detalle['total_adicional'], 2) }}</td>
+                            <td>
+                                {{ implode(',', $detalle['detalle_adicional']) }}
+                            </td>
                             @if($isFirstRowForName)
                                 <td rowspan="{{ $rowspan }}">$ {{ number_format($totalDias, 2) }}</td>
                             @endif
                             <td>$ {{ number_format($detalle['total_descuento'], 2) }}</td>
+                            <td>
+                                {{ implode(',', $detalle['detalle_descuento']) }}
+                            </td>
                             @if($isFirstRowForName)
                                 <td rowspan="{{ $rowspan }}">$ {{ number_format($liquidoRecibirTotal, 2) }}</td>
                             @endif

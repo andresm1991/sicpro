@@ -140,6 +140,8 @@ class GenerarPdfController extends Controller
                     'total_descuento' => 0,
                     'liquido_recibir' => 0,
                     'observacion' => '',
+                    'detalle_adicional' => [],
+                    'detalle_descuento' => [],
                 ];
     
                 // Iteramos los registros de cada proveedor y cargo
@@ -164,6 +166,14 @@ class GenerarPdfController extends Controller
                     $fila['total'] += $detalle->valor + $detalle->adicional;
                     $fila['total_adicional'] += $detalle->adicional;
                     $fila['total_descuento'] += $detalle->descuento;
+                    if($detalle->detalle_adicional){
+                        $fila['detalle_adicional'][]= $detalle->detalle_adicional;
+                    }
+                    if($detalle->detalle_descuento){
+                        $fila['detalle_descuento'][]= $detalle->detalle_descuento;
+                    }
+                    
+                    
     
                     // Si existe una observación, la agregamos
                     if (!empty($detalle->observacion)) {
@@ -183,65 +193,6 @@ class GenerarPdfController extends Controller
         }
 
         $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra'))->setPaper('a3', 'landscape');
-        return $pdf->stream('reporte_mano_obra.pdf');
-        /*
-        $info_mano_obra = [
-            'fecha' => dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin),
-            'semana' => $mano_obra->semana,
-        ];
-
-        foreach ($detalles as $proveedor_id => $registros) {
-            $semanas = [];
-
-            // Inicializar la estructura de cada día de la semana (Lunes a Sábado)
-            $diasSemana = ['L', 'M', 'M', 'J', 'V', 'S'];
-
-
-            // Inicializa los valores para la fila del trabajador
-            $fila = [
-                'nombre' => '',
-                'cargo' => '',
-                'dias' => array_fill(0, 6, 0),   // Días de la semana en blanco
-                'total_adicional' => 0,
-                'total' => 0,
-                'total_descuento' => 0,
-                'liquido_recibir' => 0,
-                'observacion' => '',
-            ];
-
-            foreach ($registros as $detalle) {
-                $articulo = $detalle->articulo;
-                $proveedor = $detalle->proveedor;
-                $fila['nombre'] = $proveedor->razon_social;
-                $fila['cargo'] = $articulo->descripcion;
-                // Convertir la fecha a día de la semana
-                $diaSemana = \Carbon\Carbon::parse($detalle->fecha)->dayOfWeek;  // 0 = domingo, 1 = lunes, etc.
-
-                // Si el día de la semana está dentro de los días válidos (lunes a viernes)
-                if ($diaSemana >= 1 && $diaSemana <= 6) {
-                    // Restamos 1 para alinear los días con el índice de la matriz (lunes es 0)
-                    $fila['dias'][$diaSemana - 1] += $detalle->valor;
-                }
-
-                $fila['total'] += $detalle->valor + $detalle->adicional;
-                // Acumular adicionales y descuentos
-                $fila['total_adicional'] += $detalle->adicional;
-                $fila['total_descuento'] += $detalle->descuento;
-
-                // Guardar la observación si la hay
-                $fila['observacion'] .= $detalle->observacion;
-            }
-
-            // Calcular el líquido a recibir
-            $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
-
-            // Añadir la fila al resultado final
-            $info_mano_obra['detalle'][] = $fila;
-        }
-
-        //return $info_mano_obra;
-        $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra'))->setPaper('a3', 'landscape');
-        return $pdf->stream('reporte_mano_obra.pdf');
-        */
+        return $pdf->download('reporte_mano_obra.pdf');
     }
 }
