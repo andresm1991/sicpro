@@ -456,7 +456,7 @@ $(function () {
         });
     });
 
-    $('.editar-fecha-planificacion').on('click', function(){
+    $(document).on('click', '.editar-fecha-planificacion', function(){
         var id = $(this).closest('tr').attr('id');
         $('#titleModalPlanificacionManoObra').text('Editar Fecha');
         $('input:hidden[name=id]').val(id);
@@ -464,6 +464,25 @@ $(function () {
         $('input:text[name=fecha_inicio]').val(convertirFecha($(this).data('fecha-inicio')));
         $('input:text[name=fecha_fin]').datepicker('setDate',convertirFecha($(this).data('fecha-fin')));
         $('#modalPlanificacionManoObra').modal('show');
+    });
+
+    $('input:text[name=mano_obra_search]').on('keyup', function () {
+        var $value = $(this).val();
+
+        $.ajax({
+            url: url + '/buscar-planificacion',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'text': $value },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                $('tbody').html(data);
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
     });
 
     function limpiarCampos() {
