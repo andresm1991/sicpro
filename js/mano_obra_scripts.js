@@ -5,6 +5,7 @@ $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
     $('#guardar-planificacion').on('click', function () {
+        var id = $('input[name=id]').val();
         var fecha_inicio = $('input[name=fecha_inicio]').val();
         var fecha_fin = $('input[name=fecha_fin]').val();
         var fecha_inicio_obj = new Date(fecha_inicio);
@@ -12,6 +13,7 @@ $(function () {
         var form = $("#form_planificacion_mano_obra");
         var data = getFormData(form);
         var valid = true;
+        var url = 'crear-planificacion', type ='POST';
 
         // Eliminar cualquier borde de error previo
         $('input[name=fecha_inicio], input[name=fecha_fin]').removeClass('error-border');
@@ -30,11 +32,15 @@ $(function () {
             $('input:text[name=fecha_fin]').parent().append('<span class="error-message">Ingrese fecha.</span>');
         }
 
+        if(id > 0 ){
+            url = 'actualizar-planificacion/'+id;
+            type = 'PUT';
+        }
         if (valid) {
             $.ajax({
-                url: 'crear-planificacion',
+                url: url,
                 headers: { 'X-CSRF-TOKEN': csrf },
-                type: 'POST',
+                type: type,
                 data: data,
                 beforeSend: function () {
                     $('#modal-overlay').show();
@@ -86,6 +92,9 @@ $(function () {
         $('.error-message').remove();  // Elimina los mensajes de error anteriores
         $('#message').html('');
         $("#form_planificacion_mano_obra")[0].reset();
+        $('#titleModalPlanificacionManoObra').text('Nueva Planificación');
+        $('input:hidden[name=id]').val(0);
+        $('input:text[name=fecha_inicio]').attr('disabled', false);
         //$('#titleArticuloFormModal').text('Nuevo Producto');
         //articulo_id = 0;
     });
@@ -447,6 +456,16 @@ $(function () {
         });
     });
 
+    $('.editar-fecha-planificacion').on('click', function(){
+        var id = $(this).closest('tr').attr('id');
+        $('#titleModalPlanificacionManoObra').text('Editar Fecha');
+        $('input:hidden[name=id]').val(id);
+        $('input:text[name=fecha_inicio]').attr('disabled', true);
+        $('input:text[name=fecha_inicio]').val(convertirFecha($(this).data('fecha-inicio')));
+        $('input:text[name=fecha_fin]').datepicker('setDate',convertirFecha($(this).data('fecha-fin')));
+        $('#modalPlanificacionManoObra').modal('show');
+    });
+
     function limpiarCampos() {
         $('.custom-fieldset').find('input:text, select').each(function () {
             if ($(this).is('select')) {
@@ -457,5 +476,12 @@ $(function () {
                 $(this).val('');
             }
         });
+    }
+
+    function convertirFecha(fecha) {
+        // Convertir la fecha en un objeto Date
+        var partesFecha = fecha.split('-'); // Divide la fecha en partes: [YYYY, MM, DD]
+        var fechaFormateada = partesFecha[2] + '-' + partesFecha[1] + '-' + partesFecha[0]; // Reorganizar como DD-MM-YYYY
+        return fechaFormateada;
     }
 });
