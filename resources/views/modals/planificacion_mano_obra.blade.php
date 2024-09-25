@@ -24,6 +24,7 @@
                     {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}
                     {{ Form::hidden('proyecto_id', $proyecto->id) }}
                     {{ Form::hidden('tipo_etapa', $tipo_etapa->id) }}
+                    {{ Form::hidden('id', 0) }}
 
                     <div class="row">
                         <div class="col-md-6 col-12">

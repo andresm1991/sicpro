@@ -266,6 +266,74 @@ class ManoObraController extends Controller
         }
     }
 
+    public function updatePlanificacion (Request $request) {
+        if ($request->ajax()) {
+            $mano_obra = ManoObra::find($request->id);
+            $request->merge([
+                'fecha_fin' => Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d'),
+            ]);
+            $fechaInicio = $mano_obra->fecha_inicio;
+            $fechaFin = $request->fecha_fin;
+
+            // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
+            $fechasExistentes = ManoObra::where('id', '!=', $mano_obra->id)
+            ->where(function ($query) use ($fechaInicio, $fechaFin) {
+                $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                    ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
+                    ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
+                        $query->where('fecha_inicio', '<=', $fechaInicio)
+                            ->where('fecha_fin', '>=', $fechaFin);
+                    });
+            })->exists();
+
+            if ($fechasExistentes) {
+                throw ValidationException::withMessages([
+                    'fecha_inicio' => 'La fecha inicio esta dentro del rago ya registrado.',
+                    'fecha_fin' => 'La fecha fin esta dentro del rago ya registrado.',
+                ]);
+            }
+
+            $request->validate([
+                'fecha_fin' => [
+                    'required',
+                    'date',
+                    'after:fecha_inicio',
+                    Rule::unique('mano_obra', 'fecha_fin')->ignore($mano_obra->id),
+                ],
+            ], [
+                'fecha_fin.after' => 'La fecha de fin de ser mayor a la fecha de inicio.',
+                'fecha_inicio.unique' => 'La fecha inicio ya se encuentra registrada.',
+                'fecha_fin.unique' => 'La fecha fin ya se encuentra registrada.'
+            ]);
+
+            try {
+                DB::beginTransaction();
+                $mano_obra->fecha_fin = $fechaFin;
+
+                if ($mano_obra->save()) {
+                    DB::commit();
+                    $list_mano_obra = ManoObra::where('proyecto_id', $request->proyecto_id)
+                        ->orderBy('semana', 'desc')
+                        ->paginate(15);
+
+                    $route_params = $this->getRouteParameters($request);
+                    $response = $this->htmlTable($list_mano_obra, $route_params);
+
+                    LogService::log('info', 'Se actualizo al planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'update']);
+                    return response()->json(['success' => true, 'mensaje' => 'Planificación actualizada correctamente.', 'planificacion' => $response]);
+                }
+
+                DB::rollBack();
+                LogService::log('error', 'Error al actualizar planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'update', 'message' => 'no se actualizo planificacion']);
+                return response()->json(['success' => false, 'mensaje' => 'Ocurrió un error por favor vuelva a intentarlo.']);
+            } catch (Throwable $e) {
+                DB::rollBack();
+                LogService::log('error', 'Error al actualizar planificaciónn mano de obra', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+                return response()->json(['success' => false, 'mensaje' => 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.']);
+            }
+        }
+    }
+
     public function registroTrabajadores(Request $request)
     {
         /*// Obtener la fecha actual
@@ -405,11 +473,11 @@ class ManoObraController extends Controller
             $nuevo = "<a href='" . route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', $route_params) . "' class='dropdown-item'>Agregar Personal</a>";
             $editar = "<a href='javascriopt:void(0);' class='dropdown-item editar-empleados-mano-obra' id='" . $mano_obra->id . "'>Editar</a>";
             $eliminar = "<a href='#' class='dropdown-item eliminar-planificacion' id='" . $mano_obra->id . "'>Eliminar</a>";
-            $pdf = "<a href='" . route('pdf.adquisicion', $mano_obra->id) . "' class='dropdown-item'>PDF</a>";
+            $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item'>PDF</a>";
 
             $out .= '<tr id="' . $mano_obra->id . '">' .
                 '<td class="align-middle">' . $mano_obra->semana . '</td>' .
-                '<td class="align-middle">' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
+                '<td class="align-middle editar-fecha-planificacion" style="cursor: pointer">' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
                 '<td class="align-middle">' . $mano_obra->proyecto->nombre_proyecto . '</td>' .
                 '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
                 '<td class="align-middle">' . $mano_obra->tipo_etapa->descripcion . '</td>' .
