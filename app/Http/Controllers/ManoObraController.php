@@ -450,6 +450,35 @@ class ManoObraController extends Controller
         }
     }
 
+    public function buscarPlanificacion (Request $request){
+        $buscar = $request->text;
+        $proyecto_id = $request->proyecto;
+        $etapa_id = $request->tipo_adquisicion;
+        $tipo_adquisicion_id =  $request->tipo_etapa;
+
+        $list_planificacion = ManoObra::with(['proyecto', 'etapa', 'tipo_etapa'])
+            ->where('proyecto_id', $proyecto_id)
+            ->where('etapa_id', $etapa_id)
+            ->where('tipo_etapa_id', $tipo_adquisicion_id)
+            ->where(function ($query) use ($buscar) {
+                $query->where('fecha_inicio', 'LIKE', '%' . $buscar . '%')
+                    ->orWhere('fecha_fin', 'LIKE', '%' . $buscar . '%');
+            })
+            ->orderBy('semana', 'asc')
+            ->get();
+
+        $route_params = $this->getRouteParameters($request);
+        $output = $this->htmlTable($list_planificacion,$route_params);
+        if (empty($output)) {
+            $output .= '<tr>' .
+                '<td colspan="6" class="text-center">' .
+                '<span class="text-danger">No existen datos para mostrar.</span>' .
+                '</td>' .
+                '</tr>';
+        }
+        return Response($output);
+    }
+
     private function getRouteParameters($request)
     {
 
@@ -473,11 +502,11 @@ class ManoObraController extends Controller
             $nuevo = "<a href='" . route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', $route_params) . "' class='dropdown-item'>Agregar Personal</a>";
             $editar = "<a href='javascriopt:void(0);' class='dropdown-item editar-empleados-mano-obra' id='" . $mano_obra->id . "'>Editar</a>";
             $eliminar = "<a href='#' class='dropdown-item eliminar-planificacion' id='" . $mano_obra->id . "'>Eliminar</a>";
-            $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item'>PDF</a>";
+            $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item'>PDF Planificación</a>";
 
             $out .= '<tr id="' . $mano_obra->id . '">' .
                 '<td class="align-middle">' . $mano_obra->semana . '</td>' .
-                '<td class="align-middle editar-fecha-planificacion" style="cursor: pointer">' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
+                '<td class="align-middle editar-fecha-planificacion" style="cursor: pointer" data-fecha-inicio ="'. $mano_obra->fecha_inicio.'" data-fecha-fin = "'.$mano_obra->fecha_fin.'" >' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
                 '<td class="align-middle">' . $mano_obra->proyecto->nombre_proyecto . '</td>' .
                 '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
                 '<td class="align-middle">' . $mano_obra->tipo_etapa->descripcion . '</td>' .
