@@ -71,7 +71,7 @@ class ManoObraController extends Controller
             $info_mano_obra = ManoObra::find($request->mano_obra);
             $fecha_actual = Carbon::today();
             $fecha_inicio = $info_mano_obra->fecha_inicio;
-            $fecha_fin = $info_mano_obra->fecha_fin > $fecha_actual ? $fecha_actual:  $info_mano_obra->fecha_fin;
+            $fecha_fin = $info_mano_obra->fecha_fin; //> $fecha_actual ? $fecha_actual:  $info_mano_obra->fecha_fin;
             // Crear un rango de fechas desde el inicio hasta el fin
             $period = CarbonPeriod::create($fecha_inicio, $fecha_fin);
 
