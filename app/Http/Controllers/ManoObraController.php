@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Throwable;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
@@ -62,21 +63,25 @@ class ManoObraController extends Controller
     }
 
     /**
-     * Ajax para obtener las fechas para editar
+     * Ajax para obtener las fechas para editar detalle mano obra
      */
     public function fechasDetalleManoObra(Request $request)
     {
         if ($request->ajax()) {
-            $list_fechas = DetalleManoObra::select('fecha')
-                ->where('mano_obra_id', $request->mano_obra)
-                ->groupBy('fecha')
-                ->get();
+            $info_mano_obra = ManoObra::find($request->mano_obra);
+            $fecha_actual = Carbon::today();
+            $fecha_inicio = $info_mano_obra->fecha_inicio;
+            $fecha_fin = $info_mano_obra->fecha_fin > $fecha_actual ? $fecha_actual:  $info_mano_obra->fecha_fin;
+            // Crear un rango de fechas desde el inicio hasta el fin
+            $period = CarbonPeriod::create($fecha_inicio, $fecha_fin);
 
-            foreach ($list_fechas as $mano_obra) {
-                $fechas[] = ['id' => $mano_obra->fecha, 'nombre' => $mano_obra->fecha];
+            // Convertir el periodo en un array de fechas
+            $fechas = [];
+            foreach ($period as $date) {
+                $fechas[] = ['id' => $date->format('Y-m-d'), 'nombre' => $date->format('Y-m-d')];
             }
 
-            if (isset($fechas)) {
+            if (isset($fechas) && count($fechas) > 0) {
                 return response()->json(['success' => true, 'fechas' => $fechas]);
             } else {
                 return response()->json(['success' => false, 'fechas' => ['id' => '', 'nombre' => 'No existen personal asociadas a la fecha selecionada.']]);
