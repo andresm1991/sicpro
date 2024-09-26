@@ -193,7 +193,10 @@
 
                             if ($isFirstRowForName) {
                                 // Contar cuántas filas pertenecen al mismo nombre
-                                $rowspan = collect($info_mano_obra['detalle'])->where('nombre', $detalle['nombre'])->count();
+                                $rowspan = collect($info_mano_obra['detalle'])
+                                    ->where('nombre', $detalle['nombre'])
+                                    ->unique('cargo') // Asegura que se cuenten solo cargos distintos
+                                    ->count();
                                 
                                 // Calcular el total de días trabajados + adicionales para todas las filas de este trabajador
                                 $totalDias = collect($info_mano_obra['detalle'])
