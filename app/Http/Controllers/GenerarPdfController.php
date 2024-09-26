@@ -194,6 +194,6 @@ class GenerarPdfController extends Controller
         $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
 
         $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra', 'logo_base64'))->setPaper('a3', 'landscape');
-        return $pdf->stream('reporte_mano_obra.pdf');
+        return $pdf->download('reporte_mano_obra.pdf');
     }
 }
