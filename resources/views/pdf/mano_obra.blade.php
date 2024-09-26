@@ -238,7 +238,9 @@
                             @if($isFirstRowForName)
                                 <td rowspan="{{ $rowspan }}">$ {{ number_format($liquidoRecibirTotal, 2) }}</td>
                             @endif
-                            <td>{{ $detalle['observacion'] }}</td>
+                            <td>
+                                {{ implode(',', $detalle['observacion']) }}
+                            </td>
                             <td></td>
                         </tr>
                     @endforeach

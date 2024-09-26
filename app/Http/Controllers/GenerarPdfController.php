@@ -139,7 +139,7 @@ class GenerarPdfController extends Controller
                     'total' => 0,
                     'total_descuento' => 0,
                     'liquido_recibir' => 0,
-                    'observacion' => '',
+                    'observacion' => [],
                     'detalle_adicional' => [],
                     'detalle_descuento' => [],
                 ];
@@ -177,7 +177,7 @@ class GenerarPdfController extends Controller
     
                     // Si existe una observación, la agregamos
                     if (!empty($detalle->observacion)) {
-                        $fila['observacion'] .= $detalle->observacion . ' ';  // Concatenamos las observaciones
+                        $fila['observacion'][] = $detalle->observacion;  // Concatenamos las observaciones
                     }
                 }
     
