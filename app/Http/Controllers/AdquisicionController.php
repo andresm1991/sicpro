@@ -357,8 +357,8 @@ class AdquisicionController extends Controller
             // Buscar el registro en la base de datos que contiene cantidad_solicitada
             $cantidades_solicitadas = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->pluck('cantidad_solicitada')->toArray();
             foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
-                if ($cantidad_recibida != $cantidades_solicitadas[$index]) {
-                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual a la cantidad solicitada.'])
+                if ($cantidad_recibida > $cantidades_solicitadas[$index]) {
+                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual o menor a la cantidad solicitada.'])
                         ->withInput();
                 }
             }
