@@ -115,7 +115,7 @@ $(function () {
     });
 
     $('.select2-multiple').select2({
-        minimumResultsForSearch: 0,
+        minimumResultsForSearch: Infinity,
         placeholder: function () {
             $(this).data('placeholder');
         },
