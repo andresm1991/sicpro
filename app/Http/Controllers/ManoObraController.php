@@ -351,7 +351,7 @@ class ManoObraController extends Controller
         ->orderBy('fecha', 'desc')
         ->first();
         
-        $fecha_anterior = $ultimo_registro->fecha;
+        $fecha_anterior = isset($ultimo_registro->fecha) ? $ultimo_registro->fecha : $fecha_actual;
         /*
           $mano_obra = ManoObra::whereHas('detalle_mano_obra', function ($query) use ($fecha_actual) {
             $query->where('fecha', $fecha_actual);

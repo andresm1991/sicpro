@@ -36,7 +36,7 @@
             height: 100%;
             z-index: -1;
             opacity: 0.2; /* Transparencia */
-            background-image: url('{{ public_path('images/logo_empresa.jpg') }}');
+            
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
@@ -138,7 +138,9 @@
 
 <body>
     <!-- Marca de agua -->
-    <div class="watermark"></div>
+    <div class="watermark">
+        <img src="data:image/png;base64,{{ $logo_base64 }}"/>
+    </div>
 
     <div class="content">
         <h1 class="page-title">{{ $info_mano_obra['proyecto'] }}</h1>
