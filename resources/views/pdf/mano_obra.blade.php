@@ -184,6 +184,11 @@
                         $index = 1;
                         $totalDias = 0;
                         $liquidoRecibirTotal = 0;
+
+                        $totalAdicionales = 0;
+                        $totalPagoDias = 0;
+                        $totalDescuentos = 0;
+                        $totalRecibir = 0;
                     @endphp
         
                     @foreach ($info_mano_obra['detalle'] as $detalle)
@@ -212,6 +217,12 @@
                                         return ($d['total'] - $d['total_descuento']);
                                     });
                             }
+
+                            // Sumar los valores para los totales generales
+                            $totalAdicionales += $detalle['total_adicional'];
+                            $totalPagoDias += array_sum($detalle['dias']) + $detalle['total_adicional'];
+                            $totalDescuentos += $detalle['total_descuento'];
+                            $totalRecibir += ($detalle['total'] - $detalle['total_descuento']);
                         @endphp
                         <tr>
                             @if($isFirstRowForName)
@@ -244,6 +255,18 @@
                             <td></td>
                         </tr>
                     @endforeach
+                    <!-- Fila de totales generales -->
+                    <tr>
+                        <td colspan="9"><strong>Total:</strong></td>
+                        <td><strong>$ {{ number_format($totalAdicionales, 2) }}</strong></td>
+                        <td></td> <!-- Detalle adicional -->
+                        <td><strong>$ {{ number_format($totalPagoDias, 2) }}</strong></td>
+                        <td><strong>$ {{ number_format($totalDescuentos, 2) }}</strong></td>
+                        <td></td> <!-- Detalle descuento -->
+                        <td><strong>$ {{ number_format($totalRecibir, 2) }}</strong></td>
+                        <td></td>
+                        <td></td> <!-- Firma -->
+                    </tr>
                 </tbody>
             </table>
         </div>
