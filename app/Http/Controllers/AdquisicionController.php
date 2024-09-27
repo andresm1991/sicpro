@@ -399,18 +399,17 @@ class AdquisicionController extends Controller
     {
         $routeParametres = $this->getRouteParameters($request);
         $routeParametres = array_merge($routeParametres, ['pedido' => $request->pedido]);
-
+        $info_pedido = Adquisicion::find($request->pedido);
         $orden_recepcion_id = $request->route('orden_recepcion');
         $orden_recepcion = OrdenRecepcion::find($orden_recepcion_id);
         $orden_completa = $request->has('orden_completa') ? true : false;
         $cantidades_recibidas = $request->cantidad_recibida;
+        $cantidades_solicitadas = $info_pedido->adquisiciones_detalle->pluck('cantidad_solicitada')->toArray();
 
         if ($orden_completa) {
-            // Buscar el registro en la base de datos que contiene cantidad_solicitada
-            $cantidades_solicitadas = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->pluck('cantidad_solicitada')->toArray();
             foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
-                if ($cantidad_recibida != $cantidades_solicitadas[$index]) {
-                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual a la cantidad solicitada.'])
+                if ($cantidad_recibida > $cantidades_solicitadas[$index]) {
+                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual o menor a la cantidad solicitada.'])
                         ->withInput();
                 }
             }
@@ -426,21 +425,23 @@ class AdquisicionController extends Controller
             if ($orden_recepcion->save()) {
                 /// Actualiza el estado del pedido
                 if ($orden_completa) {
-                    Adquisicion::find($request->pedido)->update(['estado' => 'Finalizado']);
+                    $info_pedido->estado = 'Finalizado';
+                    $info_pedido->save();
                 }
 
                 // Actualiza la cantidad recibiba en el detalle del pedido
-                foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
-                    $update_detalle_pedido = AdquisicionDetalle::where('adquisicion_id', $request->pedido)->update(['cantidad_recibida' => $cantidad_recibida]);
-                    // Si todo esta correcto retorna a la vista de los pedidos con el mensaje de ok
-                    if ($update_detalle_pedido) {
-                        DB::commit();
-                        LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
-                        return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
-                    } else {
+                foreach ($info_pedido->adquisiciones_detalle as $index => $detalle) {
+                    $detalle->cantidad_recibida = $cantidades_recibidas[$index];
+                    $detalle->save();
+                    if (!$detalle->save()) {
                         throw new Exception('Error al intentar guardar la orden de recepcion origen al intentar actualizar la cantidad recibida.');
                     }
                 }
+                
+                DB::commit();
+                LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
+                return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
+
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
             }

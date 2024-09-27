@@ -392,7 +392,7 @@ class ManoObraController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Editar la planificacion de trabajadores de fecha selecionada
      */
     public function editarPlanificacionTrabajadores(Request $request)
     {
@@ -414,30 +414,6 @@ class ManoObraController extends Controller
 
         $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha_actual' =>  $fecha, 'fecha_anterior' =>  $fecha, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.create', $route_params);
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
     }
 
     /**
