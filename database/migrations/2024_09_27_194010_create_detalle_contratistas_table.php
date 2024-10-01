@@ -13,6 +13,11 @@ return new class extends Migration
     {
         Schema::create('detalle_contratistas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('contratista_id')->references('id')->on('contratistas');
+            $table->foreignId('articulo_id')->references('id')->on('articulos');
+            $table->smallInteger('cantidad');
+            $table->foreignId('unidad_medida_id')->references('id')->on('catalogo_datos');
+            $table->double('valor_unitario');
             $table->timestamps();
         });
     }
