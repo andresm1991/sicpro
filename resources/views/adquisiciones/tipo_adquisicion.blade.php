@@ -12,7 +12,7 @@
                         <div class="col-md-6 d-flex justify-content-center align-items-center">
                             @switch($item->slug)
                                 @case('contratista')
-                                    {{--   <a href="{{ route('proyecto.adquisiciones.contratista', [
+                                    <a href="{{ route('proyecto.adquisiciones.contratista', [
                                         'tipo' => $tipo,
                                         'tipo_id' => $tipo_id,
                                         'proyecto' => $proyecto->id,
@@ -20,12 +20,6 @@
                                         'tipo_etapa' => $item->id,
                                     ]) }}"
                                         class="nodo">
-                                        <img src="{{ asset(json_decode($item->detalle)->icono) }}" alt="">
-                                        <span>{{ $item->descripcion }}</span>
-                                    </a>
-                                    --}}
-
-                                    <a href="javascripts:void(0);" class="nodo">
                                         <img src="{{ asset(json_decode($item->detalle)->icono) }}" alt="">
                                         <span>{{ $item->descripcion }}</span>
                                     </a>

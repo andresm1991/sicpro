@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('etapa_id')->references('id')->on('catalogo_datos');
             $table->foreignId('tipo_etapa_id')->references('id')->on('catalogo_datos');
             $table->foreignId('usuario_id')->references('id')->on('usuarios');
+            $table->foreignId('estado_id')->references('id')->on('catalogo_datos');
             $table->timestamps();
         });
     }

@@ -9,7 +9,7 @@ class Contratista extends Model
 {
     use HasFactory;
     protected $table = 'contratistas';
-    protected $fillable = ['fecha', 'proveedor_id', 'articulo_id', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id'];
+    protected $fillable = ['fecha', 'proveedor_id', 'articulo_id', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'estado_id'];
 
     public function detalle_contratistas()
     {
@@ -44,5 +44,10 @@ class Contratista extends Model
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 }

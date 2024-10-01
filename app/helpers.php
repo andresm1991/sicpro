@@ -122,3 +122,13 @@ if (!function_exists('registrarProducto')) {
         return $create;
     }
 }
+/**
+ * Formato para el numero de orden de trabajo o adquisison
+ * @param Model
+ * return $numero_orden
+ */
+function numeroOrden($numero) {
+    $ultimo_id = $numero ? $numero->id + 1 : 1;
+    $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+    return $numero_orden;
+}

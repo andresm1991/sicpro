@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\ArticuloStoreRequest;
 use App\Http\Requests\ArticuloUpdateRequest;
+use App\Models\ProveedorArticulo;
 
 class ArticuloController extends Controller
 {
@@ -169,5 +170,21 @@ class ArticuloController extends Controller
         }
 
         return $request;
+    }
+
+    public function getArticulosProveedor(Request $request){
+        if($request->ajax()){
+            $proveedor_articulos = ProveedorArticulo::where('proveedor_id', $request->proveedor)->get();
+            foreach ($proveedor_articulos as $element) {
+                $proveedor[] = ['id' => $element->articulo_id, 'nombre' => $element->articulo->descripcion];
+            }
+
+            if (isset($proveedor)) {
+                return response()->json(['success' => true, 'articulos' => $proveedor]);
+            } else {
+                return response()->json(['success' => false, 'articulos' => ['id' => '', 'nombre' => 'No existen categorias asociadas al proveedor selecionada.']]);
+            }
+        }
+        
     }
 }

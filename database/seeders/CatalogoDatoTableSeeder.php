@@ -15,7 +15,7 @@ class CatalogoDatoTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        /*DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('catalogo_datos')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -269,6 +269,51 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Correo',
             'detalle' => 'mail@example.com',
             'slug' => 'informacion.general.correo',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);*/
+        // Unidades de Medidas
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Unidades de medidas',
+            'detalle' => '',
+            'slug' => 'unidades.medida',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Unidad',
+            'detalle' => '',
+            'slug' => 'unidad.medida.unidad',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Metros',
+            'detalle' => '',
+            'slug' => 'unidad.medida.metros',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        // Estados
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados Contratistas',
+            'detalle' => '',
+            'slug' => 'estados.contratistas',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Completado',
+            'detalle' => '',
+            'slug' => 'estados.contratistas.completado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'En Proceso',
+            'detalle' => '',
+            'slug' => 'estados.contratistas.proceso',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
