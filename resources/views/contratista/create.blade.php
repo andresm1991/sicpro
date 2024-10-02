@@ -16,7 +16,7 @@
                             </div>
 
                             <div class="col-md-2 ">
-                                <button class="btn btn-dark btn-options btn-block" form="form_mano_obra">Guardar</button>
+                                <button class="btn btn-dark btn-options btn-block" form="form_orden_trabajo">Guardar</button>
                             </div>
                         </div>
                     </li>

@@ -128,10 +128,6 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/mano-obra-pdf/{mano_obra}', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('planificacion.mano.obra');
     });
 
-
-
-    //Route::get('/base-de-datos/{id}/view', [BaseDatoController::class, 'showForm'])->name('base.datos.form');
-    //
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);
     Route::get('/tipo-cuenta', [CatalogoDatoController::class, 'getTipoCuentas']);
     Route::get('/articulos-proveedor', [ArticuloController::class, 'getArticulosProveedor']);

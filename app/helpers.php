@@ -127,8 +127,10 @@ if (!function_exists('registrarProducto')) {
  * @param Model
  * return $numero_orden
  */
-function numeroOrden($numero) {
-    $ultimo_id = $numero ? $numero->id + 1 : 1;
-    $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
-    return $numero_orden;
+if (!function_exists('numeroOrden')) {
+    function numeroOrden($numero) {
+        $ultimo_id = $numero ? $numero->id + 1 : 1;
+        $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+        return $numero_orden;
+    }
 }
