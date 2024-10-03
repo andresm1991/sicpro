@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('detalle_contratistas', function (Blueprint $table) {
+        Schema::create('pagos_orden_trabajo_contratista', function (Blueprint $table) {
             $table->id();
+            $table->date('fecha');
             $table->foreignId('contratista_id')->references('id')->on('contratistas')->onDelete('cascade');
-            $table->foreignId('articulo_id')->references('id')->on('articulos');
-            $table->smallInteger('cantidad');
-            $table->foreignId('unidad_medida_id')->references('id')->on('catalogo_datos');
-            $table->double('valor_unitario');
+            $table->enum('tipo_pago', ['AVANCE', 'LIQUIDACION']);
+            $table->enum('forma_pago', ['EFECTIVO', 'TRANSFERENCIA', 'CHEQUE']);
+            $table->double('valor');
+            $table->string('detalle');
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('detalle_contratistas');
+        Schema::dropIfExists('pagos_orden_trabajo_contratista');
     }
 };

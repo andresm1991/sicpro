@@ -139,14 +139,14 @@
                                 <div class="form-group">
                                     <label class="col-form-label font-weight-bold">Presupuesto total <i
                                             class="fa-regular fa-asterisk fa-2xs"></i></label>
-                                    {{ Form::text('presupuesto', old('presupuesto', $proyecto->presupuesto_total), ['class' => 'form-control solo-numeros', 'placeholder' => 'Ingrese el presupuesto']) }}
+                                    {{ Form::text('presupuesto', old('presupuesto', $proyecto->presupuesto_total), ['class' => 'form-control input-double', 'placeholder' => 'Ingrese el presupuesto']) }}
                                     {!! $errors->first('presupuesto', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                                 </div>
                             </div>
                             <div class="col-md-6 col-12">
                                 <div class="form-group">
                                     <label class="col-form-label font-weight-bold">Presupuesto por unidad</label>
-                                    {{ Form::text('presupuesto_unidad', old('presupuesto_unidad', $proyecto->presupuesto_unidad), ['class' => 'form-control solo-numeros', 'placeholder' => 'Ingrese el presupuesto por unidad']) }}
+                                    {{ Form::text('presupuesto_unidad', old('presupuesto_unidad', $proyecto->presupuesto_unidad), ['class' => 'form-control input-double', 'placeholder' => 'Ingrese el presupuesto por unidad']) }}
                                     {!! $errors->first('presupuesto_unidad', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                                 </div>
                             </div>

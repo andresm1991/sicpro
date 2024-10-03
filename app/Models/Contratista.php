@@ -16,6 +16,10 @@ class Contratista extends Model
         return $this->hasMany(DetalleContratista::class);
     }
 
+    public function pagosOrdenTrabajoContratista(){
+        return $this->hasMany(PagoOrdenTrabajoContratista::class);
+    }
+
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
@@ -49,5 +53,31 @@ class Contratista extends Model
     public function estado()
     {
         return $this->belongsTo(CatalogoDato::class, 'estado_id');
+    }
+    public function getTotalContratistasAttribute()
+    {
+        return $this->detalle_contratistas()->selectRaw('SUM(cantidad * valor_unitario) as total')->pluck('total')->first();
+    }
+
+    public function getPagosContratistasAttribute()
+    {
+        return $this->pagosOrdenTrabajoContratista()->selectRaw('SUM(valor) as pagos')->pluck('pagos')->first();
+    }
+
+    public function getNumeroPagoContratistaAttribute()
+    {
+        return $this->pagosOrdenTrabajoContratista()
+        ->selectRaw('id')
+        ->latest('id')
+        ->first();
+    }
+
+    public function getTipoPagoContratistaAttribute()
+    {
+        return $this->pagosOrdenTrabajoContratista()
+        ->selectRaw('tipo_pago')
+        ->latest('id')
+        ->pluck('tipo_pago')
+        ->first();
     }
 }

@@ -317,5 +317,6 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
+        
     }
 }

@@ -31,4 +31,8 @@ class Articulo extends Model
     {
         return $this->hasMany(DetalleManoObra::class);
     }
+
+    public function contratistas() {
+        return $this->hasMany(Contratista::class);
+    }
 }

@@ -128,8 +128,13 @@ if (!function_exists('registrarProducto')) {
  * return $numero_orden
  */
 if (!function_exists('numeroOrden')) {
-    function numeroOrden($numero) {
-        $ultimo_id = $numero ? $numero->id + 1 : 1;
+    function numeroOrden($numero, $nuevo = true) {
+        if($nuevo){
+            $ultimo_id = $numero ? $numero->id + 1 : 1;
+        }else{
+            $ultimo_id = $numero->id;
+        }
+        
         $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         return $numero_orden;
     }

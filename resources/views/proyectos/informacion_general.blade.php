@@ -139,13 +139,13 @@
                                                 <div class="col-md-6 col-12">
                                                     <div class="form-group">
                                                         <label class="col-form-label">Presupuesto total </label>
-                                                        {{ Form::label('presupuesto', $proyecto->presupuesto_total, ['class' => 'form-control']) }}
+                                                        {{ Form::label('presupuesto', $proyecto->presupuesto_total, ['class' => 'form-control input-double']) }}
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6 col-12">
                                                     <div class="form-group">
                                                         <label class="col-form-label">Presupuesto por unidad </label>
-                                                        {{ Form::label('presupuesto_unidad', $proyecto->presupuesto_unidad, ['class' => 'form-control']) }}
+                                                        {{ Form::label('presupuesto_unidad', $proyecto->presupuesto_unidad, ['class' => 'form-control input-double']) }}
                                                     </div>
                                                 </div>
                                             </div>
