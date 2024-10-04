@@ -281,6 +281,8 @@ $(function(){
             },
             success: function (data) {
                 $('tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
             var errors = JSON.parse(jqXHR.responseText);
