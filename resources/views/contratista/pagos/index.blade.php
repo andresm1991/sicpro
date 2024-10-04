@@ -21,13 +21,6 @@
                             </a>
                         </div>
                     </div>
-                    <div class="col-md-8 col-12 ">
-                        <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
-                            <i class="fal fa-search fa-lg form-control-icon"></i>
-                            <input type="text" name="pagos_search" class="form-control form-control-round"
-                                placeholder="Buscar....">
-                        </div>
-                    </div>
                 </div>
                 <div class="table-responsive" id="table">
                     <table class="table table-bordered table-hover">

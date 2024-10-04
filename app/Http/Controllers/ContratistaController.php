@@ -31,6 +31,9 @@ class ContratistaController extends Controller
         ];
 
         $orden_trabajos = Contratista::where('proyecto_id', $route_params['proyecto']->id)
+            ->where('etapa_id', $request->tipo_adquisicion)
+            ->where('tipo_etapa_id', $request->tipo_etapa)
+            ->orderBy('id', 'desc')
             ->paginate(15);
 
         $route_params = array_merge($route_params, ['orden_trabajos' => $orden_trabajos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
@@ -130,7 +133,9 @@ class ContratistaController extends Controller
         ];
 
         $orden_trabajo_id = $request->contratista;
-        $pagos_orden_trabajos = PagoOrdenTrabajoContratista::where('contratista_id', $orden_trabajo_id)->paginate(15);
+        $pagos_orden_trabajos = PagoOrdenTrabajoContratista::where('contratista_id', $orden_trabajo_id)
+        ->orderBy('id', 'desc')
+        ->paginate(15);
         
         $route_params = array_merge($route_params, [
             'pagos_orden_trabajos' => $pagos_orden_trabajos, 
@@ -242,8 +247,42 @@ class ContratistaController extends Controller
             })
             ->orderBy('fecha', 'asc')
             ->get();
+            foreach ($orden_trabajos as $orden_trabajo) {
 
-            return $orden_trabajos;
+                $avances = "<a href='". route('proyecto.adquisiciones.contratista.pagos.orden.trabajo',['tipo' => $request->tipo, 'tipo_id' => $request->tipo_id, 'proyecto' => $proyecto_id, 'tipo_etapa' => $tipo_adquisicion_id, 'tipo_adquisicion' => $etapa_id, 'contratista' => $orden_trabajo->id]) ."' class='dropdown-item'>Avances</a>";
+                $editar = "<a href='javascript:void(0);' class='dropdown-item'>Editar</a>";
+                $eliminar = "<a href='#' class='dropdown-item eliminar-orden-trabajo' id='".$orden_trabajo->id."'>Eliminar</a>";
+                $pdf = "<a href='javascript:void(0);' class='dropdown-item'>PDF Orden Trabajo</a>";
+
+                $estado = $orden_trabajo->tipo_pago_contratista ? $orden_trabajo->tipo_pago_contratista :'NUEVO';
+
+                $output .= '<tr id="'. $orden_trabajo->id .'">'.
+                                '<td class="align-middle">'.numeroOrden($orden_trabajo, false).'</td>'.
+                                '<td class="align-middle text-uppercase">'.$orden_trabajo->proveedor->razon_social.'</td>'.
+                                '<td class="align-middle text-uppercase">'.$orden_trabajo->articulo->descripcion.'</td>'.
+                                '<td class="align-middle">$'. number_format($orden_trabajo->total_contratistas,2).'</td>'.
+                                '<td class="align-middle">$'. number_format($orden_trabajo->pagos_contratistas,2).'</td>'.
+                                '<td class="align-middle">$ '. number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas),2) .'</td>'.
+                                '<td class="align-middle">'.
+                                    '<span class="badge badge-secondary">'.$estado .'</span>'.
+                                '</td>'.
+                                '<td class="align-middle align-middle text-right text-truncate">'.
+                                    '<button type="button" class="btn btn-outline-dark" data-container="body"
+                                        data-toggle="popover" data-placement="left" data-trigger="focus"
+                                        data-content ="'.$avances.$editar.$eliminar.$pdf.'">
+                                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                        </button>'.
+                                    '</td>'.
+                                '</tr>';
+            }
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="8" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
         }
     }
 

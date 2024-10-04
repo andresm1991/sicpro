@@ -12,6 +12,10 @@ class CatalogoDato extends Model
 
     protected $fillable = ['descripcion', 'detalle', 'slug', 'padre_id', 'activo'];
 
+    public function childs() {
+        return $this->hasMany(CatalogoDato::class,'padre_id','id') ;
+    }
+
     public function catalogo_datos()
     {
         return $this->hasMany(CatalogoDato::class, 'padre_id');

@@ -22,7 +22,7 @@
                     <span>Usuarios</span>
                 </a>
 
-                <a href="javasript:void(0);" class="nodo">
+                <a href="{{ route('sistema.config.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/configuracion.png') }}">
                     <span>Configuración</span>
                 </a>

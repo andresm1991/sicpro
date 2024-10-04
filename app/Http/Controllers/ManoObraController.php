@@ -36,6 +36,8 @@ class ManoObraController extends Controller
         ];
 
         $list_mano_obra = ManoObra::where('proyecto_id', $route_params['proyecto']->id)
+            ->where('etapa_id', $request->tipo_adquisicion)
+            ->where('tipo_etapa_id', $request->tipo_etapa)
             ->orderBy('semana', 'desc')
             ->paginate(15);
 

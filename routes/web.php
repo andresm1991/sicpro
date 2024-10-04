@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdquisicionController;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\CatalogoDatoController;
+use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\ContratistaController;
 use App\Http\Controllers\GenerarPdfController;
 use Illuminate\Support\Facades\Auth;
@@ -121,8 +122,13 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/buscar', [ArticuloController::class, 'buscar']);
             Route::delete('/eliminar/{id}', [ArticuloController::class, 'destroy']);
         });
-    });
 
+        // Configuraciones
+        Route::group(['prefix' => 'configuraciones', 'as' => 'config.'], function(){
+            Route::get('/configuraciones', [ConfiguracionController::class, 'index'])->name('index');
+        });
+    });
+    // fin rutas sistema
 
     // Controllador para generar los pdf del sistema
     Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
