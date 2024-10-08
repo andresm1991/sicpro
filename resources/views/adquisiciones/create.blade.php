@@ -12,7 +12,7 @@
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-10">
                                 <h4>Orden de Pedido #{{ $numero_orden }}</h4>
-                                <h6>Fecha: {{ date('Y-m-d') }}</h6>
+                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true,]) !!} <i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i></h6>
                             </div>
 
                             <div class="col-md-2 ">
@@ -43,6 +43,7 @@
                     {{ Form::hidden('proyecto_id', $proyecto->id) }}
                     {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}
                     {{ Form::hidden('tipo_etapa', $tipo_etapa->id) }}
+                    {{ Form::hidden('fecha', date('Y-m-d')) }}
 
                     @include('adquisiciones.partials.form')
 

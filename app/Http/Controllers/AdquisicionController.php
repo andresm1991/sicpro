@@ -107,7 +107,16 @@ class AdquisicionController extends Controller
      */
     public function store(Request $request, $tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
     {
-        $fecha = date('Y-m-d');
+        $request->validate([
+            'productos' => 'required|array',
+            'productos.*' => 'required',
+            'cantidad' => 'required|array',
+            'cantidad.*' => 'required',
+            'necesidad' => 'required|array',
+            'necesidad.*'=> 'required',
+        ]);
+
+        $fecha = $request->fecha;
         $numero_pedido = $request->numero_pedido;
         $proyecto_id = $request->proyecto_id;
         $adquisicion_id = $request->tipo_adquisicion;

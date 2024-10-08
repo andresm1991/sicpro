@@ -12,7 +12,7 @@
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-md-10">
                                 <h5>Orden de trabajo Nro. {{ numeroOrden($orden_trabajo, false) }}</h5>
-                                <span>Fecha. {{ dateFormatHumans(date('Y-m-d')) }}</span>
+                                <span id="text-fecha">Fecha. {{ dateFormatHumans(date('Y-m-d')) }}  </span><i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i>
                             </div>
 
                             <div class="col-md-2 ">
@@ -44,6 +44,7 @@
                     {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}
                     {{ Form::hidden('tipo_etapa', $tipo_etapa->id) }}
                     {{ Form::hidden('orden_trabajo', $orden_trabajo->id) }}
+                    {{ Form::hidden('fecha', date('Y-m-d')) }}
 
                     @include('contratista.pagos.partial.form')
 

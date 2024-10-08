@@ -8,6 +8,7 @@ use App\Models\ManoObra;
 use App\Models\Proveedor;
 use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
+use App\Models\Contratista;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
 
@@ -54,7 +55,7 @@ class GenerarPdfController extends Controller
         //return view('pdf.adquiscion', compact('orden'));
         $pdf = PDF::loadView('pdf.adquiscion', compact('orden'));
 
-        return $pdf->download('orden_pedido_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
+        return $pdf->stream('orden_pedido_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
 
     }
 
@@ -107,7 +108,7 @@ class GenerarPdfController extends Controller
         //return view('pdf.recepcion', compact('orden'));
         $pdf = PDF::loadView('pdf.recepcion', compact('orden'));
 
-        return $pdf->download('orden_recepcion_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
+        return $pdf->stream('orden_recepcion_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
     }
 
     public function planificacionManoObraPDF(ManoObra $mano_obra)
@@ -149,7 +150,7 @@ class GenerarPdfController extends Controller
                     $articulo = $detalle->articulo;
                     $proveedor = $detalle->proveedor;
     
-                    $fila['nombre'] = $proveedor->razon_social;
+                    $fila['nombre'] = strtoupper($proveedor->razon_social);
                     // El cargo puede cambiar por artículo
                     $fila['cargo'] = $articulo->descripcion;  
     
@@ -194,6 +195,55 @@ class GenerarPdfController extends Controller
         $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
 
         $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra', 'logo_base64'))->setPaper('a3', 'landscape');
-        return $pdf->download('reporte_mano_obra.pdf');
+        return $pdf->stream('reporte_mano_obra.pdf');
+    }
+
+    public function ordenTrabajoContratistaPDF(Contratista $orden_trabajo){
+        $logo_base64 = $this->logoBase64();
+
+        $pagos = $orden_trabajo->pagosOrdenTrabajoContratista;
+        if($pagos->count() > 0){
+            $primer_pago = $pagos->first();
+            $fecha_pago = $primer_pago->fecha;
+            $fecha_final = dateFormatHumans(calcularFechaFinal($fecha_pago, $orden_trabajo->plazo_semanas));
+        }else{
+            $fecha_final = 'No se ha realizado anticipo';
+        }
+
+
+        $info = [
+            'orden' => numeroOrden($orden_trabajo, false),
+            'proyecto' => strtoupper($orden_trabajo->proyecto->nombre_proyecto),
+            'etapa' => $orden_trabajo->etapa->descripcion,
+            'fecha' => dateFormatHumans($orden_trabajo->fecha),
+            'plazo' => $fecha_final,
+            'contratista' => strtoupper($orden_trabajo->proveedor->razon_social),
+            'categoria' => strtoupper($orden_trabajo->articulo->descripcion),
+            'valor_contratado' => number_format($orden_trabajo->total_contratistas,2),
+            'avance' => number_format($orden_trabajo->pagos_contratistas,2),
+            'saldo' => number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas),2),
+            'estado' => $orden_trabajo->tipo_pago_contratista ? $orden_trabajo->tipo_pago_contratista :'NUEVO',
+            'detalle' => []
+        ];
+
+        foreach ($orden_trabajo->detalle_contratistas as $detalle) {
+            $info['detalle'][] = [
+                'producto' => $detalle->articulo->descripcion,
+                'cantidad' => $detalle->cantidad,
+                'unidad_medida' => $detalle->unidad_medida->descripcion,
+                'valor_unitario' => number_format($detalle->valor_unitario, 2),
+                'total' => number_format(($detalle->cantidad * $detalle->valor_unitario), 2)
+            ];
+        }
+
+        
+        //return $info;
+        $pdf = PDF::loadView('pdf.orden_trabajo', compact('info', 'logo_base64'));
+        return $pdf->stream('orden_trabajo.pdf');
+    }
+
+    private function logoBase64() {
+        $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
+        return $logo_base64;
     }
 }

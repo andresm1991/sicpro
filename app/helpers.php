@@ -139,3 +139,29 @@ if (!function_exists('numeroOrden')) {
         return $numero_orden;
     }
 }
+/**
+ * Calcula la fecha final por semanas de plazo
+ * @param fecha_inicio 
+ * @param semanasPlazo
+ * return fecha_final
+ */
+function calcularFechaFinal($fechaInicio, $semanasPlazo)
+{
+    // Convertimos el plazo en días laborables (5 días por semana)
+    $diasLaborables = $semanasPlazo * 5;
+
+    // Creamos una instancia de Carbon para la fecha de inicio
+    $fechaFinal = Carbon::parse($fechaInicio);
+
+    // Bucle para avanzar solo en días laborables
+    while ($diasLaborables > 0) {
+        $fechaFinal->addDay(); // Avanza un día
+
+        // Si es un día laborable (ni sábado ni domingo), restamos un día laborable
+        if ($fechaFinal->isWeekday()) {
+            $diasLaborables--;
+        }
+    }
+
+    return $fechaFinal->toDateString(); // Devuelve la fecha final como cadena
+}

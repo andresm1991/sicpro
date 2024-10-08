@@ -76,6 +76,9 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}', [ContratistaController::class, 'index'])->name('contratista');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nueva-orden-trabajo', [ContratistaController::class, 'crearOrdenTrabajo'])->name('contratista.crear.orden.trabajo');
             Route::post('/{tipo_adquisicion}/contratista/{tipo_etapa}/guardar-orden-trabajo', [ContratistaController::class, 'storeOrdenTrabajo'])->name('contratista.guardar.orden.trabajo');
+            Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/editar-orden-trabajo/{contratista}', [ContratistaController::class, 'editarOrdenTrabajo'])->name('contratista.editar.orden.trabajo');
+            Route::put('/{tipo_adquisicion}/contratista/{tipo_etapa}/actualizar-orden-trabajo/{contratista}', [ContratistaController::class, 'editarOrdenTrabajo'])->name('contratista.update.orden.trabajo');
+            /** RUTAS PAGOS */
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/pagos-orden-trabajo/{contratista}', [ContratistaController::class, 'pagosOrdenTrabajo'])->name('contratista.pagos.orden.trabajo');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nuevo-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'nuevoPagoOrdenTrabajo'])->name('contratista.nuevo.pago.orden.trabajo');
             Route::post('/{tipo_adquisicion}/contratista/{tipo_etapa}/guardar-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'guardarPagoOrdenTrabajo'])->name('contratista.guardar.pago.orden.trabajo');
@@ -136,6 +139,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/adquisicion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfPedido'])->name('adquisicion');
         Route::get('/recepcion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfRecepcion'])->name('recepcion');
         Route::get('/mano-obra-pdf/{mano_obra}', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('planificacion.mano.obra');
+        Route::get('/orden-trabajo-contratista-pdf/{orden_trabajo}', [GenerarPdfController::class, 'ordenTrabajoContratistaPDF'])->name('orden.trabajo.contratista');
     });
 
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);

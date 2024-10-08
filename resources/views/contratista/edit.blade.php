@@ -12,7 +12,7 @@
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-md-10">
                                 <h5>Orden de trabajo Nro. {{ $numero_orden }}</h5>
-                                <span id="text-fecha">Fecha. {{ dateFormatHumans($fecha) }}  </span><i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i>
+                                <span>Fecha. {{ dateFormatHumans($fecha) }}  </span>
                             </div>
 
                             <div class="col-md-2 ">
@@ -23,22 +23,23 @@
                 </ul>
                 <div class="card-body">
                     @include('partials.alerts')
-                    {!! Form::open([
+                    {!! Form::model($orden_trabajo, [
                         'route' => [
-                            'proyecto.adquisiciones.contratista.guardar.orden.trabajo',
+                            'proyecto.adquisiciones.contratista.update.orden.trabajo',
                             [
                                 'tipo' => $tipo,
                                 'tipo_id' => $tipo_id,
                                 'tipo_adquisicion' => $tipo_adquisicion->id,
                                 'tipo_etapa' => $tipo_etapa->id,
                                 'proyecto' => $proyecto->id,
-                                'orden_trabajo' => $orden_trabajo->id,
+                                'contratista' => $orden_trabajo->id,
                             ],
                         ],
                         'class' => 'form-horizontal',
                         'autocomplete' => 'off',
                         'enctype' => 'multipart/form-data',
                         'id' => 'form_orden_trabajo',
+                        'method' => 'PUT'
                     ]) !!}
                     {{ Form::hidden('proyecto_id', $proyecto->id) }}
                     {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}

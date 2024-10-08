@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('contratistas', function (Blueprint $table) {
             $table->id();
             $table->date('fecha');
+            $table->smallInteger('plazo_semanas');
             $table->foreignId('proveedor_id')->references('id')->on('proveedores');
             $table->foreignId('articulo_id')->references('id')->on('articulos');
             $table->foreignId('proyecto_id')->references('id')->on('proyectos');

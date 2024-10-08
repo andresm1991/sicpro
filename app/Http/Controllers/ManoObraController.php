@@ -485,7 +485,7 @@ class ManoObraController extends Controller
             $nuevo = "<a href='" . route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', $route_params) . "' class='dropdown-item'>Agregar Personal</a>";
             $editar = "<a href='javascriopt:void(0);' class='dropdown-item editar-empleados-mano-obra' id='" . $mano_obra->id . "'>Editar</a>";
             $eliminar = "<a href='#' class='dropdown-item eliminar-planificacion' id='" . $mano_obra->id . "'>Eliminar</a>";
-            $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item'>PDF Planificación</a>";
+            $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item' target='_blank'>PDF Planificación</a>";
 
             $out .= '<tr id="' . $mano_obra->id . '">' .
                 '<td class="align-middle">' . $mano_obra->semana . '</td>' .

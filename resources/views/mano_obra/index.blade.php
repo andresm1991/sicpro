@@ -58,7 +58,7 @@
                                             <a href='{{ route('proyecto.adquisiciones.mano.obra.agregar.trabajadores', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'mano_obra' => $mano_obra->id]) }}' class='dropdown-item' >Agregar Personal</a>
                                             <a href='javascript:void(0);' class='dropdown-item editar-empleados-mano-obra' id='{{ $mano_obra->id }}'>Editar</a>
                                             <a href='#' class='dropdown-item eliminar-planificacion' id='{{ $mano_obra->id }}'>Eliminar</a>
-                                            <a href='{{ route('pdf.planificacion.mano.obra', $mano_obra->id) }}' class='dropdown-item'>PDF Planificación</a>">
+                                            <a href='{{ route('pdf.planificacion.mano.obra', $mano_obra->id) }}' target='_blank' class='dropdown-item'>PDF Planificación</a>">
                                             <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                         </button>
                                     </td>

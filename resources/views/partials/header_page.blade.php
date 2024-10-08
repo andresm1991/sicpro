@@ -6,7 +6,7 @@
                     <div class="text-white header-text">Bienvenido al Sistema de Control de Proyectos </div>
                 @else
                     <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb custom-breadcrumb">
+                        <ol class="breadcrumb custom-breadcrumb text-uppercase">
                             @foreach ($breadcrumbs as $breadcrumb)
                                 @if (!$loop->last)
                                     <!-- Si no es el último, es un enlace -->

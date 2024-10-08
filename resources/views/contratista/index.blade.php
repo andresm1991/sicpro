@@ -73,9 +73,9 @@
                                             data-toggle="popover" data-placement="left" data-trigger="focus"
                                             data-content ="
                                             <a href='{{ route('proyecto.adquisiciones.contratista.pagos.orden.trabajo',['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $orden_trabajo->id]) }}' class='dropdown-item'>Avances</a>
-                                            <a href='javascript:void(0);' class='dropdown-item'>Editar</a>
+                                            <a href='{{ route('proyecto.adquisiciones.contratista.editar.orden.trabajo',['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $orden_trabajo->id]) }}' class='dropdown-item'>Editar</a>
                                             <a href='#' class='dropdown-item eliminar-orden-trabajo' id='{{ $orden_trabajo->id }}'>Eliminar</a>
-                                            <a href='javascript:void(0);' class='dropdown-item'>PDF Orden Trabajo</a>">
+                                            <a href='{{ route('pdf.orden.trabajo.contratista', $orden_trabajo->id) }}' class='dropdown-item' target='_blank'>PDF Orden Trabajo</a>">
                                             <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                         </button>
                                     </td>

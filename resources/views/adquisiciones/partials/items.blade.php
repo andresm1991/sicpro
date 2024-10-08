@@ -30,8 +30,17 @@
     <div class="form-group">
         <button type="button" class="btn btn-dark" id="add-producto-adquisicion">Agregar</button>
     </div>
-</fieldset>
 
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>No es posible completar el pedido, por favor verifique que existan elementos agregados a la lista del pedido.</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    @endif
+
+</fieldset>
 
 
 <div class="table-responsive">

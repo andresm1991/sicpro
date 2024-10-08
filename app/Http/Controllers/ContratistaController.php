@@ -91,11 +91,13 @@ class ContratistaController extends Controller
         $cantidad = $request->cantidad;
         $unidad_medida = $request->unidad_medida;
         $precio_unitario = $request->precio_unitario;
+        $plazo = $request->plazo_semanas;
 
         try {
             DB::beginTransaction();
             $orden_trabajo_param = [
                 'fecha' => $fecha,
+                'plazo_semanas' => $plazo,
                 'proveedor_id' => $proveedor,
                 'articulo_id' => $categoria,
                 'proyecto_id' => $proyecto,
@@ -125,6 +127,45 @@ class ContratistaController extends Controller
 
             return redirect()->back()->with('error', MessagesConstant::CATCH_ERROR);
         }
+    }
+
+    /**
+     * Editar orden de trabajo
+     */
+    public function editarOrdenTrabajo(Request $request) {
+        $title_page = 'Editar orden de trabajo';
+        $route_params = $this->getRouteParameters($request);
+        $orden_trabajo = Contratista::find($request->contratista);
+        $fecha = $orden_trabajo->fecha;
+
+        $ultimo_registro = Contratista::latest()->first();
+        $numero_orden = numeroOrden($ultimo_registro, false);
+        $unidades_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida');
+        $articulos = Articulo::where('activo', true)->pluck('descripcion', 'id');
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Contratistas', 'url' => route('proyecto.adquisiciones.contratista', ['tipo' => $request->route('tipo'), 'tipo_id' => $request->route('tipo_id'), 'proyecto' => $request->route('proyecto'), 'tipo_adquisicion' => $request->route('tipo_adquisicion'), 'tipo_etapa' => $request->route('tipo_etapa')])],
+            ['name' => 'Editar Orden de Trabajo', 'url' => '']
+        ];
+
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
+
+        $route_params = array_merge(
+            $route_params,
+            [
+                'numero_orden' => $numero_orden,
+                'fecha' => $fecha,
+                'orden_trabajo' => $orden_trabajo,
+                'proveedores' => $proveedores,
+                'breadcrumbs' => $breadcrumbs,
+                'title_page' => $title_page,
+                'unidades_medidas' => $unidades_medidas,
+                'articulos' => $articulos,
+            ]
+        );
+
+        return view('contratista.edit', $route_params);
     }
 
     public function pagosOrdenTrabajo(Request $request)
@@ -181,6 +222,7 @@ class ContratistaController extends Controller
     {
         try {
             $route_params = $this->getRouteParameters($request);
+            $route_params = array_merge($route_params, ['contratista' => $request->contratista]);
             $orden_trabajo = Contratista::find($request->orden_trabajo);
             $valor = str_replace(',', '', $request->valor);
             $pagos = $orden_trabajo->pagos_contratistas + $valor;
@@ -192,7 +234,7 @@ class ContratistaController extends Controller
 
             DB::beginTransaction();
             $pago = [
-                'fecha' => date('Y-m-d'),
+                'fecha' => $request->fecha,
                 'contratista_id' => $request->orden_trabajo,
                 'tipo_pago' => $request->tipo,
                 'forma_pago' => $request->forma_pago,
