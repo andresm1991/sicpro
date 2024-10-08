@@ -72,7 +72,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/buscar-planificacion', [ManoObraController::class, 'buscarPlanificacion']);
             Route::post('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/guardar/{mano_obra}', [ManoObraController::class, 'store'])->name('mano.obra.store');
             Route::delete('/{tipo_adquisicion}/mano-obra/{tipo_etapa}/eliminar-mano-obra/{mano_obra}', [ManoObraController::class, 'destroy']);
-            /** RUTAS CONTRATISTA */ 
+            /** RUTAS CONTRATISTA */
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}', [ContratistaController::class, 'index'])->name('contratista');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nueva-orden-trabajo', [ContratistaController::class, 'crearOrdenTrabajo'])->name('contratista.crear.orden.trabajo');
             Route::post('/{tipo_adquisicion}/contratista/{tipo_etapa}/guardar-orden-trabajo', [ContratistaController::class, 'storeOrdenTrabajo'])->name('contratista.guardar.orden.trabajo');
@@ -124,8 +124,9 @@ Route::group(['middleware' => ['auth']], function () {
         });
 
         // Configuraciones
-        Route::group(['prefix' => 'configuraciones', 'as' => 'config.'], function(){
-            Route::get('/configuraciones', [ConfiguracionController::class, 'index'])->name('index');
+        Route::group(['prefix' => 'configuraciones', 'as' => 'config.'], function () {
+            Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
+            Route::get('/configuraciones/detalle/{config}', [ConfiguracionController::class, 'detalle'])->name('detalle');
         });
     });
     // fin rutas sistema
