@@ -1,4 +1,4 @@
-$(function(){
+$(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
     /**
@@ -72,7 +72,7 @@ $(function(){
 
         if (!medida_id) {
             valid = false;
-            $('#unidad-medida').next('.select2-container').find('.select2-selection').addClass('error-border'); 
+            $('#unidad-medida').next('.select2-container').find('.select2-selection').addClass('error-border');
             $('#unidad-medida').parent().append('<span class="error-message">Seleccione la unidad de medida.</span>');
         }
 
@@ -93,7 +93,7 @@ $(function(){
         }
 
         var numeroFila = $('.elementos-agregados').length + 1;
-        var total = parseFloat(cantidad) * parseFloat(precio_unitario);
+        var total = parseFloat(cantidad.replace(/,/g, '')) * parseFloat(precio_unitario.replace(/,/g, ''));
         var formattedNumber = total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         var nuevaFila = `
@@ -209,7 +209,7 @@ $(function(){
         $(this).closest('.edit-item').find('span').show();
     });
 
-    $(document).on('click', '.eliminar-orden-trabajo', function(){
+    $(document).on('click', '.eliminar-orden-trabajo', function () {
         var $this = $(this);
         var id = $(this).attr('id');
 
@@ -273,7 +273,7 @@ $(function(){
         var $value = $(this).val();
 
         $.ajax({
-            url: url+'/orden-trabajo/buscar',
+            url: url + '/orden-trabajo/buscar',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'text': $value },
