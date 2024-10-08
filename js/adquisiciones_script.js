@@ -234,6 +234,12 @@ $(function () {
         $(this).closest('.edit-item').find('span').show();
     });
 
+    // Obtener la fecha seleccionada cuando el usuario elige una fecha
+    $('#fecha').datepicker().on('changeDate', function(e) {
+        var fechaSeleccionada = $(this).datepicker('getFormattedDate');
+        $('input[name=fecha]').val(fechaSeleccionada);
+    });
+
     /**
      * Funciones
      */

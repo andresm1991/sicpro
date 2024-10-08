@@ -998,6 +998,16 @@ legend span {
     border-bottom: 5px solid #333;
 }
 
+/* Para las opciones dentro del dropdown de Select2 */
+.select2-results__option {
+    text-transform: uppercase;
+}
+
+/* Para la opción seleccionada que se muestra en el select */
+.select2-selection__rendered {
+    text-transform: uppercase;
+}
+
 .hidden {
     display: none !important;
 }
@@ -1118,6 +1128,15 @@ legend span {
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
     outline: 0;
+}
+
+input.auto-ajustable {
+    border: none;              /* Quitar el borde */
+    padding: 0;                /* Eliminar el padding */
+    outline: none;             /* Quitar el outline al hacer clic */
+    width: 90px;               /* Permitir ajuste dinámico */
+    min-width: 50px;           /* Establecer un ancho mínimo */
+    font-size: 1rem;           /* Ajusta el tamaño de la fuente */
 }
 
 /* Aqui inicia css para responsive*/

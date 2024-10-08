@@ -169,7 +169,7 @@ $(function () {
     });
 
     /**
-     * Editar elementos de td items en orden de pedido
+     * Editar elementos de td items
     */
     $(document).on('click', ".edit-item", function () {
         // Encuentra el td contenedor
@@ -191,13 +191,22 @@ $(function () {
 
         // Obtener el valor del input
         var newValue = $(this).closest('.edit-item').find('input').val();
-
         // Actualizar el valor del span
-        $(this).closest('.edit-item').find('span').text(newValue);
+        if($(this).closest('.edit-item').find('input').attr('name') == 'precio_unitario[]'){
+            console.log(newValue)
+            $(this).closest('.edit-item').find('span').text(formatoMoneda(newValue));
+        }else{
+            $(this).closest('.edit-item').find('span').text(newValue);
+        }
+        
+       
 
         // Ocultar el div y mostrar el span nuevamente
         $(this).closest('div').addClass('hidden');
         $(this).closest('.edit-item').find('span').show();
+
+         // Llama a la función para actualizar el total
+        actualizarTotal($(this).closest('tr'));
     });
 
     // Botón "cancelar" para cancelar el cambio
@@ -290,11 +299,60 @@ $(function () {
         });
     });
 
+     // Obtener la fecha seleccionada cuando el usuario elige una fecha
+     $('#fecha').datepicker().on('changeDate', function(e) {
+        var fechaSeleccionada = $(this).datepicker('getFormattedDate');
+        $('input[name=fecha]').val(fechaSeleccionada);
+        // Definir opciones para el formato de fecha
+        var opciones = { 
+            weekday: 'long',   // Día de la semana completo
+            year: 'numeric',   // Año en formato numérico
+            month: 'long',     // Mes completo
+            day: 'numeric'     // Día
+        };
+
+        var fecha =new Date(fechaSeleccionada+'T00:00:00');
+        // Formatear la fecha
+        var fechaFormateada = new Intl.DateTimeFormat('es-ES', opciones).format(fecha);
+        // Eliminar la coma manualmente
+        fechaFormateada = fechaFormateada.replace(',', '');
+
+        // Función para capitalizar solo el día y el mes, dejando "de" en minúsculas
+        function capitalizarDiaMes(str) {
+            return str.replace(/(^\w{1}|\s\w{1})/g, function(l) { return l.toUpperCase(); })
+                    .replace(/\sDe\s/g, ' de ');  // Asegurarse de que "de" se mantenga en minúsculas
+        }
+
+        // Aplicar la función
+        var resultadoFinal = capitalizarDiaMes(fechaFormateada);
+
+        $('#text-fecha').html('Fecha. '+resultadoFinal+' ');
+    });
+
     function clearInputs() {
         $('#producto').val(null).trigger('change');
         $('#unidad-medida').val(null).trigger('change');
         $('input[name=cantidad]').val("");
         $('input[name=precio-unitario]').val("");
 
+    }
+
+    // Función para recalcular y actualizar el total
+    function actualizarTotal($row) {
+        // Obtener los valores de cantidad y precio unitario
+        var cantidad = parseFloat($row.find('input[name="cantidad[]"]').val()) || 0;
+        var precioUnitario = parseFloat($row.find('input[name="precio_unitario[]"]').val()) || 0;
+
+        // Calcular el nuevo total
+        var total = cantidad * precioUnitario;
+
+        // Actualizar el valor del td de total con el nuevo valor calculado
+        $row.find('td .total').text('$ ' + total.toFixed(2));
+    }
+
+    function formatoMoneda(numero) {
+        // Convertir a número en caso de que sea una cadena
+        numero = parseFloat(numero) || 0; // Si no es un número válido, se establece a 0
+        return '$' + numero.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     }
 });

@@ -107,6 +107,16 @@ $(function () {
 
     });
 
+    $('.datepicker-2').datepicker({
+        language: "es",
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayBtn: "linked",
+        todayHighlight: true,
+        beforeShowDay: habilitarFechas,
+
+    });
+
     $('.select2-basic-single').select2({
         placeholder: function () {
             $(this).data('placeholder');
@@ -148,6 +158,18 @@ $(function () {
         rightAlign: false, // Alinear a la izquierda
         allowMinus: false,   // Permitir números negativos
         placeholder: $('.input-double').data('placeholder')
+    });
+
+    $('.input-enteros').inputmask({
+        alias: 'numeric',
+        rightAlign: false,      // No alinear a la derecha
+        allowMinus: false,      // No permitir números negativos
+        digits: 0,              // No permitir decimales
+        min: 0,                 // Valor mínimo (0 o positivo)
+        max: undefined,         // Puedes establecer un valor máximo si lo deseas
+        integerDigits: undefined, // Número máximo de dígitos permitidos en el entero (opcional)
+        placeholder: "",         // Dejar vacío el placeholder si lo deseas
+        autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
     });
 
     /// Solo numeros
@@ -211,6 +233,11 @@ $(function () {
         updateFileList();
     });
 
+    $(document).on('input', '.auto-ajustable', function() {
+        // Ajustar el ancho del input en función del contenido
+        this.style.width = ((this.value.length + 1) * 8) + 'px'; // Ajusta el multiplicador si es necesario
+    });
+
 
     /*$('#form_proyectos').on('submit', function (event) {
         var form = event.target; // Puede ser $(this) para jQuery
@@ -264,6 +291,41 @@ $(function () {
 
     function imageLoaded(img) {
         img.parentElement.classList.add('loaded');
+    }
+
+    // Función para habilitar la fecha actual y la fecha anterior (de lunes a viernes)
+    function habilitarFechas(date) {
+        var today = new Date(); // Obtener la fecha actual
+
+        // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
+        var day = today.getDay();
+        
+        // Para comparar solo la fecha sin hora
+        today.setHours(0, 0, 0, 0);
+        date.setHours(0, 0, 0, 0);
+
+        // Permitir siempre la fecha actual
+        if (date.getTime() === today.getTime()) {
+            return true;
+        }
+
+        // Habilitar la fecha anterior de lunes a viernes
+        var fechaAnterior;
+        if (day === 1) { // Si es lunes, habilitar el viernes anterior
+            fechaAnterior = new Date(today);
+            fechaAnterior.setDate(today.getDate() - 3); // Restar 3 días para obtener el viernes
+        } else if (day >= 2 && day <= 5) { // De martes a viernes, habilitar solo el día anterior
+            fechaAnterior = new Date(today);
+            fechaAnterior.setDate(today.getDate() - 1);
+        }
+
+        // Permitir solo la fecha anterior calculada
+        if (date.getTime() === fechaAnterior.getTime()) {
+            return true;
+        }
+
+        // Deshabilitar todas las demás fechas
+        return false;
     }
 
 });
