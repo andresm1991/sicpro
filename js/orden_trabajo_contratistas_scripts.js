@@ -114,15 +114,10 @@ $(function () {
                                 class="fa-solid fa-xmark"></i></button>
                     </div>
                 </td>
-                <td class="edit-item">
+                <td>
                     <span>${medida_name}</span>
                     <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2" name="unidad_medida[]"
-                            value="${medida_id}">
-                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                class="fa-solid fa-check"></i></button>
-                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                class="fa-solid fa-xmark"></i></button>
+                        <input type="hidden" name="unidad_medida[]" value="${medida_id}">
                     </div>
                 </td>
                 <td class="edit-item">
