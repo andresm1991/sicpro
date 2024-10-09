@@ -148,6 +148,7 @@
             <div class="left">
                 <strong class="title">Fecha:</strong> <span class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
                 <strong class="title">Semana:</strong> <span class="text-content"> {{ $info_mano_obra['semana'] }}</span><br>
+                <strong class="title">Etapa:</strong> <span class="text-content">{{ $info_mano_obra['etapa'] }}</span>
             </div>
 
             <div class="clear"></div>

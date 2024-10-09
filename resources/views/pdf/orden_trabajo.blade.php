@@ -190,10 +190,13 @@
     <div class="row clearfix">
         <div class="col-sm-6">
             <p><strong class="title">Proyecto:</strong> <span class="text-content">{{ $info['proyecto'] }}</span></p>
-            <p><strong class="title">Fecha:</strong> <span class="text-content">{{ $info['fecha'] }}</span></p>
+            <p><strong class="title">Categoria:</strong> <span class="text-content">{{ $info['categoria'] }}</span></p>
+            <p><strong class="title">Etapa:</strong> <span class="text-content">{{ $info['etapa'] }}</span></p>
+            <p><strong class="title">Estado:</strong> <span class="text-content">{{ $info['estado'] }}</span></p>
         </div>
         <div class="col-sm-6">
-            <p><strong class="title">Etapa:</strong> <span class="text-content">{{ $info['etapa'] }}</span></p>
+            <p><strong class="title">Contratista:</strong> <span class="text-content">{{ $info['contratista'] }}</span></p>
+            <p><strong class="title">Fecha:</strong> <span class="text-content">{{ $info['fecha'] }}</span></p>
             <p><strong class="title">Entrega:</strong> <span class="text-content"> {{ $info['plazo'] }}</span></p>
         </div>
     </div>
@@ -204,7 +207,7 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Nro</th>
+                        <th>Item</th>
                         <th>Producto</th>
                         <th>Cantidad</th>
                         <th>Unidad Medida</th>

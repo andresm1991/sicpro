@@ -191,7 +191,8 @@ class ManoObraController extends Controller
     public function storePlanificacion(Request $request)
     {
         if ($request->ajax()) {
-            $semana = ManoObra::where('proyecto_id', $request->proyecto_id)->count();
+            $semana = ManoObra::where('proyecto_id', $request->proyecto_id)
+            ->where('etapa_id', $request->tipo_adquisicion)->count();
             $request->merge([
                 'fecha_inicio' => Carbon::createFromFormat('d-m-Y', $request->fecha_inicio)->format('Y-m-d'),
                 'fecha_fin' => Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d'),
@@ -201,7 +202,8 @@ class ManoObraController extends Controller
             $fechaFin = $request->fecha_fin;
 
             // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
-            $fechasExistentes = ManoObra::where(function ($query) use ($fechaInicio, $fechaFin) {
+            $fechasExistentes = ManoObra::where('etapa_id', $request->tipo_adquisicion)
+            ->where(function ($query) use ($fechaInicio, $fechaFin) {
                 $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
                     ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
                     ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
@@ -221,13 +223,17 @@ class ManoObraController extends Controller
                 'fecha_inicio' => [
                     'required',
                     'date',
-                    Rule::unique('mano_obra', 'fecha_inicio'),
+                    Rule::unique('mano_obra', 'fecha_inicio')->where(function ($query) use ($request) {
+                        return $query->where('etapa_id', $request->tipo_adquisicion);
+                    }),
                 ],
                 'fecha_fin' => [
                     'required',
                     'date',
                     'after:fecha_inicio',
-                    Rule::unique('mano_obra', 'fecha_fin'),
+                    Rule::unique('mano_obra', 'fecha_fin')->where(function ($query) use ($request) {
+                        return $query->where('etapa_id', $request->tipo_adquisicion);
+                    }),
                 ],
             ], [
                 'fecha_fin.after' => 'La fecha de fin de ser mayor a la fecha de inicio.',
@@ -250,6 +256,7 @@ class ManoObraController extends Controller
                 if (ManoObra::create($mano_obra)) {
                     DB::commit();
                     $list_mano_obra = ManoObra::where('proyecto_id', $request->proyecto_id)
+                        ->where('etapa_id', $request->tipo_adquisicion)
                         ->orderBy('semana', 'desc')
                         ->paginate(15);
 

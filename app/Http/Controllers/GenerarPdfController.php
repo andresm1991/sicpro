@@ -122,6 +122,7 @@ class GenerarPdfController extends Controller
         
         $info_mano_obra = [
             'proyecto' => $mano_obra->proyecto->nombre_proyecto,
+            'etapa' => $mano_obra->etapa->descripcion,
             'fecha' => dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin),
             'semana' => $mano_obra->semana,
             'detalle' => []  // Para almacenar los detalles procesados
@@ -192,7 +193,7 @@ class GenerarPdfController extends Controller
                 $nombre_mostrado = true;
             }
         }
-        $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
+        $logo_base64 = $this->logoBase64();
 
         $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra', 'logo_base64'))->setPaper('a3', 'landscape');
         return $pdf->stream('reporte_mano_obra.pdf');
@@ -222,7 +223,7 @@ class GenerarPdfController extends Controller
             'valor_contratado' => number_format($orden_trabajo->total_contratistas,2),
             'avance' => number_format($orden_trabajo->pagos_contratistas,2),
             'saldo' => number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas),2),
-            'estado' => $orden_trabajo->tipo_pago_contratista ? $orden_trabajo->tipo_pago_contratista :'NUEVO',
+            'estado' => $orden_trabajo->tipo_pago_contratista ? ($orden_trabajo->tipo_pago_contratista == "Completado" ? "Completado":"En Proceso") :'NUEVO',
             'detalle' => []
         ];
 

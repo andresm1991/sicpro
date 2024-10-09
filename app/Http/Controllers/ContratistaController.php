@@ -168,6 +168,50 @@ class ContratistaController extends Controller
         return view('contratista.edit', $route_params);
     }
 
+    /**
+     * Actualizar orden de trabajo
+     */
+    public function updateOrdenTrabajo (Request $request) {
+        try{
+            $route_params = $this->getRouteParameters($request);
+            DB::beginTransaction();
+
+            $productos = $request->productos;
+            $cantidad = $request->cantidad;
+            $unidad_medida = $request->unidad_medida;
+            $precio_unitario = $request->precio_unitario;
+            $plazo = $request->plazo_semanas;
+
+            $orden_trabajo = Contratista::find($request->contratista);
+            $orden_trabajo->plazo_semanas = $plazo;
+
+            if($orden_trabajo->save()){
+                foreach ($productos as $index => $producto) {
+                    DetalleContratista::updateOrCreate(
+                        [
+                            'contratista_id' => $request->contratista,
+                            'articulo_id' => $producto,
+                        ],
+                        [
+                            'cantidad' => $cantidad[$index],
+                            'unidad_medida_id' => $unidad_medida[$index],
+                            'valor_unitario' => str_replace(',', '', $precio_unitario[$index]),
+                        ]
+                    );
+                }
+
+                DB::commit();
+                $route_params = array_merge($route_params, ['contratista' => $request->contratista]);
+                return redirect()->route('proyecto.adquisiciones.contratista.editar.orden.trabajo', $route_params)->with('success', 'Orden de trabajo actualizada con éxito.');
+            }
+        }catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('error', 'Error al actualizar orden de trabajo contratista', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+
+            return redirect()->back()->with('error', MessagesConstant::CATCH_ERROR);
+        }
+    }
+
     public function pagosOrdenTrabajo(Request $request)
     {
         $title_page = 'Pagos Contratista';

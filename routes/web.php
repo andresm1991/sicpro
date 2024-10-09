@@ -77,7 +77,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nueva-orden-trabajo', [ContratistaController::class, 'crearOrdenTrabajo'])->name('contratista.crear.orden.trabajo');
             Route::post('/{tipo_adquisicion}/contratista/{tipo_etapa}/guardar-orden-trabajo', [ContratistaController::class, 'storeOrdenTrabajo'])->name('contratista.guardar.orden.trabajo');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/editar-orden-trabajo/{contratista}', [ContratistaController::class, 'editarOrdenTrabajo'])->name('contratista.editar.orden.trabajo');
-            Route::put('/{tipo_adquisicion}/contratista/{tipo_etapa}/actualizar-orden-trabajo/{contratista}', [ContratistaController::class, 'editarOrdenTrabajo'])->name('contratista.update.orden.trabajo');
+            Route::put('/{tipo_adquisicion}/contratista/{tipo_etapa}/actualizar-orden-trabajo/{contratista}', [ContratistaController::class, 'updateOrdenTrabajo'])->name('contratista.update.orden.trabajo');
             /** RUTAS PAGOS */
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/pagos-orden-trabajo/{contratista}', [ContratistaController::class, 'pagosOrdenTrabajo'])->name('contratista.pagos.orden.trabajo');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nuevo-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'nuevoPagoOrdenTrabajo'])->name('contratista.nuevo.pago.orden.trabajo');

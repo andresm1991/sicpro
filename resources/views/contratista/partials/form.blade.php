@@ -123,6 +123,7 @@
                     </td>
                     <td>
                         <span>{{ $detalle->unidad_medida->descripcion }}</span>
+                        {{ Form::hidden('unidad_medida[]', $detalle->unidad_medida_id) }}
                     </td>
                     <td class="edit-item">
                         <span>$ {{ number_format($detalle->valor_unitario, 2) }}</span>

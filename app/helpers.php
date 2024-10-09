@@ -145,23 +145,25 @@ if (!function_exists('numeroOrden')) {
  * @param semanasPlazo
  * return fecha_final
  */
-function calcularFechaFinal($fechaInicio, $semanasPlazo)
-{
-    // Convertimos el plazo en días laborables (5 días por semana)
-    $diasLaborables = $semanasPlazo * 5;
+if (!function_exists('calcularFechaFinal')) {
+    function calcularFechaFinal($fechaInicio, $semanasPlazo)
+    {
+        // Convertimos el plazo en días laborables (5 días por semana)
+        $diasLaborables = $semanasPlazo * 5;
 
-    // Creamos una instancia de Carbon para la fecha de inicio
-    $fechaFinal = Carbon::parse($fechaInicio);
+        // Creamos una instancia de Carbon para la fecha de inicio
+        $fechaFinal = Carbon::parse($fechaInicio);
 
-    // Bucle para avanzar solo en días laborables
-    while ($diasLaborables > 0) {
-        $fechaFinal->addDay(); // Avanza un día
+        // Bucle para avanzar solo en días laborables
+        while ($diasLaborables > 0) {
+            $fechaFinal->addDay(); // Avanza un día
 
-        // Si es un día laborable (ni sábado ni domingo), restamos un día laborable
-        if ($fechaFinal->isWeekday()) {
-            $diasLaborables--;
+            // Si es un día laborable (ni sábado ni domingo), restamos un día laborable
+            if ($fechaFinal->isWeekday()) {
+                $diasLaborables--;
+            }
         }
-    }
 
-    return $fechaFinal->toDateString(); // Devuelve la fecha final como cadena
+        return $fechaFinal->toDateString(); // Devuelve la fecha final como cadena
+    }
 }
