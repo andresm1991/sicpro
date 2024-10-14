@@ -1,10 +1,13 @@
 $(function () {
     var numeroFila = 0;
 
-    $('#productos').select2({
+    $('select').select2({
+        width: '100%',
         allowClear: false, // Permite limpiar la selección
         tags: true, // Permite agregar nuevas opciones
-        placeholder: "Selecciona o agrega un producto",
+        placeholder: function () {
+            $(this).data('placeholder');
+        },
         createTag: function (params) {
             var term = $.trim(params.term);
             if (term === '') {
@@ -115,7 +118,7 @@ $(function () {
         var producto_id = $('#productos').val();
         var producto = $('#productos option:selected').text();
         var cantidad = $('#cantidad').val();
-        var necesidad = $('#necesidad').val();
+        var necesidad = $('#necesidad option:selected').text();
 
         if (producto_id == '' || cantidad == '' || necesidad == '') {
             Toast.fire({
@@ -235,9 +238,17 @@ $(function () {
     });
 
     // Obtener la fecha seleccionada cuando el usuario elige una fecha
-    $('#fecha').datepicker().on('changeDate', function(e) {
+    $('#fecha').datepicker().on('changeDate', function (e) {
         var fechaSeleccionada = $(this).datepicker('getFormattedDate');
         $('input[name=fecha]').val(fechaSeleccionada);
+    });
+
+    $('.inventario').on('change', function () {
+        if ($(this).is(':checked')) {
+            $(this).val(1);
+        } else {
+            $(this).val(0);
+        }
     });
 
     /**
@@ -246,7 +257,6 @@ $(function () {
     function clearInputs() {
         $('#productos').val(null).trigger('change');
         $('#cantidad').val("");
-        $('#necesidad').val("");
-
+        $('#necesidad').val(null).trigger('change');
     }
 });
