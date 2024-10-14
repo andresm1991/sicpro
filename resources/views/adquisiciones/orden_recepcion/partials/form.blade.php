@@ -45,3 +45,7 @@
         </div>
     </div>
 </div>
+
+@section('scripts')
+    <script src="{{ asset('js/adquisiciones_script.js') }}"></script>
+@endsection

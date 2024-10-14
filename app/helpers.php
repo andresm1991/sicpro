@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use App\Models\Articulo;
 use App\Models\CatalogoDato;
+use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
@@ -121,6 +122,23 @@ if (!function_exists('registrarProducto')) {
 
         return $create;
     }
+
+    /**
+     * Registrar unidad de medida
+     */
+    function registrarUnidadMedida($unidad_medida)
+    {
+        $catalogo = CatalogoDato::getCatalogoPadre('unidades.medida');
+        $create = CatalogoDato::create([
+            'descripcion' => $unidad_medida,
+            'detalle' => '',
+            'slug' => 'unidad.medida.' . strtolower(str_replace(' ', ',', $unidad_medida)),
+            'padre_id' => $catalogo->id,
+            'activo' => true,
+        ]);
+
+        return $create->id;
+    }
 }
 /**
  * Formato para el numero de orden de trabajo o adquisison
@@ -128,13 +146,14 @@ if (!function_exists('registrarProducto')) {
  * return $numero_orden
  */
 if (!function_exists('numeroOrden')) {
-    function numeroOrden($numero, $nuevo = true) {
-        if($nuevo){
+    function numeroOrden($numero, $nuevo = true)
+    {
+        if ($nuevo) {
             $ultimo_id = $numero ? $numero->id + 1 : 1;
-        }else{
+        } else {
             $ultimo_id = $numero->id;
         }
-        
+
         $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         return $numero_orden;
     }
@@ -165,5 +184,23 @@ if (!function_exists('calcularFechaFinal')) {
         }
 
         return $fechaFinal->toDateString(); // Devuelve la fecha final como cadena
+    }
+}
+
+if (!function_exists('palabras')) {
+    function palabras()
+    {
+        $palabras = DiccionarioPalabra::pluck('palabra', 'id');
+        return $palabras;
+    }
+
+    function agregarPalabra($palabra)
+    {
+        $existe = DiccionarioPalabra::where('palabra', $palabra)->exists();
+        echo "entro " . $existe;
+        if (!$existe) {
+            echo 'crear';
+            DiccionarioPalabra::create(['palabra' => $palabra]);
+        }
     }
 }

@@ -109,13 +109,22 @@ class ContratistaController extends Controller
 
             if ($orden_trabajo = Contratista::create($orden_trabajo_param)) {
                 foreach ($productos as $index => $producto) {
-                    DetalleContratista::create([
+                    $parametros = [
+                        'unidad_medida_id' => '',
                         'contratista_id' => $orden_trabajo->id,
                         'articulo_id' => $producto,
                         'cantidad' => $cantidad[$index],
-                        'unidad_medida_id' => $unidad_medida[$index],
                         'valor_unitario' => str_replace(',', '', $precio_unitario[$index]),
-                    ]);
+                    ];
+
+                    if (is_numeric($unidad_medida[$index])) {
+                        $parametros['unidad_medida_id'] = $unidad_medida[$index];
+                    } else {
+                        $new_unidad_medida = registrarUnidadMedida($unidad_medida[$index]);
+                        $parametros['unidad_medida_id'] = $new_unidad_medida;
+                    }
+
+                    DetalleContratista::create($parametros);
                 }
                 DB::commit();
                 return redirect()->back()->with('success', 'Orden de trabajo contratista creada con éxito.');
@@ -132,7 +141,8 @@ class ContratistaController extends Controller
     /**
      * Editar orden de trabajo
      */
-    public function editarOrdenTrabajo(Request $request) {
+    public function editarOrdenTrabajo(Request $request)
+    {
         $title_page = 'Editar orden de trabajo';
         $route_params = $this->getRouteParameters($request);
         $orden_trabajo = Contratista::find($request->contratista);
@@ -171,8 +181,9 @@ class ContratistaController extends Controller
     /**
      * Actualizar orden de trabajo
      */
-    public function updateOrdenTrabajo (Request $request) {
-        try{
+    public function updateOrdenTrabajo(Request $request)
+    {
+        try {
             $route_params = $this->getRouteParameters($request);
             DB::beginTransaction();
 
@@ -185,7 +196,7 @@ class ContratistaController extends Controller
             $orden_trabajo = Contratista::find($request->contratista);
             $orden_trabajo->plazo_semanas = $plazo;
 
-            if($orden_trabajo->save()){
+            if ($orden_trabajo->save()) {
                 foreach ($productos as $index => $producto) {
                     DetalleContratista::updateOrCreate(
                         [
@@ -204,7 +215,7 @@ class ContratistaController extends Controller
                 $route_params = array_merge($route_params, ['contratista' => $request->contratista]);
                 return redirect()->route('proyecto.adquisiciones.contratista.editar.orden.trabajo', $route_params)->with('success', 'Orden de trabajo actualizada con éxito.');
             }
-        }catch (Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             LogService::log('error', 'Error al actualizar orden de trabajo contratista', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
 
@@ -348,9 +359,9 @@ class ContratistaController extends Controller
             foreach ($orden_trabajos as $orden_trabajo) {
 
                 $avances = "<a href='" . route('proyecto.adquisiciones.contratista.pagos.orden.trabajo', ['tipo' => $request->tipo, 'tipo_id' => $request->tipo_id, 'proyecto' => $proyecto_id, 'tipo_etapa' => $tipo_adquisicion_id, 'tipo_adquisicion' => $etapa_id, 'contratista' => $orden_trabajo->id]) . "' class='dropdown-item'>Avances</a>";
-                $editar = "<a href='javascript:void(0);' class='dropdown-item'>Editar</a>";
+                $editar = "<a href='" . route('proyecto.adquisiciones.contratista.editar.orden.trabajo', ['tipo' => $request->tipo, 'tipo_id' => $request->tipo_id, 'proyecto' => $proyecto_id, 'tipo_etapa' => $tipo_adquisicion_id, 'tipo_adquisicion' => $etapa_id, 'contratista' => $orden_trabajo->id]) . "' class='dropdown-item'>Editar</a>";
                 $eliminar = "<a href='#' class='dropdown-item eliminar-orden-trabajo' id='" . $orden_trabajo->id . "'>Eliminar</a>";
-                $pdf = "<a href='javascript:void(0);' class='dropdown-item'>PDF Orden Trabajo</a>";
+                $pdf = "<a href='" . route('pdf.orden.trabajo.contratista', $orden_trabajo->id) . "' class='dropdown-item'>PDF Orden Trabajo</a>";
 
                 $estado = $orden_trabajo->tipo_pago_contratista ? $orden_trabajo->tipo_pago_contratista : 'NUEVO';
 

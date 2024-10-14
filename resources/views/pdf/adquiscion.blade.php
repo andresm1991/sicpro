@@ -48,6 +48,7 @@
         .details .right {
             width: 50%;
             float: left;
+            margin-right: 10px;
         }
 
         .details .right {
@@ -97,7 +98,7 @@
 
 <body>
     <div class="header">
-        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_empresa.jpg'))) }}"  alt="Logo">
+        <img src="data:image/png;base64,{{ $logo_base64 }}" alt="Logo">
         <div class="order-number">
             Orden de Pedido <br>{{ $orden['numero_pedido'] }}
         </div>
@@ -106,18 +107,22 @@
     <div class="content">
         <div class="details">
             <div class="left">
-                <strong>Fecha:</strong> {{ $orden['fecha'] }}<br>
-                <strong>Cliente:</strong>
-                {{ $orden['cliente']['nombre'] }}<br>
-                <strong>Dirección:</strong>
-                {{ $orden['cliente']['direccion'] }}<br>
-                <strong>Teléfono:</strong>
-                {{ $orden['cliente']['telefono'] }}<br>
-                <strong>Correo:</strong>
-                {{ $orden['cliente']['correo'] }}<br>
+                <strong>PROYECTO:</strong> {{ strtoupper($orden['proyecto']) }}<br>
+                <strong>ETAPA:</strong> {{ strtoupper($orden['etapa']) }}<br>
+                <strong>DIRECCIÓN:</strong>
+                {{ strtoupper($orden['cliente']['direccion']) }}<br>
+                <strong>CORREO:</strong>
+                {{ strtoupper($orden['cliente']['correo']) }}<br>
             </div>
 
+            <div class="rigth">
+                <strong>FECHA:</strong> {{ $orden['fecha'] }}<br>
+                <strong>TIPO:</strong> {{ strtoupper($orden['tipo']) }}<br>
+                <strong>TELÉFONO:</strong>
+                {{ $orden['cliente']['telefono'] }}<br>
+            </div>
             <div class="clear"></div>
+
         </div>
 
         <div class="items">

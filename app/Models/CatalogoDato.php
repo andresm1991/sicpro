@@ -12,8 +12,9 @@ class CatalogoDato extends Model
 
     protected $fillable = ['descripcion', 'detalle', 'slug', 'padre_id', 'activo'];
 
-    public function childs() {
-        return $this->hasMany(CatalogoDato::class,'padre_id','id') ;
+    public function childs()
+    {
+        return $this->hasMany(CatalogoDato::class, 'padre_id', 'id');
     }
 
     public function catalogo_datos()
@@ -35,5 +36,11 @@ class CatalogoDato extends Model
     {
         $catalogo = CatalogoDato::where('slug', $value)->first();
         return CatalogoDato::where('padre_id', $catalogo->id)->get();
+    }
+
+    public static function getEstadoInventarioId($slug)
+    {
+        $catalogo = CatalogoDato::where('slug', $slug)->first();
+        return $catalogo->id;
     }
 }

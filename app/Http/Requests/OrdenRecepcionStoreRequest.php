@@ -26,6 +26,10 @@ class OrdenRecepcionStoreRequest extends FormRequest
             'pedido' => 'required|numeric',
             'cantidad_recibida' => 'required|array', // Valida que sea un array
             'cantidad_recibida.*' => 'required|numeric', // Valida que cada elemento dentro del array sea numérico'cantidad_recibida' => 'required|array|numeric',
+            'unidad_medida' => 'required|array', // Valida que sea un array
+            'unidad_medida.*' => 'required|numeric', // Valida que cada elemento dentro del array sea numérico'cantidad_recibida' => 'required|array|numeric',
+            'valor' => 'required|array', // Valida que sea un array
+            'valor.*' => 'required|numeric', // Valida que cada elemento dentro del array sea numérico'cantidad_recibida' => 'required|array|numeric',
             'forma_pago' => 'required',
         ];
 
@@ -44,7 +48,8 @@ class OrdenRecepcionStoreRequest extends FormRequest
             'cantidad_recibida.required' => 'Ingrese al menos un valor de cantidad recibida.',
             'cantidad_recibida.*.required' => 'Ingrese el valor de cantidad recibida.',
             'cantidad_recibida.*.numeric' => 'El valor de cada cantidad recibida debe ser numérico.',
-
+            'unidad_medida.*.required' => 'selecione la unidad de medida',
+            'valor.*.required' => 'Ingrese el valor unitario.',
             'forma_pago.required' => 'Seleccione la forma de pago.'
         ];
     }

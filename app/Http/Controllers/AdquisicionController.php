@@ -20,6 +20,8 @@ use App\Constants\MessagesConstant;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
+use App\Models\DiccionarioPalabra;
+use App\Models\Inventario;
 
 class AdquisicionController extends Controller
 {
@@ -74,7 +76,7 @@ class AdquisicionController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Crear nuevo pedido
      */
     public function create(Request $request)
     {
@@ -103,7 +105,7 @@ class AdquisicionController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Guardar pedido
      */
     public function store(Request $request, $tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
     {
@@ -113,7 +115,7 @@ class AdquisicionController extends Controller
             'cantidad' => 'required|array',
             'cantidad.*' => 'required',
             'necesidad' => 'required|array',
-            'necesidad.*'=> 'required',
+            'necesidad.*' => 'required',
         ]);
 
         $fecha = $request->fecha;
@@ -141,22 +143,23 @@ class AdquisicionController extends Controller
 
             if ($adquisicion) {
                 foreach ($productos as $index => $producto) {
-                    $param_detalle_adquisicion = ['adquisicion_id' => $adquisicion->id,];
+                    $param_detalle_adquisicion = [
+                        'adquisicion_id' => $adquisicion->id,
+                        'articulo_id' => '',
+                        'cantidad_solicitada' => str_replace(',', '', $cantidad[$index]),
+                        'necesidad' => $necesidad[$index]
+                    ];
+
                     if (is_numeric($producto)) {
-                        $param_detalle_adquisicion = array_merge($param_detalle_adquisicion, [
-                            'articulo_id' => $producto,
-                            'cantidad_solicitada' => $cantidad[$index],
-                            'necesidad' => $necesidad[$index],
-                        ]);
+                        $param_detalle_adquisicion['articulo_id'] = $producto;
                     } else {
                         $nuevo_producto = $this->registrarNuevoProducto($tipo_etapa, $producto);
-                        $param_detalle_adquisicion = array_merge($param_detalle_adquisicion, [
-                            'articulo_id' => $nuevo_producto->id,
-                            'cantidad_solicitada' => $cantidad[$index],
-                            'necesidad' => $necesidad[$index],
-                        ]);
+                        $param_detalle_adquisicion['articulo_id'] = $nuevo_producto->id;
                     }
+
                     AdquisicionDetalle::create($param_detalle_adquisicion);
+
+                    agregarPalabra($necesidad[$index]);
                 }
                 DB::commit();
                 LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
@@ -173,6 +176,9 @@ class AdquisicionController extends Controller
         }
     }
 
+    /**
+     * Editar informacion del pedido
+     */
     public function editarPedido(Request $request)
     {
         $route_params = $this->getRouteParameters($request);
@@ -198,17 +204,20 @@ class AdquisicionController extends Controller
             return back()->with('toast_error', 'Esta orden de pedido ya esta finalizada por lo cual no puede ser editada.');
         }
     }
-
+    /**
+     * Actualizar la informacion del pedido
+     */
     public function updateAdquisicion(Request $request)
     {
         $route_params = $this->getRouteParameters($request);
         try {
             DB::beginTransaction();
             $pedido_id = $request->route('pedido');
+            // Combinar arrays en uno solo
             $result = array_map(function ($producto, $cantidad, $necesidad) {
                 return [
                     'articulo_id' => $producto,
-                    'cantidad_solicitada' => $cantidad,
+                    'cantidad_solicitada' => str_replace(',', '', $cantidad),
                     'necesidad' => $necesidad
                 ];
             }, $request->productos, $request->cantidad, $request->necesidad);
@@ -225,6 +234,16 @@ class AdquisicionController extends Controller
                     ]
                 );
             }
+            // obtener producots existentes del pedido
+            $productos_existente = AdquisicionDetalle::where('adquisicion_id', $pedido_id)->pluck('articulo_id')->toArray();
+            // Encontrar los IDs que están en la base de datos pero no en el request            
+            $productos_eliminar = array_diff($productos_existente, $request->productos);
+
+            // Eliminar los registros que no están en el formulario
+            if (!empty($productos_eliminar)) {
+                AdquisicionDetalle::where('adquisicion_id', $pedido_id)
+                    ->whereIn('articulo_id', $productos_eliminar)->delete();
+            }
 
             DB::commit();
             LogService::log('info', 'Adquisición actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
@@ -237,6 +256,11 @@ class AdquisicionController extends Controller
         }
     }
 
+    /**
+     * Eliminar pedido
+     * @param request
+     * return json
+     */
     public function destroyPedido(Request $request)
     {
         $pedido = Adquisicion::find($request->route('pedido'));
@@ -253,6 +277,11 @@ class AdquisicionController extends Controller
         }
     }
 
+    /**
+     * Buscar pedido
+     * @param request
+     * return json
+     */
     public function buscarPedido(Request $request)
     {
         if ($request->ajax()) {
@@ -323,7 +352,9 @@ class AdquisicionController extends Controller
     }
 
     /** 
-     * Aqui empieza la orden de recepcion
+     * Orden de recepcion
+     * @param request
+     * return view
      */
     public function ordenRecepcion(Request $request)
     {
@@ -334,6 +365,8 @@ class AdquisicionController extends Controller
         $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
         $pedido = Adquisicion::find($request->route('pedido'));
         $orden = OrdenRecepcion::where('adquisicion_id', $pedido->id)->first();
+        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+        $unidad_medidas = $unidad_medidas->prepend('', '');
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -341,11 +374,24 @@ class AdquisicionController extends Controller
             ['name' => 'Orden de Recepción', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
         ];
 
-        $route_params = array_merge($route_params, ['pedido' => $pedido, 'orden_recepcion' => $orden, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
+        $route_params = array_merge($route_params, [
+            'pedido' => $pedido,
+            'orden_recepcion' => $orden,
+            'proveedores' => $proveedores,
+            'forma_pagos' => $forma_pagos,
+            'title_page' => $title_page,
+            'breadcrumbs' => $breadcrumbs,
+            'unidad_medidas' => $unidad_medidas,
+        ]);
 
         return $orden ? view('adquisiciones.orden_recepcion.edit', $route_params) : view('adquisiciones.orden_recepcion.create', $route_params);
     }
 
+    /**
+     * Guardar orden de recepcion
+     * @param Request
+     * return view
+     */
     public function storeOrdenRecepcion(OrdenRecepcionStoreRequest $request)
     {
         $routeParametres = $this->getRouteParameters($request);
@@ -354,6 +400,10 @@ class AdquisicionController extends Controller
         $orden_completa = $request->has('orden_completa') ? true : false;
         $cantidades_recibidas = $request->cantidad_recibida;
         $cantidades_solicitadas = $info_pedido->adquisiciones_detalle->pluck('cantidad_solicitada')->toArray();
+        $unidades_medidas = $request->unidad_medida;
+        $precio = $request->valor;
+        $inventario = $request->inventario;
+        $estado_inventario =  CatalogoDato::getEstadoInventarioId('estados.inventario.nuevo');
 
         $param = [
             'fecha' => date('Y-m-d'),
@@ -366,7 +416,7 @@ class AdquisicionController extends Controller
 
         if ($orden_completa) {
             // Buscar el registro en la base de datos que contiene cantidad_solicitada
-            
+
             foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
                 if ($cantidad_recibida > $cantidades_solicitadas[$index]) {
                     return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual o menor a la cantidad solicitada.'])
@@ -377,7 +427,7 @@ class AdquisicionController extends Controller
 
         try {
             DB::beginTransaction();
-            if (OrdenRecepcion::create($param)) {
+            if ($orden_recepcion = OrdenRecepcion::create($param)) {
                 /// Actualiza el estado del pedido
                 if ($orden_completa) {
                     $info_pedido->estado = 'Finalizado';
@@ -385,8 +435,21 @@ class AdquisicionController extends Controller
                 }
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 foreach ($info_pedido->adquisiciones_detalle as $index => $detalle) {
-                    $detalle->cantidad_recibida = $cantidades_recibidas[$index];
-                    if(!$detalle->save()){
+                    $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);
+                    $detalle->unidad_medida_id = $unidades_medidas[$index];
+                    $detalle->valor = $precio[$index];
+                    if ($inventario[$index] && $orden_completa) {
+                        Inventario::create([
+                            'orden_recepcion_id' => $orden_recepcion->id,
+                            'producto_id' => $detalle->articulo_id,
+                            'tipo' => 'entrada',
+                            'cantidad' => str_replace(',', '', $cantidades_recibidas[$index]),
+                            'fecha' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado_id' => $estado_inventario,
+                        ]);
+                    }
+                    if (!$detalle->save()) {
                         throw new Exception('Error al intentar guardar la orden de recepcion.');
                     }
                 }
@@ -405,6 +468,11 @@ class AdquisicionController extends Controller
         }
     }
 
+    /**
+     * Actualiza orden de recepcion
+     * @param request
+     * return view
+     */
     public function updateOrdenRecepcion(OrdenRecepcionUpdateRequest $request)
     {
         $routeParametres = $this->getRouteParameters($request);
@@ -415,6 +483,8 @@ class AdquisicionController extends Controller
         $orden_completa = $request->has('orden_completa') ? true : false;
         $cantidades_recibidas = $request->cantidad_recibida;
         $cantidades_solicitadas = $info_pedido->adquisiciones_detalle->pluck('cantidad_solicitada')->toArray();
+        $inventario = $request->inventario;
+        $estado_inventario =  CatalogoDato::getEstadoInventarioId('estados.inventario.nuevo');
 
         if ($orden_completa) {
             foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
@@ -442,15 +512,25 @@ class AdquisicionController extends Controller
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 foreach ($info_pedido->adquisiciones_detalle as $index => $detalle) {
                     $detalle->cantidad_recibida = $cantidades_recibidas[$index];
+                    if ($inventario[$index] && $orden_completa) {
+                        Inventario::create([
+                            'orden_recepcion_id' => $orden_recepcion->id,
+                            'producto_id' => $detalle->articulo_id,
+                            'tipo' => 'entrada',
+                            'cantidad' => str_replace(',', '', $cantidades_recibidas[$index]),
+                            'fecha' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado_id' => $estado_inventario,
+                        ]);
+                    }
                     if (!$detalle->save()) {
                         throw new Exception('Error al intentar guardar actualización de la orden de recepcion.');
                     }
                 }
-                
+
                 DB::commit();
                 LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
                 return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
-
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
             }
@@ -461,6 +541,12 @@ class AdquisicionController extends Controller
         }
     }
 
+    /**
+     * Funcion que registra un nuevo producto
+     * @param tipo
+     * @param descripcion
+     * @return collection
+     */
     private function registrarNuevoProducto($tipo, $descripcion)
     {
         $tipo_producto = $tipo->slug == 'meteriales.herramientas' ? 'tipo.adquisiciones.bienes' : 'tipo.adquisiciones.servicios';
@@ -473,7 +559,11 @@ class AdquisicionController extends Controller
         return $create;
     }
 
-    // Método para obtener los parámetros comunes
+    /**
+     * Método para obtener los parámetros comunes de la ruta
+     * @param request
+     * @return array
+     */
     private function getRouteParameters($request)
     {
         $parametros = [

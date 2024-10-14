@@ -17,15 +17,20 @@
                     <span>Productos</span>
                 </a>
 
+                <a href="{{ route('sistema.inventario.index') }}" class="nodo">
+                    <img src="{{ asset('images/icons/inventario.png') }}">
+                    <span>Inventario</span>
+                </a>
+
                 <a href="{{ route('sistema.users.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/personas.png') }}">
                     <span>Usuarios</span>
                 </a>
 
-                <a href="{{ route('sistema.config.index') }}" class="nodo">
+                {{-- <a href="{{ route('sistema.config.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/configuracion.png') }}">
                     <span>Configuración</span>
-                </a>
+                </a> --}}
             </div>
 
         </div>

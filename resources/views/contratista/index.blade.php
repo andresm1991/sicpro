@@ -16,7 +16,8 @@
                 <div class="row">
                     <div class="col-md-4 col-12">
                         <div class="form-group">
-                            <a href="{{ route('proyecto.adquisiciones.contratista.crear.orden.trabajo',['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}" class="btn btn-dark btn-sm">
+                            <a href="{{ route('proyecto.adquisiciones.contratista.crear.orden.trabajo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}"
+                                class="btn btn-dark btn-sm">
                                 <i class="fa-regular fa-plus"></i> Nueva orden de trabajo
                             </a>
                         </div>
@@ -56,24 +57,26 @@
                                         {{ $orden_trabajo->articulo->descripcion }}
                                     </td>
                                     <td class="align-middle">
-                                       $ {{ number_format($orden_trabajo->total_contratistas,2) }}
+                                        $ {{ number_format($orden_trabajo->total_contratistas, 2) }}
                                     </td>
                                     <td class="align-middle">
-                                        $ {{ number_format($orden_trabajo->pagos_contratistas,2) }}
+                                        $ {{ number_format($orden_trabajo->pagos_contratistas, 2) }}
                                     </td>
                                     <td class="align-middle">
-                                        $ {{ number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas),2) }}
+                                        $
+                                        {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 2) }}
                                     </td>
                                     <td class="align-middle">
-                                        <span class="badge badge-secondary">{{ $orden_trabajo->tipo_pago_contratista ? $orden_trabajo->tipo_pago_contratista :'NUEVO' }}</span>
+                                        <span
+                                            class="badge badge-secondary">{{ $orden_trabajo->tipo_pago_contratista ? $orden_trabajo->tipo_pago_contratista : 'NUEVO' }}</span>
                                     </td>
-                                    
-                                    <td class="align-middle align-middle text-right text-truncate">
+
+                                    <td class="align-middle text-right text-truncate">
                                         <button type="button" class="btn btn-outline-dark" data-container="body"
                                             data-toggle="popover" data-placement="left" data-trigger="focus"
                                             data-content ="
-                                            <a href='{{ route('proyecto.adquisiciones.contratista.pagos.orden.trabajo',['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $orden_trabajo->id]) }}' class='dropdown-item'>Avances</a>
-                                            <a href='{{ route('proyecto.adquisiciones.contratista.editar.orden.trabajo',['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $orden_trabajo->id]) }}' class='dropdown-item'>Editar</a>
+                                            <a href='{{ route('proyecto.adquisiciones.contratista.pagos.orden.trabajo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $orden_trabajo->id]) }}' class='dropdown-item'>Avances</a>
+                                            <a href='{{ route('proyecto.adquisiciones.contratista.editar.orden.trabajo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $orden_trabajo->id]) }}' class='dropdown-item'>Editar</a>
                                             <a href='#' class='dropdown-item eliminar-orden-trabajo' id='{{ $orden_trabajo->id }}'>Eliminar</a>
                                             <a href='{{ route('pdf.orden.trabajo.contratista', $orden_trabajo->id) }}' class='dropdown-item' target='_blank'>PDF Orden Trabajo</a>">
                                             <i class="fas fa-caret-left font-weight-normal"></i> Opciones
@@ -87,8 +90,8 @@
                                     </td>
                                 </tr>
                             @endforelse
-    
-    
+
+
                         </tbody>
                     </table>
                 </div>
@@ -96,7 +99,7 @@
             </div>
         </div>
     </section>
-   
+
 @endsection
 
 @section('scripts')
@@ -106,4 +109,3 @@
     </script>
     <script src="{{ asset('js/orden_trabajo_contratistas_scripts.js') }}" type="module"></script>
 @endsection
-

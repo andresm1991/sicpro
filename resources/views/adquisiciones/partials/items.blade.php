@@ -4,7 +4,8 @@
         <div class="col-sm-5">
             <div class="form-group">
                 {{ Form::label('', 'Productos', ['class' => 'col-form-label']) }}
-                <select name="productos" id="productos" class="form-control">
+                <select name="productos" id="productos" class="form-control"
+                    data-placeholder="selecciona o agrega el producto">
                     <option></option>
                     @foreach ($productos as $id => $nombre)
                         <option value="{{ $id }}">{{ $nombre }}</option>
@@ -21,7 +22,13 @@
         <div class="col-sm-5">
             <div class="form-group">
                 {{ Form::label('', 'Necesidad', ['class' => 'col-form-label']) }}
-                {{ Form::text('necesidad', old('necesidad'), ['class' => 'form-control', 'id' => 'necesidad']) }}
+                <select name="necesidad" id="necesidad" class="form-control"
+                    data-placeholder="selecciona o agrega la necesidad">
+                    <option></option>
+                    @foreach (palabras() as $id => $nombre)
+                        <option value="{{ $id }}">{{ $nombre }}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
     </div>
@@ -33,7 +40,8 @@
 
     @if ($errors->any())
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>No es posible completar el pedido, por favor verifique que existan elementos agregados a la lista del pedido.</strong>
+            <strong>No es posible completar el pedido, por favor verifique que existan elementos agregados a la lista
+                del pedido.</strong>
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                 <span aria-hidden="true">&times;</span>
             </button>

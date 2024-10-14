@@ -98,8 +98,7 @@
 
 <body>
     <div class="header">
-        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('images/logo_empresa.jpg'))) }}"
-            alt="Logo">
+        <img src="data:image/png;base64,{{ $logo_base64 }}" alt="Logo">
         <div class="order-number">
             Orden de Recepción <br>{{ $orden['numero_pedido'] }}
         </div>
@@ -108,20 +107,18 @@
     <div class="content">
         <div class="details">
             <div class="left">
-                <strong class="text-danger">Fecha:</strong> {{ $orden['fecha'] }}<br>
-                <strong>Cliente:</strong>
-                {{ $orden['cliente']['nombre'] }}<br>
-                <strong>Dirección:</strong>
-                {{ $orden['cliente']['direccion'] }}<br>
-                <strong>Teléfono:</strong>
-                {{ $orden['cliente']['telefono'] }}<br>
-                <strong>Correo:</strong>
-                {{ $orden['cliente']['correo'] }}<br>
+                <strong>PROYECTO:</strong>
+                {{ strtoupper($orden['proyecto']) }}<br>
+                <strong>ETAPA:</strong>
+                {{ strtoupper($orden['etapa']) }}<br>
+                <strong>PROVEEDOR:</strong>
+                {{ $orden['proveedor'] }}<br>
             </div>
 
             <div class="right">
-                <strong>Proveedor:</strong> {{ $orden['proveedor'] }}<br>
-                <strong>Forma de pago:</strong> {{ $orden['forma_pago'] }}<br>
+                <strong class="text-danger">FECHA:</strong> {{ $orden['fecha'] }}<br>
+                <strong>TIPO:</strong> {{ strtoupper($orden['tipo']) }}<br>
+                <strong>FORMA DE PAGO:</strong> {{ strtoupper($orden['forma_pago']) }}<br>
             </div>
             <div class="clear"></div>
 
@@ -135,6 +132,9 @@
                         <th>Producto</th>
                         <th>Cantidad</th>
                         <th>Cantidad recibida</th>
+                        <th>Unidad Medida</th>
+                        <th>VALOR UNITARIO</th>
+                        <th>Total</th>
                         <th>Necesidad</th>
                     </tr>
                 </thead>
@@ -142,12 +142,23 @@
                     @foreach ($orden['items'] as $index => $item)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ $item['producto'] }}</td>
+                            <td>{{ strtoupper($item['producto']) }}</td>
                             <td>{{ $item['cantidad'] }}</td>
                             <td>{{ $item['cantidad_recibida'] }}</td>
-                            <td>{{ $item['necesidad'] }}</td>
+                            <td>{{ strtoupper($item['unidad_medida']) }}</td>
+                            <td>${{ $item['valor'] }}</td>
+                            <td>${{ $item['total'] }}</td>
+                            <td>{{ strtoupper($item['necesidad']) }}</td>
                         </tr>
                     @endforeach
+                <tfoot>
+                    <tr>
+                        <td colspan="7" style="text-align: right">
+                            <strong>TOTAL: </strong>
+                        </td>
+                        <td><strong>${{ $orden['total_orden'] }}</strong></td>
+                    </tr>
+                </tfoot>
                 </tbody>
             </table>
         </div>

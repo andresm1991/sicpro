@@ -9,6 +9,7 @@ use App\Http\Controllers\GenerarPdfController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProyectoController;
@@ -120,6 +121,15 @@ Route::group(['middleware' => ['auth']], function () {
         // Productos
         Route::group(['prefix' => 'productos', 'as' => 'articulo.'], function () {
             Route::get('/', [ArticuloController::class, 'index'])->name('index');
+            Route::post('/nuevo', [ArticuloController::class, 'store']);
+            Route::put('/actualizar/{articulo}', [ArticuloController::class, 'update']);
+            Route::get('/buscar', [ArticuloController::class, 'buscar']);
+            Route::delete('/eliminar/{id}', [ArticuloController::class, 'destroy']);
+        });
+
+        // Inventario
+        Route::group(['prefix' => 'inventario', 'as' => 'inventario.'], function () {
+            Route::get('/', [InventarioController::class, 'index'])->name('index');
             Route::post('/nuevo', [ArticuloController::class, 'store']);
             Route::put('/actualizar/{articulo}', [ArticuloController::class, 'update']);
             Route::get('/buscar', [ArticuloController::class, 'buscar']);

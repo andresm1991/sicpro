@@ -10,7 +10,13 @@ class Adquisicion extends Model
     use HasFactory;
     protected $table = 'adquisiciones';
     protected $fillable = [
-        'fecha', 'numero', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'estado',
+        'fecha',
+        'numero',
+        'proyecto_id',
+        'etapa_id',
+        'tipo_etapa_id',
+        'usuario_id',
+        'estado',
     ];
 
     public function proyecto()
@@ -36,5 +42,10 @@ class Adquisicion extends Model
     public function adquisiciones_detalle()
     {
         return $this->hasMany(AdquisicionDetalle::class);
+    }
+
+    public function orden_recepcion()
+    {
+        return $this->hasOne(OrdenRecepcion::class, 'adquisicion_id');
     }
 }

@@ -9,7 +9,7 @@ class AdquisicionDetalle extends Model
 {
     use HasFactory;
     protected $table = 'adquisiciones_detalle';
-    protected $fillable = ['adquisicion_id', 'articulo_id', 'cantidad_solicitada', 'cantidad_recibida', 'necesidad'];
+    protected $fillable = ['adquisicion_id', 'articulo_id', 'cantidad_solicitada', 'cantidad_recibida', 'unidad_medida_id', 'valor', 'necesidad'];
 
     function adquisicion()
     {
@@ -19,5 +19,10 @@ class AdquisicionDetalle extends Model
     function producto()
     {
         return $this->belongsTo(Articulo::class, 'articulo_id');
+    }
+
+    public function unidad_medida()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'unidad_medida_id');
     }
 }

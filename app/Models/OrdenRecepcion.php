@@ -21,4 +21,14 @@ class OrdenRecepcion extends Model
     {
         return $this->belongsTo(Proveedor::class, 'proveedor_id');
     }
+
+    public function inventario()
+    {
+        return $this->hasMany(Inventario::class);
+    }
+
+    public function adquisicion()
+    {
+        return $this->belongsTo(Adquisicion::class, 'adquisicion_id');
+    }
 }

@@ -271,7 +271,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'slug' => 'informacion.general.correo',
             'padre_id' => $padre->id,
             'activo' => true,
-        ]);*/
+        ]);
         // Unidades de Medidas
         $padre = CatalogoDato::create([
             'descripcion' => 'Unidades de medidas',
@@ -316,7 +316,36 @@ class CatalogoDatoTableSeeder extends Seeder
             'slug' => 'estados.contratistas.proceso',
             'padre_id' => $padre->id,
             'activo' => true,
+        ]);*/
+
+        // Estados inventario
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados Inventario',
+            'detalle' => '',
+            'slug' => 'estados.inventario',
+            'padre_id' => null,
+            'activo' => true,
         ]);
-        
+        CatalogoDato::create([
+            'descripcion' => 'Nuevo',
+            'detalle' => '',
+            'slug' => 'estados.inventario.nuevo',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Defectuoso',
+            'detalle' => '',
+            'slug' => 'estados.inventario.defectuoso',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Dado de baja',
+            'detalle' => '',
+            'slug' => 'estados.inventario.baja',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
     }
 }

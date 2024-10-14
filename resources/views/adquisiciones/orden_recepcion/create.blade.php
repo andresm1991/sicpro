@@ -5,7 +5,7 @@
 @section('content')
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
-        <div class="container">
+        <div class="container-fluid">
             {!! Form::open([
                 'route' => [
                     'proyecto.adquisiciones.orden.recepcion.store',
