@@ -125,19 +125,27 @@ if (!function_exists('registrarProducto')) {
 
     /**
      * Registrar unidad de medida
+     * @param unidad_medida
+     * @return ultimo_id
      */
     function registrarUnidadMedida($unidad_medida)
     {
+        $slug = strtolower(str_replace(' ', '.', $unidad_medida));
         $catalogo = CatalogoDato::getCatalogoPadre('unidades.medida');
-        $create = CatalogoDato::create([
-            'descripcion' => $unidad_medida,
-            'detalle' => '',
-            'slug' => 'unidad.medida.' . strtolower(str_replace(' ', ',', $unidad_medida)),
-            'padre_id' => $catalogo->id,
-            'activo' => true,
-        ]);
+        $existe = CatalogoDato::where('descripcion', $unidad_medida)
+            ->where('slug', $slug)->first();
 
-        return $create->id;
+        if (!$existe) {
+            $create = CatalogoDato::create([
+                'descripcion' => $unidad_medida,
+                'detalle' => '',
+                'slug' => 'unidad.medida.' . $slug,
+                'padre_id' => $catalogo->id,
+                'activo' => true,
+            ]);
+            return $create->id;
+        }
+        return $existe->id;
     }
 }
 /**

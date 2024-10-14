@@ -132,7 +132,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/', [InventarioController::class, 'index'])->name('index');
             Route::post('/nuevo', [ArticuloController::class, 'store']);
             Route::put('/actualizar/{articulo}', [ArticuloController::class, 'update']);
-            Route::get('/buscar', [ArticuloController::class, 'buscar']);
+            Route::get('/buscar', [InventarioController::class, 'buscar']);
             Route::delete('/eliminar/{id}', [ArticuloController::class, 'destroy']);
         });
 

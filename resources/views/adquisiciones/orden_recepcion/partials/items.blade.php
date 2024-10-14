@@ -10,7 +10,7 @@
                 <th scope="col">Unidad</th>
                 <th scope="col">Valor</th>
                 <th scope="col">Necesidad</th>
-                <th scope="col" class="text-center">Inventariar</th>
+                <th scope="col" class="text-center">Inventario</th>
             </tr>
         </thead>
         <tbody>

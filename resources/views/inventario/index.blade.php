@@ -62,3 +62,7 @@
 
     </section>
 @endsection
+
+@section('scripts')
+    <script src="{{ asset('js/inventario_scripts.js') }}"></script>
+@endsection

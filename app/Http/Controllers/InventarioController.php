@@ -20,4 +20,44 @@ class InventarioController extends Controller
 
         return view('inventario.index', compact('list_inventario', 'title_page', 'breadcrumbs'));
     }
+
+    public function buscar(Request $request)
+    {
+        if ($request->ajax()) {
+            $text = $request->buscar;
+            $output = "";
+
+            $list_inventario = Inventario::obtenerStock($text);
+
+            foreach ($list_inventario as $index => $inventario) {
+                $movimientos = "<a href='javascript:void(0);' class='dropdown-item'>Movimiento</a>";
+                $editar = "<a href='javascript:void(0);' class='dropdown-item'>Editar</a>";
+                $eliminar = "<a href='javascript:void(0);' class='dropdown-item eliminar-inventario' id='" . $inventario->id . "'>Eliminar</a>";
+
+                $output .= ' <tr id="' . $index . '">' .
+                    '<td class="align-middle text-uppercase">' . $inventario->producto->descripcion . '</td>' .
+                    '<td class="align-middle">' . $inventario->total_entradas . '</td>' .
+                    '<td class="align-middle">' . $inventario->total_salidas . '</td>' .
+                    '<td class="align-middle">' . $inventario->stock . '</td>' .
+                    '<td class="align-middle">' . $inventario->estado->descripcion . '</td>' .
+                    '<td class="align-middle text-right text-truncate p-2">' .
+                    '<button type="button" class="btn btn-outline-dark" data-container="body"
+                            data-toggle="popover" data-placement="left" data-trigger="focus"
+                            data-content ="' . $movimientos . $editar . $eliminar . '">
+                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                        </button>' .
+                    '</td>' .
+                    '</tr>';
+            }
+
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="6" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
+        }
+    }
 }

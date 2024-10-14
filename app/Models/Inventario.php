@@ -27,14 +27,22 @@ class Inventario extends Model
         return $this->belongsTo(CatalogoDato::class, 'estado_id', 'id');
     }
 
-    public static function obtenerStock()
+    public static function obtenerStock($filtro_busqueda = null)
     {
         return self::select('producto_id', 'estado_id', DB::raw("
                 SUM(CASE WHEN tipo = 'entrada' THEN cantidad ELSE 0 END) as total_entradas,
                 SUM(CASE WHEN tipo = 'salida' THEN cantidad ELSE 0 END) as total_salidas
             "))
             ->with(['producto', 'estado']) // Asegurarse de cargar la relación con Producto y Estado
-            ->groupBy('producto_id', 'estado_id') // Agrupar también por estado_id para que se obtengan correctamente
+            ->when($filtro_busqueda, function ($query, $filtro_busqueda) {
+                // Buscar en las relaciones 'producto' o 'estado'
+                $query->whereHas('producto', function ($q) use ($filtro_busqueda) {
+                    $q->where('descripcion', 'LIKE', '%' . $filtro_busqueda . '%');
+                })->orWhereHas('estado', function ($q) use ($filtro_busqueda) {
+                    $q->where('descripcion', 'LIKE', '%' . $filtro_busqueda . '%');
+                });
+            })
+            ->groupBy('producto_id', 'estado_id') // Agrupar también por estado_id
             ->paginate(15)
             ->map(function ($producto) {
                 // Calcular el stock y agregarlo al objeto
