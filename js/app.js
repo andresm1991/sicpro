@@ -106,14 +106,15 @@ $(function () {
         todayHighlight: true,
 
     });
-
+    // Date picker para bloquear dias
     $('.datepicker-2').datepicker({
         language: "es",
         format: 'yyyy-mm-dd',
         autoclose: true,
         todayBtn: "linked",
         todayHighlight: true,
-        beforeShowDay: habilitarFechas,
+        endDate: new Date(),
+        //beforeShowDay: habilitarFechas,
 
     });
 
@@ -233,7 +234,7 @@ $(function () {
         updateFileList();
     });
 
-    $(document).on('input', '.auto-ajustable', function() {
+    $(document).on('input', '.auto-ajustable', function () {
         // Ajustar el ancho del input en función del contenido
         this.style.width = ((this.value.length + 1) * 8) + 'px'; // Ajusta el multiplicador si es necesario
     });
@@ -299,7 +300,7 @@ $(function () {
 
         // Obtener el día de la semana (0 = Domingo, 1 = Lunes, ..., 6 = Sábado)
         var day = today.getDay();
-        
+
         // Para comparar solo la fecha sin hora
         today.setHours(0, 0, 0, 0);
         date.setHours(0, 0, 0, 0);
