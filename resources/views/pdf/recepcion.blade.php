@@ -132,9 +132,12 @@
                         <th>Producto</th>
                         <th>Cantidad</th>
                         <th>Cantidad recibida</th>
-                        <th>Unidad Medida</th>
-                        <th>VALOR UNITARIO</th>
-                        <th>Total</th>
+                        @if (strtoupper($orden['tipo']) == 'SERVICIOS')
+                            <th>Unidad Medida</th>
+                            <th>VALOR UNITARIO</th>
+                            <th>Total</th>
+                        @endif
+
                         <th>Necesidad</th>
                     </tr>
                 </thead>
@@ -145,12 +148,16 @@
                             <td>{{ strtoupper($item['producto']) }}</td>
                             <td>{{ $item['cantidad'] }}</td>
                             <td>{{ $item['cantidad_recibida'] }}</td>
-                            <td>{{ strtoupper($item['unidad_medida']) }}</td>
-                            <td>${{ $item['valor'] }}</td>
-                            <td>${{ $item['total'] }}</td>
+                            @if (strtoupper($orden['tipo']) == 'SERVICIOS')
+                                <td>{{ strtoupper($item['unidad_medida']) }}</td>
+                                <td>${{ $item['valor'] }}</td>
+                                <td>${{ $item['total'] }}</td>
+                            @endif
+
                             <td>{{ strtoupper($item['necesidad']) }}</td>
                         </tr>
                     @endforeach
+                    @if (strtoupper($orden['tipo']) == 'SERVICIOS')
                 <tfoot>
                     <tr>
                         <td colspan="7" style="text-align: right">
@@ -159,6 +166,8 @@
                         <td><strong>${{ $orden['total_orden'] }}</strong></td>
                     </tr>
                 </tfoot>
+                @endif
+
                 </tbody>
             </table>
         </div>
