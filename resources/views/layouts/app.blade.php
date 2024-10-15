@@ -85,6 +85,8 @@
             toast.addEventListener('mouseleave', Swal.resumeTimer)
         }
     });
+
+    var base_url = "{{ url('') }}";
 </script>
 
 </html>
