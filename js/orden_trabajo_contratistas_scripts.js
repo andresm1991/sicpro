@@ -22,6 +22,7 @@ $(function () {
             data.unshift(tag);
         }
     });
+
     /**
      * Cargar la categoria de cada proveedor cuando se selecciona
      */
@@ -35,7 +36,7 @@ $(function () {
         // Obtén el valor seleccionado
         var selected_value = $(this).val();
         $.ajax({
-            url: '/articulos-proveedor',
+            url: base_url + '/articulos-proveedor',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'proveedor': selected_value },
@@ -250,7 +251,7 @@ $(function () {
         }).then((result) => {
             if (result.value) {
                 $.ajax({
-                    url: '/orden-trabajo/eliminar/' + id,
+                    url: base_url + '/orden-trabajo/eliminar/' + id,
                     headers: { 'X-CSRF-TOKEN': csrf },
                     type: 'DELETE',
                     dataType: 'json',
