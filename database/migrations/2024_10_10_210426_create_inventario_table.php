@@ -13,14 +13,16 @@ return new class extends Migration
     {
         Schema::create('inventario', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('orden_recepcion_id')->references('id')->on('orden_recepciones')->onDelete('cascade');
+            $table->unsignedBigInteger('orden_recepcion_id')->nullable();
             $table->foreignId('producto_id')->references('id')->on('articulos')->onDelete('cascade');
-            $table->enum('tipo', ['entrada', 'salida']);
             $table->integer('cantidad');
+            $table->integer('cantidad_debaja');
             $table->date('fecha');
             $table->foreignId('usuario_id')->references('id')->on('usuarios')->onDelete('cascade');
             $table->foreignId('estado_id')->references('id')->on('catalogo_datos')->onDelete('cascade');
             $table->timestamps();
+
+            $table->foreign('orden_recepcion_id')->references('id')->on('orden_recepciones')->onDelete('cascade');
         });
     }
 
