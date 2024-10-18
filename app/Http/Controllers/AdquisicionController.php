@@ -449,7 +449,6 @@ class AdquisicionController extends Controller
                         Inventario::create([
                             'orden_recepcion_id' => $orden_recepcion->id,
                             'producto_id' => $detalle->articulo_id,
-                            'tipo' => 'entrada',
                             'cantidad' => str_replace(',', '', $cantidades_recibidas[$index]),
                             'fecha' => date('Y-m-d'),
                             'usuario_id' => Auth::user()->id,
@@ -541,7 +540,6 @@ class AdquisicionController extends Controller
                         Inventario::create([
                             'orden_recepcion_id' => $orden_recepcion->id,
                             'producto_id' => $detalle->articulo_id,
-                            'tipo' => 'entrada',
                             'cantidad' => str_replace(',', '', $cantidades_recibidas[$index]),
                             'fecha' => date('Y-m-d'),
                             'usuario_id' => Auth::user()->id,

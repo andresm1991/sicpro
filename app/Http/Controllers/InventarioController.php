@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Articulo;
 use App\Models\Inventario;
+use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
 
 class InventarioController extends Controller
@@ -17,8 +19,13 @@ class InventarioController extends Controller
         ];
 
         $list_inventario = Inventario::obtenerStock();
+        $productos = Articulo::where('activo', true)->pluck('descripcion', 'id');
+        $estados = CatalogoDato::getChildrenCatalogo('estados.inventario')->pluck('descripcion', 'id');
 
-        return view('inventario.index', compact('list_inventario', 'title_page', 'breadcrumbs'));
+        $estados = $estados->prepend('', '');
+        $productos = $productos->prepend('', '');
+
+        return view('inventario.index', compact('list_inventario', 'productos', 'estados', 'title_page', 'breadcrumbs'));
     }
 
     public function buscar(Request $request)

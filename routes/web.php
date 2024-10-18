@@ -130,10 +130,10 @@ Route::group(['middleware' => ['auth']], function () {
         // Inventario
         Route::group(['prefix' => 'inventario', 'as' => 'inventario.'], function () {
             Route::get('/', [InventarioController::class, 'index'])->name('index');
-            Route::post('/nuevo', [ArticuloController::class, 'store']);
-            Route::put('/actualizar/{articulo}', [ArticuloController::class, 'update']);
+            Route::post('/nuevo', [InventarioController::class, 'store']);
+            Route::put('/actualizar/{articulo}', [InventarioController::class, 'update']);
             Route::get('/buscar', [InventarioController::class, 'buscar']);
-            Route::delete('/eliminar/{id}', [ArticuloController::class, 'destroy']);
+            Route::delete('/eliminar/{id}', [InventarioController::class, 'destroy']);
         });
 
         // Configuraciones
