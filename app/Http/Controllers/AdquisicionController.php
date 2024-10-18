@@ -401,6 +401,8 @@ class AdquisicionController extends Controller
         $cantidades_recibidas = $request->cantidad_recibida;
         $cantidades_solicitadas = $info_pedido->adquisiciones_detalle->pluck('cantidad_solicitada')->toArray();
         $unidades_medidas = $request->unidad_medida;
+        $unidade_medida_id = 0;
+        $unidade_medida_text = '';
         $precio = $request->valor;
         $inventario = $request->inventario;
         $estado_inventario =  CatalogoDato::getEstadoInventarioId('estados.inventario.nuevo');
@@ -436,14 +438,23 @@ class AdquisicionController extends Controller
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 foreach ($info_pedido->adquisiciones_detalle as $index => $detalle) {
                     $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);
-                    $detalle->valor = $precio[$index];
 
-                    if (is_numeric($unidades_medidas[$index])) {
-                        $detalle->unidad_medida_id = $unidades_medidas[$index];
-                    } else {
-                        $id = registrarUnidadMedida($unidades_medidas[$index]);
-                        $detalle->unidad_medida_id = $id;
+                    // si la adquisiciones un servicio
+                    if(strtoupper($info_pedido->tipo_etapa->slug) == 'SERVICIOS'){
+                        $detalle->valor = $precio[$index];
+                        if (is_numeric($unidades_medidas[$index])) {
+                            $detalle->unidad_medida_id = $unidades_medidas[$index];
+                        } elseif (!is_null($unidades_medidas[$index])) {
+                            if ($unidade_medida_text != $unidades_medidas[$index]) {
+                                $id = registrarUnidadMedida($unidades_medidas[$index]);
+                                $unidade_medida_id = $id;
+                                $unidade_medida_text = $unidades_medidas[$index];
+                            }
+
+                            $detalle->unidad_medida_id = $unidade_medida_id;
+                        }    
                     }
+                    
 
                     if ($inventario[$index] && $orden_completa) {
                         Inventario::create([
@@ -522,20 +533,22 @@ class AdquisicionController extends Controller
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 foreach ($info_pedido->adquisiciones_detalle as $index => $detalle) {
                     $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);
-                    $detalle->valor = $precio[$index];
+                    // si la adquisiciones un servicio
+                    if(strtoupper($info_pedido->tipo_etapa->slug) == 'SERVICIOS'){
+                        $detalle->valor = $precio[$index];
+                        if (is_numeric($unidades_medidas[$index])) {
+                            $detalle->unidad_medida_id = $unidades_medidas[$index];
+                        } elseif (!is_null($unidades_medidas[$index])) {
+                            if ($unidade_medida_text != $unidades_medidas[$index]) {
+                                $id = registrarUnidadMedida($unidades_medidas[$index]);
+                                $unidade_medida_id = $id;
+                                $unidade_medida_text = $unidades_medidas[$index];
+                            }
 
-                    if (is_numeric($unidades_medidas[$index])) {
-                        $detalle->unidad_medida_id = $unidades_medidas[$index];
-                    } elseif (!is_null($unidades_medidas[$index])) {
-                        if ($unidade_medida_text != $unidades_medidas[$index]) {
-                            $id = registrarUnidadMedida($unidades_medidas[$index]);
-                            $unidade_medida_id = $id;
-                            $unidade_medida_text = $unidades_medidas[$index];
-                        }
-
-                        $detalle->unidad_medida_id = $unidade_medida_id;
+                            $detalle->unidad_medida_id = $unidade_medida_id;
+                        }    
                     }
-
+                    
                     if ($inventario[$index] && $orden_completa) {
                         Inventario::create([
                             'orden_recepcion_id' => $orden_recepcion->id,
@@ -558,7 +571,6 @@ class AdquisicionController extends Controller
                 throw new Exception('Error al intentar guardar la orden de recepcion');
             }
         } catch (Throwable $e) {
-            return $e->getMessage();
             DB::rollBack();
             LogService::log('error', 'Error al actualizar orden de recepción', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', MessagesConstant::CATCH_ERROR);

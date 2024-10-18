@@ -28,7 +28,14 @@ class OrdenRecepcionUpdateRequest extends FormRequest
             'cantidad_recibida.*' => 'required|numeric', // Valida que cada elemento dentro del array sea numérico'cantidad_recibida' => 'required|array|numeric',
             'forma_pago' => 'required',
         ];
-
+        
+        if(strtoupper($this->tipo_etapa) == 3){
+            $rules = array_merge($rules, [
+                'unidad_medida' => 'required|array',
+                'unidad_medida.*' => 'required', 
+                'valor' => 'required|array',
+                'valor.*' => 'required|numeric',]);
+        }
         if ($this->get('orden_completa')) {
             $rules = array_merge($rules, ['forma_pago' => 'required']);
         }

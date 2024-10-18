@@ -7,8 +7,11 @@
                 <th scope="col">Producto</th>
                 <th scope="col">Cantidad Pedida</th>
                 <th scope="col">Cantidad Recibida</th>
-                <th scope="col">Unidad</th>
-                <th scope="col">Valor</th>
+                @if (strtoupper($pedido->tipo_etapa->slug) == 'SERVICIOS')
+                    <th scope="col">Unidad</th>
+                    <th scope="col">Valor</th>    
+                @endif
+                
                 <th scope="col">Necesidad</th>
                 <th scope="col" class="text-center">Inventario</th>
             </tr>
@@ -26,6 +29,7 @@
                             '<small class="help-block text-danger error_mensajes">:message</small>',
                         ) !!}
                     </td>
+                    @if (strtoupper($pedido->tipo_etapa->slug) == 'SERVICIOS')
                     <td class="align-middle">
                         {{ Form::select('unidad_medida[' . $index . ']', $unidad_medidas, $detalle->unidad_medida_id, ['class' => 'form-control col-auto', 'data-placeholder' => 'Selecione', isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '']) }}
 
@@ -38,6 +42,7 @@
                         {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control input-double ', isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '']) }}
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
+                    @endif
                     <td class="align-middle">{{ $detalle->necesidad }}</td>
                     <td class="align-middle">
                         <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
