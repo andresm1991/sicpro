@@ -13,7 +13,7 @@ $(function () {
         var form = $("#form_planificacion_mano_obra");
         var data = getFormData(form);
         var valid = true;
-        var url = 'crear-planificacion', type ='POST';
+        var url = 'crear-planificacion', type = 'POST';
 
         // Eliminar cualquier borde de error previo
         $('input[name=fecha_inicio], input[name=fecha_fin]').removeClass('error-border');
@@ -32,8 +32,8 @@ $(function () {
             $('input:text[name=fecha_fin]').parent().append('<span class="error-message">Ingrese fecha.</span>');
         }
 
-        if(id > 0 ){
-            url = 'actualizar-planificacion/'+id;
+        if (id > 0) {
+            url = 'actualizar-planificacion/' + id;
             type = 'PUT';
         }
         if (valid) {
@@ -456,13 +456,13 @@ $(function () {
         });
     });
 
-    $(document).on('click', '.editar-fecha-planificacion', function(){
+    $(document).on('click', '.editar-fecha-planificacion', function () {
         var id = $(this).closest('tr').attr('id');
         $('#titleModalPlanificacionManoObra').text('Editar Fecha');
         $('input:hidden[name=id]').val(id);
         $('input:text[name=fecha_inicio]').attr('disabled', true);
         $('input:text[name=fecha_inicio]').val(convertirFecha($(this).data('fecha-inicio')));
-        $('input:text[name=fecha_fin]').datepicker('setDate',convertirFecha($(this).data('fecha-fin')));
+        $('input:text[name=fecha_fin]').datepicker('setDate', convertirFecha($(this).data('fecha-fin')));
         $('#modalPlanificacionManoObra').modal('show');
     });
 
@@ -478,11 +478,77 @@ $(function () {
             },
             success: function (data) {
                 $('tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
+            $('[data-toggle="tooltip"]').tooltip();
+            $('[data-toggle="popover"]').popover({ html: true });
             var errors = JSON.parse(jqXHR.responseText);
             console.log(errors)
         });
+    });
+
+    $('#modalPlanificacionManoObra').on('shown.bs.modal', function (e) {
+        if ($('select.select2-tag').length > 0) {
+            $.ajax({
+                url: url + '/actividad-mano-obra-acabados',
+                headers: { 'X-CSRF-TOKEN': csrf },
+                type: 'GET',
+                beforeSend: function () {
+                },
+                success: function (response) {
+                    // Elimina las opciones anteriores del select
+                    let $select = $('select[name=actividad]');
+                    $select.empty(); // Vacia el select
+
+                    // Itera sobre los artículos y crea nuevas opciones
+                    $.each(response.actividad, function (id, descripcion) {
+
+
+                        let option = new Option(descripcion, id, false, false);
+                        $select.append(option); // Añade la opción al select
+                    });
+
+                    // Remueve la clase 'error-border' del contenedor generado por select2
+                    $($select).closest('.form-group').find('.select2-selection').removeClass('error-border');
+
+                    // Elimina solo el mensaje de error asociado con este select2
+                    $($select).closest('.form-group').find('.error-message').remove();
+                    $('[data-toggle="tooltip"]').tooltip();
+                    $('[data-toggle="popover"]').popover({ html: true });
+                }
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+                var errors = JSON.parse(jqXHR.responseText);
+                console.log(errors)
+            });
+
+            $(e.target).find('select.select2-tag').select2('destroy').select2({
+                allowClear: false, // Permite limpiar la selección
+                tags: true, // Permite agregar nuevas opciones
+                placeholder: function () {
+                    $(this).data('placeholder');
+                },
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true // add additional parameters
+                    }
+                },
+                insertTag: function (data, tag) {
+                    // Insertar la nueva opción al principio
+                    data.unshift(tag);
+                },
+                dropdownParent: $(e.target) // Solo ajustar el dropdownParent en los modales abiertos
+            });
+        }
     });
 
     function limpiarCampos() {

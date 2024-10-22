@@ -119,6 +119,7 @@ $(function () {
     });
 
     $('.select2-basic-single').select2({
+        width: '100%',
         placeholder: function () {
             $(this).data('placeholder');
         },
@@ -132,6 +133,29 @@ $(function () {
         },
         allowClear: false,
         tags: true, // Permite agregar nuevas opciones
+        createTag: function (params) {
+            var term = $.trim(params.term);
+            if (term === '') {
+                return null;
+            }
+            return {
+                id: term,
+                text: term,
+                newTag: true // add additional parameters
+            }
+        },
+        insertTag: function (data, tag) {
+            // Insertar la nueva opción al principio
+            data.unshift(tag);
+        }
+    });
+
+    $('.select2-tag').select2({
+        allowClear: false, // Permite limpiar la selección
+        tags: true, // Permite agregar nuevas opciones
+        placeholder: function () {
+            $(this).data('placeholder');
+        },
         createTag: function (params) {
             var term = $.trim(params.term);
             if (term === '') {

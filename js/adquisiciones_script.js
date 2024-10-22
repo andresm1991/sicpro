@@ -250,7 +250,6 @@ $(function () {
             $(this).val(0);
         }
     });
-
     /**
      * Funciones
      */
