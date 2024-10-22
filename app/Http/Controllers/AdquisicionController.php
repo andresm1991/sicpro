@@ -440,7 +440,7 @@ class AdquisicionController extends Controller
                     $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);
 
                     // si la adquisiciones un servicio
-                    if(strtoupper($info_pedido->tipo_etapa->slug) == 'SERVICIOS'){
+                    if (strtoupper($info_pedido->tipo_etapa->slug) == 'SERVICIOS') {
                         $detalle->valor = $precio[$index];
                         if (is_numeric($unidades_medidas[$index])) {
                             $detalle->unidad_medida_id = $unidades_medidas[$index];
@@ -452,9 +452,9 @@ class AdquisicionController extends Controller
                             }
 
                             $detalle->unidad_medida_id = $unidade_medida_id;
-                        }    
+                        }
                     }
-                    
+
 
                     if ($inventario[$index] && $orden_completa) {
                         Inventario::create([
@@ -463,7 +463,7 @@ class AdquisicionController extends Controller
                             'cantidad' => str_replace(',', '', $cantidades_recibidas[$index]),
                             'fecha' => date('Y-m-d'),
                             'usuario_id' => Auth::user()->id,
-                            'estado_id' => $estado_inventario,
+                            'estado' => 10,
                         ]);
                     }
                     if (!$detalle->save()) {
@@ -477,9 +477,7 @@ class AdquisicionController extends Controller
                 throw new Exception('Error al intentar guardar la orden de recepcion');
             }
         } catch (Throwable $e) {
-
             DB::rollBack();
-            return $e->getMessage();
             LogService::log('error', 'Error al crear orden de recepción', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
@@ -534,7 +532,7 @@ class AdquisicionController extends Controller
                 foreach ($info_pedido->adquisiciones_detalle as $index => $detalle) {
                     $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);
                     // si la adquisiciones un servicio
-                    if(strtoupper($info_pedido->tipo_etapa->slug) == 'SERVICIOS'){
+                    if (strtoupper($info_pedido->tipo_etapa->slug) == 'SERVICIOS') {
                         $detalle->valor = $precio[$index];
                         if (is_numeric($unidades_medidas[$index])) {
                             $detalle->unidad_medida_id = $unidades_medidas[$index];
@@ -546,9 +544,9 @@ class AdquisicionController extends Controller
                             }
 
                             $detalle->unidad_medida_id = $unidade_medida_id;
-                        }    
+                        }
                     }
-                    
+
                     if ($inventario[$index] && $orden_completa) {
                         Inventario::create([
                             'orden_recepcion_id' => $orden_recepcion->id,
@@ -556,7 +554,7 @@ class AdquisicionController extends Controller
                             'cantidad' => str_replace(',', '', $cantidades_recibidas[$index]),
                             'fecha' => date('Y-m-d'),
                             'usuario_id' => Auth::user()->id,
-                            'estado_id' => $estado_inventario,
+                            'estado' => 10,
                         ]);
                     }
                     if (!$detalle->save()) {

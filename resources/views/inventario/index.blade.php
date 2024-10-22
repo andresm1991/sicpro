@@ -17,7 +17,7 @@
                         </div>
                     </div>
                     <div class="col-md-8 col-12 ">
-                        <div class="form-group form-search form-icon col-md-10 col-12 p-0">
+                        <div class="form-group form-search form-icon col-12 p-0">
                             <i class="fal fa-search fa-lg form-control-icon"></i>
                             <input type="text" name="inventario_search" class="form-control form-control-round"
                                 placeholder="Buscar....">
@@ -44,7 +44,16 @@
                                     <td class="align-middle">{{ $inventario->total_cantidad }}</td>
                                     <td class="align-middle">{{ $inventario->total_cantidad_debaja }}</td>
                                     <td class="align-middle">{{ $inventario->stock }}</td>
-                                    <td class="align-middle">{{ $inventario->estado->descripcion }}</td>
+                                    <td class="align-middle">
+                                        <div class="progress">
+                                            <div class="progress-bar @if ($inventario->estado <= 3) bg-danger @elseif ($inventario->estado <= 7) bg-warning @else bg-success @endif  "
+                                                role="progressbar" style="width: {{ ($inventario->estado / 10) * 100 }}%;"
+                                                aria-valuenow="{{ $inventario->estado }}" aria-valuemin="0"
+                                                aria-valuemax="10">
+                                                {{ $inventario->estado }}/10
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td class="align-middle text-right text-truncate p-2">
                                         <button type="button" class="btn btn-outline-dark" data-container="body"
                                             data-toggle="popover" data-placement="left" data-trigger="focus"
@@ -68,7 +77,7 @@
         </div>
     </section>
 
-    @include('modals.inventario_form_modal', ['productos' => $productos, 'estados' => $estados])
+    @include('modals.inventario_form_modal', ['productos' => $productos])
 @endsection
 
 @section('scripts')

@@ -35,8 +35,14 @@
                         </div>
                         <div class="col-md-6 col-12">
                             <div class="form-group">
-                                {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
-                                {{ Form::text('etapa', $tipo_adquisicion->descripcion, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
+                                @if (strtolower($tipo_adquisicion->descripcion) == 'acabados')
+                                    {{ Form::label('', 'Actividad', ['class' => 'col-form-label']) }}
+                                    {{ Form::select('actividad', [], null, ['class' => 'form-control select2-tag', 'data-placeholder' => 'Seleccionar activdad']) }}
+                                @else
+                                    {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
+                                    {{ Form::text('etapa', $tipo_adquisicion->descripcion, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
+                                @endif
+
                             </div>
                         </div>
                     </div>

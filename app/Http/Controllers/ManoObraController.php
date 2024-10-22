@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class ManoObraController extends Controller
-{    
+{
     /**
      * Display a listing of the resource.
      */
@@ -91,6 +91,27 @@ class ManoObraController extends Controller
         }
     }
 
+    public function getAjaxActividadAcabados(Request $request)
+    {
+        if ($request->ajax()) {
+            $slug_padre = 'actividad.acabados';
+            $catalogo = CatalogoDato::getCatalogoPadre($slug_padre);
+            if (!$catalogo) {
+                $padre = CatalogoDato::create([
+                    'descripcion' => 'Actividad Acabados',
+                    'detalle' => '',
+                    'slug' => $slug_padre,
+                    'padre_id' => null,
+                    'activo' => true,
+                ]);
+            }
+
+            $children = CatalogoDato::getChildrenCatalogo($slug_padre);
+
+            return response()->json(['actividad' => $children->pluck('descripcion', 'id')]);
+        }
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -134,7 +155,7 @@ class ManoObraController extends Controller
             DB::beginTransaction();
 
             $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
-            ->where('fecha', $fecha)->pluck('proveedor_id')->toArray();
+                ->where('fecha', $fecha)->pluck('proveedor_id')->toArray();
             // Eliminar todos los registros del personal
             if (empty($personal)) {
                 DetalleManoObra::where('mano_obra_id', $request->mano_obra)
@@ -146,7 +167,7 @@ class ManoObraController extends Controller
                 // Eliminar los registros que no están en el formulario
                 if (!empty($personalEliminar)) {
                     DetalleManoObra::where('fecha', $fecha)
-                    ->whereIn('proveedor_id', $personalEliminar)->delete();
+                        ->whereIn('proveedor_id', $personalEliminar)->delete();
                 }
 
                 foreach ($personal as $index => $value) {
@@ -188,11 +209,16 @@ class ManoObraController extends Controller
         }
     }
 
+    /**
+     * Guardar nueva planificacion
+     * @param Request
+     * @return json
+     */
     public function storePlanificacion(Request $request)
     {
         if ($request->ajax()) {
             $semana = ManoObra::where('proyecto_id', $request->proyecto_id)
-            ->where('etapa_id', $request->tipo_adquisicion)->count();
+                ->where('etapa_id', $request->tipo_adquisicion)->count();
             $request->merge([
                 'fecha_inicio' => Carbon::createFromFormat('d-m-Y', $request->fecha_inicio)->format('Y-m-d'),
                 'fecha_fin' => Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d'),
@@ -203,14 +229,14 @@ class ManoObraController extends Controller
 
             // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
             $fechasExistentes = ManoObra::where('etapa_id', $request->tipo_adquisicion)
-            ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
-                    ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
-                    ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
-                        $query->where('fecha_inicio', '<=', $fechaInicio)
-                            ->where('fecha_fin', '>=', $fechaFin);
-                    });
-            })->exists();
+                ->where(function ($query) use ($fechaInicio, $fechaFin) {
+                    $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                        ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
+                        ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
+                            $query->where('fecha_inicio', '<=', $fechaInicio)
+                                ->where('fecha_fin', '>=', $fechaFin);
+                        });
+                })->exists();
 
             if ($fechasExistentes) {
                 throw ValidationException::withMessages([
@@ -251,7 +277,15 @@ class ManoObraController extends Controller
                     'etapa_id' => $request->tipo_adquisicion,
                     'tipo_etapa_id' => $request->tipo_etapa,
                     'usuario_id' => Auth::user()->id,
+                    'actividad_id' => null,
                 ];
+
+                if (is_numeric($request->actividad)) {
+                    $mano_obra['actividad_id'] = $request->actividad;
+                } elseif (!is_null($request->actividad)) {
+                    $create_actividad = newChildrenCatalogoDatos($request->actividad, 'actividad.acabados');
+                    $mano_obra['actividad_id'] = $create_actividad;
+                }
 
                 if (ManoObra::create($mano_obra)) {
                     DB::commit();
@@ -280,7 +314,8 @@ class ManoObraController extends Controller
         }
     }
 
-    public function updatePlanificacion (Request $request) {
+    public function updatePlanificacion(Request $request)
+    {
         if ($request->ajax()) {
             $mano_obra = ManoObra::find($request->id);
             $request->merge([
@@ -291,14 +326,14 @@ class ManoObraController extends Controller
 
             // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
             $fechasExistentes = ManoObra::where('id', '!=', $mano_obra->id)
-            ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
-                    ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
-                    ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
-                        $query->where('fecha_inicio', '<=', $fechaInicio)
-                            ->where('fecha_fin', '>=', $fechaFin);
-                    });
-            })->exists();
+                ->where(function ($query) use ($fechaInicio, $fechaFin) {
+                    $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
+                        ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
+                        ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
+                            $query->where('fecha_inicio', '<=', $fechaInicio)
+                                ->where('fecha_fin', '>=', $fechaFin);
+                        });
+                })->exists();
 
             if ($fechasExistentes) {
                 throw ValidationException::withMessages([
@@ -362,9 +397,9 @@ class ManoObraController extends Controller
         $fecha_actual = Carbon::now()->format('Y-m-d');
         // Obtener el ultimo registro para saber la fecha
         $ultimo_registro = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
-        ->orderBy('fecha', 'desc')
-        ->first();
-        
+            ->orderBy('fecha', 'desc')
+            ->first();
+
         $fecha_anterior = isset($ultimo_registro->fecha) ? $ultimo_registro->fecha : $fecha_actual;
         /*
           $mano_obra = ManoObra::whereHas('detalle_mano_obra', function ($query) use ($fecha_actual) {
@@ -396,7 +431,7 @@ class ManoObraController extends Controller
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
 
 
-        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha_actual' => $fecha_actual,'fecha_anterior' => $fecha_anterior, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        $route_params = array_merge($route_params, ['mano_obra' => $mano_obra, 'fecha_actual' => $fecha_actual, 'fecha_anterior' => $fecha_anterior, 'proveedores' => $proveedores, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.create', $route_params);
     }
 
@@ -440,7 +475,8 @@ class ManoObraController extends Controller
         }
     }
 
-    public function buscarPlanificacion (Request $request){
+    public function buscarPlanificacion(Request $request)
+    {
         $buscar = $request->text;
         $proyecto_id = $request->proyecto;
         $etapa_id = $request->tipo_adquisicion;
@@ -458,7 +494,7 @@ class ManoObraController extends Controller
             ->get();
 
         $route_params = $this->getRouteParameters($request);
-        $output = $this->htmlTable($list_planificacion,$route_params);
+        $output = $this->htmlTable($list_planificacion, $route_params);
         if (empty($output)) {
             $output .= '<tr>' .
                 '<td colspan="6" class="text-center">' .
@@ -494,12 +530,14 @@ class ManoObraController extends Controller
             $eliminar = "<a href='#' class='dropdown-item eliminar-planificacion' id='" . $mano_obra->id . "'>Eliminar</a>";
             $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item' target='_blank'>PDF Planificación</a>";
 
+            $tipo = $mano_obra->tipo_etapa->slug == "mano.obra" ? $mano_obra->tipo_etapa->descripcion : $mano_obra->actividad->descripcion;
+
             $out .= '<tr id="' . $mano_obra->id . '">' .
                 '<td class="align-middle">' . $mano_obra->semana . '</td>' .
-                '<td class="align-middle editar-fecha-planificacion" style="cursor: pointer" data-fecha-inicio ="'. $mano_obra->fecha_inicio.'" data-fecha-fin = "'.$mano_obra->fecha_fin.'" >' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
+                '<td class="align-middle editar-fecha-planificacion" style="cursor: pointer" data-fecha-inicio ="' . $mano_obra->fecha_inicio . '" data-fecha-fin = "' . $mano_obra->fecha_fin . '" >' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
                 '<td class="align-middle">' . $mano_obra->proyecto->nombre_proyecto . '</td>' .
                 '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
-                '<td class="align-middle">' . $mano_obra->tipo_etapa->descripcion . '</td>' .
+                '<td class="align-middle">' . $tipo  . '</td>' .
                 '<td class="align-middle align-middle text-right text-truncate">' .
                 '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $nuevo . $editar . $eliminar . $pdf . '">
                                         <i class="fas fa-caret-left font-weight-normal"></i> Opciones

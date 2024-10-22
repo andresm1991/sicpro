@@ -147,6 +147,31 @@ if (!function_exists('registrarProducto')) {
         }
         return $existe->id;
     }
+
+    /**
+     * Registrar nuevo elemento en Catalogo datos
+     * @param String actividad
+     * @return int id
+     */
+    function newChildrenCatalogoDatos($value, $slug_padre)
+    {
+        $slug = strtolower(str_replace(' ', '.', $value));
+        $catalogo = CatalogoDato::getCatalogoPadre($slug_padre);
+        $existe = CatalogoDato::where('descripcion', $value)
+            ->where('slug', $slug)->first();
+
+        if (!$existe) {
+            $create = CatalogoDato::create([
+                'descripcion' => $value,
+                'detalle' => '',
+                'slug' => $catalogo->slug . '.' . $slug,
+                'padre_id' => $catalogo->id,
+                'activo' => true,
+            ]);
+            return $create->id;
+        }
+        return $existe->id;
+    }
 }
 /**
  * Formato para el numero de orden de trabajo o adquisison

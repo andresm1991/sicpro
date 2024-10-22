@@ -16,6 +16,19 @@
         </div>
     </div>
 </div>
+@if (strtolower($tipo_adquisicion->descripcion) == 'acabados')
+    <div class="row">
+        <div class="col-md-7 col-12">
+            <div class="form-group row">
+                {{ Form::label('', 'Actividad', ['class' => 'col-sm-2 col-form-label']) }}
+                <div class="col-sm-10">
+                    {{ Form::text('etapa', $mano_obra->actividad->descripcion, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
 
 <div class="row">
     <div class="col-12">
@@ -176,8 +189,9 @@
                             value="{{ $detalle_mano_obra->detalle_adicional }}">
                     </td>
                     <td>
-                        <input name="descuento[]" type="text" class="form-control input-double" placeholder="$ 0.00"
-                            data-inputmask="'alias': 'currency'" value="{{ $detalle_mano_obra->descuento }}">
+                        <input name="descuento[]" type="text" class="form-control input-double"
+                            placeholder="$ 0.00" data-inputmask="'alias': 'currency'"
+                            value="{{ $detalle_mano_obra->descuento }}">
                     </td>
                     <td>
                         <input name="detalle_descuento[]" type="text" class="form-control"

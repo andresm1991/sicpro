@@ -16,6 +16,7 @@ class ManoObra extends Model
         'proyecto_id',
         'etapa_id',
         'tipo_etapa_id',
+        'actividad_id',
         'usuario_id'
     ];
 
@@ -36,6 +37,11 @@ class ManoObra extends Model
     public function tipo_etapa()
     {
         return $this->belongsTo(CatalogoDato::class, 'tipo_etapa_id');
+    }
+
+    public function actividad()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'actividad_id');
     }
 
     public function usuario()

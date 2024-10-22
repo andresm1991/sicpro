@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('orden_recepcion_id')->nullable();
             $table->foreignId('producto_id')->references('id')->on('articulos')->onDelete('cascade');
-            $table->integer('cantidad');
-            $table->integer('cantidad_debaja');
+            $table->integer('cantidad')->default(0);
+            $table->integer('cantidad_debaja')->default(0);
             $table->date('fecha');
             $table->foreignId('usuario_id')->references('id')->on('usuarios')->onDelete('cascade');
-            $table->foreignId('estado_id')->references('id')->on('catalogo_datos')->onDelete('cascade');
+            $table->smallInteger('estado');
             $table->timestamps();
 
             $table->foreign('orden_recepcion_id')->references('id')->on('orden_recepciones')->onDelete('cascade');
