@@ -29,24 +29,22 @@
                     <table class="table table-bordered table-hover">
                         <thead>
                             <tr>
+                                <th scope="col">Fecha</th>
                                 <th scope="col">Producto</th>
                                 <th scope="col">Cantidad</th>
-                                <th scope="col">De Baja</th>
-                                <th scope="col">Stock</th>
                                 <th scope="col">Estado</th>
                                 <th class="col-accion"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($list_inventario as $index => $inventario)
+                            @forelse ($detalle_inventario as $index => $inventario)
                                 <tr id="{{ $index }}">
+                                    <td class="align-middle">{{ $inventario->fecha }}</td>
                                     <td class="align-middle text-uppercase">{{ $inventario->producto->descripcion }}</td>
-                                    <td class="align-middle">{{ $inventario->total_cantidad }}</td>
-                                    <td class="align-middle">{{ $inventario->total_cantidad_debaja }}</td>
-                                    <td class="align-middle">{{ $inventario->stock }}</td>
+                                    <td class="align-middle">{{ $inventario->cantidad }}</td>
                                     <td class="align-middle">
                                         <div class="progress">
-                                            <div class="progress-bar @if ($inventario->estado <= 3) bg-danger @elseif ($inventario->estado <= 7) bg-warning @else bg-success @endif  "
+                                            <div class="progress-bar {{ $inventario->estado <= 3 ? 'bg-danger' : ($inventario->estado <= 7 ? 'bg-warning' : 'bg-success') }} "
                                                 role="progressbar" style="width: {{ ($inventario->estado / 10) * 100 }}%;"
                                                 aria-valuenow="{{ $inventario->estado }}" aria-valuemin="0"
                                                 aria-valuemax="10">
@@ -73,11 +71,12 @@
                         </tbody>
                     </table>
                 </div>
+
+                @include('partials.pagination', ['paginator' => $detalle_inventario, 'interval' => 5])
             </div>
         </div>
     </section>
 
-    @include('modals.inventario_form_modal', ['productos' => $productos])
 @endsection
 
 @section('scripts')

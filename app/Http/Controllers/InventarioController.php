@@ -30,6 +30,22 @@ class InventarioController extends Controller
         return view('inventario.index', compact('list_inventario', 'productos', 'title_page', 'breadcrumbs'));
     }
 
+    public function detalle($producto){
+        
+        $title_page = 'Detalle Producto';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Inventario', 'url' => route('sistema.inventario.index')],
+            ['name' => 'Detalle producto', 'url' => '']
+        ];
+
+
+        $detalle_inventario = Inventario::where('producto_id', $producto)->paginate(15);
+
+        return view('inventario.detalle_producto', compact('detalle_inventario', 'title_page', 'breadcrumbs'));
+
+    }
+
     public function store(Request $request)
     {
         if ($request->ajax()) {
