@@ -148,4 +148,64 @@ $(function () {
     $(document).on('click', '.eliminar-inventario', function () {
         var $id = $(this).attr('id');
     });
+
+    $(document).on('click', '.dar_baja', function () {
+        var $id = $(this).attr('id');
+        var cantidad = $(this).data('p');
+        console.log(cantidad);
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-dark mx-2",
+                cancelButton: "btn btn-secondary",
+            },
+            buttonsStyling: false
+        });
+
+        swalWithBootstrapButtons.fire({
+            text: "Ingrese la cantidad del producto que desea dar de baja",
+            input: "text",
+            inputAttributes: {
+                autocapitalize: "off"
+            },
+            showCancelButton: true,
+            confirmButtonText: "Aceptar",
+            cancelButtonText: "Cancelar",
+            showLoaderOnConfirm: true,
+            didOpen: () => {
+                const inputField = Swal.getInput();
+                inputField.classList.add('mi-clase-personalizada');
+
+                // Aplicar InputMask para formato de tipo double (decimal)
+                $(inputField).inputmask({
+                    alias: "integer",
+                    allowMinus: false, // No permite números negativos
+                    rightAlign: false,
+                });
+            },
+            preConfirm: async (cantidad) => {
+                try {
+                    console.log($cantidad)
+                    if (!cantidad) {
+                        return Swal.showValidationMessage('Debe ingresar la cantidad');
+                    } else if ($cantidad < cantidad) {
+                        return Swal.showValidationMessage('La cantidad ingresada es mayor que la cantidad disponible.');
+                    }
+
+
+                } catch (error) {
+                    Swal.showValidationMessage(`
+                  Request failed: ${error}
+                `);
+                }
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: `${result.value.login}'s avatar`,
+                    imageUrl: result.value.avatar_url
+                });
+            }
+        });
+    });
 });
