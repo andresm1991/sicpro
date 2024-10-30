@@ -133,7 +133,10 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/', [InventarioController::class, 'index'])->name('index');
             Route::get('/detalle/{producto}', [InventarioController::class, 'detalle'])->name('detalle');
             Route::post('/nuevo', [InventarioController::class, 'store']);
+            Route::post('/detalle/dar-de-baja', [InventarioController::class, 'darDeBajaProducto']);
             Route::get('/buscar', [InventarioController::class, 'buscar']);
+            Route::delete('/detalle/eliminar/{id}', [InventarioController::class, 'destroy']);
+            Route::delete('/eliminar/{id}', [InventarioController::class, 'destroyInventario']);
             
         });
 

@@ -20,7 +20,7 @@
                         </thead>
                         <tbody>
                             @forelse ($detalle_inventario as $index => $inventario)
-                                <tr id="{{ $index }}">
+                                <tr id="{{ $inventario->id }}">
                                     <td class="align-middle">{{ $inventario->fecha }}</td>
                                     <td class="align-middle text-uppercase">{{ $inventario->producto->descripcion }}</td>
                                     <td class="align-middle">{{ $inventario->cantidad }}</td>
@@ -38,8 +38,8 @@
                                         <button type="button" class="btn btn-outline-dark" data-container="body"
                                             data-toggle="popover" data-placement="left" data-trigger="focus"
                                             data-content ="
-                                            <a href='javascript:void(0);' class='dropdown-item dar_baja' id = '{{ $inventario->id }}' data-cantidad ='{{ $inventario->cantidad }}' >Dar de Baja</a>
-                                            <a href='javascript:void(0);' class='dropdown-item eliminar-inventario' id='{{ $inventario->id }}'>Eliminar</a>
+                                            <a href='javascript:void(0);' class='dropdown-item dar_baja' id = '{{ $inventario->id }}'>Dar de Baja</a>
+                                            <a href='javascript:void(0);' class='dropdown-item eliminar-inventario-producto' id='{{ $inventario->id }}'>Eliminar</a>
                                         ">
                                             <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                         </button>

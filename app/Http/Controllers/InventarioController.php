@@ -74,6 +74,49 @@ class InventarioController extends Controller
         }
     }
 
+    public function darDeBajaProducto(Request $request){
+        if($request->ajax()){
+            try {
+                DB::beginTransaction();
+                $id = $request->id;
+                $cantidad_baja = $request->cantidad;
+
+                $inventario = Inventario::find($id);
+                $existencias = $inventario->cantidad - $inventario->cantidad_debaja;
+                if($cantidad_baja > $existencias){
+                    throw new Exception('No es posible actualizar el inventario, verifique que la cantidad no sea mayor a las existencias disponibles.');    
+                }
+                $inventario->cantidad_debaja = $cantidad_baja;
+                if($inventario->save()){
+                    DB::commit();
+                    return response()->json(['success' => true, 'mensaje' => 'Producto dado de baja.']);
+                }
+                throw new Exception('Error a intentar actualizar el inventario');
+            } catch (Throwable $e) {
+                DB::rollBack();
+                LogService::log('error', 'Error en inventario metodo: store', ['user_id' => auth()->id(), 'action' => 'store', 'message' => $e->getMessage()]);
+                return response()->json(['success' => false, 'mensaje' => $e->getMessage()]);
+            }
+        }
+    }
+    public function destroy($id){
+        $delete = Inventario::find($id)->delete();
+        if ($delete) {
+            return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Error al intentar eliminar el registro.']);
+        }
+    }
+
+    public function destroyInventario ($idProdcuto) {
+        $delete = Inventario::where('producto_id', $idProdcuto)->delete();
+        if ($delete) {
+            return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Error al intentar eliminar el registro.']);
+        }
+    }
+
     public function buscar(Request $request)
     {
         if ($request->ajax()) {
@@ -100,7 +143,7 @@ class InventarioController extends Controller
                                 ' . $inventario->estado . '/10
                             </div>
                         </div>';
-            $movimientos = "<a href='javascript:void(0);' class='dropdown-item'>Movimiento</a>";
+            $detalle = "<a href='". route('sistema.inventario.detalle', $inventario->producto_id) ."' class='dropdown-item'>Detalle</a>";
             $eliminar = "<a href='javascript:void(0);' class='dropdown-item eliminar-inventario' id='" . $inventario->id . "'>Eliminar</a>";
 
             $output .= ' <tr id="' . $index . '">' .
@@ -112,7 +155,7 @@ class InventarioController extends Controller
                 '<td class="align-middle text-right text-truncate p-2">' .
                 '<button type="button" class="btn btn-outline-dark" data-container="body"
                         data-toggle="popover" data-placement="left" data-trigger="focus"
-                        data-content ="' . $movimientos . $eliminar . '">
+                        data-content ="' . $detalle . $eliminar . '">
                         <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                     </button>' .
                 '</td>' .
