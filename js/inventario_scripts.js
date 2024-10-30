@@ -147,12 +147,131 @@ $(function () {
 
     $(document).on('click', '.eliminar-inventario', function () {
         var $id = $(this).attr('id');
+
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-dark mx-2",
+                cancelButton: "btn btn-secondary",
+            },
+            buttonsStyling: false
+        });
+
+        swalWithBootstrapButtons.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'inventario/eliminar/' + $id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + $id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "6" class="text-center">No se encontraron datos para mostrar.</td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        })
+    });
+
+    $(document).on('click', '.eliminar-inventario-producto', function () {
+        var $id = $(this).attr('id');
+
+        const swalWithBootstrapButtons = Swal.mixin({
+            customClass: {
+                confirmButton: "btn btn-dark mx-2",
+                cancelButton: "btn btn-secondary",
+            },
+            buttonsStyling: false
+        });
+
+        swalWithBootstrapButtons.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'eliminar/' + $id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + $id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "6" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        })
     });
 
     $(document).on('click', '.dar_baja', function () {
         var $id = $(this).attr('id');
-        var cantidad = $(this).data('p');
-        console.log(cantidad);
+
         const swalWithBootstrapButtons = Swal.mixin({
             customClass: {
                 confirmButton: "btn btn-dark mx-2",
@@ -184,14 +303,33 @@ $(function () {
             },
             preConfirm: async (cantidad) => {
                 try {
-                    console.log($cantidad)
                     if (!cantidad) {
                         return Swal.showValidationMessage('Debe ingresar la cantidad');
-                    } else if ($cantidad < cantidad) {
-                        return Swal.showValidationMessage('La cantidad ingresada es mayor que la cantidad disponible.');
                     }
 
-
+                    return $.ajax({
+                        headers: { 'X-CSRF-TOKEN': csrf },
+                        url: 'dar-de-baja',
+                        method: 'POST',
+                        data: {
+                            id: $id,
+                            cantidad: cantidad
+                        },
+                        success: function(response) {
+                            if(!response.success){
+                                Swal.showValidationMessage(`${response.mensaje}`);
+                            }
+                        },
+                        error: function(error) {
+                            Swal.showValidationMessage(`Error en la petición: ${error}`);
+                        }
+                    })
+                    .then(response => {
+                        if (response.error) {
+                            Swal.showValidationMessage(`Error: ${response.error}`);
+                        }
+                        return response; // Devuelve la respuesta si todo va bien
+                    })
                 } catch (error) {
                     Swal.showValidationMessage(`
                   Request failed: ${error}
@@ -200,11 +338,14 @@ $(function () {
             },
             allowOutsideClick: () => !Swal.isLoading()
         }).then((result) => {
-            if (result.isConfirmed) {
-                Swal.fire({
-                    title: `${result.value.login}'s avatar`,
-                    imageUrl: result.value.avatar_url
-                });
+            if(result.isConfirmed){
+                if(result.value.success){
+                    Swal.fire({
+                        icon: 'success',
+                        title: '',
+                        text: result.value.mensaje,
+                    });
+                }
             }
         });
     });
