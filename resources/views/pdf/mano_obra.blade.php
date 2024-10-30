@@ -15,15 +15,22 @@
 
         .page-title {
             text-align: center;
-            font-size: 24px; /* Tamaño del título */
-            font-weight: bold; /* Grosor del título */
-            margin: 20px 0; /* Margen superior e inferior */
+            font-size: 24px;
+            /* Tamaño del título */
+            font-weight: bold;
+            /* Grosor del título */
+            margin: 20px 0;
+            /* Margen superior e inferior */
         }
-        .title{
-            font-size: 16px; /* Tamaño del título */
-            font-weight: bold; /* Grosor del título */
+
+        .title {
+            font-size: 16px;
+            /* Tamaño del título */
+            font-weight: bold;
+            /* Grosor del título */
         }
-        .text-content{
+
+        .text-content {
             font-size: 16px;
         }
 
@@ -35,8 +42,9 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            opacity: 0.2; /* Transparencia */
-            
+            opacity: 0.2;
+            /* Transparencia */
+
             background-position: center;
             background-size: contain;
             background-repeat: no-repeat;
@@ -77,6 +85,7 @@
         .clear {
             clear: both;
         }
+
         /* CSS Table */
         .items table {
             width: 100%;
@@ -97,35 +106,66 @@
         }
 
         /* Definir ancho fijo para las nuevas columnas */
-        th:nth-child(11), td:nth-child(11), /* Detalle Adicional */
-        th:nth-child(14), td:nth-child(14), /* Detalle Descuento */
-        th:nth-child(16), td:nth-child(16)   {
-            width: 100px; /* Ajustar el ancho según sea necesario */
-            word-wrap: break-word; /* Ajustar contenido largo */
+        th:nth-child(11),
+        td:nth-child(11),
+        /* Detalle Adicional */
+        th:nth-child(14),
+        td:nth-child(14),
+        /* Detalle Descuento */
+        th:nth-child(16),
+        td:nth-child(16) {
+            width: 100px;
+            /* Ajustar el ancho según sea necesario */
+            word-wrap: break-word;
+            /* Ajustar contenido largo */
         }
 
-        th:nth-child(1), td:nth-child(1), /* Detalle Adicional */
-        th:nth-child(12), td:nth-child(12)  /* Detalle Descuento */ {
-            width: 20px; /* Ajustar el ancho según sea necesario */
+        th:nth-child(1),
+        td:nth-child(1),
+        /* Detalle Adicional */
+        th:nth-child(12),
+        td:nth-child(12)
+
+        /* Detalle Descuento */
+            {
+            width: 20px;
+            /* Ajustar el ancho según sea necesario */
         }
 
         /* Definir un ancho mínimo para otras columnas */
-        th, td {
-            min-width: 50px; /* Asegura que las columnas no se encojan demasiado */
+        th,
+        td {
+            min-width: 50px;
+            /* Asegura que las columnas no se encojan demasiado */
         }
 
         /* Asegura que las columnas principales mantengan su tamaño adecuado */
-       
-        th:nth-child(2), td:nth-child(2), /* Nombres y Apellidos */
-        th:nth-child(3), td:nth-child(3), /* Cargo */
-        th:nth-child(10), td:nth-child(10), /* Adicionales */
-        th:nth-child(12), td:nth-child(12), /* Descuentos */
-        th:nth-child(13), td:nth-child(13), /* TOTAL */
-        th:nth-child(15), td:nth-child(15), /* Liquido a Recibir */
-        th:nth-child(16), td:nth-child(16),
-        th:nth-child(17), td:nth-child(17)   {
+
+        th:nth-child(2),
+        td:nth-child(2),
+        /* Nombres y Apellidos */
+        th:nth-child(3),
+        td:nth-child(3),
+        /* Cargo */
+        th:nth-child(10),
+        td:nth-child(10),
+        /* Adicionales */
+        th:nth-child(12),
+        td:nth-child(12),
+        /* Descuentos */
+        th:nth-child(13),
+        td:nth-child(13),
+        /* TOTAL */
+        th:nth-child(15),
+        td:nth-child(15),
+        /* Liquido a Recibir */
+        th:nth-child(16),
+        td:nth-child(16),
+        th:nth-child(17),
+        td:nth-child(17) {
             min-width: 80px;
         }
+
         /* end */
         .footer {
             text-align: center;
@@ -139,16 +179,24 @@
 <body>
     <!-- Marca de agua -->
     <div class="watermark">
-        <img src="data:image/png;base64,{{ $logo_base64 }}"/>
+        <img src="data:image/png;base64,{{ $logo_base64 }}" />
     </div>
 
     <div class="content">
         <h1 class="page-title">{{ $info_mano_obra['proyecto'] }}</h1>
         <div class="details">
             <div class="left">
-                <strong class="title">Fecha:</strong> <span class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
-                <strong class="title">Semana:</strong> <span class="text-content"> {{ $info_mano_obra['semana'] }}</span><br>
-                <strong class="title">Etapa:</strong> <span class="text-content">{{ $info_mano_obra['etapa'] }}</span>
+                <strong class="title">Fecha:</strong> <span
+                    class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
+                <strong class="title">Semana:</strong> <span class="text-content">
+                    {{ $info_mano_obra['semana'] }}</span><br>
+                <strong class="title">Etapa:</strong> <span
+                    class="text-content">{{ $info_mano_obra['etapa'] }}</span><br>
+
+                @if (!is_null($info_mano_obra['actividad']))
+                    <strong class="title">Actividad:</strong> <span
+                        class="text-content">{{ ucfirst($info_mano_obra['actividad']) }}</span>
+                @endif
             </div>
 
             <div class="clear"></div>
@@ -191,11 +239,11 @@
                         $totalDescuentos = 0;
                         $totalRecibir = 0;
                     @endphp
-        
+
                     @foreach ($info_mano_obra['detalle'] as $detalle)
                         @php
                             // Verificar si el nombre es diferente al anterior
-                            $isFirstRowForName = ($detalle['nombre'] !== $lastName);
+                            $isFirstRowForName = $detalle['nombre'] !== $lastName;
 
                             if ($isFirstRowForName) {
                                 // Contar cuántas filas pertenecen al mismo nombre
@@ -203,19 +251,19 @@
                                     ->where('nombre', $detalle['nombre'])
                                     ->unique('cargo') // Asegura que se cuenten solo cargos distintos
                                     ->count();
-                                
+
                                 // Calcular el total de días trabajados + adicionales para todas las filas de este trabajador
                                 $totalDias = collect($info_mano_obra['detalle'])
                                     ->where('nombre', $detalle['nombre'])
-                                    ->sum(function($d) {
+                                    ->sum(function ($d) {
                                         return array_sum($d['dias']) + $d['total_adicional'];
                                     });
-                                
+
                                 // Calcular el total del líquido a recibir (total - descuento)
                                 $liquidoRecibirTotal = collect($info_mano_obra['detalle'])
                                     ->where('nombre', $detalle['nombre'])
-                                    ->sum(function($d) {
-                                        return ($d['total'] - $d['total_descuento']);
+                                    ->sum(function ($d) {
+                                        return $d['total'] - $d['total_descuento'];
                                     });
                             }
 
@@ -223,31 +271,34 @@
                             $totalAdicionales += $detalle['total_adicional'];
                             $totalPagoDias += array_sum($detalle['dias']) + $detalle['total_adicional'];
                             $totalDescuentos += $detalle['total_descuento'];
-                            $totalRecibir += ($detalle['total'] - $detalle['total_descuento']);
+                            $totalRecibir += $detalle['total'] - $detalle['total_descuento'];
                         @endphp
                         <tr>
-                            @if($isFirstRowForName)
-                                <td rowspan="{{ $rowspan }}">{{ $index}}</td>
+                            @if ($isFirstRowForName)
+                                <td rowspan="{{ $rowspan }}">{{ $index }}</td>
                                 <td rowspan="{{ $rowspan }}">{{ $detalle['nombre'] }}</td>
-                                @php $lastName = $detalle['nombre']; $index ++; @endphp
+                                @php
+                                    $lastName = $detalle['nombre'];
+                                    $index++;
+                                @endphp
                             @endif
-        
-                            <td>{{ $detalle['cargo']}}</td>
-                            @foreach($detalle['dias'] as $dia)
+
+                            <td>{{ $detalle['cargo'] }}</td>
+                            @foreach ($detalle['dias'] as $dia)
                                 <td>$ {{ number_format($dia, 2) }}</td>
                             @endforeach
                             <td>$ {{ number_format($detalle['total_adicional'], 2) }}</td>
                             <td>
                                 {{ implode(',', $detalle['detalle_adicional']) }}
                             </td>
-                            @if($isFirstRowForName)
+                            @if ($isFirstRowForName)
                                 <td rowspan="{{ $rowspan }}">$ {{ number_format($totalDias, 2) }}</td>
                             @endif
                             <td>$ {{ number_format($detalle['total_descuento'], 2) }}</td>
                             <td>
                                 {{ implode(',', $detalle['detalle_descuento']) }}
                             </td>
-                            @if($isFirstRowForName)
+                            @if ($isFirstRowForName)
                                 <td rowspan="{{ $rowspan }}">$ {{ number_format($liquidoRecibirTotal, 2) }}</td>
                             @endif
                             <td>

@@ -46,7 +46,7 @@
                                     <td class="align-middle">{{ $inventario->stock }}</td>
                                     <td class="align-middle">
                                         <div class="progress">
-                                            <div class="progress-bar @if ($inventario->estado <= 3) bg-danger @elseif ($inventario->estado <= 7) bg-warning @else bg-success @endif  "
+                                            <div class="progress-bar {{ $inventario->estado <= 3 ? 'bg-danger' : ($inventario->estado <= 7 ? 'bg-warning' : 'bg-success') }}  "
                                                 role="progressbar" style="width: {{ ($inventario->estado / 10) * 100 }}%;"
                                                 aria-valuenow="{{ $inventario->estado }}" aria-valuemin="0"
                                                 aria-valuemax="10">

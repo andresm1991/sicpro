@@ -140,6 +140,7 @@ class GenerarPdfController extends Controller
         $info_mano_obra = [
             'proyecto' => $mano_obra->proyecto->nombre_proyecto,
             'etapa' => $mano_obra->etapa->descripcion,
+            'actividad' => $mano_obra->actividad->descripcion ?? null,
             'fecha' => dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin),
             'semana' => $mano_obra->semana,
             'detalle' => []  // Para almacenar los detalles procesados
