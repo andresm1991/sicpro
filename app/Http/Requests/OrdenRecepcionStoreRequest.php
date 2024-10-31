@@ -24,8 +24,8 @@ class OrdenRecepcionStoreRequest extends FormRequest
         $rules =  [
             'proveedor' => 'required|numeric',
             'pedido' => 'required|numeric',
-            'cantidad_recibida' => 'required|array', // Valida que sea un array
-            'cantidad_recibida.*' => 'required|numeric', // Valida que cada elemento dentro del array sea numérico'cantidad_recibida' => 'required|array|numeric',
+            'cantidad_recibida' => 'required|array',
+            'cantidad_recibida.*' => 'required|numeric', 
             'forma_pago' => 'required',
         ];
 

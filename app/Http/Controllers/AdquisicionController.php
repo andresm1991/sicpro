@@ -64,7 +64,7 @@ class AdquisicionController extends Controller
         $list_pedidos = Adquisicion::where('proyecto_id', $proyecto->id)
             ->where('etapa_id', $tipo_adquisicion->id)
             ->where('tipo_etapa_id', $tipo_etapa->id)
-            ->orderBy('id', 'desc')->paginate(15);
+            ->orderBy('fecha', 'desc')->paginate(15);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -416,17 +416,6 @@ class AdquisicionController extends Controller
             'editar' => $orden_completa ? false : true,
         ];
 
-        if ($orden_completa) {
-            // Buscar el registro en la base de datos que contiene cantidad_solicitada
-
-            foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
-                if ($cantidad_recibida > $cantidades_solicitadas[$index]) {
-                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual o menor a la cantidad solicitada.'])
-                        ->withInput();
-                }
-            }
-        }
-
         try {
             DB::beginTransaction();
             if ($orden_recepcion = OrdenRecepcion::create($param)) {
@@ -505,14 +494,6 @@ class AdquisicionController extends Controller
         $inventario = $request->inventario;
         $estado_inventario =  CatalogoDato::getEstadoInventarioId('estados.inventario.nuevo');
 
-        if ($orden_completa) {
-            foreach ($cantidades_recibidas as $index => $cantidad_recibida) {
-                if ($cantidad_recibida > $cantidades_solicitadas[$index]) {
-                    return back()->withErrors(['cantidad_recibida.' . $index => 'La cantidad recibida debe ser igual o menor a la cantidad solicitada.'])
-                        ->withInput();
-                }
-            }
-        }
 
         $orden_recepcion->proveedor_id = $request->proveedor;
         $orden_recepcion->forma_pago_id = $request->forma_pago;
