@@ -151,6 +151,7 @@ $(function () {
     });
 
     $('.select2-tag').select2({
+        width: '100%',
         allowClear: false, // Permite limpiar la selección
         tags: true, // Permite agregar nuevas opciones
         placeholder: function () {
@@ -196,6 +197,18 @@ $(function () {
         placeholder: "",         // Dejar vacío el placeholder si lo deseas
         autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
     });
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: "",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 2,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency");
 
     /// Solo numeros
     $(document).on('input', ".solo-numeros", function (evt) {
@@ -261,6 +274,21 @@ $(function () {
     $(document).on('input', '.auto-ajustable', function () {
         // Ajustar el ancho del input en función del contenido
         this.style.width = ((this.value.length + 1) * 8) + 'px'; // Ajusta el multiplicador si es necesario
+    });
+
+    /**
+     * Calculpo entre valor unitario y cantidad
+     */
+    $('#table-adquisiciones').on('input', '.precio-unitario', function() {
+        
+        let index = $(this).data('index');
+        let cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
+        let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
+        let total = cantidad * precioUnitario;
+
+
+        // Actualiza el campo de total en la misma fila
+        $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(2)}`);
     });
 
 
