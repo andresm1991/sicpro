@@ -319,6 +319,7 @@ class CatalogoDatoTableSeeder extends Seeder
         ]);*/
 
         // Estados inventario
+        /*
         $padre = CatalogoDato::create([
             'descripcion' => 'Estados Inventario',
             'detalle' => '',
@@ -344,6 +345,22 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Dado de baja',
             'detalle' => '',
             'slug' => 'estados.inventario.baja',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Menu Administrativo',
+            'detalle' => '',
+            'slug' => 'menu.administrativo',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Adquisiciones',
+            'detalle' => '',
+            'slug' => 'menu.administrativo.adquisiciones',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

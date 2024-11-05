@@ -132,8 +132,9 @@ if (!function_exists('registrarProducto')) {
     {
         $slug = strtolower(str_replace(' ', '.', $unidad_medida));
         $catalogo = CatalogoDato::getCatalogoPadre('unidades.medida');
-        $existe = CatalogoDato::where('descripcion', $unidad_medida)
-            ->where('slug', $slug)->first();
+        $existe = CatalogoDato::whereRaw('LOWER(descripcion) = ?', [strtolower($unidad_medida)])
+        ->whereRaw('LOWER(slug) = ?', [strtolower('unidad.medida.'.$slug)])
+        ->first();
 
         if (!$existe) {
             $create = CatalogoDato::create([
@@ -172,6 +173,20 @@ if (!function_exists('registrarProducto')) {
         }
         return $existe->id;
     }
+
+    function formasPagos () {
+        $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
+        return $forma_pagos;
+    }
+
+    function getUnidadMedidas($isSelected = false){
+        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+        if($isSelected){
+            $unidad_medidas = $unidad_medidas->prepend('', '');
+        }
+
+        return $unidad_medidas;
+    }
 }
 /**
  * Formato para el numero de orden de trabajo o adquisison
@@ -183,11 +198,13 @@ if (!function_exists('numeroOrden')) {
     {
         if ($nuevo) {
             $ultimo_id = $numero ? $numero->id + 1 : 1;
+            $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         } else {
             $ultimo_id = $numero->id;
+            $numero_orden = date('Ymd', strtotime($numero->fecha)) . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         }
 
-        $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+        
         return $numero_orden;
     }
 }
@@ -217,6 +234,11 @@ if (!function_exists('calcularFechaFinal')) {
         }
 
         return $fechaFinal->toDateString(); // Devuelve la fecha final como cadena
+    }
+
+    function quitarSimboloUSD ($precioConSimbolo) {
+        $precioLimpio = preg_replace('/[^0-9.]/', '', $precioConSimbolo);
+        return $precioLimpio;
     }
 }
 

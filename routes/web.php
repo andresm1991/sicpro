@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdministrativoController;
 use App\Http\Controllers\AdquisicionController;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\CatalogoDatoController;
@@ -15,6 +16,8 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SistemaController;
 use App\Http\Controllers\UserController;
+use App\Models\AdquisicionDetalle;
+use App\Models\CatalogoDato;
 
 /*
 |--------------------------------------------------------------------------
@@ -147,6 +150,17 @@ Route::group(['middleware' => ['auth']], function () {
         });
     });
     // fin rutas sistema
+
+    /**
+     * Rutas Modulos Administrativo
+     */
+    Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function(){
+        Route::get('/', [AdministrativoController::class, 'index'])->name('index');
+        Route::get('/adquisiciones', [AdministrativoController::class, 'adquisiciones'])->name('adquisiciones');
+        Route::get('/adquisicion/{adquisicion}/editar', [AdministrativoController::class, 'editarAdquisicion'])->name('adquisicion.edit');
+        Route::put('/adquisicion/{adquisicion}', [AdministrativoController::class, 'actualizarAdquisicion'])->name('adquisicion.update');
+        Route::get('/buscar-adquisicion', [AdquisicionController::class, 'buscarAdquisicionAdministrativo']);
+    });
 
     // Controllador para generar los pdf del sistema
     Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {

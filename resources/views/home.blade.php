@@ -20,7 +20,7 @@
                         <img src="{{ asset('images/icons/marketing.svg') }}" alt="Marketing">
                         <span>Marketing</span>
                     </a>
-                    <a href="#" class="circle bottom-left" id="administrativo">
+                    <a href="{{ route('administrativo.index') }}" class="circle bottom-left" id="administrativo">
                         <img src="{{ asset('images/icons/users.svg') }}" alt="Administrativo">
                         <span>Administrativo</span>
                     </a>

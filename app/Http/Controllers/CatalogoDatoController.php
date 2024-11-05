@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CatalogoDato;
+use App\Models\OrdenRecepcion;
 use Illuminate\Http\Request;
 
 class CatalogoDatoController extends Controller

@@ -575,6 +575,55 @@ class AdquisicionController extends Controller
     }
 
     /**
+     * 
+     */
+    public function buscarAdquisicionAdministrativo (Request $request) {
+        if($request->ajax()){
+            $buscar = $request->buscar;
+            $output = '';
+            
+            $adquisiciones = Adquisicion::where('numero', 'LIKE', '%'.$buscar.'%')
+            ->orderBy('fecha', 'desc')
+            ->get();
+
+            foreach ($adquisiciones as $index => $adquisicion) {
+
+                $editar = "<a href='".route('administrativo.adquisicion.edit', $adquisicion->id) ."' class='dropdown-item'>Editar</a>";
+                $pdf = "<a href='". route('pdf.recepcion', $adquisicion->id) ."' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
+
+                $estado = $adquisicion->estado == 'Finalizado' ? '<span class="badge badge-success">'.$adquisicion->estado.'</span>' : '<span class="badge badge-warning">'.$adquisicion->estado.'</span>';
+
+                $output .= '<tr id="'. $adquisicion->id.'">'.
+                                '<td class="align-middle">'. $adquisicion->numero .'</td>'.
+                                '<td class="align-middle">'. date('d-m-Y', strtotime($adquisicion->fecha)) .'</td>'.
+                                '<td class="align-middle">'.strtoupper($adquisicion->proyecto->nombre_proyecto) .'</td>'.
+                                '<td class="align-middle">'. strtoupper($adquisicion->etapa->descripcion) .'</td>'.
+                                '<td class="align-middle">'. strtoupper($adquisicion->tipo_etapa->descripcion) .'</td>'.
+                                '<td class="align-middle">'.$estado.'</td>'.
+                                '<td class="align-middle align-middle text-right text-truncate">'.
+                                    '<button type="button" class="btn btn-outline-dark" data-container="body"
+                                        data-toggle="popover" data-placement="left" data-trigger="focus"
+                                        data-content ="
+                                           '.$editar.$pdf.'
+                                        ">
+                                        <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                    </button>'.
+                                '</td>'.
+                            '</tr>';
+            }
+            
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="7" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
+            
+        }
+    }
+    /**
      * Método para obtener los parámetros comunes de la ruta
      * @param request
      * @return array
