@@ -530,7 +530,7 @@ class ManoObraController extends Controller
             $eliminar = "<a href='#' class='dropdown-item eliminar-planificacion' id='" . $mano_obra->id . "'>Eliminar</a>";
             $pdf = "<a href='" . route('pdf.planificacion.mano.obra', $mano_obra->id) . "' class='dropdown-item' target='_blank'>PDF Planificación</a>";
 
-            $tipo = $mano_obra->tipo_etapa->slug == "mano.obra" ? $mano_obra->tipo_etapa->descripcion : $mano_obra->actividad->descripcion;
+            $tipo = $mano_obra->actividad->descripcion ?? $mano_obra->tipo_etapa->descripcion;
 
             $out .= '<tr id="' . $mano_obra->id . '">' .
                 '<td class="align-middle">' . $mano_obra->semana . '</td>' .
