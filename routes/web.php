@@ -156,10 +156,11 @@ Route::group(['middleware' => ['auth']], function () {
      */
     Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function(){
         Route::get('/', [AdministrativoController::class, 'index'])->name('index');
-        Route::get('/adquisiciones', [AdministrativoController::class, 'adquisiciones'])->name('adquisiciones');
-        Route::get('/adquisicion/{adquisicion}/editar', [AdministrativoController::class, 'editarAdquisicion'])->name('adquisicion.edit');
-        Route::put('/adquisicion/{adquisicion}', [AdministrativoController::class, 'actualizarAdquisicion'])->name('adquisicion.update');
-        Route::get('/buscar-adquisicion', [AdquisicionController::class, 'buscarAdquisicionAdministrativo']);
+        Route::get('/adquisiciones/{tipo}', [AdministrativoController::class, 'adquisiciones'])->name('adquisiciones');
+        Route::get('/adquisicion/{tipo}/{adquisicion}/editar', [AdministrativoController::class, 'editarAdquisicion'])->name('adquisicion.edit');
+        Route::put('/adquisicion/{tipo}/{adquisicion}', [AdministrativoController::class, 'actualizarAdquisicion'])->name('adquisicion.update');
+        Route::get('/adquisiciones/{tipo}/crear', [AdquisicionController::class, 'nuevaAdquisicionAdministrativo'])->name('adquisiciones.create');
+        Route::get('/adquisiciones/{tipo}/buscar-adquisicion', [AdquisicionController::class, 'buscarAdquisicionAdministrativo']);
     });
 
     // Controllador para generar los pdf del sistema

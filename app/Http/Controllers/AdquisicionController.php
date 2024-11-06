@@ -577,18 +577,20 @@ class AdquisicionController extends Controller
     /**
      * 
      */
-    public function buscarAdquisicionAdministrativo (Request $request) {
+    public function buscarAdquisicionAdministrativo (Request $request, $tipo) {
+        
         if($request->ajax()){
             $buscar = $request->buscar;
             $output = '';
             
             $adquisiciones = Adquisicion::where('numero', 'LIKE', '%'.$buscar.'%')
+            ->where('tipo_adquisicion', $tipo)
             ->orderBy('fecha', 'desc')
             ->get();
 
             foreach ($adquisiciones as $index => $adquisicion) {
 
-                $editar = "<a href='".route('administrativo.adquisicion.edit', $adquisicion->id) ."' class='dropdown-item'>Editar</a>";
+                $editar = "<a href='".route('administrativo.adquisicion.edit', ['tipo' => $tipo,'adquisicion'=>$adquisicion->id]) ."' class='dropdown-item'>Editar</a>";
                 $pdf = "<a href='". route('pdf.recepcion', $adquisicion->id) ."' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
 
                 $estado = $adquisicion->estado == 'Finalizado' ? '<span class="badge badge-success">'.$adquisicion->estado.'</span>' : '<span class="badge badge-warning">'.$adquisicion->estado.'</span>';
@@ -639,5 +641,25 @@ class AdquisicionController extends Controller
         ];
 
         return $parametros;
+    }
+
+
+    public function nuevaAdquisicionAdministrativo ($tipo) {
+        $title_page = 'Nueva Adquisición';
+        $adquisicion = new Adquisicion();
+
+        $numero_orden = generarNumeroOrden();
+        $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
+        $proyecto = $proyectos->prepend('', '');
+        $productos = Articulo::where('activo', true)
+            ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Adquisiciones', 'url' => route('administrativo.adquisiciones', $tipo)],
+            ['name' => $title_page, 'url' => '']
+        ];
+
+        return view('administrativo.adquisiciones.create', compact('adquisicion', 'numero_orden', 'tipo', 'title_page', 'breadcrumbs', 'productos', 'proyectos'));
     }
 }

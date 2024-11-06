@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Adquisicion;
 use Carbon\Carbon;
 use App\Models\Articulo;
 use App\Models\CatalogoDato;
@@ -204,7 +205,14 @@ if (!function_exists('numeroOrden')) {
             $numero_orden = date('Ymd', strtotime($numero->fecha)) . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         }
 
-        
+        return $numero_orden;
+    }
+
+    function generarNumeroOrden () {
+        $ultimo_registro = Adquisicion::latest()->first();
+        $ultimo_id = $ultimo_registro ? $ultimo_registro->id + 1 : 1;
+        $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+
         return $numero_orden;
     }
 }

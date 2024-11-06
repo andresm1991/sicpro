@@ -17,6 +17,7 @@ class Adquisicion extends Model
         'tipo_etapa_id',
         'usuario_id',
         'estado',
+        'tipo_adquisicion',
     ];
 
     public function proyecto()

@@ -8,7 +8,7 @@
         <div class="container-fuild">
             {!! Form::model($adquisicion, [
                 'route' => [
-                    'administrativo.adquisicion.update', $adquisicion->id
+                    'administrativo.adquisicion.update', ['tipo' => $tipo,'adquisicion' => $adquisicion->id]
                 ],
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',

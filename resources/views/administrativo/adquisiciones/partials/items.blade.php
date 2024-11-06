@@ -31,9 +31,19 @@
                     <td class="align-middle">{{ $detalle->necesidad }}</td>
                 </tr>
             @endforeach
+
+            <tr id="tr-default" style="display:{{ $adquisicion->id ? 'none' : '' }}">
+                <td colspan="7" class="text-center">No existen elementos en la lista...</td>
+            </tr>
         </tbody>
 
     </table>
+    <div class="row">
+        <div class="col-12 text-right">
+            <h4>Total General: <span id="total-general">${{isset($totalGeneral) ? number_format ($totalGeneral, 2): '0.00' }}</span></h4> 
+        </div>
+    </div>
+    <br>
 
     <div class="select_wrapper">
         <div>
@@ -42,7 +52,7 @@
         @forelse (formasPagos() as $key => $value)
             <label class="rounded-0 text-white">
                 <input type="radio" name="forma_pago" class="d-none" value="{{ $key }}"
-                    {{ $adquisicion->orden_recepcion->forma_pago->id == $key ? 'checked' : '' }} disabled>
+                    {{ (isset($adquisicion->orden_recepcion->forma_pago->id) && $adquisicion->orden_recepcion->forma_pago->id == $key) ? 'checked' : '' }} {{ $tipo == 'operativo' ? 'disabled': '' }}>
                 <span class="text-center d-block py-3">{{ $value }}</span>
             </label>
         @empty

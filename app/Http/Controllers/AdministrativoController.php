@@ -24,36 +24,39 @@ class AdministrativoController extends Controller
 
     }
 
-    public function adquisiciones () {
-        $title_page = 'Adquisiciones';
-        $adquisiciones = Adquisicion::orderBy('fecha', 'desc')->paginate(15);
+    public function adquisiciones ($tipo) {
+        $title_page = ($tipo == 'operativo') ? 'Adquisiciones Operativas' : 'Adquisiciones Administrativas';
+        $adquisiciones = Adquisicion::where('tipo_adquisicion', $tipo)->orderBy('fecha', 'desc')->paginate(15);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => 'Administrativo', 'url' => Route('administrativo.index')],
-            ['name' => 'Adquisiciones', 'url' => '']
+            ['name' => $title_page, 'url' => '']
         ];
 
-        return view('administrativo.adquisiciones.index', compact('adquisiciones', 'title_page', 'breadcrumbs'));
-
+        return view('administrativo.adquisiciones.index', compact('adquisiciones', 'tipo', 'title_page', 'breadcrumbs'));
     }
 
-    public function editarAdquisicion (Adquisicion $adquisicion)
+    public function editarAdquisicion ($tipo, Adquisicion $adquisicion)
     {        
         if(strtolower($adquisicion->estado) != "finalizado"){
-            return redirect()->back()->with('toast_error', 'No puede editar la información de esta adquisión porque aun no se ha finalizado.');  
+            return redirect()->back()->with('toast_error', 'No puede editar la información de esta adquisión porque aun no se ha finalizado.');
         }
         $title_page = 'Editar';
         
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
-            ['name' => 'Adquisiciones', 'url' => route('administrativo.adquisiciones')],
+            ['name' => 'Adquisiciones', 'url' => route('administrativo.adquisiciones', $tipo)],
             ['name' => 'Editar', 'url' => '']
         ];
 
-        return view('administrativo.adquisiciones.edit', compact('adquisicion', 'title_page', 'breadcrumbs'));
+        $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
+            return $detalle->cantidad_recibida * $detalle->valor;
+        });
+
+        return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral','title_page', 'breadcrumbs'));
     } 
-    public function actualizarAdquisicion (Request $request, Adquisicion $adquisicion) 
+    public function actualizarAdquisicion (Request $request, $tipo, Adquisicion $adquisicion) 
     {
         // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
         $valoresLimpios = array_map(function($value) {
@@ -113,11 +116,11 @@ class AdministrativoController extends Controller
             DB::commit();
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #'.$adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
 
-            return redirect()->route('administrativo.adquisicion.edit', $adquisicion->id)->with('success', 'Se actualizó la información de la adquisición con éxito.');
+            return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();
             LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #'.$adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
-            return redirect()->route('administrativo.adquisicion.edit', $adquisicion->id)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+            return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
 }

@@ -10,19 +10,32 @@
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h4 class="mt-2 font-weight-bold">Adquisiciones</h4>
+                        <div class="row">
+                            
+                                @if ($tipo == 'administrativo')
+                                    <div class="col-md-4 col-12">
+                                        <div class="form-group">
+                                            <a href="{{ route('administrativo.adquisiciones.create', $tipo) }}"
+                                                class="btn btn-dark btn-sm mt-1">
+                                                <i class="fa-regular fa-plus"></i> Nueva Adquisición
+                                            </a>
+                                        </div>  
+                                    </div>  
+                                @endif
+                                
+                            
+                            <div class="col-md-8 col-12 ">
+                                <div class="form-group form-search form-icon col-md-10 col-12 p-0 {{ $tipo == 'administrativo'? 'float-right' : '' }} ">
+                                    <i class="fal fa-search fa-lg form-control-icon"></i>
+                                    <input type="text" name="adquisicion_search" class="form-control form-control-round "
+                                        placeholder="Ingresa el # para buscar....">
+                                </div>
+                            </div>
+                        </div>
                     </li>
                 </ul>
                 <div class="card-body ">
-                    <div class="row">
-                        <div class="col-12 ">
-                            <div class="form-group form-search form-icon col-md-6 col-12 p-0">
-                                <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="adquisicion_search" class="form-control form-control-round "
-                                    placeholder="Ingresa el # para buscar....">
-                            </div>
-                        </div>
-                    </div>
+                    
                     <div class="table-responsive" id="table">
                         <table id="table-list-pedidos" class="table table-bordered table-hover">
                             <thead>
@@ -52,7 +65,7 @@
                                             <button type="button" class="btn btn-outline-dark" data-container="body"
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
-                                                    <a href='{{ route('administrativo.adquisicion.edit', $adquisicion->id) }}' class='dropdown-item'>Editar</a>
+                                                    <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => 'operativo','adquisicion' =>$adquisicion->id]) }}' class='dropdown-item'>Editar</a>
                                                     <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>
                                                 ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
