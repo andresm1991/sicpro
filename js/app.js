@@ -279,17 +279,39 @@ $(function () {
     /**
      * Calculpo entre valor unitario y cantidad
      */
-    $('#table-adquisiciones').on('input', '.precio-unitario', function() {
-        
-        let index = $(this).data('index');
-        let cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
-        let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
-        let total = cantidad * precioUnitario;
-
-
-        // Actualiza el campo de total en la misma fila
-        $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(2)}`);
+    $('#table-adquisiciones').on('input', '.cantidad input, .precio-unitario', function() {
+        calcularTotal();
     });
+    
+    
+    // Función para calcular el total de cada fila y el total general
+    function calcularTotal() {
+        let totalGeneral = 0;
+
+        $('.precio-unitario').each(function() {
+            let index = $(this).data('index');
+            let cantidad;
+
+            // Verifica si 'cantidad' es un campo input o un texto en td
+            if ($(`.cantidad[data-index='${index}'] input`).length > 0) {
+                cantidad = parseFloat($(`.cantidad[data-index='${index}'] input`).val()) || 0;
+            } else {
+                cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
+            }
+
+            let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
+            let totalFila = cantidad * precioUnitario;
+
+            // Actualiza el total de la fila en el td.calculo-total correspondiente
+            $(`.calculo-total[data-index='${index}']`).text(`$ ${totalFila.toFixed(2)}`);
+
+            // Sumar el total de esta fila al total general
+            totalGeneral += totalFila;
+        });
+
+        // Actualiza el total general
+        $('#total-general').text(`$ ${totalGeneral.toFixed(2)}`);
+    }
 
 
     /*$('#form_proyectos').on('submit', function (event) {
