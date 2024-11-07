@@ -158,8 +158,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/', [AdministrativoController::class, 'index'])->name('index');
         Route::get('/adquisiciones/{tipo}', [AdministrativoController::class, 'adquisiciones'])->name('adquisiciones');
         Route::get('/adquisicion/{tipo}/{adquisicion}/editar', [AdministrativoController::class, 'editarAdquisicion'])->name('adquisicion.edit');
+        Route::get('/adquisicion/{tipo}/{adquisicion}/recepcion', [AdministrativoController::class, 'recepcionAdquisicionAdministrativo'])->name('adquisicion.recepcion');
         Route::put('/adquisicion/{tipo}/{adquisicion}', [AdministrativoController::class, 'actualizarAdquisicion'])->name('adquisicion.update');
+        Route::put('/recepcion/{tipo}/{adquisicion}', [AdministrativoController::class, 'createRecepcionAdministrativo'])->name('recepcion.create');
         Route::get('/adquisiciones/{tipo}/crear', [AdquisicionController::class, 'nuevaAdquisicionAdministrativo'])->name('adquisiciones.create');
+        Route::post('/adquisiciones/{tipo}/guardar', [AdquisicionController::class, 'storeAdquisicionAdministrativo'])->name('adquisiciones.store');
         Route::get('/adquisiciones/{tipo}/buscar-adquisicion', [AdquisicionController::class, 'buscarAdquisicionAdministrativo']);
     });
 

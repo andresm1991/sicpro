@@ -17,6 +17,7 @@ use Yajra\DataTables\DataTables;
 use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
+use App\Http\Requests\AdquisicionAdministrativoRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
@@ -64,6 +65,7 @@ class AdquisicionController extends Controller
         $list_pedidos = Adquisicion::where('proyecto_id', $proyecto->id)
             ->where('etapa_id', $tipo_adquisicion->id)
             ->where('tipo_etapa_id', $tipo_etapa->id)
+            ->where('tipo_adquisicion', 'operativo')
             ->orderBy('fecha', 'desc')->paginate(15);
 
         $breadcrumbs = [
@@ -233,6 +235,8 @@ class AdquisicionController extends Controller
                         'necesidad' => $data['necesidad']
                     ]
                 );
+
+                agregarPalabra($data['necesidad']);
             }
             // obtener producots existentes del pedido
             $productos_existente = AdquisicionDetalle::where('adquisicion_id', $pedido_id)->pluck('articulo_id')->toArray();
@@ -297,6 +301,7 @@ class AdquisicionController extends Controller
                 ->where('proyecto_id', $proyecto_id)
                 ->where('etapa_id', $etapa_id)
                 ->where('tipo_etapa_id', $tipo_adquisicion_id)
+                ->where('tipo_adquisicion', 'operativo')
                 ->where(function ($query) use ($buscar) {
                     $query->where('fecha', 'LIKE', '%' . $buscar . '%') // Búsqueda en campos de Adquisicion
                         ->orWhere('numero', 'LIKE', '%' . $buscar . '%')
@@ -311,7 +316,7 @@ class AdquisicionController extends Controller
                             $q->where('descripcion', 'LIKE', '%' . $buscar . '%'); // Búsqueda en el tipo de etapa
                         });
                 })
-                ->orderBy('fecha', 'asc')
+                ->orderBy('fecha', 'desc')
                 ->get();
 
             if ($list_pedidos) {
@@ -644,13 +649,15 @@ class AdquisicionController extends Controller
     }
 
 
-    public function nuevaAdquisicionAdministrativo ($tipo) {
+    public function nuevaAdquisicionAdministrativo ($tipo) 
+    {
         $title_page = 'Nueva Adquisición';
-        $adquisicion = new Adquisicion();
+        $orden_pedido = new Adquisicion();
 
         $numero_orden = generarNumeroOrden();
         $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
-        $proyecto = $proyectos->prepend('', '');
+        $etapa = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id');
+        $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
         $productos = Articulo::where('activo', true)
             ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
@@ -660,6 +667,68 @@ class AdquisicionController extends Controller
             ['name' => $title_page, 'url' => '']
         ];
 
-        return view('administrativo.adquisiciones.create', compact('adquisicion', 'numero_orden', 'tipo', 'title_page', 'breadcrumbs', 'productos', 'proyectos'));
+        return view('administrativo.adquisiciones.create', compact('orden_pedido', 'numero_orden', 'tipo', 'title_page', 'breadcrumbs', 'productos', 'proyectos', 'etapa', 'actividad'));
+    }
+
+    public function storeAdquisicionAdministrativo (AdquisicionAdministrativoRequest $request, $tipo)
+    {
+        $fecha =  date('Y-m-d');
+        $numero_pedido = $request->numero_orden;
+        $proyecto_id = $request->proyecto;
+        $adquisicion_id = $request->actividad;
+        $etapa_id = $request->etapa;
+
+        $productos = $request->productos;
+        $cantidad = $request->cantidad;
+        $necesidad = $request->necesidad;
+
+        try {
+            DB::beginTransaction();
+
+            $adquisicion = Adquisicion::create([
+                'fecha' => $fecha,
+                'numero' => $numero_pedido,
+                'proyecto_id' => $proyecto_id,
+                'etapa_id' => $etapa_id,
+                'tipo_etapa_id' => $adquisicion_id,
+                'usuario_id' => Auth::user()->id,
+                'tipo_adquisicion' => $tipo,
+                'estado' => 'En Proceso',
+            ]);
+
+            if ($adquisicion) {
+                foreach ($productos as $index => $producto) {
+                    $param_detalle_adquisicion = [
+                        'adquisicion_id' => $adquisicion->id,
+                        'articulo_id' => '',
+                        'cantidad_solicitada' => str_replace(',', '', $cantidad[$index]),
+                        'necesidad' => $necesidad[$index]
+                    ];
+
+                    if (is_numeric($producto)) {
+                        $param_detalle_adquisicion['articulo_id'] = $producto;
+                    } else {
+                        $etapa = CatalogoDato::find($adquisicion_id);
+                        $nuevo_producto = $this->registrarNuevoProducto($etapa, $producto);
+                        $param_detalle_adquisicion['articulo_id'] = $nuevo_producto->id;
+                    }
+
+                    AdquisicionDetalle::create($param_detalle_adquisicion);
+
+                    agregarPalabra($necesidad[$index]);
+                }
+                DB::commit();
+                LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('success', 'Orden de pedido generada con éxito.');
+            } else {
+                DB::rollback();
+                LogService::log('error', 'Error al crear Adquisición', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'ocurrio un error al intentar crear la adquisición']);
+                return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('error', 'Ocurrió un error al generar el pedido, por favor vuela a intentarlo. Si el problema persiste, comuníquese con el administrador del sistema.');
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('error', 'Error al crear Adquisición', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
+            return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
     }
 }

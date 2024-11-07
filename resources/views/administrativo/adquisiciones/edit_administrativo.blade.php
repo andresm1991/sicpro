@@ -11,8 +11,8 @@
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-10">
-                                <h4>Orden de Pedido #{{ $numero_orden }}</h4>
-                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true,]) !!} <i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i></h6>
+                                <h4>Orden de Pedido #{{ $orden_pedido->numero }}</h4>
+                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d', strtotime($orden_pedido->fecha))), ['class' => 'auto-ajustable', 'readonly' => true,]) !!} <i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i></h6>
                             </div>
 
                             <div class="col-md-2 ">
@@ -23,21 +23,31 @@
                 </ul>
                 <div class="card-body">
                     @include('partials.alerts')
-                    {!! Form::open([
+                    {!! Form::model($orden_pedido, [
                         'route' => [
-                            'administrativo.adquisiciones.store',
-                            [
-                                'tipo' => $tipo,
-                            ],
+                            'administrativo.adquisicion.update',
+                            ['tipo' => $tipo,'adquisicion' => $orden_pedido->id],
                         ],
                         'class' => 'form-horizontal',
                         'autocomplete' => 'off',
                         'enctype' => 'multipart/form-data',
                         'id' => 'form_order_pedido',
+                        'method' => 'PUT',
                     ]) !!}
-                    {{ Form::hidden('numero_orden', $numero_orden) }}
                         @include('administrativo.adquisiciones.partials.form')
                         @include('adquisiciones.partials.items')
+
+                        @if ($orden_pedido->orden_recepcion->completado)
+                        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
+                            role="alert">
+                            <i class="fa-regular fa-triangle-exclamation fa-3x"></i>
+                            <small class="mx-4">La orden de recepción fue completada. Por motivos de seguridad, si desea
+                                actualizar la información, por favor solicite al administrador que habilite esta orden. Para
+                                hacerlo, haga clic en el siguiente enlace: <a href="#"
+                                    class="text-dark font-weight-bold"> Solicitar
+                                    edición de la orden.</a></small>
+                        </div>
+                    @endif
                     {!! Form::close() !!}
                 </div>
             </div>

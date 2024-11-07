@@ -5,6 +5,7 @@ use Carbon\Carbon;
 use App\Models\Articulo;
 use App\Models\CatalogoDato;
 use App\Models\DiccionarioPalabra;
+use App\Models\OrdenRecepcion;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
@@ -201,7 +202,13 @@ if (!function_exists('numeroOrden')) {
             $ultimo_id = $numero ? $numero->id + 1 : 1;
             $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         } else {
-            $ultimo_id = $numero->id;
+            if($numero){
+                $ultimo_id = $numero->id;    
+            }else{
+                $numero = OrdenRecepcion::latest()->first();
+                $ultimo_id = $numero ? $numero->id + 1 : 1;
+            }
+            
             $numero_orden = date('Ymd', strtotime($numero->fecha)) . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         }
 
@@ -260,9 +267,7 @@ if (!function_exists('palabras')) {
     function agregarPalabra($palabra)
     {
         $existe = DiccionarioPalabra::where('palabra', $palabra)->exists();
-        echo "entro " . $existe;
         if (!$existe) {
-            echo 'crear';
             DiccionarioPalabra::create(['palabra' => $palabra]);
         }
     }

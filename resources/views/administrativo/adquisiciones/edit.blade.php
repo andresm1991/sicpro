@@ -8,7 +8,7 @@
         <div class="container-fuild">
             {!! Form::model($adquisicion, [
                 'route' => [
-                    'administrativo.adquisicion.update', ['tipo' => $tipo,'adquisicion' => $adquisicion->id]
+                    ($tipo == 'operativo' ? 'administrativo.adquisicion.update': 'administrativo.recepcion.create'), ['tipo' => $tipo,'adquisicion' => $adquisicion->id]
                 ],
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',
@@ -29,8 +29,8 @@
                                 <div class="select_wrapper">
                                     <label class="rounded  text-white">
                                         <input type="checkbox" name="orden_completa" class="d-none" value="true"
-                                            {{ $adquisicion->orden_recepcion->completado == true ? 'checked' : '' }}
-                                            disabled>
+                                            {{ isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado == true ? 'checked' : '' }}
+                                             {{ $tipo == 'operativo' ? 'disabled':'' }}>
                                         <span class="text-center d-block py-3">Pedido Completo</span>
                                     </label>
                                 </div>
@@ -45,8 +45,21 @@
                 <div class="card-body">
                     @include('partials.alerts')
 
+                    @include('administrativo.adquisiciones.partials.form_recepcion')    
                     @include('administrativo.adquisiciones.partials.items')
                     
+
+                    @if ($tipo == 'administrativo' && $adquisicion->orden_recepcion->completado)
+                        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
+                            role="alert">
+                            <i class="fa-regular fa-triangle-exclamation fa-3x"></i>
+                            <small class="mx-4">La orden de recepción fue completada. Por motivos de seguridad, si desea
+                                actualizar la información, por favor solicite al administrador que habilite esta orden. Para
+                                hacerlo, haga clic en el siguiente enlace: <a href="#"
+                                    class="text-dark font-weight-bold"> Solicitar
+                                    edición de la orden.</a></small>
+                        </div>
+                    @endif
                 </div>
             </div>
             {{ Form::close() }}
