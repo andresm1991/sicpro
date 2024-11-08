@@ -21,7 +21,8 @@ use Throwable;
 
 class AdministrativoController extends Controller
 {
-    public function index( ){
+    public function index()
+    {
         $title_page = 'Administrativo';
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -29,10 +30,10 @@ class AdministrativoController extends Controller
         ];
 
         return view('administrativo.menu_administrativo', compact('title_page', 'breadcrumbs'));
-
     }
 
-    public function adquisiciones ($tipo) {
+    public function adquisiciones($tipo)
+    {
         $title_page = ($tipo == 'operativo') ? 'Adquisiciones Operativas' : 'Adquisiciones Administrativas';
         $adquisiciones = Adquisicion::where('tipo_adquisicion', $tipo)->orderBy('fecha', 'desc')->paginate(15);
 
@@ -45,42 +46,44 @@ class AdministrativoController extends Controller
         return view('administrativo.adquisiciones.index', compact('adquisiciones', 'tipo', 'title_page', 'breadcrumbs'));
     }
 
-    public function editarAdquisicion ($tipo, Adquisicion $adquisicion)
+    public function editarAdquisicion($tipo, Adquisicion $adquisicion)
     {
         $title_page = 'Editar';
-            
+
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
-            ['name' => 'Adquisiciones '.$tipo, 'url' => route('administrativo.adquisiciones', $tipo)],
+            ['name' => 'Adquisiciones ' . $tipo, 'url' => route('administrativo.adquisiciones', $tipo)],
             ['name' => 'Editar', 'url' => '']
         ];
-        
-        if($tipo == 'operativo')
-        {
-            if(strtolower($adquisicion->estado) != "finalizado"){
+
+        if ($tipo == 'operativo') {
+            if (strtolower($adquisicion->estado) != "finalizado") {
                 return redirect()->back()->with('toast_error', 'No puede editar la información de esta adquisión porque aun no se ha finalizado.');
             }
-            
+
             $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
                 return $detalle->cantidad_recibida * $detalle->valor;
             });
 
-            return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral','title_page', 'breadcrumbs'));
-        }else{
+            return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'title_page', 'breadcrumbs'));
+        } else {
+            if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado) {
+                return redirect()->route('administrativo.adquisiciones', $tipo)->with('toast_error', 'El pedido ya fue recibido y completado, no puede ser modificado.');
+            }
             $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
             $etapa = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id');
             $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
             $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
             $orden_pedido = $adquisicion;
-            return view('administrativo.adquisiciones.edit_administrativo', compact('orden_pedido', 'tipo','proyectos', 'etapa', 'actividad','productos','title_page', 'breadcrumbs'));
+            return view('administrativo.adquisiciones.edit_administrativo', compact('orden_pedido', 'tipo', 'proyectos', 'etapa', 'actividad', 'productos', 'title_page', 'breadcrumbs'));
         }
-    } 
-    public function actualizarAdquisicion (Request $request, $tipo, Adquisicion $adquisicion) 
+    }
+    public function actualizarAdquisicion(Request $request, $tipo, Adquisicion $adquisicion)
     {
-        if($tipo == 'operativo'){
+        if ($tipo == 'operativo') {
             return $this->actualizarAdquisicionOperativa($request, $tipo, $adquisicion);
-        }else{
+        } else {
             return $this->actualizarAdquisicionAdministrativa($request, $tipo, $adquisicion);
         }
     }
@@ -88,9 +91,10 @@ class AdministrativoController extends Controller
     /**
      * Funcion que actualiza solo los valores de las aquisicones operativas
      */
-    private function actualizarAdquisicionOperativa (Request $request, $tipo, Adquisicion $adquisicion) {
+    private function actualizarAdquisicionOperativa(Request $request, $tipo, Adquisicion $adquisicion)
+    {
         // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
-        $valoresLimpios = array_map(function($value) {
+        $valoresLimpios = array_map(function ($value) {
             return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
         }, $request->input('valor', []));
 
@@ -99,9 +103,9 @@ class AdministrativoController extends Controller
 
         $rules = [
             'unidad_medida' => 'required|array',
-            'unidad_medida.*' => 'required', 
+            'unidad_medida.*' => 'required',
             'valor' => 'required|array',
-            'valor.*' => 'required|numeric', 
+            'valor.*' => 'required|numeric',
         ];
 
         $messages = [
@@ -115,12 +119,14 @@ class AdministrativoController extends Controller
             'cantidad_recibida.*.numeric' => 'El valor de cada cantidad recibida debe ser numérico.',
         ];
 
-        if($tipo == "administrativo"){
-            $rules = array_merge($rules, ['cantidad_recibida' => 'required|array',
-            'cantidad_recibida.*' => 'required|numeric']);
+        if ($tipo == "administrativo") {
+            $rules = array_merge($rules, [
+                'cantidad_recibida' => 'required|array',
+                'cantidad_recibida.*' => 'required|numeric'
+            ]);
         }
         $request->validate($rules, $messages);
-        
+
         $array_unidad_medida = $request->unidad_medida;
         $array_valor_unidatrio = $request->valor;
         $unidadMedidaCase = "CASE";
@@ -128,15 +134,15 @@ class AdministrativoController extends Controller
         $ids = [];
 
         try {
-            
+
             foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
-                if(!is_numeric($array_unidad_medida[$index])){
+                if (!is_numeric($array_unidad_medida[$index])) {
                     $id = registrarUnidadMedida($array_unidad_medida[$index]);
-                }else{
+                } else {
                     $id = $array_unidad_medida[$index];
                 }
                 $valor = quitarSimboloUSD($array_valor_unidatrio[$index]);
-                
+
                 $unidadMedidaCase .= " WHEN id = {$detalle->id} THEN '{$id}'";
                 $valorCase .= " WHEN id = {$detalle->id} THEN {$valor}";
                 $ids[] = $detalle->id;
@@ -153,17 +159,18 @@ class AdministrativoController extends Controller
                     'valor' => DB::raw($valorCase)
                 ]);
             DB::commit();
-            LogService::log('info', 'Actualizacion la informacion de la adquisicion #'.$adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
+            LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
 
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();
-            LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #'.$adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+            LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
 
-    private function actualizarAdquisicionAdministrativa (Request $request, $tipo, Adquisicion $adquisicion) {
+    private function actualizarAdquisicionAdministrativa(Request $request, $tipo, Adquisicion $adquisicion)
+    {
         try {
             $pedido_id = $adquisicion->id;
             // Combinar arrays en uno solo
@@ -201,28 +208,28 @@ class AdministrativoController extends Controller
                 AdquisicionDetalle::where('adquisicion_id', $pedido_id)
                     ->whereIn('articulo_id', $productos_eliminar)->delete();
             }
-            
+
             DB::commit();
-            LogService::log('info', 'Actualizacion la informacion de la adquisicion #'.$adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
+            LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
 
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
-            
         } catch (Throwable $e) {
             DB::rollBack();
-            LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #'.$adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+            LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
 
-    public function recepcionAdquisicionAdministrativo($tipo, Adquisicion $adquisicion){
+    public function recepcionAdquisicionAdministrativo($tipo, Adquisicion $adquisicion)
+    {
         $title_page = 'Editar';
-            
+
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
-            ['name' => 'Adquisiciones '.$tipo, 'url' => route('administrativo.adquisiciones', $tipo)],
+            ['name' => 'Adquisiciones ' . $tipo, 'url' => route('administrativo.adquisiciones', $tipo)],
             ['name' => 'Editar', 'url' => '']
         ];
-    
+
         $proveedores = Proveedor::where('categoria_proveedor_id', $adquisicion->tipo_etapa_id)->pluck('razon_social', 'id');
 
         $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
@@ -232,18 +239,18 @@ class AdministrativoController extends Controller
         return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'proveedores', 'title_page', 'breadcrumbs'));
     }
 
-    public function createRecepcionAdministrativo (RecepcionAdquisicionAdministrativoRequest $request, $tipo, Adquisicion $adquisicion) 
+    public function createRecepcionAdministrativo(RecepcionAdquisicionAdministrativoRequest $request, $tipo, Adquisicion $adquisicion)
     {
-        if($adquisicion->orden_recepcion->completado){
-            return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
+        if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado) {
+            return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
         }
-        $valoresLimpios = array_map(function($value) {
+        $valoresLimpios = array_map(function ($value) {
             return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
         }, $request->input('valor', []));
 
         // Reemplaza los valores en el request con los valores limpios
         $request->merge(['valor' => $valoresLimpios]);
-        
+
         $orden_completa = $request->has('orden_completa') ? true : false;
         $cantidades_recibidas = $request->cantidad_recibida;
         $unidades_medidas = $request->unidad_medida;
@@ -303,14 +310,14 @@ class AdministrativoController extends Controller
                 }
                 DB::commit();
                 LogService::log('info', 'Orden recepción creada', ['user_id' => auth()->id(), 'action' => 'create']);
-                return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id])->with('success', 'Orden de recepción generada con éxito.');
+                return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Orden de recepción generada con éxito.');
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
             }
         } catch (Throwable $e) {
             DB::rollBack();
             LogService::log('error', 'Error al crear orden de recepción', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
-            return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+            return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
 }

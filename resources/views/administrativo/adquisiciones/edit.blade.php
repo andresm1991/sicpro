@@ -8,7 +8,8 @@
         <div class="container-fuild">
             {!! Form::model($adquisicion, [
                 'route' => [
-                    ($tipo == 'operativo' ? 'administrativo.adquisicion.update': 'administrativo.recepcion.create'), ['tipo' => $tipo,'adquisicion' => $adquisicion->id]
+                    $tipo == 'operativo' ? 'administrativo.adquisicion.update' : 'administrativo.recepcion.create',
+                    ['tipo' => $tipo, 'adquisicion' => $adquisicion->id],
                 ],
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',
@@ -24,13 +25,13 @@
                             <div class="col-md-8">
                                 <h4>Orden de Recepcion #{{ numeroOrden($adquisicion->orden_recepcion, false) }}</h4>
                             </div>
-                            
+
                             <div class="col-md-2 ">
                                 <div class="select_wrapper">
                                     <label class="rounded  text-white">
                                         <input type="checkbox" name="orden_completa" class="d-none" value="true"
                                             {{ isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado == true ? 'checked' : '' }}
-                                             {{ $tipo == 'operativo' ? 'disabled':'' }}>
+                                            {{ $tipo == 'operativo' ? 'disabled' : '' }}>
                                         <span class="text-center d-block py-3">Pedido Completo</span>
                                     </label>
                                 </div>
@@ -39,17 +40,17 @@
                                 <button class="btn btn-dark btn-options btn-block">Guardar</button>
                             </div>
                         </div>
-                        
+
                     </li>
                 </ul>
                 <div class="card-body">
                     @include('partials.alerts')
 
-                    @include('administrativo.adquisiciones.partials.form_recepcion')    
+                    @include('administrativo.adquisiciones.partials.form_recepcion')
                     @include('administrativo.adquisiciones.partials.items')
-                    
 
-                    @if ($tipo == 'administrativo' && $adquisicion->orden_recepcion->completado)
+
+                    @if ($tipo == 'administrativo' && (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado))
                         <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
                             role="alert">
                             <i class="fa-regular fa-triangle-exclamation fa-3x"></i>

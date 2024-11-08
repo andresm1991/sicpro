@@ -582,43 +582,51 @@ class AdquisicionController extends Controller
     /**
      * 
      */
-    public function buscarAdquisicionAdministrativo (Request $request, $tipo) {
-        
-        if($request->ajax()){
+    public function buscarAdquisicionAdministrativo(Request $request, $tipo)
+    {
+
+        if ($request->ajax()) {
             $buscar = $request->buscar;
             $output = '';
-            
-            $adquisiciones = Adquisicion::where('numero', 'LIKE', '%'.$buscar.'%')
-            ->where('tipo_adquisicion', $tipo)
-            ->orderBy('fecha', 'desc')
-            ->get();
+
+            $adquisiciones = Adquisicion::where('numero', 'LIKE', '%' . $buscar . '%')
+                ->where('tipo_adquisicion', $tipo)
+                ->orderBy('fecha', 'desc')
+                ->get();
 
             foreach ($adquisiciones as $index => $adquisicion) {
+                $opciones_boton = '';
+                if ($tipo == 'operativo') {
+                    $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
+                    $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
+                    $opciones_boton .= $editar . $pdf;
+                } else {
+                    $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar Pedido</a>";
+                    $recepcion = "<a href='" . route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Recepción</a>";
+                    $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
 
-                $editar = "<a href='".route('administrativo.adquisicion.edit', ['tipo' => $tipo,'adquisicion'=>$adquisicion->id]) ."' class='dropdown-item'>Editar</a>";
-                $pdf = "<a href='". route('pdf.recepcion', $adquisicion->id) ."' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
+                    $opciones_boton .= $editar . $recepcion . $pdf;
+                }
 
-                $estado = $adquisicion->estado == 'Finalizado' ? '<span class="badge badge-success">'.$adquisicion->estado.'</span>' : '<span class="badge badge-warning">'.$adquisicion->estado.'</span>';
+                $estado = $adquisicion->estado == 'Finalizado' ? '<span class="badge badge-success">' . $adquisicion->estado . '</span>' : '<span class="badge badge-warning">' . $adquisicion->estado . '</span>';
 
-                $output .= '<tr id="'. $adquisicion->id.'">'.
-                                '<td class="align-middle">'. $adquisicion->numero .'</td>'.
-                                '<td class="align-middle">'. date('d-m-Y', strtotime($adquisicion->fecha)) .'</td>'.
-                                '<td class="align-middle">'.strtoupper($adquisicion->proyecto->nombre_proyecto) .'</td>'.
-                                '<td class="align-middle">'. strtoupper($adquisicion->etapa->descripcion) .'</td>'.
-                                '<td class="align-middle">'. strtoupper($adquisicion->tipo_etapa->descripcion) .'</td>'.
-                                '<td class="align-middle">'.$estado.'</td>'.
-                                '<td class="align-middle align-middle text-right text-truncate">'.
-                                    '<button type="button" class="btn btn-outline-dark" data-container="body"
+                $output .= '<tr id="' . $adquisicion->id . '">' .
+                    '<td class="align-middle">' . $adquisicion->numero . '</td>' .
+                    '<td class="align-middle">' . date('d-m-Y', strtotime($adquisicion->fecha)) . '</td>' .
+                    '<td class="align-middle">' . strtoupper($adquisicion->proyecto->nombre_proyecto) . '</td>' .
+                    '<td class="align-middle">' . strtoupper($adquisicion->etapa->descripcion) . '</td>' .
+                    '<td class="align-middle">' . strtoupper($adquisicion->tipo_etapa->descripcion) . '</td>' .
+                    '<td class="align-middle">' . $estado . '</td>' .
+                    '<td class="align-middle align-middle text-right text-truncate">' .
+                    '<button type="button" class="btn btn-outline-dark" data-container="body"
                                         data-toggle="popover" data-placement="left" data-trigger="focus"
-                                        data-content ="
-                                           '.$editar.$pdf.'
-                                        ">
+                                        data-content ="' . $opciones_boton . '">
                                         <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                    </button>'.
-                                '</td>'.
-                            '</tr>';
+                                    </button>' .
+                    '</td>' .
+                    '</tr>';
             }
-            
+
             if (empty($output)) {
                 $output .= '<tr>' .
                     '<td colspan="7" class="text-center">' .
@@ -627,7 +635,6 @@ class AdquisicionController extends Controller
                     '</tr>';
             }
             return Response($output);
-            
         }
     }
     /**
@@ -649,7 +656,7 @@ class AdquisicionController extends Controller
     }
 
 
-    public function nuevaAdquisicionAdministrativo ($tipo) 
+    public function nuevaAdquisicionAdministrativo($tipo)
     {
         $title_page = 'Nueva Adquisición';
         $orden_pedido = new Adquisicion();
@@ -670,7 +677,7 @@ class AdquisicionController extends Controller
         return view('administrativo.adquisiciones.create', compact('orden_pedido', 'numero_orden', 'tipo', 'title_page', 'breadcrumbs', 'productos', 'proyectos', 'etapa', 'actividad'));
     }
 
-    public function storeAdquisicionAdministrativo (AdquisicionAdministrativoRequest $request, $tipo)
+    public function storeAdquisicionAdministrativo(AdquisicionAdministrativoRequest $request, $tipo)
     {
         $fecha =  date('Y-m-d');
         $numero_pedido = $request->numero_orden;

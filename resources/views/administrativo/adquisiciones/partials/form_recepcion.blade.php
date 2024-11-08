@@ -23,16 +23,19 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proveedor', ['class' => 'col-form-label']) }}
-                @if ($tipo == 'operativo')
-                    {{ Form::label('', $adquisicion->orden_recepcion->proveedor->razon_social, ['class' => 'form-control text-uppercase label-disabled']) }}
-                @else    
-                    <select name="proveedor" class="form-control select2-basic-single" data-placeholder="selecciona proveedor">
-                        <option></option>
-                        @foreach ($proveedores as $id => $nombre)
-                            <option value="{{ $id }}" {{ (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->proveedor_id == $id) ? 'selected':'' }}>{{ $nombre }}</option>
-                        @endforeach
-                    </select>
-                    {!! $errors->first('actividad', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+            @if ($tipo == 'operativo')
+                {{ Form::label('', $adquisicion->orden_recepcion->proveedor->razon_social, ['class' => 'form-control text-uppercase label-disabled text-truncate']) }}
+            @else
+                <select name="proveedor" class="form-control select2-basic-single"
+                    data-placeholder="selecciona proveedor">
+                    <option></option>
+                    @foreach ($proveedores as $id => $nombre)
+                        <option value="{{ $id }}"
+                            {{ isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->proveedor_id == $id ? 'selected' : '' }}>
+                            {{ $nombre }}</option>
+                    @endforeach
+                </select>
+                {!! $errors->first('proveedor', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
             @endif
         </div>
     </div>

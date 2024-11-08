@@ -12,7 +12,11 @@
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-10">
                                 <h4>Orden de Pedido #{{ $orden_pedido->numero }}</h4>
-                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d', strtotime($orden_pedido->fecha))), ['class' => 'auto-ajustable', 'readonly' => true,]) !!} <i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i></h6>
+                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d', strtotime($orden_pedido->fecha))), [
+                                    'class' => 'auto-ajustable',
+                                    'readonly' => true,
+                                ]) !!} <i class="fa-regular fa-calendar-days datepicker-2"
+                                        id="fecha"></i></h6>
                             </div>
 
                             <div class="col-md-2 ">
@@ -24,20 +28,17 @@
                 <div class="card-body">
                     @include('partials.alerts')
                     {!! Form::model($orden_pedido, [
-                        'route' => [
-                            'administrativo.adquisicion.update',
-                            ['tipo' => $tipo,'adquisicion' => $orden_pedido->id],
-                        ],
+                        'route' => ['administrativo.adquisicion.update', ['tipo' => $tipo, 'adquisicion' => $orden_pedido->id]],
                         'class' => 'form-horizontal',
                         'autocomplete' => 'off',
                         'enctype' => 'multipart/form-data',
                         'id' => 'form_order_pedido',
                         'method' => 'PUT',
                     ]) !!}
-                        @include('administrativo.adquisiciones.partials.form')
-                        @include('adquisiciones.partials.items')
+                    @include('administrativo.adquisiciones.partials.form')
+                    @include('adquisiciones.partials.items')
 
-                        @if ($orden_pedido->orden_recepcion->completado)
+                    @if (isset($orden_pedido->orden_recepcion) && $orden_pedido->orden_recepcion->completado)
                         <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
                             role="alert">
                             <i class="fa-regular fa-triangle-exclamation fa-3x"></i>

@@ -5,14 +5,14 @@
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
                 @if ($tipo == 'operativo')
-                <th scope="col" class="text-center">Cantidad</th>
+                    <th scope="col" class="text-center">Cantidad</th>
                 @else
                     <th scope="col" class="text-center">Cantidad Solicitada</th>
-                    <th scope="col" class="text-center">Cantidad Recibida</th>    
+                    <th scope="col" class="text-center">Cantidad Recibida</th>
                 @endif
                 <th scope="col" class="text-center">Unidad Medida</th>
                 <th scope="col">Valor Unitario</th>
-                <th scope="col">Total</th>    
+                <th scope="col">Total</th>
                 <th scope="col">Necesidad</th>
                 <th scope="col" class="text-center">Inventario</th>
             </tr>
@@ -23,7 +23,8 @@
                     <td class="align-middle">{{ $index + 1 }}</td>
                     <td class="align-middle">{{ $detalle->producto->descripcion }}</td>
                     @if ($tipo == 'operativo')
-                        <td class="align-middle text-center cantidad" data-index="{{ $index }}">{{ $detalle->cantidad_recibida }}</td>
+                        <td class="align-middle text-center cantidad" data-index="{{ $index }}">
+                            {{ $detalle->cantidad_recibida }}</td>
                     @else
                         <td class="align-middle text-center"">{{ $detalle->cantidad_solicitada }}</td>
                         <td class="align-middle text-center cantidad" data-index="{{ $index }}">
@@ -32,20 +33,24 @@
                                 'cantidad_recibida.' . $index,
                                 '<small class="help-block text-danger error_mensajes">:message</small>',
                             ) !!}
-                        </td>    
+                        </td>
                     @endif
-                    
-                    <td class="align-middle">
-                        {{ Form::select('unidad_medida[' . $index . ']', getUnidadMedidas(true), $detalle->unidad_medida_id, ['class' => 'form-control col-sm-12 select2-tag' , 'data-placeholder' => 'Selecione']) }}
 
-                        {!! $errors->first('unidad_medida.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+                    <td class="align-middle">
+                        {{ Form::select('unidad_medida[' . $index . ']', getUnidadMedidas(true), $detalle->unidad_medida_id, ['class' => 'form-control col-sm-12 select2-tag', 'data-placeholder' => 'Selecione']) }}
+
+                        {!! $errors->first(
+                            'unidad_medida.' . $index,
+                            '<small class="help-block text-danger error_mensajes">:message</small>',
+                        ) !!}
                     </td>
                     <td class="align-middle col-md-1 col-12">
                         {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'placeholder' => '$ 0.00', 'data-index' => $index]) }}
-                        
+
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
-                    <td class="align-middle calculo-total" data-index="{{ $index }}">$ {{ number_format(($detalle->cantidad_recibida *  $detalle->valor), 2)}}</td>
+                    <td class="align-middle calculo-total" data-index="{{ $index }}">$
+                        {{ number_format($detalle->cantidad_recibida * $detalle->valor, 2) }}</td>
                     <td class="align-middle">{{ $detalle->necesidad }}</td>
                     <td class="align-middle">
                         <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
@@ -68,7 +73,8 @@
 
     </table>
     <div class="col-12 text-right p-0 py-4">
-        <h5>Total General: <span id="total-general">${{isset($totalGeneral) ? number_format ($totalGeneral, 2): '0.00' }}</span></h5> 
+        <h5>Total General: <span
+                id="total-general">${{ isset($totalGeneral) ? number_format($totalGeneral, 2) : '0.00' }}</span></h5>
     </div>
     <br>
 
@@ -79,7 +85,8 @@
         @forelse (formasPagos() as $key => $value)
             <label class="rounded-0 text-white">
                 <input type="radio" name="forma_pago" class="d-none" value="{{ $key }}"
-                    {{ (isset($adquisicion->orden_recepcion->forma_pago->id) && $adquisicion->orden_recepcion->forma_pago->id == $key) ? 'checked' : '' }} {{ $tipo == 'operativo' ? 'disabled': '' }}>
+                    {{ isset($adquisicion->orden_recepcion->forma_pago->id) && $adquisicion->orden_recepcion->forma_pago->id == $key ? 'checked' : '' }}
+                    {{ $tipo == 'operativo' ? 'disabled' : '' }}>
                 <span class="text-center d-block py-3">{{ $value }}</span>
             </label>
         @empty
@@ -87,4 +94,5 @@
                 registrados.</small>
         @endforelse
     </div>
+    {!! $errors->first('forma_pago', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
 </div>

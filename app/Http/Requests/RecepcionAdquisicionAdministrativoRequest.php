@@ -29,6 +29,7 @@ class RecepcionAdquisicionAdministrativoRequest extends FormRequest
             'unidad_medida.*' => 'required',
             'valor' => 'required|array',
             'valor.*' => 'required',
+            'forma_pago' => 'required',
         ];
     }
 
@@ -42,6 +43,7 @@ class RecepcionAdquisicionAdministrativoRequest extends FormRequest
             'unidad_medida.*.required' => 'Seleccione opción.',
             'valor.required' => 'Ingrese valor.',
             'valor.*.required' => 'Ingrese valor',
+            'forma_pago.required' => 'Seleccione la forma de pago.',
         ];
     }
 }
