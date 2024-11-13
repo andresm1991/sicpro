@@ -348,8 +348,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
-
+       
         $padre = CatalogoDato::create([
             'descripcion' => 'Menu Administrativo',
             'detalle' => '',
@@ -361,6 +360,29 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Adquisiciones',
             'detalle' => '',
             'slug' => 'menu.administrativo.adquisiciones',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+         */
+
+         $padre = CatalogoDato::create([
+            'descripcion' => 'Iva',
+            'detalle' => '',
+            'slug' => 'iva',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Iva Productos',
+            'detalle' => '',
+            'slug' => 'iva.productos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Iva General',
+            'detalle' => '',
+            'slug' => 'iva.general',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

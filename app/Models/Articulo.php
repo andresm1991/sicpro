@@ -14,6 +14,8 @@ class Articulo extends Model
         'categoria_id',
         'codigo',
         'descripcion',
+        'valor_unitario',
+        'iva',
         'activo',
     ];
 

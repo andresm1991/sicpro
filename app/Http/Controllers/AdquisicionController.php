@@ -329,7 +329,7 @@ class AdquisicionController extends Controller
                     $pdf_orden_recepcion_button = "<a href='" . route('pdf.recepcion', $pedido->id) . "' class='dropdown-item'>PDF Orden Recepción</a>";
                     $orden_recepcion_button = "<a href='" . route('proyecto.adquisiciones.orden.recepcion', $route_parametres) . "' class='dropdown-item'>Orden de Recepción</a>";
 
-                    $estado = $pedido->estado ? '<span class="badge badge-success">' . $pedido->estado . '</span>' : '<span class="badge badge-warning">' . $pedido->estado . '</span>';
+                    $estado = $pedido->estado == 'Finalizado' || $pedido->estado == 'Completado' ? '<span class="badge badge-success">Finalizado</span>' : '<span class="badge badge-warning">' . $pedido->estado . '</span>';
                     $output .= '<tr id="' . $pedido->id . '">' .
                         '<td class="align-middle">' . $pedido->numero . '</td>' .
                         '<td class="align-middle">' . date('d-m-Y', strtotime($pedido->fecha)) . '</td>' .
@@ -587,10 +587,12 @@ class AdquisicionController extends Controller
 
         if ($request->ajax()) {
             $buscar = $request->buscar;
+            $tipo_busqueda  = $request->tipo == 'pendientes' ? 'Finalizado' : 'Completado';
             $output = '';
 
             $adquisiciones = Adquisicion::where('numero', 'LIKE', '%' . $buscar . '%')
                 ->where('tipo_adquisicion', $tipo)
+                ->where('estado', $tipo_busqueda)
                 ->orderBy('fecha', 'desc')
                 ->get();
 
@@ -608,15 +610,12 @@ class AdquisicionController extends Controller
                     $opciones_boton .= $editar . $recepcion . $pdf;
                 }
 
-                $estado = $adquisicion->estado == 'Finalizado' ? '<span class="badge badge-success">' . $adquisicion->estado . '</span>' : '<span class="badge badge-warning">' . $adquisicion->estado . '</span>';
-
                 $output .= '<tr id="' . $adquisicion->id . '">' .
                     '<td class="align-middle">' . $adquisicion->numero . '</td>' .
                     '<td class="align-middle">' . date('d-m-Y', strtotime($adquisicion->fecha)) . '</td>' .
                     '<td class="align-middle">' . strtoupper($adquisicion->proyecto->nombre_proyecto) . '</td>' .
                     '<td class="align-middle">' . strtoupper($adquisicion->etapa->descripcion) . '</td>' .
                     '<td class="align-middle">' . strtoupper($adquisicion->tipo_etapa->descripcion) . '</td>' .
-                    '<td class="align-middle">' . $estado . '</td>' .
                     '<td class="align-middle align-middle text-right text-truncate">' .
                     '<button type="button" class="btn btn-outline-dark" data-container="body"
                                         data-toggle="popover" data-placement="left" data-trigger="focus"

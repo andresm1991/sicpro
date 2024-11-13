@@ -194,13 +194,19 @@ if (!function_exists('registrarProducto')) {
 
     function getPorcentajeIva($tipo, $isSelectOptions = false)
     {
-        echo $tipo;
         $iva_productos = CatalogoDato::getChildrenCatalogo($tipo == 'productos' ? 'iva.productos' : 'iva.general');
         if ($isSelectOptions) {
             $iva_productos = $iva_productos->pluck('descripcion', 'id')->prepend('', '');
         }
 
         return $iva_productos;
+    }
+
+    function calcularTotalProducto($cantidad, $valor, $iva){
+        $subTotal = $cantidad * $valor;
+        $iva = ($subTotal * $iva) / 100;
+        $total = $subTotal + $iva;
+        return number_format($total, 4);
     }
 }
 /**

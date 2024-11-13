@@ -35,7 +35,13 @@ class AdministrativoController extends Controller
     public function adquisiciones($tipo)
     {
         $title_page = ($tipo == 'operativo') ? 'Adquisiciones Operativas' : 'Adquisiciones Administrativas';
-        $adquisiciones = Adquisicion::where('tipo_adquisicion', $tipo)->orderBy('fecha', 'desc')->paginate(15);
+        $adquisiciones_pendientes = Adquisicion::where('tipo_adquisicion', $tipo)
+            ->where('estado', 'Finalizado')
+            ->orderBy('fecha', 'desc')->paginate(15);
+
+        $adquisiciones_completas = Adquisicion::where('tipo_adquisicion', $tipo)
+            ->where('estado', 'Completado')
+            ->orderBy('fecha', 'desc')->paginate(15);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -43,7 +49,7 @@ class AdministrativoController extends Controller
             ['name' => $title_page, 'url' => '']
         ];
 
-        return view('administrativo.adquisiciones.index', compact('adquisiciones', 'tipo', 'title_page', 'breadcrumbs'));
+        return view('administrativo.adquisiciones.index', compact('adquisiciones_pendientes', 'adquisiciones_completas', 'tipo', 'title_page', 'breadcrumbs'));
     }
 
     public function editarAdquisicion($tipo, Adquisicion $adquisicion)
@@ -57,9 +63,7 @@ class AdministrativoController extends Controller
         ];
 
         if ($tipo == 'operativo') {
-            if (strtolower($adquisicion->estado) != "finalizado") {
-                return redirect()->back()->with('toast_error', 'No puede editar la información de esta adquisión porque aun no se ha finalizado.');
-            }
+           
 
             $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
                 return $detalle->cantidad_recibida * $detalle->valor;
@@ -106,6 +110,8 @@ class AdministrativoController extends Controller
             'unidad_medida.*' => 'required',
             'valor' => 'required|array',
             'valor.*' => 'required|numeric',
+            'iva_producto' => 'required|array',
+            'iva_producto.*' => 'required|numeric',
         ];
 
         $messages = [
@@ -117,6 +123,9 @@ class AdministrativoController extends Controller
             'cantidad_recibida.required' => 'Ingrese al menos un valor de cantidad recibida.',
             'cantidad_recibida.*.required' => 'Ingrese el valor de cantidad recibida.',
             'cantidad_recibida.*.numeric' => 'El valor de cada cantidad recibida debe ser numérico.',
+            'iva_producto.required' => 'Ingrese el valor.',
+            'iva_producto.*.required' => 'Ingrese el valor .',
+            'iva_producto.*.numeric' => 'El valor de debe ser numérico.',
         ];
 
         if ($tipo == "administrativo") {
@@ -127,14 +136,14 @@ class AdministrativoController extends Controller
         }
         $request->validate($rules, $messages);
 
+        $estado = $request->orden_completa;
         $array_unidad_medida = $request->unidad_medida;
         $array_valor_unidatrio = $request->valor;
+        $array_iva_producto = $request->iva_producto;
         $unidadMedidaCase = "CASE";
         $valorCase = "CASE";
         $ids = [];
-
         try {
-
             foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
                 if (!is_numeric($array_unidad_medida[$index])) {
                     $id = registrarUnidadMedida($array_unidad_medida[$index]);
@@ -146,6 +155,12 @@ class AdministrativoController extends Controller
                 $unidadMedidaCase .= " WHEN id = {$detalle->id} THEN '{$id}'";
                 $valorCase .= " WHEN id = {$detalle->id} THEN {$valor}";
                 $ids[] = $detalle->id;
+
+                // registrar precio unitario del producto y el iva
+                $articulo = Articulo::find($detalle->articulo_id);
+                $articulo->valor_unitario = $array_valor_unidatrio[$index];
+                $articulo->iva = $array_iva_producto[$index];
+                $articulo->save();
             }
 
             $unidadMedidaCase .= " END";
@@ -159,6 +174,14 @@ class AdministrativoController extends Controller
                     'valor' => DB::raw($valorCase)
                 ]);
             DB::commit();
+
+            // Actualizar el estado a completado 
+            if ($estado) {    
+                $adquisicion->estado = "Completado";
+                $adquisicion->save();
+                
+            }
+
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
 
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
@@ -233,7 +256,8 @@ class AdministrativoController extends Controller
         $proveedores = Proveedor::where('categoria_proveedor_id', $adquisicion->tipo_etapa_id)->pluck('razon_social', 'id');
 
         $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
-            return $detalle->cantidad_recibida * $detalle->valor;
+            $iva = ($detalle->valor * $detalle->producto->iva) / 100;
+            return ($detalle->cantidad_recibida * $detalle->valor) + $iva;
         });
 
         return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'proveedores', 'title_page', 'breadcrumbs'));

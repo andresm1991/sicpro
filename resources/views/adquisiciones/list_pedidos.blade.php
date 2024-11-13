@@ -53,8 +53,12 @@
                                         <td class="align-middle">{{ $pedido->etapa->descripcion }}</td>
                                         <td class="align-middle">{{ $pedido->tipo_etapa->descripcion }}</td>
                                         <td class="align-middle">
-                                            <span
-                                                class="badge {{ $pedido->estado == 'Finalizado' ? 'badge-success' : 'badge-warning' }} ">{{ $pedido->estado }}</span>
+                                            @if (preg_match('/\b(Completado|Finalizado)\b/i', $pedido->estado) )
+                                            <span class="badge badge-success ">Finalizado</span>    
+                                            @else
+                                            <span class="badge badge-warning ">{{ $pedido->estado }}</span>    
+                                            @endif
+                                            
                                         </td>
                                         <td class="align-middle align-middle text-right text-truncate">
                                             <button type="button" class="btn btn-outline-dark" data-container="body"

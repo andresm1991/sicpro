@@ -30,9 +30,9 @@
                                 <div class="select_wrapper">
                                     <label class="rounded  text-white">
                                         <input type="checkbox" name="orden_completa" class="d-none" value="true"
-                                            {{ isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado == true ? 'checked' : '' }}
-                                            {{ $tipo == 'operativo' ? 'disabled' : '' }}>
-                                        <span class="text-center d-block py-3">Pedido Completo</span>
+                                            {{ $adquisicion->estado == 'Completado' ? 'checked' : '' }}
+                                            {{ $tipo == 'operativo' && $adquisicion->estado == 'Completado' ? 'disabled' : '' }}>
+                                        <span class="text-center d-block py-3">{{ $adquisicion->tipo_etapa->descripcion == 'Servicios' ? 'Pedido Pagado': 'Pedido Completo'}} </span>
                                     </label>
                                 </div>
                             </div>

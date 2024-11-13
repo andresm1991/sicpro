@@ -15,7 +15,9 @@
                 <th scope="col">% IVA</th>
                 <th scope="col">Total</th>
                 <th scope="col">Necesidad</th>
+                @if ($tipo == 'administrativo')
                 <th scope="col" class="text-center">Inventario</th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -46,18 +48,19 @@
                         ) !!}
                     </td>
                     <td class="align-middle col-md-1 col-12">
-                        {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'placeholder' => '$ 0.00', 'data-index' => $index]) }}
+                        {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'data-valor-actual' => $detalle->producto->valor_unitario,'placeholder' => '$ 0.00', 'data-index' => $index]) }}
 
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
-                    <td class="align-middle">
-                        {{ Form::select('iva[' . $index . ']', [], $detalle->iva_id, ['class' => 'form-control col-sm-12 select2-tag', 'data-placeholder' => 'Selecione']) }}
+                    <td class="align-middle col-md-1 col-12">
+                        {{ Form::text('iva_producto[' . $index . ']', old('iva_producto.' . $index, $detalle->producto->iva), ['class' => 'form-control col-sm-12 input-enteros iva-producto', 'placeholder' => '0', 'data-index' => $index]) }}
 
-                        {!! $errors->first('iva.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+                        {!! $errors->first('iva_producto.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
                     <td class="align-middle calculo-total" data-index="{{ $index }}">$
-                        {{ number_format($detalle->cantidad_recibida * $detalle->valor, 4) }}</td>
+                        {{ calcularTotalProducto($detalle->cantidad_recibida, $detalle->valor, $detalle->producto->iva) }}</td>
                     <td class="align-middle">{{ $detalle->necesidad }}</td>
+                    @if ($tipo == 'administrativo')
                     <td class="align-middle">
                         <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
                             {{ Form::hidden('inventario[' . $index . ']', 0) }}
@@ -69,6 +72,7 @@
                                 for="cb3-{{ $index }}"></label>
                         </div>
                     </td>
+                    @endif
                 </tr>
             @endforeach
 
@@ -80,7 +84,7 @@
     </table>
     <div class="col-12 text-right p-0 py-4">
         <h5>Total General: <span
-                id="total-general">${{ isset($totalGeneral) ? number_format($totalGeneral, 2) : '0.00' }}</span></h5>
+                id="total-general">${{ isset($totalGeneral) ? number_format($totalGeneral, 4) : '0.0000' }}</span></h5>
     </div>
     <br>
 
