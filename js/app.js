@@ -203,7 +203,7 @@ $(function () {
         prefix: "$ ",                // Símbolo de dólar
         groupSeparator: "",         // Separador de miles
         autoGroup: true,             // Agrupación automática
-        digits: 2,                   // Número de decimales
+        digits: 4,                   // Número de decimales
         digitsOptional: false,       // Asegura siempre dos decimales
         placeholder: "0",            // Marcador de posición
         clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
@@ -279,16 +279,16 @@ $(function () {
     /**
      * Calculpo entre valor unitario y cantidad
      */
-    $('#table-adquisiciones').on('input', '.cantidad input, .precio-unitario', function() {
+    $('#table-adquisiciones').on('input', '.cantidad input, .precio-unitario', function () {
         calcularTotal();
     });
-    
-    
+
+
     // Función para calcular el total de cada fila y el total general
     function calcularTotal() {
         let totalGeneral = 0;
 
-        $('.precio-unitario').each(function() {
+        $('.precio-unitario').each(function () {
             let index = $(this).data('index');
             let cantidad;
 
@@ -303,14 +303,14 @@ $(function () {
             let totalFila = cantidad * precioUnitario;
 
             // Actualiza el total de la fila en el td.calculo-total correspondiente
-            $(`.calculo-total[data-index='${index}']`).text(`$ ${totalFila.toFixed(2)}`);
+            $(`.calculo-total[data-index='${index}']`).text(`$ ${totalFila.toFixed(4)}`);
 
             // Sumar el total de esta fila al total general
             totalGeneral += totalFila;
         });
 
         // Actualiza el total general
-        $('#total-general').text(`$ ${totalGeneral.toFixed(2)}`);
+        $('#total-general').text(`$ ${totalGeneral.toFixed(4)}`);
     }
 
 
