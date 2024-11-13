@@ -12,6 +12,7 @@
                 @endif
                 <th scope="col" class="text-center">Unidad Medida</th>
                 <th scope="col">Valor Unitario</th>
+                <th scope="col">% IVA</th>
                 <th scope="col">Total</th>
                 <th scope="col">Necesidad</th>
                 <th scope="col" class="text-center">Inventario</th>
@@ -49,8 +50,13 @@
 
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
+                    <td class="align-middle">
+                        {{ Form::select('iva[' . $index . ']', [], $detalle->iva_id, ['class' => 'form-control col-sm-12 select2-tag', 'data-placeholder' => 'Selecione']) }}
+
+                        {!! $errors->first('iva.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+                    </td>
                     <td class="align-middle calculo-total" data-index="{{ $index }}">$
-                        {{ number_format($detalle->cantidad_recibida * $detalle->valor, 2) }}</td>
+                        {{ number_format($detalle->cantidad_recibida * $detalle->valor, 4) }}</td>
                     <td class="align-middle">{{ $detalle->necesidad }}</td>
                     <td class="align-middle">
                         <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
@@ -58,7 +64,7 @@
                             <input class="tgl tgl-skewed inventario" name="inventario[{{ $index }}]"
                                 id="cb3-{{ $index }}" type="checkbox" value="0"
                                 {{ isset($pedido->orden_recepcion->inventario) && $pedido->orden_recepcion->inventario->pluck('producto_id')->contains($detalle->articulo_id) ? 'checked' : '' }}
-                                {{ isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '' }} />
+                                {{ $tipo == 'operativo' ? 'disabled' : (isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '') }} />
                             <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI"
                                 for="cb3-{{ $index }}"></label>
                         </div>

@@ -135,8 +135,8 @@ if (!function_exists('registrarProducto')) {
         $slug = strtolower(str_replace(' ', '.', $unidad_medida));
         $catalogo = CatalogoDato::getCatalogoPadre('unidades.medida');
         $existe = CatalogoDato::whereRaw('LOWER(descripcion) = ?', [strtolower($unidad_medida)])
-        ->whereRaw('LOWER(slug) = ?', [strtolower('unidad.medida.'.$slug)])
-        ->first();
+            ->whereRaw('LOWER(slug) = ?', [strtolower('unidad.medida.' . $slug)])
+            ->first();
 
         if (!$existe) {
             $create = CatalogoDato::create([
@@ -176,18 +176,31 @@ if (!function_exists('registrarProducto')) {
         return $existe->id;
     }
 
-    function formasPagos () {
+    function formasPagos()
+    {
         $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
         return $forma_pagos;
     }
 
-    function getUnidadMedidas($isSelected = false){
+    function getUnidadMedidas($isSelected = false)
+    {
         $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
-        if($isSelected){
+        if ($isSelected) {
             $unidad_medidas = $unidad_medidas->prepend('', '');
         }
 
         return $unidad_medidas;
+    }
+
+    function getPorcentajeIva($tipo, $isSelectOptions = false)
+    {
+        echo $tipo;
+        $iva_productos = CatalogoDato::getChildrenCatalogo($tipo == 'productos' ? 'iva.productos' : 'iva.general');
+        if ($isSelectOptions) {
+            $iva_productos = $iva_productos->pluck('descripcion', 'id')->prepend('', '');
+        }
+
+        return $iva_productos;
     }
 }
 /**
@@ -202,20 +215,21 @@ if (!function_exists('numeroOrden')) {
             $ultimo_id = $numero ? $numero->id + 1 : 1;
             $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         } else {
-            if($numero){
-                $ultimo_id = $numero->id;    
-            }else{
+            if ($numero) {
+                $ultimo_id = $numero->id;
+            } else {
                 $numero = OrdenRecepcion::latest()->first();
                 $ultimo_id = $numero ? $numero->id + 1 : 1;
             }
-            
+
             $numero_orden = date('Ymd', strtotime($numero->fecha)) . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         }
 
         return $numero_orden;
     }
 
-    function generarNumeroOrden () {
+    function generarNumeroOrden()
+    {
         $ultimo_registro = Adquisicion::latest()->first();
         $ultimo_id = $ultimo_registro ? $ultimo_registro->id + 1 : 1;
         $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
@@ -251,7 +265,8 @@ if (!function_exists('calcularFechaFinal')) {
         return $fechaFinal->toDateString(); // Devuelve la fecha final como cadena
     }
 
-    function quitarSimboloUSD ($precioConSimbolo) {
+    function quitarSimboloUSD($precioConSimbolo)
+    {
         $precioLimpio = preg_replace('/[^0-9.]/', '', $precioConSimbolo);
         return $precioLimpio;
     }
