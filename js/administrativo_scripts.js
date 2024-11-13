@@ -15,16 +15,17 @@ $(function () {
 
     $('input:text[name=adquisicion_search]').on('keyup', function () {
         var $value = $(this).val();
-
+        var $tipo = $(this).attr('id');
+        
         $.ajax({
             url: url+'/buscar-adquisicion',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
-            data: { 'buscar': $value },
+            data: { 'buscar': $value , 'tipo': $tipo},
             beforeSend: function () {
             },
             success: function (data) {
-                $('tbody').html(data);
+                $('#table-list-pedidos-'+$tipo+' tbody').html(data);
                 $('[data-toggle="tooltip"]').tooltip();
                 $('[data-toggle="popover"]').popover({ html: true });
             },

@@ -279,8 +279,33 @@ $(function () {
     /**
      * Calculpo entre valor unitario y cantidad
      */
-    $('#table-adquisiciones').on('input', '.cantidad input, .precio-unitario', function () {
+    $('#table-adquisiciones').on('input', '.cantidad input, .iva-producto, .precio-unitario', function () {
         calcularTotal();
+    });
+
+
+    $('.precio-unitario').on('blur', function() {
+        var valor_actual = $(this).data('valor-actual')!= undefined ? parseFloat(String($(this).data('valor-actual')).replace(/[^0-9.]/g, ''))  : 0;
+        var valor_ingresado = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
+        console.log(valor_actual);
+        console.log(valor_ingresado)
+        if(valor_actual != 0){
+            if(valor_ingresado > valor_actual){
+                var diferencia = valor_ingresado - valor_actual;
+                Swal.fire(
+                    'Aviso!',
+                    `El valor ingresado $ ${valor_ingresado.toFixed(4)} es mayor al valor actual ${valor_actual.toFixed(4)} por una diferencia de $ ${diferencia.toFixed(4)}`,
+                    'info'
+                );
+            }else if(valor_ingresado < valor_actual){
+                var diferencia =  valor_actual - valor_actualvalor_ingresado;
+                Swal.fire(
+                    'Aviso!',
+                    `El valor ingresado $ ${valor_ingresado.toFixed(4)} es menor al valor actual ${valor_actual.toFixed(4)} por una diferencia de $ ${diferencia.toFixed(4)}`,
+                    'info'
+                );
+            }
+        }
     });
 
 
@@ -301,12 +326,14 @@ $(function () {
 
             let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
             let totalFila = cantidad * precioUnitario;
-
+            let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
+            let iva = (totalFila * porcentaje_iva) /100;
+            let total = totalFila + iva;
             // Actualiza el total de la fila en el td.calculo-total correspondiente
-            $(`.calculo-total[data-index='${index}']`).text(`$ ${totalFila.toFixed(4)}`);
+            $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(4)}`);
 
             // Sumar el total de esta fila al total general
-            totalGeneral += totalFila;
+            totalGeneral += total;
         });
 
         // Actualiza el total general
