@@ -129,6 +129,8 @@ $(function () {
         }
 
         numeroFila = $('.elementos-agregados').length + 1;
+        
+        
         // Crear una nueva fila con los datos
         var nuevaFila = `
             <tr class="elementos-agregados">
@@ -139,6 +141,17 @@ $(function () {
                     <div class="d-flex align-items-center hidden">
                         <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
                             value="${cantidad}">
+                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
+                                class="fa-solid fa-check"></i></button>
+                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
+                                class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </td>
+                <td class="edit-item col-gasolina">
+                <span>0</span>
+                <div class="d-flex align-items-center hidden">
+                        <input type="text" class="form-control mr-2" name="km[]"
+                            value="">
                         <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
                                 class="fa-solid fa-check"></i></button>
                         <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
@@ -169,6 +182,12 @@ $(function () {
         // Deshabilitar la opción seleccionada
         //$('#productos option[value="' + producto_id + '"]').prop('disabled', true);
         $('#tr-default').hide();
+
+        // Condición para mostrar u ocultar la columna de gasolina en todas las filas
+    if (producto === 'gasolina para camioneta') {
+        $('th.col-gasolina').show();
+        $('td.col-gasolina').show();
+    }
         // Limpiar campos 
         clearInputs();
 
@@ -248,6 +267,20 @@ $(function () {
             $(this).val(1);
         } else {
             $(this).val(0);
+        }
+    });
+
+    // Maneja el evento change de select2
+    $('#productos').on('change', function() {
+        var selected = $('#productos option:selected').text();
+
+        if (selected === 'gasolina para camioneta') {
+            // Muestra la columna si es "Gasolina para Camioneta"
+            $('th.col-gasolina, td.col-gasolina').show();
+        } else if(selected != '' && selected != 'gasolina para camioneta'){
+            // Oculta la columna para cualquier otra opción
+            $('th.col-gasolina, td.col-gasolina').hide();
+
         }
     });
 
