@@ -42,6 +42,7 @@ class GenerarPdfController extends Controller
                 'producto' => $detalle->producto->descripcion,
                 'cantidad' => $detalle->cantidad_solicitada,
                 'necesidad' => $detalle->necesidad,
+                'kilometraje' => $detalle->kilometraje,
             ];
         }
 
@@ -105,6 +106,7 @@ class GenerarPdfController extends Controller
                 'valor' => number_format($detalle->valor, 2),
                 'total' => $total,
                 'necesidad' => $detalle->necesidad,
+                'kilometraje' => $detalle->kilometraje,
             ];
         }
 

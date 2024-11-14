@@ -46,7 +46,7 @@ class OrdenRecepcionUpdateRequest extends FormRequest
     {
         return [
             'proveedor.required' => 'Seleccione el proveedor.',
-
+            'proveedor.numeric' => 'Opción inválida.',
             // Mensajes personalizados para los elementos del array cantidad_recibida
             'cantidad_recibida.required' => 'Ingrese al menos un valor de cantidad recibida.',
             'cantidad_recibida.*.required' => 'Ingrese el valor de cantidad recibida.',

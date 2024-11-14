@@ -112,7 +112,7 @@
                 <strong>ETAPA:</strong>
                 {{ strtoupper($orden['etapa']) }}<br>
                 <strong>PROVEEDOR:</strong>
-                {{ $orden['proveedor'] }}<br>
+                {{ strtoupper($orden['proveedor']) }}<br>
             </div>
 
             <div class="right">
@@ -125,6 +125,12 @@
         </div>
 
         <div class="items">
+            @php
+                $producto = array_column($orden['items'], 'producto');
+                $key = array_search('gasolina para camioneta', $producto);
+                
+            @endphp
+            
             <table>
                 <thead>
                     <tr>
@@ -137,7 +143,10 @@
                             <th>VALOR UNITARIO</th>
                             <th>Total</th>
                         @endif
-
+                        
+                        @if ($key !== false)
+                            <th>KM</th>    
+                        @endif
                         <th>Necesidad</th>
                     </tr>
                 </thead>
@@ -153,7 +162,9 @@
                                 <td>${{ $item['valor'] }}</td>
                                 <td>${{ $item['total'] }}</td>
                             @endif
-
+                            @if ($key !== false)
+                                <td>{{ $item['kilometraje'] }}</td>    
+                            @endif
                             <td>{{ strtoupper($item['necesidad']) }}</td>
                         </tr>
                     @endforeach

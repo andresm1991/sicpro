@@ -35,9 +35,16 @@ class AdministrativoController extends Controller
     public function adquisiciones($tipo)
     {
         $title_page = ($tipo == 'operativo') ? 'Adquisiciones Operativas' : 'Adquisiciones Administrativas';
-        $adquisiciones_pendientes = Adquisicion::where('tipo_adquisicion', $tipo)
+        if ($tipo == 'operativo') {
+            $adquisiciones_pendientes = Adquisicion::where('tipo_adquisicion', $tipo)
             ->where('estado', 'Finalizado')
             ->orderBy('fecha', 'desc')->paginate(15);
+        }else{
+            $adquisiciones_pendientes = Adquisicion::where('tipo_adquisicion', $tipo)
+            ->where('estado', 'En Proceso')
+            ->orderBy('fecha', 'desc')->paginate(15);
+        }
+        
 
         $adquisiciones_completas = Adquisicion::where('tipo_adquisicion', $tipo)
             ->where('estado', 'Completado')
@@ -297,7 +304,7 @@ class AdministrativoController extends Controller
             if ($orden_recepcion = OrdenRecepcion::create($param)) {
                 /// Actualiza el estado del pedido
                 if ($orden_completa) {
-                    $adquisicion->estado = 'Finalizado';
+                    $adquisicion->estado = 'Completado';
                     $adquisicion->save();
                 }
                 // Actualiza la cantidad recibiba en el detalle del pedido

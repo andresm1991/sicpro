@@ -58,6 +58,7 @@
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Cantidad</th>
+                <th scope="col" class="col-gasolina" style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', '!=', null) ? '' : 'none' }}">KM</th>
                 <th scope="col">Necesidad</th>
                 <th class="table-actions"></th>
             </tr>
@@ -72,6 +73,17 @@
                         <div class="d-flex align-items-center hidden">
                             <input type="numbre" class="form-control mr-2 input-double" name="cantidad[]"
                                 value="{{ $element->cantidad_solicitada }}" step="0.01">
+                            <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
+                                    class="fa-solid fa-check"></i></button>
+                            <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    </td>
+                    <td class="edit-item col-gasolina" style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', null) ? 'none' : '' }}">
+                        <span>{{ $element->kilometraje }}</span>
+                        <div class="d-flex align-items-center hidden">
+                            <input type="text" class="form-control mr-2" name="km[]"
+                                value="{{ $element->kilometraje }}">
                             <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
                                     class="fa-solid fa-check"></i></button>
                             <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
@@ -101,7 +113,7 @@
                 </tr>
             @endforeach
             <tr id="tr-default" style="display:{{ $orden_pedido->id ? 'none' : '' }}">
-                <td colspan="5" class="text-center">No existen elementos en la lista...</td>
+                <td colspan="6" class="text-center">No existen elementos en la lista...</td>
             </tr>
 
         </tbody>

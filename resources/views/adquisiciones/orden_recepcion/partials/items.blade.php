@@ -11,7 +11,7 @@
                     <th scope="col">Unidad</th>
                     <th scope="col">Valor</th>    
                 @endif
-                
+                <th scope="col" style="display:{{ $pedido->adquisiciones_detalle->firstWhere('kilometraje', null) ? 'none' : '' }}">KM</th>
                 <th scope="col">Necesidad</th>
                 <th scope="col" class="text-center">Inventario</th>
             </tr>
@@ -43,6 +43,10 @@
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
                     @endif
+                    @if ($detalle->producto->descripcion == "gasolina para camioneta")
+                        <td class="align-middle">{{ $detalle->kilometraje }}</td>    
+                    @endif
+                    
                     <td class="align-middle">{{ $detalle->necesidad }}</td>
                     <td class="align-middle">
                         <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">

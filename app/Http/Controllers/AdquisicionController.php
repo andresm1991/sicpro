@@ -18,6 +18,7 @@ use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
 use App\Http\Requests\AdquisicionAdministrativoRequest;
+use App\Http\Requests\AdquisicionStoreRequest;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
@@ -109,17 +110,8 @@ class AdquisicionController extends Controller
     /**
      * Guardar pedido
      */
-    public function store(Request $request, $tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
+    public function store(AdquisicionStoreRequest $request, $tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
     {
-        $request->validate([
-            'productos' => 'required|array',
-            'productos.*' => 'required',
-            'cantidad' => 'required|array',
-            'cantidad.*' => 'required',
-            'necesidad' => 'required|array',
-            'necesidad.*' => 'required',
-        ]);
-
         $fecha = $request->fecha;
         $numero_pedido = $request->numero_pedido;
         $proyecto_id = $request->proyecto_id;
@@ -129,6 +121,8 @@ class AdquisicionController extends Controller
         $productos = $request->productos;
         $cantidad = $request->cantidad;
         $necesidad = $request->necesidad;
+
+        $km = $request->km;
 
         try {
             DB::beginTransaction();
@@ -149,7 +143,8 @@ class AdquisicionController extends Controller
                         'adquisicion_id' => $adquisicion->id,
                         'articulo_id' => '',
                         'cantidad_solicitada' => str_replace(',', '', $cantidad[$index]),
-                        'necesidad' => $necesidad[$index]
+                        'necesidad' => $necesidad[$index],
+                        'kilometraje' => $km[$index],
                     ];
 
                     if (is_numeric($producto)) {
@@ -216,13 +211,14 @@ class AdquisicionController extends Controller
             DB::beginTransaction();
             $pedido_id = $request->route('pedido');
             // Combinar arrays en uno solo
-            $result = array_map(function ($producto, $cantidad, $necesidad) {
+            $result = array_map(function ($producto, $cantidad, $necesidad, $km) {
                 return [
                     'articulo_id' => $producto,
                     'cantidad_solicitada' => str_replace(',', '', $cantidad),
-                    'necesidad' => $necesidad
+                    'necesidad' => $necesidad,
+                    'kilometraje' => $km,
                 ];
-            }, $request->productos, $request->cantidad, $request->necesidad);
+            }, $request->productos, $request->cantidad, $request->necesidad, $request->km);
 
             foreach ($result as $data) {
                 AdquisicionDetalle::updateOrCreate(
@@ -232,7 +228,8 @@ class AdquisicionController extends Controller
                     ],
                     [
                         'cantidad_solicitada' => $data['cantidad_solicitada'],
-                        'necesidad' => $data['necesidad']
+                        'necesidad' => $data['necesidad'],
+                        'kilometraje' => $data['kilometraje']
                     ]
                 );
 
