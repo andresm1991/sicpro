@@ -9,14 +9,15 @@ class Contratista extends Model
 {
     use HasFactory;
     protected $table = 'contratistas';
-    protected $fillable = ['fecha', 'plazo_semanas', 'proveedor_id', 'articulo_id', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'estado_id'];
+    protected $fillable = ['fecha', 'plazo_semanas', 'proveedor_id', 'articulo_id', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'estado_id', 'numero_casas'];
 
     public function detalle_contratistas()
     {
         return $this->hasMany(DetalleContratista::class);
     }
 
-    public function pagosOrdenTrabajoContratista(){
+    public function pagosOrdenTrabajoContratista()
+    {
         return $this->hasMany(PagoOrdenTrabajoContratista::class);
     }
 
@@ -56,7 +57,8 @@ class Contratista extends Model
     }
     public function getTotalContratistasAttribute()
     {
-        return $this->detalle_contratistas()->selectRaw('SUM(cantidad * valor_unitario) as total')->pluck('total')->first();
+        $nro_casas = $this->numero_casas;
+        return $this->detalle_contratistas()->selectRaw('SUM(cantidad * valor_unitario) as total')->pluck('total')->first() * $nro_casas;
     }
 
     public function getPagosContratistasAttribute()
@@ -67,17 +69,17 @@ class Contratista extends Model
     public function getNumeroPagoContratistaAttribute()
     {
         return $this->pagosOrdenTrabajoContratista()
-        ->selectRaw('id')
-        ->latest('id')
-        ->first();
+            ->selectRaw('id')
+            ->latest('id')
+            ->first();
     }
 
     public function getTipoPagoContratistaAttribute()
     {
         return $this->pagosOrdenTrabajoContratista()
-        ->selectRaw('tipo_pago')
-        ->latest('id')
-        ->pluck('tipo_pago')
-        ->first();
+            ->selectRaw('tipo_pago')
+            ->latest('id')
+            ->pluck('tipo_pago')
+            ->first();
     }
 }

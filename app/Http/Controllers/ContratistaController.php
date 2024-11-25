@@ -92,6 +92,7 @@ class ContratistaController extends Controller
         $unidad_medida = $request->unidad_medida;
         $precio_unitario = $request->precio_unitario;
         $plazo = $request->plazo_semanas;
+        $nro_casas = $request->numero_casas;
 
         try {
             DB::beginTransaction();
@@ -105,6 +106,7 @@ class ContratistaController extends Controller
                 'tipo_etapa_id' => $tipo_etapa,
                 'usuario_id' => Auth::user()->id,
                 'estado_id' => 38,
+                'numero_casas' => $nro_casas,
             ];
 
             if ($orden_trabajo = Contratista::create($orden_trabajo_param)) {
@@ -161,6 +163,13 @@ class ContratistaController extends Controller
 
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
 
+        $subTotal = $orden_trabajo->detalle_contratistas->sum(function ($detalle) {
+            return $detalle->valor_unitario * $detalle->cantidad;
+        });
+        $totalGeneral = $orden_trabajo->detalle_contratistas->sum(function ($detalle) use ($orden_trabajo) {
+            return  $orden_trabajo->numero_casas * ($detalle->valor_unitario * $detalle->cantidad);
+        });
+
         $route_params = array_merge(
             $route_params,
             [
@@ -172,6 +181,8 @@ class ContratistaController extends Controller
                 'title_page' => $title_page,
                 'unidades_medidas' => $unidades_medidas,
                 'articulos' => $articulos,
+                'subTotal' => $subTotal,
+                'totalGeneral' => $totalGeneral,
             ]
         );
 
@@ -192,9 +203,11 @@ class ContratistaController extends Controller
             $unidad_medida = $request->unidad_medida;
             $precio_unitario = $request->precio_unitario;
             $plazo = $request->plazo_semanas;
+            $nro_casas = $request->numero_casas;
 
             $orden_trabajo = Contratista::find($request->contratista);
             $orden_trabajo->plazo_semanas = $plazo;
+            $orden_trabajo->numero_casas = $nro_casas;
 
             if ($orden_trabajo->save()) {
                 foreach ($productos as $index => $producto) {

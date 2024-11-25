@@ -139,7 +139,7 @@
                                     class="fa-solid fa-xmark"></i></button>
                         </div>
                     </td>
-                    <td><span
+                    <td class="total_unitario"><span
                             class="total">{{ number_format($detalle->valor_unitario * $detalle->cantidad, 2) }}</span>
                     </td>
                     <td class="align-middle table-actions">
@@ -157,6 +157,34 @@
             </tr>
         </tbody>
     </table>
+</div>
+<div class="d-flex justify-content-end">
+    <div class="row ">
+        <div class="col-12">
+            <div class="form-group row text-right">
+                <label for="staticEmail" class="col-sm-6 col-form-label">SubTotal: </label>
+                <div class="col-sm-4">
+                    <input type="text" readonly class="form-control-plaintext" id="subtotal"
+                        value="${{ isset($subTotal) ? number_format($subTotal, 2) : '0.00' }}">
+                </div>
+            </div>
+
+            <div class="form-group row text-right">
+                <label for="inputPassword" class="col-sm-6 col-form-label">Nro. Casas: </label>
+                <div class="col-sm-4 ">
+                    {{ Form::text('numero_casas', old('numero_casas', $orden_trabajo->numero_casas), ['class' => 'form-control input-enteros', 'placeholder' => '0', 'id' => 'numero_casas']) }}
+                </div>
+            </div>
+
+            <div class="form-group row text-right">
+                <label for="staticEmail" class="col-sm-6 col-form-label">Total General: </label>
+                <div class="col-sm-4">
+                    <input type="text" readonly class="form-control-plaintext" id="total-general"
+                        value="${{ isset($totalGeneral) ? number_format($totalGeneral, 2) : '0.00' }}">
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section('scripts')
