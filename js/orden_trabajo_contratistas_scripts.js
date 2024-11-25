@@ -116,7 +116,7 @@ $(function () {
 
         var numeroFila = $('.elementos-agregados').length + 1;
         var total = parseFloat(cantidad.replace(/,/g, '')) * parseFloat(precio_unitario.replace(/,/g, ''));
-        var formattedNumber = total.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var formattedNumber = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         var nuevaFila = `
             <tr class="elementos-agregados">
@@ -153,7 +153,7 @@ $(function () {
                                 class="fa-solid fa-xmark"></i></button>
                     </div>
                 </td>
-                <td>$ ${formattedNumber}</td>
+                <td class="total_unitario">$ ${formattedNumber}</td>
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
                         <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto" id=""><i class="fa-solid fa-trash-can"></i></a>
@@ -163,6 +163,8 @@ $(function () {
         `;
         $('tbody').append(nuevaFila);
         $('#tr-default').hide();
+        // calcular subtotal
+        calcularTotal();
         // Limpiar campos 
         clearInputs();
     });
@@ -183,6 +185,8 @@ $(function () {
         if (numeroFila == 0) {
             $('#tr-default').show();
         }
+
+        calcularTotal();
     });
 
     /**
@@ -233,6 +237,16 @@ $(function () {
         // Ocultar el div y mostrar el span nuevamente sin hacer cambios
         $(this).closest('div').addClass('hidden');
         $(this).closest('.edit-item').find('span').show();
+    });
+
+    $('#numero_casas').on('keyup', function () {
+        let totalGeneral = 0;
+        var $nro_casas = $(this).val();
+        let $subTotal = parseFloat($('#subtotal').val().replace(/[^0-9.]/g, '')) || 0;
+
+        totalGeneral = $nro_casas * $subTotal;
+
+        $('#total-general').val(`$ ${totalGeneral.toFixed(2)}`);
     });
 
     $(document).on('click', '.eliminar-orden-trabajo', function () {
@@ -372,4 +386,21 @@ $(function () {
         numero = parseFloat(numero) || 0; // Si no es un número válido, se establece a 0
         return '$' + numero.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     }
+
+    function calcularTotal() {
+        let subtotal = 0;
+
+        // Iterar por cada fila del tbody
+        $('.elementos-agregados').each(function () {
+            let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
+            let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+            // Sumar al subtotal
+            subtotal += total;
+        });
+
+        console.log(subtotal.toFixed(2));
+        // Actualizar el total general
+        $('#subtotal').val(subtotal.toFixed(2));
+    }
+
 });
