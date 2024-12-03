@@ -156,6 +156,8 @@ Route::group(['middleware' => ['auth']], function () {
      */
     Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function(){
         Route::get('/', [AdministrativoController::class, 'index'])->name('index');
+        Route::get('/construccion', [AdministrativoController::class, 'menuConstruccion'])->name('menu.construccion');
+        
         Route::get('/adquisiciones/{tipo}', [AdministrativoController::class, 'adquisiciones'])->name('adquisiciones');
         Route::get('/adquisicion/{tipo}/{adquisicion}/editar', [AdministrativoController::class, 'editarAdquisicion'])->name('adquisicion.edit');
         Route::get('/adquisicion/{tipo}/{adquisicion}/recepcion', [AdministrativoController::class, 'recepcionAdquisicionAdministrativo'])->name('adquisicion.recepcion');

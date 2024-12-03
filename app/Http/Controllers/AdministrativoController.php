@@ -32,6 +32,17 @@ class AdministrativoController extends Controller
         return view('administrativo.menu_administrativo', compact('title_page', 'breadcrumbs'));
     }
 
+    public function menuConstruccion () {
+        $title_page = 'Contrucciones PrimeJP';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Administrativo', 'url' => route('administrativo.index')],
+            ['name' => 'Construcción', 'url' => ''],
+        ];
+
+        return view('administrativo.menu_construccion', compact('title_page', 'breadcrumbs'));
+    }
+
     public function adquisiciones($tipo)
     {
         $title_page = ($tipo == 'operativo') ? 'Adquisiciones Operativas' : 'Adquisiciones Administrativas';
