@@ -96,6 +96,11 @@ class AdquisicionController extends Controller
             ->where('categoria_id', $tipo_adquisicion)
             ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_parametres['tipo_etapa']->id)->pluck('razon_social', 'id');
+        $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
+        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+        $unidad_medidas = $unidad_medidas->prepend('', '');
+
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => $route_parametres['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_parametres)],
@@ -103,7 +108,7 @@ class AdquisicionController extends Controller
         ];
 
 
-        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
+        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'unidad_medidas' => $unidad_medidas]);
         return view('adquisiciones.create', $route_parametres);
     }
 
@@ -112,6 +117,14 @@ class AdquisicionController extends Controller
      */
     public function store(AdquisicionStoreRequest $request, $tipo, $tipo_id, Proyecto $proyecto, CatalogoDato $tipo_adquisicion, CatalogoDato $tipo_etapa)
     {
+        // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
+        $valoresLimpios = array_map(function ($value) {
+            return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
+        }, $request->input('precio', []));
+
+        // Reemplaza los valores en el request con los valores limpios
+        $request->merge(['precio' => $valoresLimpios]);
+
         $fecha = $request->fecha;
         $numero_pedido = $request->numero_pedido;
         $proyecto_id = $request->proyecto_id;
@@ -123,6 +136,11 @@ class AdquisicionController extends Controller
         $necesidad = $request->necesidad;
 
         $km = $request->km;
+        $unidad_medida = $request->unidad_meddia;
+        $precio = $request->precio;
+
+        $orden_completa = isset($request->orden_completa) ? true : false;
+        $inventario = $request->inventario;
 
         try {
             DB::beginTransaction();
@@ -134,7 +152,7 @@ class AdquisicionController extends Controller
                 'etapa_id' => $adquisicion_id,
                 'tipo_etapa_id' => $etapa_id,
                 'usuario_id' => Auth::user()->id,
-                'estado' => 'En Proceso',
+                'estado' => $orden_completa ? 'Finalizado' : 'En Proceso',
             ]);
 
             if ($adquisicion) {
@@ -145,6 +163,8 @@ class AdquisicionController extends Controller
                         'cantidad_solicitada' => str_replace(',', '', $cantidad[$index]),
                         'necesidad' => $necesidad[$index],
                         'kilometraje' => $km[$index],
+                        'unidad_medida_id' => isset($unidad_medida) ? $unidad_medida[$index] : null,
+                        'valor' => !empty($precio) ? $precio[$index] : null,
                     ];
 
                     if (is_numeric($producto)) {
@@ -158,6 +178,38 @@ class AdquisicionController extends Controller
 
                     agregarPalabra($necesidad[$index]);
                 }
+
+                /// Guardar en tabla orden_recepcion
+
+                $recepcion = [
+                    'fecha' => $fecha,
+                    'adquisicion_id' => $adquisicion->id,
+                    'proveedor_id' => $request->proveedor,
+                    'forma_pago_id' => $request->forma_pago,
+                    'completado' => $orden_completa,
+                    'editar' => $orden_completa ? false : true,
+                ];
+
+                if ($orden_recepcion = OrdenRecepcion::create($recepcion)) {
+                    /// recorrer el detalle de la adquisicon para ver si hay que agregar al inventario
+                    if (isset($inventario)) {
+                        foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
+                            if ($inventario[$index] && $orden_completa) {
+                                Inventario::create([
+                                    'orden_recepcion_id' => $orden_recepcion->id,
+                                    'producto_id' => $detalle->articulo_id,
+                                    'cantidad' => str_replace(',', '', $cantidad[$index]),
+                                    'fecha' => date('Y-m-d'),
+                                    'usuario_id' => Auth::user()->id,
+                                    'estado' => 10,
+                                ]);
+                            }
+                        }
+                    }
+                } else {
+                    throw new Exception('Error al intentar guardar la adquisición.');
+                }
+
                 DB::commit();
                 LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('success', 'Orden de pedido generada con éxito.');
@@ -182,24 +234,26 @@ class AdquisicionController extends Controller
         $pedido_id = $request->route('pedido');
         $pedido = Adquisicion::find($pedido_id);
 
-        if ($pedido->estado != 'Finalizado') {
-            $title_page = $route_params['proyecto']->nombre_proyecto;
-            $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
-            $orden_pedido = $pedido;
-            $numero_orden = $pedido->numero;
-            $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
+        $title_page = $route_params['proyecto']->nombre_proyecto;
+        $aquisiciones = CatalogoDato::getChildrenCatalogo('proveedor');
+        $orden_pedido = $pedido;
+        $numero_orden = $pedido->numero;
+        $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
-            $breadcrumbs = [
-                ['name' => 'Inicio', 'url' => route('home')],
-                ['name' => $route_params['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_params)],
-                ['name' => 'Editar', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
-            ];
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => $route_params['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_params)],
+            ['name' => 'Editar', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
 
-            $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs]);
-            return view('adquisiciones.edit',  $route_params);
-        } else {
-            return back()->with('toast_error', 'Esta orden de pedido ya esta finalizada por lo cual no puede ser editada.');
-        }
+        $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
+        $forma_pagos = CatalogoDato::getChildrenCatalogo('formas.pagos')->pluck('descripcion', 'id');
+        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+        $unidad_medidas = $unidad_medidas->prepend('', '');
+
+        $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'unidad_medidas' => $unidad_medidas]);
+
+        return view('adquisiciones.edit',  $route_params);
     }
     /**
      * Actualizar la informacion del pedido
@@ -207,20 +261,41 @@ class AdquisicionController extends Controller
     public function updateAdquisicion(Request $request)
     {
         $route_params = $this->getRouteParameters($request);
+        $orden_completa = isset($request->orden_completa) ? true : false;
+
+        // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
+        $valoresLimpios = array_map(function ($value) {
+            return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
+        }, $request->input('precio', []));
+
+        // Reemplaza los valores en el request con los valores limpios
+        $request->merge(['precio' => $valoresLimpios]);
+
         try {
             DB::beginTransaction();
             $pedido_id = $request->route('pedido');
+            $pedido = Adquisicion::find($pedido_id);
+            $unidad_medida = isset($request->unidad_medida) ? $request->unidad_medida : [];
+            $precio = $request->precio;
+            $inventario = $request->inventario;
             // Combinar arrays en uno solo
-            $result = array_map(function ($producto, $cantidad, $necesidad, $km) {
+            $result = array_map(function ($producto, $cantidad, $necesidad, $km, $unidad, $precio) {
                 return [
                     'articulo_id' => $producto,
                     'cantidad_solicitada' => str_replace(',', '', $cantidad),
                     'necesidad' => $necesidad,
                     'kilometraje' => $km,
+                    'unidad' => $unidad,
+                    'precio' => $precio,
                 ];
-            }, $request->productos, $request->cantidad, $request->necesidad, $request->km);
+            }, $request->productos, $request->cantidad, $request->necesidad, $request->km, $unidad_medida, $precio);
 
-            foreach ($result as $data) {
+
+            $pedido->estado = $orden_completa ? 'Finalizado' : 'En Proceso';
+            if (!$pedido->save()) {
+                throw new Exception('Error al intentar actualizar el estado de la adquisición.');
+            }
+            foreach ($result as $index => $data) {
                 AdquisicionDetalle::updateOrCreate(
                     [
                         'articulo_id' => $data['articulo_id'],
@@ -229,11 +304,26 @@ class AdquisicionController extends Controller
                     [
                         'cantidad_solicitada' => $data['cantidad_solicitada'],
                         'necesidad' => $data['necesidad'],
-                        'kilometraje' => $data['kilometraje']
+                        'kilometraje' => $data['kilometraje'],
+                        'unidad_medida_id' => $data['unidad'],
+                        'valor' => $data['precio']
                     ]
                 );
 
                 agregarPalabra($data['necesidad']);
+
+                if (isset($inventario)) {
+                    if ($inventario[$index] && $orden_completa) {
+                        Inventario::create([
+                            'orden_recepcion_id' => $pedido->orden_recepcion->id,
+                            'producto_id' => $data['articulo_id'],
+                            'cantidad' => $data['cantidad_solicitada'],
+                            'fecha' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado' => 10,
+                        ]);
+                    }
+                }
             }
             // obtener producots existentes del pedido
             $productos_existente = AdquisicionDetalle::where('adquisicion_id', $pedido_id)->pluck('articulo_id')->toArray();
@@ -244,6 +334,32 @@ class AdquisicionController extends Controller
             if (!empty($productos_eliminar)) {
                 AdquisicionDetalle::where('adquisicion_id', $pedido_id)
                     ->whereIn('articulo_id', $productos_eliminar)->delete();
+            }
+
+            /// Actualizar tabla ordenm_recepcion
+            $orden = OrdenRecepcion::where('adquisicion_id', $pedido_id)->first();
+
+            if ($orden) {
+                $orden->completado = $orden_completa;
+                $orden->editar = $orden_completa ? false : true;
+                $orden->proveedor_id = $request->proveedor;
+
+                if (!$orden->save()) {
+                    throw new Exception('Error al intentar actualizar la adquisición.');
+                }
+            } else {
+                $recepcion = [
+                    'fecha' => date('Y-m-d'),
+                    'adquisicion_id' => $pedido_id,
+                    'proveedor_id' => $request->proveedor,
+                    'forma_pago_id' => $request->forma_pago,
+                    'completado' => $orden_completa,
+                    'editar' => $orden_completa ? false : true,
+                ];
+
+                if (!OrdenRecepcion::create($recepcion)) {
+                    throw new Exception('Error al intentar guardar la adquisición.');
+                }
             }
 
             DB::commit();

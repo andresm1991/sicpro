@@ -6,15 +6,37 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="container-fluid">
+            {!! Form::open([
+                'route' => [
+                    'proyecto.adquisiciones.store',
+                    [
+                        'tipo' => $tipo,
+                        'tipo_id' => $tipo_id,
+                        'tipo_adquisicion' => $tipo_adquisicion->id,
+                        'tipo_etapa' => $tipo_etapa->id,
+                        'proyecto' => $proyecto->id,
+                    ],
+                ],
+                'class' => 'form-horizontal',
+                'autocomplete' => 'off',
+                'enctype' => 'multipart/form-data',
+                'id' => 'form_order_pedido',
+            ]) !!}
+            {{ Form::hidden('numero_pedido', $numero_orden) }}
+            {{ Form::hidden('proyecto_id', $proyecto->id) }}
+            {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}
+            {{ Form::hidden('tipo_etapa', $tipo_etapa->id) }}
+            {{ Form::hidden('fecha', date('Y-m-d')) }}
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-between">
-                            <div class="col-md-10">
-                                <h4>Orden de Pedido #{{ $numero_orden }}</h4>
-                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true,]) !!} <i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i></h6>
+                            <div class="col-md-8">
+                                <h4>Adquisición #{{ $numero_orden }}</h4>
+                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true]) !!} <i class="fa-regular fa-calendar-days datepicker-2"
+                                        id="fecha"></i></h6>
                             </div>
-
+                            @include('adquisiciones.partials.boton_pedido_completo')
                             <div class="col-md-2 ">
                                 <button class="btn btn-dark btn-options btn-block" form="form_order_pedido">Guardar</button>
                             </div>
@@ -23,33 +45,11 @@
                 </ul>
                 <div class="card-body">
                     @include('partials.alerts')
-                    {!! Form::open([
-                        'route' => [
-                            'proyecto.adquisiciones.store',
-                            [
-                                'tipo' => $tipo,
-                                'tipo_id' => $tipo_id,
-                                'tipo_adquisicion' => $tipo_adquisicion->id,
-                                'tipo_etapa' => $tipo_etapa->id,
-                                'proyecto' => $proyecto->id,
-                            ],
-                        ],
-                        'class' => 'form-horizontal',
-                        'autocomplete' => 'off',
-                        'enctype' => 'multipart/form-data',
-                        'id' => 'form_order_pedido',
-                    ]) !!}
-                    {{ Form::hidden('numero_pedido', $numero_orden) }}
-                    {{ Form::hidden('proyecto_id', $proyecto->id) }}
-                    {{ Form::hidden('tipo_adquisicion', $tipo_adquisicion->id) }}
-                    {{ Form::hidden('tipo_etapa', $tipo_etapa->id) }}
-                    {{ Form::hidden('fecha', date('Y-m-d')) }}
-
                     @include('adquisiciones.partials.form')
-
-                    {!! Form::close() !!}
                 </div>
             </div>
+            {!! Form::close() !!}
+
         </div>
     </section>
 

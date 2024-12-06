@@ -33,6 +33,30 @@
         </div>
     </div>
 
+    {{ Form::hidden('slug_adquisicion', strtoupper($tipo_etapa->slug)) }}
+    @if (strtoupper($tipo_etapa->slug) == 'SERVICIOS')
+        <div class="row">
+            <div class="col-sm-2">
+                <div class="form-group">
+                    {{ Form::label('', 'Unidad de Medida', ['class' => 'col-form-label']) }}
+                    <select name="unidad" id="unidad_medida" class="form-control" data-placeholder="selecciona opción">
+                        <option></option>
+                        @foreach ($unidad_medidas as $id => $nombre)
+                            <option value="{{ $id }}">{{ $nombre }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-sm-2">
+                <div class="form-group">
+                    {{ Form::label('', 'Precio', ['class' => 'col-form-label']) }}
+                    {{ Form::text('precio_unitario', old('precio_unitario', $orden_pedido->precio), ['class' => 'form-control currency']) }}
+                </div>
+            </div>
+        </div>
+    @endif
+
 
     <div class="form-group">
         <button type="button" class="btn btn-dark" id="add-producto-adquisicion">Agregar</button>
@@ -50,7 +74,6 @@
 
 </fieldset>
 
-
 <div class="table-responsive">
     <table class="table table-bordered table-hover">
         <thead>
@@ -58,8 +81,17 @@
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Cantidad</th>
-                <th scope="col" class="col-gasolina" style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', '!=', null) ? '' : 'none' }}">KM</th>
+                @if (strtoupper($tipo_etapa->slug) == 'SERVICIOS')
+                    <th scope="col">Unidad</th>
+                    <th scope="col">Valor</th>
+                @endif
+                <th scope="col" class="col-gasolina"
+                    style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', '!=', null) ? '' : 'none' }}">
+                    KM</th>
                 <th scope="col">Necesidad</th>
+                @if (strtoupper($tipo_etapa->slug) == strtoupper('meteriales.herramientas'))
+                    <th scope="col" class="text-center">Inventario</th>
+                @endif
                 <th class="table-actions"></th>
             </tr>
         </thead>
@@ -79,7 +111,16 @@
                                     class="fa-solid fa-xmark"></i></button>
                         </div>
                     </td>
-                    <td class="edit-item col-gasolina" style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', null) ? 'none' : '' }}">
+
+                    @if (strtoupper($tipo_etapa->slug) == 'SERVICIOS')
+                        <td>{{ $element->unidad_medida->descripcion }}</td>
+                        <td>{{ number_format($element->valor, 2) }} </td>
+                        {{ Form::hidden('unidad_medida[]', $element->unidad_medida_id) }}
+                        {{ Form::hidden('precio[]', $element->valor) }}
+                    @endif
+
+                    <td class="edit-item col-gasolina"
+                        style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', null) ? 'none' : '' }}">
                         <span>{{ $element->kilometraje }}</span>
                         <div class="d-flex align-items-center hidden">
                             <input type="text" class="form-control mr-2" name="km[]"
@@ -101,6 +142,19 @@
                                     class="fa-solid fa-xmark"></i></button>
                         </div>
                     </td>
+                    @if (strtoupper($tipo_etapa->slug) == strtoupper('meteriales.herramientas'))
+                        <td class="align-middle">
+                            <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
+                                {{ Form::hidden('inventario[' . $index . ']', 0) }}
+                                <input class="tgl tgl-skewed inventario" name="inventario[{{ $index }}]"
+                                    id="cb3-{{ $index }}" type="checkbox" value="0"
+                                    {{ isset($orden_pedido->orden_recepcion->inventario) && $orden_pedido->orden_recepcion->inventario->pluck('producto_id')->contains($element->articulo_id) ? 'checked' : '' }}
+                                    {{ isset($orden_pedido->orden_recepcion) && !$orden_pedido->orden_recepcion->editar ? 'disabled' : '' }} />
+                                <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI"
+                                    for="cb3-{{ $index }}"></label>
+                            </div>
+                        </td>
+                    @endif
                     <td class="align-middle table-actions">
                         <div class="action-buttons">
                             <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
@@ -118,4 +172,15 @@
 
         </tbody>
     </table>
+
+    @if (isset($orden_pedido->orden_recepcion->completado) && $orden_pedido->orden_recepcion->completado)
+        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+            <i class="fa-regular fa-triangle-exclamation fa-3x"></i>
+            <small class="mx-4">La orden de recepción fue completada. Por motivos de seguridad, si desea
+                actualizar la información, por favor solicite al administrador que habilite esta orden. Para
+                hacerlo, haga clic en el siguiente enlace: <a href="#" class="text-dark font-weight-bold">
+                    Solicitar
+                    edición de la orden.</a></small>
+        </div>
+    @endif
 </div>

@@ -29,25 +29,37 @@ class AdquisicionStoreRequest extends FormRequest
             'cantidad.*' => 'required',
             'necesidad' => 'required|array',
             'necesidad.*' => 'required',
+            'forma_pago' => 'required',
+            'proveedor' => 'required',
         ];
 
-        if (in_array('gasolina para camnioneta', $this->input('productos', []))) {
-            $rules['km'] = 'required|array'; // Asegura que km es un array
-            $rules['km.*'] = 'numeric|min:0'; // Aplica las reglas necesarias para cada valor en km
-        }else{
-            // Verificar si hay algún producto de tipo "gasolina" en el array de IDs
-            $hasGasolina = Articulo::whereIn('id', $this->input('productos', []))
-            ->where('descripcion', 'gasolina para camioneta')
-            ->exists();
-
-            // Si existe al menos un producto de tipo "gasolina", aplica la validación a `km`
-            if ($hasGasolina) {
+        if (!empty($this->input('productos'))) {
+            if (in_array('gasolina para camnioneta', $this->input('productos', []))) {
                 $rules['km'] = 'required|array'; // Asegura que km es un array
                 $rules['km.*'] = 'numeric|min:0'; // Aplica las reglas necesarias para cada valor en km
+            } else {
+                // Verificar si hay algún producto de tipo "gasolina" en el array de IDs
+                $hasGasolina = Articulo::whereIn('id', $this->input('productos', []))
+                    ->where('descripcion', 'gasolina para camioneta')
+                    ->exists();
+
+                // Si existe al menos un producto de tipo "gasolina", aplica la validación a `km`
+                if ($hasGasolina) {
+                    $rules['km'] = 'required|array'; // Asegura que km es un array
+                    $rules['km.*'] = 'numeric|min:0'; // Aplica las reglas necesarias para cada valor en km
+                }
             }
         }
 
 
         return $rules;
+    }
+
+    public function messages()
+    {
+        return [
+            'forma_pago.required' => 'Selecione la forma de pago.',
+            'proveedor.required' => 'Seleccione el proveedor.',
+        ];
     }
 }
