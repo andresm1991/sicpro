@@ -119,8 +119,35 @@ $(function () {
         var producto = $('#productos option:selected').text();
         var cantidad = $('#cantidad').val();
         var necesidad = $('#necesidad option:selected').text();
+        var tipo_etapa = $('input:hidden[name=slug_adquisicion]').val();
+        var td_servicios = '';
+        var td_inventario = '';
 
-        if (producto_id == '' || cantidad == '' || necesidad == '') {
+        if (tipo_etapa == 'SERVICIOS') {
+            var unidad_medida_id = $('#unidad_medida').val();
+            var unidad_medida_text = $('#unidad_medida option:selected').text();
+            var precio = $('input:text[name=precio_unitario]').val();
+
+            td_servicios = `<td>
+                ${unidad_medida_text}
+                <input type="hidden" name="unidad_meddia[]" value="${unidad_medida_id}">
+            </td>
+            <td class="edit-item">
+                    <span>${precio}</span>
+                    <div class="d-flex align-items-center hidden">
+                        <input type="text" class="form-control mr-2 input-double" name="precio[]"
+                            value="${precio}">
+                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
+                                class="fa-solid fa-check"></i></button>
+                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
+                                class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </td>
+            `;
+        }
+
+
+        if (producto_id == '' || cantidad == '' || necesidad == '' || (typeof unidad_medida_id != 'undefined' && unidad_medida_id == '') || (typeof precio != 'undefined' && precio == '')) {
             Toast.fire({
                 icon: 'error',
                 title: 'Complete los campos para agregar productos a su pedido.',
@@ -129,8 +156,19 @@ $(function () {
         }
 
         numeroFila = $('.elementos-agregados').length + 1;
-        
-        
+
+        if (tipo_etapa == 'METERIALES.HERRAMIENTAS') {
+            td_inventario = `<td class="align-middle">
+                    <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
+                    <input type="hidden" name="inventario[${numeroFila - 1}]" value="0">
+
+                    <input class="tgl tgl-skewed inventario" name="inventario[${numeroFila - 1}]" id="cb3-${numeroFila - 1}" type="checkbox" value="0"/>
+                        <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="cb3-${numeroFila - 1}"></label>
+                        
+                    </div>
+                </td>`;
+        }
+
         // Crear una nueva fila con los datos
         var nuevaFila = `
             <tr class="elementos-agregados">
@@ -147,6 +185,7 @@ $(function () {
                                 class="fa-solid fa-xmark"></i></button>
                     </div>
                 </td>
+                ${td_servicios}
                 <td class="edit-item col-gasolina">
                 <span>0</span>
                 <div class="d-flex align-items-center hidden">
@@ -169,6 +208,7 @@ $(function () {
                                 class="fa-solid fa-xmark"></i></button>
                     </div>
                 </td>
+                ${td_inventario}
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
                         <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto" id=""><i class="fa-solid fa-trash-can"></i></a>
@@ -184,10 +224,13 @@ $(function () {
         $('#tr-default').hide();
 
         // Condición para mostrar u ocultar la columna de gasolina en todas las filas
-    if (producto === 'gasolina para camioneta') {
-        $('th.col-gasolina').show();
-        $('td.col-gasolina').show();
-    }
+        if (producto === 'gasolina para camioneta') {
+            $('th.col-gasolina').show();
+            $('td.col-gasolina').show();
+        } else {
+            $('th.col-gasolina').hide();
+            $('td.col-gasolina').hide();
+        }
         // Limpiar campos 
         clearInputs();
 
@@ -262,7 +305,7 @@ $(function () {
         $('input[name=fecha]').val(fechaSeleccionada);
     });
 
-    $('.inventario').on('change', function () {
+    $(document).on('change', '.inventario', function () {
         if ($(this).is(':checked')) {
             $(this).val(1);
         } else {
@@ -271,20 +314,20 @@ $(function () {
     });
 
     // Maneja el evento change de select2
-    $('#productos').on('change', function() {
+    $('#productos').on('change', function () {
         var selected = $('#productos option:selected').text();
 
         if (selected === 'gasolina para camioneta') {
             // Muestra la columna si es "Gasolina para Camioneta"
             $('th.col-gasolina, td.col-gasolina').show();
-        } else if(selected != '' && selected != 'gasolina para camioneta'){
+        } else if (selected != '' && selected != 'gasolina para camioneta') {
             // Oculta la columna para cualquier otra opción
             $('th.col-gasolina, td.col-gasolina').hide();
 
         }
     });
 
-    
+
     /**
      * Funciones
      */
@@ -292,5 +335,11 @@ $(function () {
         $('#productos').val(null).trigger('change');
         $('#cantidad').val("");
         $('#necesidad').val(null).trigger('change');
+
+        var tipo_etapa = $('input:hidden[name=slug_adquisicion]').val();
+        if (tipo_etapa == 'SERVICIOS') {
+            $('#unidad_medida').val(null).trigger('change');
+            $('input:text[name=precio_unitario]').val("");
+        }
     }
 });
