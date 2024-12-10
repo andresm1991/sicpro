@@ -46,6 +46,30 @@ function cargarBancos() {
             $select.selectpicker('refresh');
         }
     });
+}   
+
+// **Mensajes sweet Alerts **
+function message(){
+    return new Promise((resolve, reject) => {
+        Swal.fire({
+            title: '¿Está seguro?',
+            text: "Esta acción no se podrá revertir.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, deseo continuar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                resolve(true); // Resuelve la promesa con "true" si se confirma
+            } else {
+                resolve(false); // Resuelve la promesa con "false" si se cancela
+            }
+        }).catch((error) => {
+            reject(error); // Rechaza la promesa si hay un error
+        });
+    });
 }
 
 // Funcion para cargar tipo de cuentas dentro del select

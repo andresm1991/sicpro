@@ -37,4 +37,54 @@ $(function () {
             console.log(errors)
         });
     });
+
+    $(document).on('change', '.pagado', function () {
+        const $checkbox = $(this); // Almacenar el elemento actual
+        var id_pago = $(this).val();
+
+        if ($checkbox.is(':checked')) {
+            message().then((resultado) => {
+                if (resultado) {
+                    $.ajax({
+                        url:'/pago_orden_trabajo/'+id_pago,
+                        headers: { 'X-CSRF-TOKEN': csrf },
+                        type: 'PUT',
+                        data: {'id_pago':id_pago},
+                        dataType: 'json',
+                    })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $checkbox.attr('disabled', true)
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                            $checkbox.prop('checked', false); // Desmarcar el checkbox
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción solicitada, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                        $checkbox.prop('checked', false); // Desmarcar el checkbox
+                    });
+                } else {
+                    $checkbox.prop('checked', false); // Desmarcar el checkbox
+                }
+            }).catch((error) => {
+                console.error('Ocurrió un error:', error);
+                $checkbox.prop('checked', false); // Desmarcar el checkbox
+            });
+        }
+    });
 });
