@@ -7,8 +7,10 @@ use App\Models\Adquisicion;
 use App\Models\AdquisicionDetalle;
 use App\Models\Articulo;
 use App\Models\CatalogoDato;
+use App\Models\Contratista;
 use App\Models\Inventario;
 use App\Models\OrdenRecepcion;
+use App\Models\PagoOrdenTrabajoContratista;
 use App\Models\Proveedor;
 use App\Models\Proyecto;
 use App\Services\LogService;
@@ -360,6 +362,60 @@ class AdministrativoController extends Controller
             DB::rollBack();
             LogService::log('error', 'Error al crear orden de recepción', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
+    }
+
+
+    public function indexContratistas () {
+        $title_page = 'Contratistas';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Administrativo', 'url' => route('administrativo.index')],
+            ['name' => 'Contratistas', 'url' => '']
+        ];
+
+        $orden_trabajos_pendientes = Contratista::where('estado_id', 38)->orderBy('id', 'desc')->paginate(15);
+        $orden_trabajos_completas = Contratista::where('estado_id', 37)->orderBy('id', 'desc')->paginate(15);
+
+        $route_params = ['orden_trabajos_pendientes' => $orden_trabajos_pendientes, 'orden_trabajos_completas' => $orden_trabajos_completas, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        return view('administrativo.contratista.index', $route_params);
+    }
+
+    public function detalleContratistas(Contratista $contratista){
+        $title_page = 'Detalle Orden de trabajo';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Contratistas', 'url' => route('administrativo.index.contratistas')],
+            ['name' => 'Detalle', 'url' => '']
+        ];
+
+        $detalle_pagos = PagoOrdenTrabajoContratista::where('contratista_id', $contratista->id)->orderBy('fecha', 'desc')->paginate(15);
+
+        $route_params = ['contratista'=>$contratista ,'detalle_pagos' => $detalle_pagos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        return view('administrativo.contratista.detalle_pagos', $route_params);
+    }
+
+    public function pagoOrdenTrabajo(Request $request, PagoOrdenTrabajoContratista $pago){
+        if($request->ajax()){
+            try{
+                DB::beginTransaction();
+                $pago->pagado = true;
+                if($pago->save()){
+                    DB::commit();
+                    LogService::log('info', 'Pago de contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
+                    return response()->json(['success' => true, 'message' => 'Pago registrado con éxito.']);    
+                }else{
+                    DB::rollBack();
+                    LogService::log('error', 'Error al actualizar el pago del contratista', ['user_id' => auth()->id(), 'action' => 'update']);
+                    return response()->json(['success' => false, 'message' => 'Opps, ocurrió un error al intentar registrar el pago.']);    
+                }
+            }catch (Throwable $e) {
+                DB::rollBack();
+                LogService::log('error', 'Error al actualizar el pago', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+                return response()->json(['success' => false, 'message' => 'Error al intentar registrar el pago']);
+            }
         }
     }
 }

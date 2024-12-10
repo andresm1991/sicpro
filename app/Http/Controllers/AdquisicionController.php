@@ -438,9 +438,8 @@ class AdquisicionController extends Controller
                     $route_parametres = array_merge($route_parametres, ['pedido' => $pedido->id]);
                     $editar_button = "<a href='" . route('proyecto.adquisiciones.orden.pedido.edit', $route_parametres) . "' class='dropdown-item'>Editar</a>";
                     $destroy_button = "<a href='#' class='dropdown-item eliminar-pedido' id='" . $pedido->id . "'>Eliminar</a>";
-                    $pdf_orden_adquisicion_button = "<a href='" . route('pdf.adquisicion', $pedido->id) . "' class='dropdown-item'>PDF Orden Pedido</a>";
-                    $pdf_orden_recepcion_button = "<a href='" . route('pdf.recepcion', $pedido->id) . "' class='dropdown-item'>PDF Orden Recepción</a>";
-                    $orden_recepcion_button = "<a href='" . route('proyecto.adquisiciones.orden.recepcion', $route_parametres) . "' class='dropdown-item'>Orden de Recepción</a>";
+                    $pdf_orden_adquisicion_button = "<a href='" . route('pdf.adquisicion', $pedido->id) . "' class='dropdown-item' target='_blank'>PDF Orden Pedido</a>";
+                    $pdf_orden_recepcion_button = "<a href='" . route('pdf.recepcion', $pedido->id) . "' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
 
                     $estado = $pedido->estado == 'Finalizado' || $pedido->estado == 'Completado' ? '<span class="badge badge-success">Finalizado</span>' : '<span class="badge badge-warning">' . $pedido->estado . '</span>';
                     $output .= '<tr id="' . $pedido->id . '">' .
@@ -451,7 +450,7 @@ class AdquisicionController extends Controller
                         '<td class="align-middle">' . $pedido->tipo_etapa->descripcion . '</td>' .
                         '<td class="align-middle">' . $estado . '</td>' .
                         '<td class="align-middle align-middle text-right text-truncate">' .
-                        '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar_button . $destroy_button . $pdf_orden_adquisicion_button . $pdf_orden_recepcion_button . $orden_recepcion_button . '"><i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                        '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar_button . $destroy_button . $pdf_orden_adquisicion_button . $pdf_orden_recepcion_button . '"><i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>' .
                         '</td>' .
                         '</tr>';

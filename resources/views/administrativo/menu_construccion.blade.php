@@ -22,6 +22,14 @@
                         <span>Adquisiciones Administrativas</span>
                     </a>
                 </div>
+
+                <div class="max-auto">
+                    <a href="{{ route('administrativo.index.contratistas') }}"
+                        class="nodo">
+                        <img src="{{ asset('images/icons/trabajadores.png') }}" alt="">
+                        <span>Contratistas</span>
+                    </a>
+                </div>
             </div>
         </div>
     </section>

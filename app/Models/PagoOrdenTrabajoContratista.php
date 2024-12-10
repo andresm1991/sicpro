@@ -9,7 +9,7 @@ class PagoOrdenTrabajoContratista extends Model
 {
     use HasFactory;
     protected $table = 'pagos_orden_trabajo_contratista';
-    protected $fillable = ['fecha', 'contratista_id', 'tipo_pago', 'forma_pago', 'valor', 'detalle'];
+    protected $fillable = ['fecha', 'contratista_id', 'tipo_pago', 'forma_pago', 'valor', 'detalle', 'pagado'];
 
     public function contratista() {
         return $this->belongsTo(Contratista::class, 'contratista_id');
