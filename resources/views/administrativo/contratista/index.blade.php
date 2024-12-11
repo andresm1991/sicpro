@@ -33,4 +33,5 @@
 
 @section('scripts')
     
+    <script type="text/javascript" src="{{ asset('js/administrativo_scripts.js') }}"></script>
 @endsection

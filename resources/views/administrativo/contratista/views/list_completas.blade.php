@@ -4,12 +4,12 @@
             <div class="col-12 ">
                 <div class="form-group form-search form-icon col-md-6 col-12 p-0">
                     <i class="fal fa-search fa-lg form-control-icon"></i>
-                    <input type="text" name="orden_contratista_search" class="form-control form-control-round"
+                    <input type="text" name="orden_contratista_search" id="pagado" class="form-control form-control-round"
                         placeholder="Buscar....">
                 </div>
             </div>
         </div>
-        <div class="table-responsive" id="table">
+        <div class="table-responsive" id="table-pagado">
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>

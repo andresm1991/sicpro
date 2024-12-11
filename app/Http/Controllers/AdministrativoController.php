@@ -34,7 +34,8 @@ class AdministrativoController extends Controller
         return view('administrativo.menu_administrativo', compact('title_page', 'breadcrumbs'));
     }
 
-    public function menuConstruccion () {
+    public function menuConstruccion()
+    {
         $title_page = 'Contrucciones PrimeJP';
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -50,14 +51,14 @@ class AdministrativoController extends Controller
         $title_page = ($tipo == 'operativo') ? 'Adquisiciones Operativas' : 'Adquisiciones Administrativas';
         if ($tipo == 'operativo') {
             $adquisiciones_pendientes = Adquisicion::where('tipo_adquisicion', $tipo)
-            ->where('estado', 'Finalizado')
-            ->orderBy('fecha', 'desc')->paginate(15);
-        }else{
+                ->where('estado', 'Finalizado')
+                ->orderBy('fecha', 'desc')->paginate(15);
+        } else {
             $adquisiciones_pendientes = Adquisicion::where('tipo_adquisicion', $tipo)
-            ->where('estado', 'En Proceso')
-            ->orderBy('fecha', 'desc')->paginate(15);
+                ->where('estado', 'En Proceso')
+                ->orderBy('fecha', 'desc')->paginate(15);
         }
-        
+
 
         $adquisiciones_completas = Adquisicion::where('tipo_adquisicion', $tipo)
             ->where('estado', 'Completado')
@@ -83,7 +84,7 @@ class AdministrativoController extends Controller
         ];
 
         if ($tipo == 'operativo') {
-           
+
 
             $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
                 return $detalle->cantidad_recibida * $detalle->valor;
@@ -196,10 +197,9 @@ class AdministrativoController extends Controller
             DB::commit();
 
             // Actualizar el estado a completado 
-            if ($estado) {    
+            if ($estado) {
                 $adquisicion->estado = "Completado";
                 $adquisicion->save();
-                
             }
 
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
@@ -365,8 +365,12 @@ class AdministrativoController extends Controller
         }
     }
 
+    /**
+     * Contratistas
+     */
 
-    public function indexContratistas () {
+    public function indexContratistas()
+    {
         $title_page = 'Contratistas';
 
         $breadcrumbs = [
@@ -375,14 +379,26 @@ class AdministrativoController extends Controller
             ['name' => 'Contratistas', 'url' => '']
         ];
 
-        $orden_trabajos_pendientes = Contratista::where('estado_id', 38)->orderBy('id', 'desc')->paginate(15);
-        $orden_trabajos_completas = Contratista::where('estado_id', 37)->orderBy('id', 'desc')->paginate(15);
+        $orden_trabajos_pendientes = Contratista::with(['estado'])
+            ->WhereHas('estado', function ($q) {
+                $q->where('slug', 'estados.contratistas.proceso');
+            })
+            ->orderBy('fecha', 'asc')
+            ->paginate(15);
+
+        $orden_trabajos_completas = Contratista::with(['estado'])
+            ->WhereHas('estado', function ($q) {
+                $q->where('slug', 'estados.contratistas.pagado');
+            })
+            ->orderBy('fecha', 'asc')
+            ->paginate(15);
 
         $route_params = ['orden_trabajos_pendientes' => $orden_trabajos_pendientes, 'orden_trabajos_completas' => $orden_trabajos_completas, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
         return view('administrativo.contratista.index', $route_params);
     }
 
-    public function detalleContratistas(Contratista $contratista){
+    public function detalleContratistas(Contratista $contratista)
+    {
         $title_page = 'Detalle Orden de trabajo';
 
         $breadcrumbs = [
@@ -393,29 +409,74 @@ class AdministrativoController extends Controller
 
         $detalle_pagos = PagoOrdenTrabajoContratista::where('contratista_id', $contratista->id)->orderBy('fecha', 'desc')->paginate(15);
 
-        $route_params = ['contratista'=>$contratista ,'detalle_pagos' => $detalle_pagos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        $route_params = ['contratista' => $contratista, 'detalle_pagos' => $detalle_pagos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
         return view('administrativo.contratista.detalle_pagos', $route_params);
     }
 
-    public function pagoOrdenTrabajo(Request $request, PagoOrdenTrabajoContratista $pago){
-        if($request->ajax()){
-            try{
+    public function pagoOrdenTrabajo(Request $request, PagoOrdenTrabajoContratista $pago)
+    {
+        if ($request->ajax()) {
+            try {
                 DB::beginTransaction();
                 $pago->pagado = true;
-                if($pago->save()){
+                if ($pago->save()) {
                     DB::commit();
                     LogService::log('info', 'Pago de contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
-                    return response()->json(['success' => true, 'message' => 'Pago registrado con éxito.']);    
-                }else{
+                    return response()->json(['success' => true, 'message' => 'Pago registrado con éxito.']);
+                } else {
                     DB::rollBack();
                     LogService::log('error', 'Error al actualizar el pago del contratista', ['user_id' => auth()->id(), 'action' => 'update']);
-                    return response()->json(['success' => false, 'message' => 'Opps, ocurrió un error al intentar registrar el pago.']);    
+                    return response()->json(['success' => false, 'message' => 'Opps, ocurrió un error al intentar registrar el pago.']);
                 }
-            }catch (Throwable $e) {
+            } catch (Throwable $e) {
                 DB::rollBack();
                 LogService::log('error', 'Error al actualizar el pago', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
                 return response()->json(['success' => false, 'message' => 'Error al intentar registrar el pago']);
             }
+        }
+    }
+
+    public function buscarOrdenTrabajo(Request $request)
+    {
+        if ($request->ajax()) {
+            $output = "";
+            $buscar = $request->buscar;
+            $tipo = $request->tipo;
+            $orden_trabajos = Contratista::with(['proveedor', 'estado'])
+                ->whereHas('estado', function ($q) use ($tipo) {
+                    $q->where('slug', 'estados.contratistas.' . $tipo);
+                })
+                ->where(function ($query) use ($buscar) {
+                    $query->whereRaw("CONCAT(DATE_FORMAT(fecha, '%Y%m%d'), '-', LPAD(id, 3, '0')) LIKE ?", ['%' . $buscar . '%'])
+                        ->orWhere('fecha', 'LIKE', '%' . $buscar . '%')
+                        ->orWhereHas('proveedor', function ($q) use ($buscar) {
+                            $q->where('razon_social', 'LIKE', '%' . $buscar . '%');
+                        });
+                })
+                ->orderBy('fecha', 'asc')
+                ->get();
+
+            foreach ($orden_trabajos as $orden_trabajo) {
+                $output .= '<tr id="' . $orden_trabajo->id . '">' .
+                    '<td class="align-middle">' . numeroOrden($orden_trabajo, false) . '</td>' .
+                    '<td class="align-middle text-uppercase">' . $orden_trabajo->proveedor->razon_social . '</td>' .
+                    '<td class="align-middle text-uppercase">' . $orden_trabajo->articulo->descripcion . '</td>' .
+                    '<td class="align-middle">$' . number_format($orden_trabajo->total_contratistas, 2) . '</td>' .
+                    '<td class="align-middle">$' . number_format($orden_trabajo->pagos_contratistas, 2) . '</td>' .
+                    '<td class="align-middle">$ ' . number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas), 2) . '</td>' .
+                    '<td class="align-middle text-right text-truncate">' .
+                    '<a href="' . route('administrativo.contratista.detalle', $orden_trabajo->id) . '" class="btn btn-outline-dark">Ver Detalle</a>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="8" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
         }
     }
 }

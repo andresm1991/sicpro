@@ -169,6 +169,7 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('/contratistas', [AdministrativoController::class, 'indexContratistas'])->name('index.contratistas');
         Route::get('/contratistas/detalle/{contratista}', [AdministrativoController::class, 'detalleContratistas'])->name('contratista.detalle');
+        Route::get('/buscar-orden-trabajo', [AdministrativoController::class, 'buscarOrdenTrabajo']);
     });
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
