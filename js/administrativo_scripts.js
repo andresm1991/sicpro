@@ -38,6 +38,10 @@ $(function () {
         });
     });
 
+    /**
+     * Scripts Contratistas 
+     */
+    // **Actualizar el estado de pagado**
     $(document).on('change', '.pagado', function () {
         const $checkbox = $(this); // Almacenar el elemento actual
         var id_pago = $(this).val();
@@ -86,5 +90,28 @@ $(function () {
                 $checkbox.prop('checked', false); // Desmarcar el checkbox
             });
         }
+    });
+
+    // **Buscar contratista**
+    $('input:text[name=orden_contratista_search]').on('keyup', function () {
+        var $value = $(this).val();
+        var $tipo = $(this).attr('id');
+
+        $.ajax({
+            url: '/administrativo/buscar-orden-trabajo',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'buscar': $value, 'tipo': $tipo },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                $('#table-'+$tipo+' tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
     });
 });
