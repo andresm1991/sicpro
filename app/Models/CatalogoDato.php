@@ -43,4 +43,10 @@ class CatalogoDato extends Model
         $catalogo = CatalogoDato::where('slug', $slug)->first();
         return $catalogo->id;
     }
+
+    public static function getIdCatalogo($slug)
+    {
+        $catalogo = CatalogoDato::where('slug', $slug)->first();
+        return $catalogo->id;
+    }
 }

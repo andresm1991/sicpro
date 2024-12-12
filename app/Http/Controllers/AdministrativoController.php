@@ -420,6 +420,13 @@ class AdministrativoController extends Controller
                 DB::beginTransaction();
                 $pago->pagado = true;
                 if ($pago->save()) {
+                    $contratista = Contratista::find($pago->contratista_id);
+                    $total_pagado = $pago::where('pagado', true)->sum('valor');
+                    if($contratista->total_contratistas == $total_pagado){
+                        $estado_id = CatalogoDato::getIdCatalogo('estados.contratistas.pagado');
+                        $contratista->estado_id = $estado_id;
+                        $contratista->save();
+                    }
                     DB::commit();
                     LogService::log('info', 'Pago de contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
                     return response()->json(['success' => true, 'message' => 'Pago registrado con éxito.']);
