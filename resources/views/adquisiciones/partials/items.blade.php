@@ -33,8 +33,9 @@
         </div>
     </div>
 
-    {{ Form::hidden('slug_adquisicion', strtoupper($tipo_etapa->slug)) }}
-    @if (strtoupper($tipo_etapa->slug) == 'SERVICIOS')
+    {{ Form::hidden('slug_adquisicion', isset($tipo_etapa->slug) ? strtoupper($tipo_etapa->slug) : '') }}
+
+    @if (isset($tipo_etapa->slug) && strtoupper($tipo_etapa->slug) == 'SERVICIOS')
         <div class="row">
             <div class="col-sm-2">
                 <div class="form-group">
@@ -81,7 +82,7 @@
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
                 <th scope="col">Cantidad</th>
-                @if (strtoupper($tipo_etapa->slug) == 'SERVICIOS')
+                @if (isset($tipo_etapa->slug) && strtoupper($tipo_etapa->slug) == 'SERVICIOS')
                     <th scope="col">Unidad</th>
                     <th scope="col">Valor</th>
                 @endif
@@ -89,7 +90,7 @@
                     style="display:{{ $orden_pedido->adquisiciones_detalle->firstWhere('kilometraje', '!=', null) ? '' : 'none' }}">
                     KM</th>
                 <th scope="col">Necesidad</th>
-                @if (strtoupper($tipo_etapa->slug) == strtoupper('meteriales.herramientas'))
+                @if (isset($tipo_etapa->slug) && strtoupper($tipo_etapa->slug) == strtoupper('meteriales.herramientas'))
                     <th scope="col" class="text-center">Inventario</th>
                 @endif
                 <th class="table-actions"></th>
