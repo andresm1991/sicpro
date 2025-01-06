@@ -9,6 +9,7 @@ use App\Models\Articulo;
 use App\Models\CatalogoDato;
 use App\Models\Contratista;
 use App\Models\Inventario;
+use App\Models\ManoObra;
 use App\Models\OrdenRecepcion;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Models\Proveedor;
@@ -85,11 +86,11 @@ class AdministrativoController extends Controller
 
         if ($tipo == 'operativo') {
 
-
             $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
-                return $detalle->cantidad_recibida * $detalle->valor;
+                $iva = $detalle->producto->iva ?? 0;
+                $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
+                return $total;
             });
-
             return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'title_page', 'breadcrumbs'));
         } else {
             if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado) {
@@ -106,10 +107,14 @@ class AdministrativoController extends Controller
     }
     public function actualizarAdquisicion(Request $request, $tipo, Adquisicion $adquisicion)
     {
-        if ($tipo == 'operativo') {
-            return $this->actualizarAdquisicionOperativa($request, $tipo, $adquisicion);
+        if ($adquisicion->estado == 'Completado') {
+            return redirect()->back()->with('error', 'No es posible actualizar la información porque ya está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
         } else {
-            return $this->actualizarAdquisicionAdministrativa($request, $tipo, $adquisicion);
+            if ($tipo == 'operativo') {
+                return $this->actualizarAdquisicionOperativa($request, $tipo, $adquisicion);
+            } else {
+                return $this->actualizarAdquisicionAdministrativa($request, $tipo, $adquisicion);
+            }
         }
     }
 
@@ -422,7 +427,7 @@ class AdministrativoController extends Controller
                 if ($pago->save()) {
                     $contratista = Contratista::find($pago->contratista_id);
                     $total_pagado = $pago::where('pagado', true)->sum('valor');
-                    if($contratista->total_contratistas == $total_pagado){
+                    if ($contratista->total_contratistas == $total_pagado) {
                         $estado_id = CatalogoDato::getIdCatalogo('estados.contratistas.pagado');
                         $contratista->estado_id = $estado_id;
                         $contratista->save();
@@ -485,5 +490,38 @@ class AdministrativoController extends Controller
             }
             return Response($output);
         }
+    }
+
+    /** Mano de Obra */
+    public function indexManoObra()
+    {
+        $title_page = 'Mano de Obra';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Administrativo', 'url' => route('administrativo.index')],
+            ['name' => 'Contratistas', 'url' => '']
+        ];
+
+        $mano_obra_pendientes = ManoObra::orderBy('semana', 'asc')->paginate(15);
+
+        $route_params = ['mano_obra_pendientes' => $mano_obra_pendientes, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        return view('administrativo.mano_obra.index', $route_params);
+    }
+
+    public function detalleManoObra(ManoObra $mano_obra)
+    {
+        $title_page = 'Mano de Obra - Detalle';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'mano de obra', 'url' => route('administrativo.index.mano.obra')],
+            ['name' => 'detalle', 'url' => '']
+        ];
+
+        $detalle_mano_obra =  $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id);
+
+        $route_params = ['mano_obra' => $mano_obra, 'detalle_mano_obra' => $detalle_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        return view('administrativo.mano_obra.detalle', $route_params);
     }
 }

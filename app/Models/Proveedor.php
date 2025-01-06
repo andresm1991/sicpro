@@ -28,7 +28,13 @@ class Proveedor extends Model
         return $this->hasMany(ProveedorArticulo::class);
     }
 
-    public function contratistas(){
+    public function contratistas()
+    {
         return $this->hasMany(Contratista::class);
+    }
+
+    public function prestamos()
+    {
+        return $this->hasMany(Prestamo::class);
     }
 }

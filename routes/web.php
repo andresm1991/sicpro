@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\ManoObraController;
+use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\SistemaController;
@@ -140,7 +141,6 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/buscar', [InventarioController::class, 'buscar']);
             Route::delete('/detalle/eliminar/{id}', [InventarioController::class, 'destroy']);
             Route::delete('/eliminar/{id}', [InventarioController::class, 'destroyInventario']);
-            
         });
 
         // Configuraciones
@@ -154,10 +154,10 @@ Route::group(['middleware' => ['auth']], function () {
     /**
      * Rutas Modulos Administrativo
      */
-    Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function(){
+    Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function () {
         Route::get('/', [AdministrativoController::class, 'index'])->name('index');
         Route::get('/construccion', [AdministrativoController::class, 'menuConstruccion'])->name('menu.construccion');
-        
+
         Route::get('/adquisiciones/{tipo}', [AdministrativoController::class, 'adquisiciones'])->name('adquisiciones');
         Route::get('/adquisicion/{tipo}/{adquisicion}/editar', [AdministrativoController::class, 'editarAdquisicion'])->name('adquisicion.edit');
         Route::get('/adquisicion/{tipo}/{adquisicion}/recepcion', [AdministrativoController::class, 'recepcionAdquisicionAdministrativo'])->name('adquisicion.recepcion');
@@ -170,6 +170,17 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/contratistas', [AdministrativoController::class, 'indexContratistas'])->name('index.contratistas');
         Route::get('/contratistas/detalle/{contratista}', [AdministrativoController::class, 'detalleContratistas'])->name('contratista.detalle');
         Route::get('/buscar-orden-trabajo', [AdministrativoController::class, 'buscarOrdenTrabajo']);
+        /** MANO DE OBRA ADMINSTRATIVO */
+        Route::get('/mano-de-obra', [AdministrativoController::class, 'indexManoObra'])->name('index.mano.obra');
+        Route::get('/mano-de-obra/detalle/{mano_obra}', [AdministrativoController::class, 'detalleManoObra'])->name('mano.obra.detalle');
+
+
+        /**PRESTAMOS */
+        Route::group(['prefix' => 'prestamos', 'as' => 'prestamos.'], function () {
+            Route::get('/', [PrestamoController::class, 'index'])->name('index');
+            Route::post('/nuevo', [PrestamoController::class, 'create']);
+            Route::put('/actualizar/{prestamo}', [PrestamoController::class, 'update']);
+        });
     });
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
@@ -186,6 +197,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/tipo-cuenta', [CatalogoDatoController::class, 'getTipoCuentas']);
     Route::get('/articulos-proveedor', [ArticuloController::class, 'getArticulosProveedor']);
     Route::delete('/orden-trabajo/eliminar/{id}', [ContratistaController::class, 'eliminarOrdenTrabajo']);
+    Route::get('/proveedores', [ProveedorController::class, 'getProveedores']);
 
     Route::get('/no-access', function () {
         return view('errors.no-access');

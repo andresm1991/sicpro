@@ -23,7 +23,7 @@
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-8">
-                                <h4>Orden de Recepcion #{{ numeroOrden($adquisicion->orden_recepcion, false) }}</h4>
+                                <h4>Orden de Pedido #{{ $adquisicion->numero }}</h4>
                             </div>
 
                             <div class="col-md-2 ">
@@ -32,12 +32,19 @@
                                         <input type="checkbox" name="orden_completa" class="d-none" value="true"
                                             {{ $adquisicion->estado == 'Completado' ? 'checked' : '' }}
                                             {{ $tipo == 'operativo' && $adquisicion->estado == 'Completado' ? 'disabled' : '' }}>
-                                        <span class="text-center d-block py-3">{{ $adquisicion->tipo_etapa->descripcion == 'Servicios' ? 'Pedido Pagado': 'Pedido Completo'}} </span>
+                                        <span
+                                            class="text-center d-block py-3">{{ $adquisicion->tipo_etapa->descripcion == 'Servicios' ? 'Pedido Pagado' : 'Pedido Completo' }}
+                                        </span>
                                     </label>
                                 </div>
                             </div>
                             <div class="col-md-2 ">
-                                <button class="btn btn-dark btn-options btn-block">Guardar</button>
+                                @if ($adquisicion->estado == 'Completado')
+                                    <button type="button" class="btn btn-dark btn-options btn-block">Guardar</button>
+                                @else
+                                    <button class="btn btn-dark btn-options btn-block">Guardar</button>
+                                @endif
+
                             </div>
                         </div>
 

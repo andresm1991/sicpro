@@ -51,5 +51,5 @@
 
 @endif
 
-<label>Mostrando {{ $paginator->firstItem() }} a {{ $paginator->lastItem() }} de {{ $paginator->total() }}
+<label>Mostrando {{ $paginator->firstItem() ?? '0' }} a {{ $paginator->lastItem() ?? '0' }} de {{ $paginator->total() }}
     registros</label>

@@ -363,13 +363,137 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
-
+        
         CatalogoDato::create([
             'descripcion' => 'Pagado',
             'detalle' => '',
             'slug' => 'estados.contratistas.pagado',
             'padre_id' => 36,
+            'activo' => true,
+        ]);
+        */
+
+        /**Estados Prestamos */
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados Prestamos',
+            'detalle' => '',
+            'slug' => 'estados.prestamos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Pendiente',
+            'detalle' => '',
+            'slug' => 'estados.prestamos.pendiente',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Aprobado',
+            'detalle' => '',
+            'slug' => 'estados.prestamos.aprobado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Pagado',
+            'detalle' => '',
+            'slug' => 'estados.prestamos.pagado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Cancelado',
+            'detalle' => '',
+            'slug' => 'estados.prestamos.cancelado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        /**Estados Pagos Prestamos */
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados Pagos Prestamos',
+            'detalle' => '',
+            'slug' => 'estados.pagos.prestamos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Pendiente',
+            'detalle' => '',
+            'slug' => 'estados.pagos.prestamos.pendiente',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Aprobado',
+            'detalle' => '',
+            'slug' => 'estados.pagos.prestamos.aprobado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Rechazado',
+            'detalle' => '',
+            'slug' => 'estados.pagos.prestamos.rechazado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Postergado',
+            'detalle' => '',
+            'slug' => 'estados.pagos.prestamos.postergado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        /**Estados tipo de solicitud */
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados tipo de solicitud',
+            'detalle' => '',
+            'slug' => 'estados.tipo.solicitud.prestamos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Pausar Descuento',
+            'detalle' => '',
+            'slug' => 'estados.tipo.solicitud.prestamos.pausar.descuento',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Cambiar Monto',
+            'detalle' => '',
+            'slug' => 'estados.tipo.solicitud.prestamos.cambiar.monto',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        /** Metodos de pago Prestamo*/
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Metodo de Pagos',
+            'detalle' => '',
+            'slug' => 'metodos.pagos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Efectivo',
+            'detalle' => '',
+            'slug' => 'metodos.pagos.efectivo',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Transferencia',
+            'detalle' => '',
+            'slug' => 'metodos.pagos.transferencia',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Otros',
+            'detalle' => '',
+            'slug' => 'metodos.pagos.otro',
+            'padre_id' => $padre->id,
             'activo' => true,
         ]);
     }

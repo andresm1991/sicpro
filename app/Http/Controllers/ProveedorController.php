@@ -263,4 +263,14 @@ class ProveedorController extends Controller
             return Response($output);
         }
     }
+
+    public function getProveedores(Request $request)
+    {
+        if ($request->ajax()) {
+            $categoria_proveedor = $request->categoria_proveedor;
+            $proveedores = Proveedor::where('categoria_proveedor_id', $categoria_proveedor)->orderBy('razon_social', 'asc')->pluck('razon_social', 'id');
+            $estados = CatalogoDato::getChildrenCatalogo('estados.prestamos')->pluck('descripcion', 'id');
+            return response()->json(['proveedores' => $proveedores, 'estados' => $estados]);
+        }
+    }
 }
