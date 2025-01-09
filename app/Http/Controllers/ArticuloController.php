@@ -92,16 +92,16 @@ class ArticuloController extends Controller
             $articulo->descripcion = $request->get('descripcion');
             $articulo->activo = $request->get('status');
 
-            DB::beginTransaction();
-            if ($articulo->save()) {
-                DB::commit();
-                $articulos = Articulo::orderBy('categoria_id', 'asc')->paginate(15);
-                $response = $this->htmlTable($articulos);
-                return response()->json(['success' => true, 'mensaje' => 'Datos guardado correctamente.', 'articulos' => $response]);
-            } else {
-                throw 'Error al intentar guardar la información.';
-            }
             try {
+                DB::beginTransaction();
+                if ($articulo->save()) {
+                    DB::commit();
+                    $articulos = Articulo::orderBy('categoria_id', 'asc')->paginate(15);
+                    $response = $this->htmlTable($articulos);
+                    return response()->json(['success' => true, 'mensaje' => 'Datos guardado correctamente.', 'articulos' => $response]);
+                } else {
+                    throw 'Error al intentar guardar la información.';
+                }
             } catch (Throwable $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'mensaje' => $e->getMessage()]);
@@ -172,8 +172,9 @@ class ArticuloController extends Controller
         return $request;
     }
 
-    public function getArticulosProveedor(Request $request){
-        if($request->ajax()){
+    public function getArticulosProveedor(Request $request)
+    {
+        if ($request->ajax()) {
             $proveedor_articulos = ProveedorArticulo::where('proveedor_id', $request->proveedor)->get();
             foreach ($proveedor_articulos as $element) {
                 $proveedor[] = ['id' => $element->articulo_id, 'nombre' => $element->articulo->descripcion];
@@ -185,6 +186,5 @@ class ArticuloController extends Controller
                 return response()->json(['success' => false, 'articulos' => ['id' => '', 'nombre' => 'No existen categorias asociadas al proveedor selecionada.']]);
             }
         }
-        
     }
 }

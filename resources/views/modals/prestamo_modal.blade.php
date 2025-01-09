@@ -37,7 +37,7 @@
                         <div class="col-md-2 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Monto', ['class' => 'col-form-label']) }}
-                                {{ Form::text('monto', '', ['class' => 'form-control currency_two_decimals', 'placeholder' => '0']) }}
+                                {{ Form::text('monto', '', ['class' => 'form-control money text-right', 'placeholder' => '0']) }}
                             </div>
                         </div>
                         <div class="col-md-3 col-12">

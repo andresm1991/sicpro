@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('fecha_aprobacion')->nullable();
             $table->date('fecha_vencimiento')->nullable();
             $table->decimal('monto', 10, 2);
+            $table->decimal('saldo', 10, 2);
             $table->decimal('interes', 5, 2)->default(0);
             $table->smallInteger('plazo');
             $table->foreignId('estado_id')->references('id')->on('catalogo_datos');

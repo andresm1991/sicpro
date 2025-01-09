@@ -50,11 +50,17 @@ class ManoObra extends Model
         return $this->belongsTo(User::class, 'usuario_id');
     }
 
+    public function pago_mano_obra()
+    {
+        return $this->hasMany(PagoManoObra::class);
+    }
+
     // Obtener todos los registros de mano de obra y agruparlos por proveedor y fechas
-    public static function getDetalleManoObraGroupTrabajador($mano_obra_id)
+    public static function getDetalleManoObraGroupTrabajador($mano_obra_id, $estado = null)
     {
         $info_mano_obra = ['detalle' => []];
 
+        $mano_obra_info = ManoObra::find($mano_obra_id);
         $detalles = DetalleManoObra::with(['proveedor', 'articulo'])
             ->where('mano_obra_id', $mano_obra_id)
             ->orderBy('fecha', 'asc')
@@ -63,6 +69,18 @@ class ManoObra extends Model
 
         foreach ($agrupados as $proveedor_id => $registros_por_proveedor) {
             $nombre_mostrado = false;  // Bandera para saber si ya mostramos el nombre del proveedor
+
+            if ($estado == 'completo') {
+                $prestamos = Prestamo::with('obtenerPagosPrestamo')
+                    ->where('trabajador_id', $proveedor_id)
+                    ->get();
+            } else {
+                $prestamos = Prestamo::with('pagos_prestamo')
+                    ->where('trabajador_id', $proveedor_id)
+                    ->whereHas('estado', function ($query) {
+                        $query->where('descripcion', 'Pendiente');
+                    })->get();
+            }
             //$prestamos = Prestamo::where('trabajador_id', $proveedor_id)->get();
             foreach ($registros_por_proveedor->groupBy('articulo_id') as $articulo_id => $registros) {
                 // Inicializamos las variables para cada trabajador y su cargo
@@ -77,6 +95,7 @@ class ManoObra extends Model
                     'observacion' => [],
                     'detalle_adicional' => [],
                     'detalle_descuento' => [],
+                    'prestamo' => [],
                 ];
 
                 // Iteramos los registros de cada proveedor y cargo
@@ -118,6 +137,22 @@ class ManoObra extends Model
 
                 // Calculamos el líquido a recibir
                 $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
+
+                // Procesar préstamos y pagos
+                foreach ($prestamos as $prestamo) {
+                    // Accede a los campos de cada pago
+                    if ($estado != 'completo') {
+                        foreach ($prestamo->pagos_prestamo as $pago) {
+                            $fila['prestamo'][] = ['pago_id' => $pago->id, 'pagos' => $pago->monto_pagado];
+                        }
+                    } else {
+                        foreach ($prestamo->obtenerPagosPrestamo as $pago) {
+                            $fila['prestamo'][] = ['pago_id' => $pago->id, 'pagos' => $pago->monto_pagado];
+                        }
+                    }
+                }
+
+
 
                 // Añadimos la fila al array de resultados
                 $info_mano_obra['detalle'][] = $fila;

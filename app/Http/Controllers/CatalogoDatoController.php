@@ -45,4 +45,16 @@ class CatalogoDatoController extends Controller
             return $result;
         }
     }
+
+    public function getFormasPagoPrestamo(Request $request)
+    {
+        if ($request->ajax()) {
+            $elements = CatalogoDato::getChildrenCatalogo('metodos.pagos')->pluck('descripcion', 'id');
+            foreach ($elements as $key => $value) {
+                $result[] = ['id' => $key, 'text' => $value];
+            }
+
+            return $result;
+        }
+    }
 }

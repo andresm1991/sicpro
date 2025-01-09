@@ -48,6 +48,7 @@
 <!-- Resolve conflict in jQuery UI tooltip with Bootstrap tooltip -->
 <!-- InputMask jQuery -->
 <script src="{{ asset('plugins/inputmask/jquery.inputmask.min.js') }}"></script>
+<script src="{{ asset('plugins/jquery/jquery.maskMoney.min.js') }}" type="text/javascript"></script>
 <script>
     $.widget.bridge('uibutton', $.ui.button)
 </script>

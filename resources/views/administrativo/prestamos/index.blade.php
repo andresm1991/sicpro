@@ -37,6 +37,7 @@
                                 <th scope="col">Trabajador</th>
                                 <th scope="col">Monto</th>
                                 <th scope="col">Plazo</th>
+                                <th scope="col">Saldo</th>
                                 <th scope="col">Fecha Vencimiento</th>
                                 <th scope="col">Estado</th>
                                 <th class="col-accion"></th>
@@ -48,17 +49,22 @@
                                     <td class="align-middle">{{ strtoupper($prestamo->trabajador->razon_social) }}</td>
                                     <td class="align-middle">$ {{ number_format($prestamo->monto, 2) }}</td>
                                     <td class="align-middle">{{ $prestamo->plazo }} semanas</td>
+                                    <td class="align-middle">$ {{ number_format($prestamo->saldo, 2) }}</td>
                                     <td class="align-middle"> {{ dateFormatHumans($prestamo->fecha_vencimiento) }}</td>
                                     <td class="align-middle"> {{ $prestamo->estado->descripcion }}</td>
                                     <td class="align-middle align-middle text-right text-truncate">
-                                        <a href="" class="btn btn-outline-dark">
-                                            Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>
-                                        </a>
+                                        <button type="button" class="btn btn-outline-dark" data-container="body"
+                                            data-toggle="popover" data-placement="left" data-trigger="focus"
+                                            data-content ="<a href='{{ route('administrativo.prestamos.detalle.prestamo', $prestamo->id) }}' class='dropdown-item'>Detalle</a>
+                                            <a href='javascript:void(0)' class='dropdown-item editar' id='{{ $prestamo->id }}'>Editar</a>
+                                            <a href='javascript:void(0)' class='dropdown-item eliminar' id='{{ $prestamo->id }}'>Eliminar</a>">
+                                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-danger">No se encontraron datos para
+                                    <td colspan="7" class="text-center text-danger">No se encontraron datos para
                                         mostrar....
                                     </td>
                                 </tr>

@@ -16,7 +16,30 @@
                             </div>
 
                             <div class="col-md-2 ">
-                                <button class="btn btn-dark btn-options btn-block" form="form_mano_obra">Guardar</button>
+                                @php
+                                    $pagoIds = collect($detalle_mano_obra['detalle']) // Accedemos al array 'detalle'
+                                        ->pluck('prestamo') // Extraemos solo la clave 'prestamo'
+                                        ->flatten(1) // Aplanamos el array en un solo nivel
+                                        ->pluck('pago_id') // Extraemos solo los `pago_id`
+                                        ->filter() // Eliminamos valores nulos o vacíos
+                                        ->values(); // Reindexamos los valores
+                                @endphp
+
+                                @if ($tipo != 'completo')
+                                    {!! Form::open([
+                                        'route' => ['administrativo.mano.obra.registrar.pago'],
+                                        'class' => 'form-horizontal',
+                                        'autocomplete' => 'off',
+                                        'enctype' => 'multipart/form-data',
+                                    ]) !!}
+
+                                    <input type="hidden" name="pago_ids" value="{{ $pagoIds }}">
+                                    <input type="hidden" name="mano_obra" value="{{ $mano_obra->id }}">
+                                    <button class="btn btn-dark btn-options btn-block">Generar
+                                        Pago</button>
+                                    {{ Form::close() }}
+                                @else
+                                @endif
                             </div>
                         </div>
                     </li>
@@ -55,26 +78,26 @@
                     @endif
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover" id="tabla-planificacion">
+                        <table class="table table-bordered table-hover tabla-custom" id="tabla-planificacion">
                             <thead>
                                 <tr>
-                                    <th class="text-fontsize-12">Nro</th>
-                                    <th class="text-fontsize-12">Apellidos y Nombres</th>
-                                    <th class="text-fontsize-12">Cargo</th>
-                                    <th class="text-fontsize-12 text-center">L</th>
-                                    <th class="text-fontsize-12 text-center">M</th>
-                                    <th class="text-fontsize-12 text-center">M</th>
-                                    <th class="text-fontsize-12 text-center">J</th>
-                                    <th class="text-fontsize-12 text-center">V</th>
-                                    <th class="text-fontsize-12 text-center">S</th>
-                                    <th class="text-fontsize-12">Adicionales</th>
-                                    <th class="text-fontsize-12">Detalle Adicionales</th>
-                                    <th class="text-fontsize-12">TOTAL</th>
-                                    <th class="text-fontsize-12">Descuento</th>
-                                    <th class="text-fontsize-12">Detalle Descuento</th>
-                                    <th class="text-fontsize-12">Descuento Prestamo</th>
-                                    <th class="text-fontsize-12">Liquido a Recibir</th>
-                                    <th class="text-fontsize-12">Observaciones</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Nro</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Apellidos y Nombres</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Cargo</th>
+                                    <th class="th-wrap text-fontsize-12 text-center align-middle">L</th>
+                                    <th class="th-wrap text-fontsize-12 text-center align-middle">M</th>
+                                    <th class="th-wrap text-fontsize-12 text-center align-middle">M</th>
+                                    <th class="th-wrap text-fontsize-12 text-center align-middle">J</th>
+                                    <th class="th-wrap text-fontsize-12 text-center align-middle">V</th>
+                                    <th class="th-wrap text-fontsize-12 text-center align-middle">S</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Adicionales</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Detalle Adicionales</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">TOTAL</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Descuento</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Detalle Descuento</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Descuento Prestamo</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Liquido a Recibir</th>
+                                    <th class="th-wrap text-fontsize-12 align-middle">Observaciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -89,6 +112,7 @@
                                     $totalPagoDias = 0;
                                     $totalDescuentos = 0;
                                     $totalRecibir = 0;
+                                    $totalPagosPrestamos = 0;
                                 @endphp
 
                                 @foreach ($detalle_mano_obra['detalle'] as $detalle)
@@ -114,7 +138,9 @@
                                             $liquidoRecibirTotal = collect($detalle_mano_obra['detalle'])
                                                 ->where('nombre', $detalle['nombre'])
                                                 ->sum(function ($d) {
-                                                    return $d['total'] - $d['total_descuento'];
+                                                    return $d['total'] -
+                                                        $d['total_descuento'] -
+                                                        collect($d['prestamo'])->sum('pagos');
                                                 });
                                         }
 
@@ -122,7 +148,12 @@
                                         $totalAdicionales += $detalle['total_adicional'];
                                         $totalPagoDias += array_sum($detalle['dias']) + $detalle['total_adicional'];
                                         $totalDescuentos += $detalle['total_descuento'];
-                                        $totalRecibir += $detalle['total'] - $detalle['total_descuento'];
+                                        $totalPagosPrestamos += collect($detalle['prestamo'])->sum('pagos');
+                                        $totalRecibir +=
+                                            $detalle['total'] -
+                                            $detalle['total_descuento'] -
+                                            collect($detalle['prestamo'])->sum('pagos');
+
                                     @endphp
                                     <tr>
                                         @if ($isFirstRowForName)
@@ -157,7 +188,9 @@
                                         <td class="align-middle text-fontsize-12">
                                             {{ implode(',', $detalle['detalle_descuento']) }}
                                         </td>
-                                        <td class="align-middle text-fontsize-12"></td>
+                                        <!-- pago prestamo -->
+                                        <td class="align-middle text-fontsize-12">$
+                                            {{ number_format(collect($detalle['prestamo'])->sum('pagos'), 2) }}</td>
                                         @if ($isFirstRowForName)
                                             <td rowspan="{{ $rowspan }}" class="align-middle text-fontsize-12">$
                                                 {{ number_format($liquidoRecibirTotal, 2) }}</td>
@@ -169,14 +202,22 @@
                                 @endforeach
                                 <!-- Fila de totales generales -->
                                 <tr>
-                                    <td colspan="9"><strong>Total:</strong></td>
-                                    <td><strong>$ {{ number_format($totalAdicionales, 2) }}</strong></td>
+                                    <td colspan="9"><strong>Total General:</strong></td>
+                                    <td><strong style="font-size: 12px;">$
+                                            {{ number_format($totalAdicionales, 2) }}</strong></td>
                                     <td></td> <!-- Detalle adicional -->
-                                    <td><strong>$ {{ number_format($totalPagoDias, 2) }}</strong></td>
-                                    <td><strong>$ {{ number_format($totalDescuentos, 2) }}</strong></td>
+                                    <td><strong style="font-size: 12px;">$ {{ number_format($totalPagoDias, 2) }}</strong>
+                                    </td>
+                                    <td><strong style="font-size: 12px;">$
+                                            {{ number_format($totalDescuentos, 2) }}</strong></td>
                                     <td></td> <!-- Detalle descuento -->
-                                    <td></td> <!-- Firma -->
-                                    <td><strong>$ {{ number_format($totalRecibir, 2) }}</strong></td>
+                                    <!-- Total descuentos prestamos -->
+                                    <td>
+                                        <strong style="font-size: 12px;">$
+                                            {{ number_format($totalPagosPrestamos, 2) }}</strong>
+                                    </td>
+                                    <td><strong style="font-size: 12px;">$ {{ number_format($totalRecibir, 2) }}</strong>
+                                    </td>
                                     <td></td>
                                 </tr>
                             </tbody>

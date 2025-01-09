@@ -425,9 +425,9 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         CatalogoDato::create([
-            'descripcion' => 'Aprobado',
+            'descripcion' => 'Pagado',
             'detalle' => '',
-            'slug' => 'estados.pagos.prestamos.aprobado',
+            'slug' => 'estados.pagos.prestamos.pagado',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

@@ -88,6 +88,25 @@ if (!function_exists('dateFormat')) {
         }, $fechaFormateada);
         return $fechaFormateada;
     }
+
+
+    function dateFormatHumansToDate($date)
+    {
+        Carbon::setLocale('es');
+        $fechas = [];
+        // Extraer las fechas con una expresión regular
+        preg_match_all('/(\d{1,2} de \w+ de \d{4})/', $date, $matches);
+
+        if (isset($matches[1]) && count($matches[1]) === 2) {
+            // Convertir las fechas con Carbon
+            $fecha_inicio = Carbon::createFromFormat('j \d\e F \d\e Y', $matches[1][0])->format('Y-m-d');
+            $fecha_fin = Carbon::createFromFormat('j \d\e F \d\e Y', $matches[1][1])->format('Y-m-d');
+
+            $fechas = ['fecha_inicio' => $fecha_inicio, 'fecha_fin' => $fecha_fin];
+        }
+
+        return $fechas;
+    }
 }
 
 if (!function_exists('generateProductCode')) {
@@ -202,11 +221,48 @@ if (!function_exists('registrarProducto')) {
         return $iva_productos;
     }
 
-    function calcularTotalProducto($cantidad, $valor, $iva){
+    function calcularTotalProducto($cantidad, $valor, $iva)
+    {
         $subTotal = $cantidad * $valor;
         $iva = ($subTotal * $iva) / 100;
         $total = $subTotal + $iva;
         return number_format($total, 4);
+    }
+
+    /**
+     * La tasa de interés semanal se calcula dividiendo la tasa anual por 52 semanas.
+     */
+    function calcularCuotaSemanalPrestamo($monto, $interes, $plazoEnSemanas)
+    {
+        $tasaSemanal = ($interes / 100) / 52; // Tasa semanal
+        if ($tasaSemanal == 0) {
+            return $monto / $plazoEnSemanas; // Sin interés
+        }
+
+        $cuota = $monto * $tasaSemanal / (1 - pow(1 + $tasaSemanal, -$plazoEnSemanas));
+        return round($cuota, 2);
+    }
+
+    /** Función para calcular las fechas de pago que sean los viernes de cada semana segun el plazo */
+    function calcularFechasPago($fechaInicio, $plazoSemanas)
+    {
+        $fechaInicio = Carbon::parse($fechaInicio);
+        $fechasPago = [];
+
+        // Si la fecha inicial ya es un viernes, comenzar desde el siguiente viernes
+        if ($fechaInicio->dayOfWeek === Carbon::FRIDAY) {
+            $fechaInicio->addWeek();
+        } else {
+            // Asegurar que la fecha inicial sea el próximo viernes
+            $fechaInicio = $fechaInicio->next(Carbon::FRIDAY);
+        }
+
+        for ($i = 0; $i < $plazoSemanas; $i++) {
+            $fechasPago[] = $fechaInicio->copy();
+            $fechaInicio->addWeek();
+        }
+
+        return $fechasPago;
     }
 }
 /**

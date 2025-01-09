@@ -11,6 +11,7 @@ use App\Models\Contratista;
 use App\Models\Inventario;
 use App\Models\ManoObra;
 use App\Models\OrdenRecepcion;
+use App\Models\PagoManoObra;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Models\Proveedor;
 use App\Models\Proyecto;
@@ -500,16 +501,22 @@ class AdministrativoController extends Controller
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => 'Administrativo', 'url' => route('administrativo.index')],
-            ['name' => 'Contratistas', 'url' => '']
+            ['name' => 'Mano Obra', 'url' => '']
         ];
 
-        $mano_obra_pendientes = ManoObra::orderBy('semana', 'asc')->paginate(15);
+        $mano_obra_pendientes = ManoObra::whereDoesntHave('pago_mano_obra', function ($query) {
+            $query->whereNotNull('mano_obra_id'); // Validar que no exista un registro relacionado
+        })->orderBy('semana', 'asc')->paginate(15);
 
-        $route_params = ['mano_obra_pendientes' => $mano_obra_pendientes, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        $mano_obra_completos = ManoObra::whereHas('pago_mano_obra', function ($query) {
+            $query->whereNotNull('mano_obra_id'); // Validar que exista un registro relacionado
+        })->orderBy('semana', 'asc')->paginate(15);
+
+        $route_params = ['mano_obra_pendientes' => $mano_obra_pendientes, 'mano_obra_completos' => $mano_obra_completos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
         return view('administrativo.mano_obra.index', $route_params);
     }
 
-    public function detalleManoObra(ManoObra $mano_obra)
+    public function detalleManoObra(ManoObra $mano_obra, $estado)
     {
         $title_page = 'Mano de Obra - Detalle';
 
@@ -519,9 +526,84 @@ class AdministrativoController extends Controller
             ['name' => 'detalle', 'url' => '']
         ];
 
-        $detalle_mano_obra =  $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id);
-
-        $route_params = ['mano_obra' => $mano_obra, 'detalle_mano_obra' => $detalle_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
+        $detalle_mano_obra =  $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id, $estado);
+        $route_params = ['mano_obra' => $mano_obra, 'detalle_mano_obra' => $detalle_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page, 'tipo' => $estado];
         return view('administrativo.mano_obra.detalle', $route_params);
+    }
+
+    public function registrarPagoManoObra(Request $request)
+    {
+        // Decodificar el array de `pago_ids`
+        $pagoIds = json_decode($request->input('pago_ids'), true);
+        $mano_obra_id = $request->mano_obra;
+
+        try {
+            DB::beginTransaction();
+            // Insertar registros en la tabla `pago_mano_obras`
+            foreach ($pagoIds as $pagoId) {
+                PagoManoObra::create([
+                    'pago_prestamo_id' => $pagoId,
+                    'mano_obra_id' => $mano_obra_id,
+                ]);
+            }
+            DB::commit();
+            return redirect()->route('administrativo.index.mano.obra')->with('success', 'Pago de mano obra generada con éxito.');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('error', 'Error al crear pago mano obra', ['user_id' => auth()->id(), 'message' => $e->getMessage()]);
+            return redirect()->route('administrativo.mano.obra.detalle', $mano_obra_id)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
+    }
+
+    public function buscarManoObra(Request $request)
+    {
+        if ($request->ajax()) {
+            $output = "";
+            $buscar = $request->buscar;
+            $tipo = $request->tipo;
+
+            $query = ManoObra::with(['proyecto', 'etapa', 'tipo_etapa', 'pago_mano_obra'])
+                ->where(function ($query) use ($buscar) {
+                    $query->where('fecha_inicio', 'LIKE', '%' . $buscar . '%')
+                        ->orWhere('fecha_fin', 'LIKE', '%' . $buscar . '%');
+                });
+
+            // Filtrar según el tipo
+            if ($tipo == 'pendiente') {
+                $query->whereDoesntHave('pago_mano_obra', function ($query) {
+                    $query->whereNotNull('mano_obra_id');
+                });
+            } else if ($tipo == 'completo') {
+                $query->whereHas('pago_mano_obra', function ($query) {
+                    $query->whereNotNull('mano_obra_id');
+                });
+            }
+
+            // Ejecutar la consulta
+            $resultado = $query->orderBy('semana', 'asc')->get();
+
+            foreach ($resultado as $mano_obra) {
+                $output .= '<tr id="{{ $mano_obra->id }}">' .
+                    '<td class="align-middle">' . $mano_obra->semana . '</td>' .
+                    '<td class="align-middle">' . strtoupper($mano_obra->proyecto->nombre_proyecto) . '</td>' .
+                    '<td class="align-middle">' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
+                    '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
+                    '<td class="align-middle">' . $mano_obra->proyecto->tipo_proyecto->descripcion . '</td>' .
+                    '<td class="align-middle align-middle text-right text-truncate">' .
+                    '<a href="' . route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' =>  $tipo]) . '" class="btn btn-outline-dark">' .
+                    'Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>' .
+                    '</a>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="7" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
+        }
     }
 }

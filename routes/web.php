@@ -172,14 +172,18 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/buscar-orden-trabajo', [AdministrativoController::class, 'buscarOrdenTrabajo']);
         /** MANO DE OBRA ADMINSTRATIVO */
         Route::get('/mano-de-obra', [AdministrativoController::class, 'indexManoObra'])->name('index.mano.obra');
-        Route::get('/mano-de-obra/detalle/{mano_obra}', [AdministrativoController::class, 'detalleManoObra'])->name('mano.obra.detalle');
+        Route::get('/mano-de-obra/detalle/{mano_obra}/{estado}', [AdministrativoController::class, 'detalleManoObra'])->name('mano.obra.detalle');
+        Route::post('/mano-de-obra/registrar-pago', [AdministrativoController::class, 'registrarPagoManoObra'])->name('mano.obra.registrar.pago');
+        Route::get('/buscar-mano-obra', [AdministrativoController::class, 'buscarManoObra']);
 
 
-        /**PRESTAMOS */
+        //**RUTAS PRESTAMOS **
         Route::group(['prefix' => 'prestamos', 'as' => 'prestamos.'], function () {
             Route::get('/', [PrestamoController::class, 'index'])->name('index');
             Route::post('/nuevo', [PrestamoController::class, 'create']);
             Route::put('/actualizar/{prestamo}', [PrestamoController::class, 'update']);
+            Route::get('/detalle-prestamo/{prestamo}', [PrestamoController::class, 'detallePrestamo'])->name('detalle.prestamo');
+            Route::put('/pago/{pago}', [PrestamoController::class, 'registrarPago']);
         });
     });
     //** PETICIONES AJAX **
@@ -198,6 +202,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/articulos-proveedor', [ArticuloController::class, 'getArticulosProveedor']);
     Route::delete('/orden-trabajo/eliminar/{id}', [ContratistaController::class, 'eliminarOrdenTrabajo']);
     Route::get('/proveedores', [ProveedorController::class, 'getProveedores']);
+    Route::get('/forma-pago-prestamo', [CatalogoDatoController::class, 'getFormasPagoPrestamo']);
 
     Route::get('/no-access', function () {
         return view('errors.no-access');
