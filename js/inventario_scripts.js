@@ -5,7 +5,9 @@ $(function () {
     $('#inventarioFormModal').on('shown.bs.modal', function (e) {
         console.log("cargo modal");
         $('.select2-basic-single').select2({
-            dropdownParent: $('#inventarioFormModal') // Asegúrate de usar el ID del modal
+            width: '100%',
+            dropdownParent: $('#inventarioFormModal'), // ID del modal
+            allowClear: false,
         });
 
         $(e.target).find('select.select2-tag').select2('destroy').select2({
@@ -315,21 +317,21 @@ $(function () {
                             id: $id,
                             cantidad: cantidad
                         },
-                        success: function(response) {
-                            if(!response.success){
+                        success: function (response) {
+                            if (!response.success) {
                                 Swal.showValidationMessage(`${response.mensaje}`);
                             }
                         },
-                        error: function(error) {
+                        error: function (error) {
                             Swal.showValidationMessage(`Error en la petición: ${error}`);
                         }
                     })
-                    .then(response => {
-                        if (response.error) {
-                            Swal.showValidationMessage(`Error: ${response.error}`);
-                        }
-                        return response; // Devuelve la respuesta si todo va bien
-                    })
+                        .then(response => {
+                            if (response.error) {
+                                Swal.showValidationMessage(`Error: ${response.error}`);
+                            }
+                            return response; // Devuelve la respuesta si todo va bien
+                        })
                 } catch (error) {
                     Swal.showValidationMessage(`
                   Request failed: ${error}
@@ -338,8 +340,8 @@ $(function () {
             },
             allowOutsideClick: () => !Swal.isLoading()
         }).then((result) => {
-            if(result.isConfirmed){
-                if(result.value.success){
+            if (result.isConfirmed) {
+                if (result.value.success) {
                     Swal.fire({
                         icon: 'success',
                         title: '',

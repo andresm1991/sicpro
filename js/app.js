@@ -46,10 +46,10 @@ function cargarBancos() {
             $select.selectpicker('refresh');
         }
     });
-}   
+}
 
 // **Mensajes sweet Alerts **
-function message(){
+function message() {
     return new Promise((resolve, reject) => {
         Swal.fire({
             title: '¿Está seguro?',
@@ -110,6 +110,11 @@ function cargarTipoCuentas() {
 $(function () {
     $('[data-toggle="popover"]').popover({ html: true });
     $('[data-toggle="tooltip"]').tooltip({ html: true });
+    $('.dropdown-toggle').dropdown({
+        container: 'body' // Forzar que el menú se renderice en el body
+    });
+
+
 
     $('.datepicker').datepicker({
         language: "es",
@@ -233,6 +238,20 @@ $(function () {
         clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
         unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
     }).mask(".currency");
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: "",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 2,                   // Número de decimales
+        digitsOptional: true,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true,          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_two_decimals");
+
+    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false });
 
     /// Solo numeros
     $(document).on('input', ".solo-numeros", function (evt) {

@@ -88,6 +88,11 @@ body {
     font-weight: 500;
 }
 
+.text-fontsize-12,
+.text-fontsize-12 * {
+    font-size: 12px;
+}
+
 /* Hacer el fondo del breadcrumb transparente */
 .custom-breadcrumb {
     background-color: transparent;
@@ -1940,10 +1945,29 @@ input.auto-ajustable {
 }
 
 .uniform-image {
-    width: 100%; /* Asegura que ocupe todo el ancho del contenedor */
-    height: 200px; /* Ajusta la altura para que todas las imágenes sean uniformes */
-    object-fit: contain; /* Recorta la imagen proporcionalmente para llenar el área */
-    object-position: center; /* Centra la imagen recortada */
+    width: 100%;
+    /* Asegura que ocupe todo el ancho del contenedor */
+    height: 200px;
+    /* Ajusta la altura para que todas las imágenes sean uniformes */
+    object-fit: contain;
+    /* Recorta la imagen proporcionalmente para llenar el área */
+    object-position: center;
+    /* Centra la imagen recortada */
+}
+
+/* Estilos específicos para la tabla seleccionada */
+.tabla-custom th.th-wrap {
+    max-width: 150px;
+    min-width: 80px;
+    /* Establece un ancho máximo para los encabezados */
+    white-space: normal;
+    /* Permite el salto de línea dentro del <th> */
+    word-wrap: break-word;
+    /* Rompe palabras largas si es necesario */
+    overflow: hidden;
+    /* Asegura que el contenido no se desborde */
+    text-align: center;
+    /* Centra el texto (opcional) */
 }
 
 /* Aqui inicia css para responsive*/

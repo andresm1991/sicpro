@@ -16,20 +16,20 @@ $(function () {
     $('input:text[name=adquisicion_search]').on('keyup', function () {
         var $value = $(this).val();
         var $tipo = $(this).attr('id');
-        
+
         $.ajax({
-            url: url+'/buscar-adquisicion',
+            url: url + '/buscar-adquisicion',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
-            data: { 'buscar': $value , 'tipo': $tipo},
+            data: { 'buscar': $value, 'tipo': $tipo },
             beforeSend: function () {
             },
             success: function (data) {
-                $('#table-list-pedidos-'+$tipo+' tbody').html(data);
+                $('#table-list-pedidos-' + $tipo + ' tbody').html(data);
                 $('[data-toggle="tooltip"]').tooltip();
                 $('[data-toggle="popover"]').popover({ html: true });
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error("Error en la solicitud AJAX:", error);
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
@@ -50,38 +50,38 @@ $(function () {
             message().then((resultado) => {
                 if (resultado) {
                     $.ajax({
-                        url:'/pago_orden_trabajo/'+id_pago,
+                        url: '/pago_orden_trabajo/' + id_pago,
                         headers: { 'X-CSRF-TOKEN': csrf },
                         type: 'PUT',
-                        data: {'id_pago':id_pago},
+                        data: { 'id_pago': id_pago },
                         dataType: 'json',
                     })
-                    .done(function (data) {
-                        if (data.success) {
-                            Toast.fire({
-                                icon: 'success',
-                                title: data.message,
-                            });
+                        .done(function (data) {
+                            if (data.success) {
+                                Toast.fire({
+                                    icon: 'success',
+                                    title: data.message,
+                                });
 
-                            $checkbox.attr('disabled', true)
-                        } else {
+                                $checkbox.attr('disabled', true)
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    data.message,
+                                    'error'
+                                )
+                                $checkbox.prop('checked', false); // Desmarcar el checkbox
+                            }
+
+                        })
+                        .fail(function () {
                             Swal.fire(
-                                'Error!',
-                                data.message,
+                                'Error Inesperado!',
+                                'No se pudo realizar la acción solicitada, comuníquese con el administrador del sistema.',
                                 'error'
                             )
                             $checkbox.prop('checked', false); // Desmarcar el checkbox
-                        }
-
-                    })
-                    .fail(function () {
-                        Swal.fire(
-                            'Error Inesperado!',
-                            'No se pudo realizar la acción solicitada, comuníquese con el administrador del sistema.',
-                            'error'
-                        )
-                        $checkbox.prop('checked', false); // Desmarcar el checkbox
-                    });
+                        });
                 } else {
                     $checkbox.prop('checked', false); // Desmarcar el checkbox
                 }
@@ -105,7 +105,31 @@ $(function () {
             beforeSend: function () {
             },
             success: function (data) {
-                $('#table-'+$tipo+' tbody').html(data);
+                $('#table-' + $tipo + ' tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
+
+
+    // **Buscar mano obra**
+    $('input:text[name=mano_obra_search]').on('keyup', function () {
+        var $value = $(this).val();
+        var $tipo = $(this).attr('id');
+
+        $.ajax({
+            url: '/administrativo/buscar-mano-obra',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'buscar': $value, 'tipo': $tipo },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                $('#table_' + $tipo + ' tbody').html(data);
                 $('[data-toggle="tooltip"]').tooltip();
                 $('[data-toggle="popover"]').popover({ html: true });
             }
