@@ -113,7 +113,7 @@
                         </div>
                     </td>
 
-                    @if (strtoupper($tipo_etapa->slug) == 'SERVICIOS')
+                    @if (isset($tipo_etapa->slug) && strtoupper($tipo_etapa->slug) == 'SERVICIOS')
                         <td>{{ $element->unidad_medida->descripcion }}</td>
                         <td>{{ number_format($element->valor, 2) }} </td>
                         {{ Form::hidden('unidad_medida[]', $element->unidad_medida_id) }}
@@ -143,7 +143,7 @@
                                     class="fa-solid fa-xmark"></i></button>
                         </div>
                     </td>
-                    @if (strtoupper($tipo_etapa->slug) == strtoupper('meteriales.herramientas'))
+                    @if (isset($tipo_etapa->slug) && strtoupper($tipo_etapa->slug) == strtoupper('meteriales.herramientas'))
                         <td class="align-middle">
                             <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
                                 {{ Form::hidden('inventario[' . $index . ']', 0) }}

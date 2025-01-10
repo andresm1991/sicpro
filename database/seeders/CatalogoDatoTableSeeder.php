@@ -374,7 +374,7 @@ class CatalogoDatoTableSeeder extends Seeder
         */
 
         /**Estados Prestamos */
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Estados Prestamos',
             'detalle' => '',
             'slug' => 'estados.prestamos',
@@ -410,7 +410,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         /**Estados Pagos Prestamos */
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Estados Pagos Prestamos',
             'detalle' => '',
             'slug' => 'estados.pagos.prestamos',
@@ -446,7 +446,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         /**Estados tipo de solicitud */
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Estados tipo de solicitud',
             'detalle' => '',
             'slug' => 'estados.tipo.solicitud.prestamos',
@@ -468,7 +468,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         /** Metodos de pago Prestamo*/
-        $padre = CatalogoDato::create([
+        /* $padre = CatalogoDato::create([
             'descripcion' => 'Metodo de Pagos',
             'detalle' => '',
             'slug' => 'metodos.pagos',
@@ -493,6 +493,28 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Otros',
             'detalle' => '',
             'slug' => 'metodos.pagos.otro',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);*/
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Tipo Costos',
+            'detalle' => '',
+            'slug' => 'tipo.costos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Costos Directos',
+            'detalle' => '',
+            'slug' => 'tipo.costos.directos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Costos Indirectos',
+            'detalle' => '',
+            'slug' => 'tipo.costos.indirectos',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

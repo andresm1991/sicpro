@@ -1,21 +1,22 @@
 <ul class="list-group list-group-flush">
     <li class="list-group-item">
         <div class="row">
-                @if ($tipo == 'administrativo')
-                    <div class="col-md-4 col-12">
-                        <div class="form-group">
-                            <a href="{{ route('administrativo.adquisiciones.create', $tipo) }}"
-                                class="btn btn-dark btn-sm mt-1">
-                                <i class="fa-regular fa-plus"></i> Nueva Adquisición
-                            </a>
-                        </div>  
-                    </div>  
-                @endif
+            @if ($tipo == 'administrativo')
+                <div class="col-md-4 col-12">
+                    <div class="form-group">
+                        <a href="{{ route('administrativo.adquisiciones.create', $tipo) }}"
+                            class="btn btn-dark btn-sm mt-1">
+                            <i class="fa-regular fa-plus"></i> Nueva Adquisición
+                        </a>
+                    </div>
+                </div>
+            @endif
             <div class="col-md-8 col-12 ">
-                <div class="form-group form-search form-icon col-md-10 col-12 p-0 {{ $tipo == 'administrativo'? 'float-right' : '' }} ">
+                <div
+                    class="form-group form-search form-icon col-md-10 col-12 p-0 {{ $tipo == 'administrativo' ? 'float-right' : '' }} ">
                     <i class="fal fa-search fa-lg form-control-icon"></i>
-                    <input type="text" name="adquisicion_search" id="pendientes" class="form-control form-control-round "
-                        placeholder="Ingresa el # para buscar....">
+                    <input type="text" name="adquisicion_search" id="pendientes"
+                        class="form-control form-control-round " placeholder="Ingresa el # para buscar....">
                 </div>
             </div>
         </div>
@@ -38,32 +39,34 @@
                 <tr id="{{ $adquisicion->id }}">
                     <td class="align-middle">{{ $adquisicion->numero }}</td>
                     <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>
-                    <td class="align-middle">{{ strtoupper($adquisicion->proyecto->nombre_proyecto) }}</td>
+                    <td class="align-middle">
+                        {{ $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'OTROS' }}
+                    </td>
                     <td class="align-middle">{{ strtoupper($adquisicion->etapa->descripcion) }}</td>
-                    <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion)}}</td>
-                    
+                    <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion) }}</td>
+
                     <td class="align-middle align-middle text-right text-truncate">
                         @if ($tipo == 'operativo')
-                                <button type="button" class="btn btn-outline-dark" data-container="body"
-                                    data-toggle="popover" data-placement="left" data-trigger="focus"
-                                    data-content ="
-                                        <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id]) }}' class='dropdown-item'>Editar</a>
-                                        <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>
+                            <button type="button" class="btn btn-outline-dark" data-container="body"
+                                data-toggle="popover" data-placement="left" data-trigger="focus"
+                                data-content ="
+                                        <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Detalle</a>
+                                        <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a>
                                     ">
-                                    <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                </button>    
+                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                            </button>
                         @else
                             <button type="button" class="btn btn-outline-dark" data-container="body"
-                            data-toggle="popover" data-placement="left" data-trigger="focus"
-                            data-content ="
-                                <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo,'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar Pedido</a>
-                                <a href='{{ route('administrativo.adquisicion.recepcion', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id]) }}' class='dropdown-item'>Recepción</a>
+                                data-toggle="popover" data-placement="left" data-trigger="focus"
+                                data-content ="
+                                <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar Pedido</a>
+                                <a href='{{ route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Recepción</a>
                                 <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>
                             ">
-                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                        </button>
+                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                            </button>
                         @endif
-                        
+
                     </td>
                 </tr>
             @empty

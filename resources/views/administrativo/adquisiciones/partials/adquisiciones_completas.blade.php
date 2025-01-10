@@ -28,32 +28,34 @@
                 <tr id="{{ $adquisicion->id }}">
                     <td class="align-middle">{{ $adquisicion->numero }}</td>
                     <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>
-                    <td class="align-middle">{{ strtoupper($adquisicion->proyecto->nombre_proyecto) }}</td>
+                    <td class="align-middle">
+                        {{ $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'OTROS' }}
+                    </td>
                     <td class="align-middle">{{ strtoupper($adquisicion->etapa->descripcion) }}</td>
-                    <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion)}}</td>
-                    
+                    <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion) }}</td>
+
                     <td class="align-middle align-middle text-right text-truncate">
                         @if ($tipo == 'operativo')
-                                <button type="button" class="btn btn-outline-dark" data-container="body"
-                                    data-toggle="popover" data-placement="left" data-trigger="focus"
-                                    data-content ="
-                                        <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id]) }}' class='dropdown-item'>Editar</a>
-                                        <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>
+                            <button type="button" class="btn btn-outline-dark" data-container="body"
+                                data-toggle="popover" data-placement="left" data-trigger="focus"
+                                data-content ="
+                                        <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Detalle</a>
+                                        <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a>
                                     ">
-                                    <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                </button>    
+                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                            </button>
                         @else
                             <button type="button" class="btn btn-outline-dark" data-container="body"
-                            data-toggle="popover" data-placement="left" data-trigger="focus"
-                            data-content ="
-                                <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id]) }}' class='dropdown-item'>Editar Pedido</a>
-                                <a href='{{ route('administrativo.adquisicion.recepcion', ['tipo' => $tipo,'adquisicion' =>$adquisicion->id]) }}' class='dropdown-item'>Recepción</a>
+                                data-toggle="popover" data-placement="left" data-trigger="focus"
+                                data-content ="
+                                <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar Pedido</a>
+                                <a href='{{ route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Recepción</a>
                                 <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>
                             ">
-                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                        </button>
+                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                            </button>
                         @endif
-                        
+
                     </td>
                 </tr>
             @empty

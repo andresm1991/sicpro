@@ -2,7 +2,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
-            {{ Form::label('', $adquisicion->proyecto->nombre_proyecto, ['class' => 'form-control text-uppercase label-disabled']) }}
+            {{ Form::label('', $adquisicion->proyecto_id > 0 ? $adquisicion->proyecto->nombre_proyecto : 'Otros', ['class' => 'form-control text-uppercase label-disabled']) }}
         </div>
     </div>
     <div class="col-md-4 col-12">
@@ -37,6 +37,13 @@
                 </select>
                 {!! $errors->first('proveedor', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
             @endif
+        </div>
+    </div>
+
+    <div class="col-md-4 col-12">
+        <div class="form-group">
+            {{ Form::label('', 'Numero Factura', ['class' => 'col-form-label']) }}
+            {{ Form::text('numero_factura', $adquisicion->factura, ['class' => 'form-control input-enteros', 'placeholder' => 'Ingrese el número de factura']) }}
         </div>
     </div>
 </div>

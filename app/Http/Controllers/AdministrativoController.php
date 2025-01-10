@@ -77,6 +77,7 @@ class AdministrativoController extends Controller
 
     public function editarAdquisicion($tipo, Adquisicion $adquisicion)
     {
+
         $title_page = 'Editar';
 
         $breadcrumbs = [
@@ -92,13 +93,17 @@ class AdministrativoController extends Controller
                 $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
                 return $total;
             });
+
             return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'title_page', 'breadcrumbs'));
         } else {
             if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado) {
                 return redirect()->route('administrativo.adquisiciones', $tipo)->with('toast_error', 'El pedido ya fue recibido y completado, no puede ser modificado.');
             }
             $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
-            $etapa = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id');
+            $proyectos = $proyectos->toArray(); // Convertir a array
+            $proyectos['0'] = 'Otros'; // Añadir el nuevo elemento al final
+            $proyectos = collect($proyectos); // Convertir nuevamente a colección si es necesario
+            $etapa = CatalogoDato::getChildrenCatalogo('tipo.costos')->pluck('descripcion', 'id');
             $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
             $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
@@ -108,14 +113,10 @@ class AdministrativoController extends Controller
     }
     public function actualizarAdquisicion(Request $request, $tipo, Adquisicion $adquisicion)
     {
-        if ($adquisicion->estado == 'Completado') {
-            return redirect()->back()->with('error', 'No es posible actualizar la información porque ya está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
+        if ($tipo == 'operativo') {
+            return $this->actualizarAdquisicionOperativa($request, $tipo, $adquisicion);
         } else {
-            if ($tipo == 'operativo') {
-                return $this->actualizarAdquisicionOperativa($request, $tipo, $adquisicion);
-            } else {
-                return $this->actualizarAdquisicionAdministrativa($request, $tipo, $adquisicion);
-            }
+            return $this->actualizarAdquisicionAdministrativa($request, $tipo, $adquisicion);
         }
     }
 
@@ -124,6 +125,17 @@ class AdministrativoController extends Controller
      */
     private function actualizarAdquisicionOperativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
+        if ($adquisicion->estado == 'Completado' && is_null($adquisicion->factura) && !empty($request->numero_factura)) {
+            $adquisicion->factura = $request->numero_factura;
+            $adquisicion->save();
+
+            LogService::log('info', 'Actualizacion factura de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
+
+            return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la factura con éxito.');
+        } elseif ($adquisicion->estado == 'Completado') {
+            return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible actualizar la información de una adquisición que está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
+        }
+
         // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
         $valoresLimpios = array_map(function ($value) {
             return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
@@ -202,11 +214,12 @@ class AdministrativoController extends Controller
                 ]);
             DB::commit();
 
+            $adquisicion->factura = $request->numero_factura;
             // Actualizar el estado a completado 
             if ($estado) {
                 $adquisicion->estado = "Completado";
-                $adquisicion->save();
             }
+            $adquisicion->save();
 
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
 
@@ -294,6 +307,7 @@ class AdministrativoController extends Controller
         if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado) {
             return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
         }
+
         $valoresLimpios = array_map(function ($value) {
             return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
         }, $request->input('valor', []));
@@ -320,12 +334,19 @@ class AdministrativoController extends Controller
 
         try {
             DB::beginTransaction();
-            if ($orden_recepcion = OrdenRecepcion::create($param)) {
+            $orden_recepcion = OrdenRecepcion::updateOrCreate(
+                [
+                    'adquisicion_id' => $adquisicion->id
+                ],
+                $param
+            );
+            if ($orden_recepcion) {
                 /// Actualiza el estado del pedido
                 if ($orden_completa) {
                     $adquisicion->estado = 'Completado';
-                    $adquisicion->save();
                 }
+                $adquisicion->factura = $request->numero_factura;
+                $adquisicion->save();
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
                     $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);

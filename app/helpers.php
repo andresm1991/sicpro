@@ -226,7 +226,7 @@ if (!function_exists('registrarProducto')) {
         $subTotal = $cantidad * $valor;
         $iva = ($subTotal * $iva) / 100;
         $total = $subTotal + $iva;
-        return number_format($total, 4);
+        return $total;
     }
 
     /**

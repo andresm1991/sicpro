@@ -39,12 +39,7 @@
                                 </div>
                             </div>
                             <div class="col-md-2 ">
-                                @if ($adquisicion->estado == 'Completado')
-                                    <button type="button" class="btn btn-dark btn-options btn-block">Guardar</button>
-                                @else
-                                    <button class="btn btn-dark btn-options btn-block">Guardar</button>
-                                @endif
-
+                                <button class="btn btn-dark btn-options btn-block">Guardar</button>
                             </div>
                         </div>
 

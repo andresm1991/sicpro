@@ -766,7 +766,7 @@ class AdquisicionController extends Controller
         return $parametros;
     }
 
-
+    /** Funciones para el modulo de Adquisisciones administrativas */
     public function nuevaAdquisicionAdministrativo($tipo)
     {
         $title_page = 'Nueva Adquisición';
@@ -774,7 +774,10 @@ class AdquisicionController extends Controller
 
         $numero_orden = generarNumeroOrden();
         $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
-        $etapa = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id');
+        $proyectos = $proyectos->toArray(); // Convertir a array
+        $proyectos['0'] = 'Otros'; // Añadir el nuevo elemento al final
+        $proyectos = collect($proyectos); // Convertir nuevamente a colección si es necesario
+        $etapa = CatalogoDato::getChildrenCatalogo('tipo.costos')->pluck('descripcion', 'id');
         $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
         $productos = Articulo::where('activo', true)
             ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
