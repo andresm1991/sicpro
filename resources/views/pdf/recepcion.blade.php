@@ -100,7 +100,7 @@
     <div class="header">
         <img src="data:image/png;base64,{{ $logo_base64 }}" alt="Logo">
         <div class="order-number">
-            Orden de Recepción <br>{{ $orden['numero_pedido'] }}
+            Pedido Nro. <br>{{ $orden['numero_pedido'] }}
         </div>
     </div>
 
@@ -119,6 +119,9 @@
                 <strong class="text-danger">FECHA:</strong> {{ $orden['fecha'] }}<br>
                 <strong>TIPO:</strong> {{ strtoupper($orden['tipo']) }}<br>
                 <strong>FORMA DE PAGO:</strong> {{ strtoupper($orden['forma_pago']) }}<br>
+                @if (strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
+                    <strong>FACTURA:</strong> {{ strtoupper($orden['factura']) }}<br>
+                @endif
             </div>
             <div class="clear"></div>
 
@@ -128,24 +131,26 @@
             @php
                 $producto = array_column($orden['items'], 'producto');
                 $key = array_search('gasolina para camioneta', $producto);
-                
+
             @endphp
-            
+
             <table>
                 <thead>
                     <tr>
                         <th>Item</th>
                         <th>Producto</th>
                         <th>Cantidad</th>
-                        <th>Cantidad recibida</th>
-                        @if (strtoupper($orden['tipo']) == 'SERVICIOS')
+                        @if (strtoupper($orden['tipo']) == 'SERVICIOS' || strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                             <th>Unidad Medida</th>
-                            <th>VALOR UNITARIO</th>
+                            <th>Valor unitario</th>
+                            @if (strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
+                                <th>Iva</th>
+                            @endif
                             <th>Total</th>
                         @endif
-                        
+
                         @if ($key !== false)
-                            <th>KM</th>    
+                            <th>KM</th>
                         @endif
                         <th>Necesidad</th>
                     </tr>
@@ -156,25 +161,29 @@
                             <td>{{ $index + 1 }}</td>
                             <td>{{ strtoupper($item['producto']) }}</td>
                             <td>{{ $item['cantidad'] }}</td>
-                            <td>{{ $item['cantidad_recibida'] }}</td>
-                            @if (strtoupper($orden['tipo']) == 'SERVICIOS')
+                            @if (strtoupper($orden['tipo']) == 'SERVICIOS' || strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                                 <td>{{ strtoupper($item['unidad_medida']) }}</td>
                                 <td>${{ $item['valor'] }}</td>
-                                <td>${{ $item['total'] }}</td>
+                                @if (strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
+                                    <td>${{ $item['iva'] }}</td>
+                                @endif
+                                <td>${{ number_format($item['total'], 4) }}</td>
                             @endif
                             @if ($key !== false)
-                                <td>{{ $item['kilometraje'] }}</td>    
+                                <td>{{ $item['kilometraje'] }}</td>
                             @endif
                             <td>{{ strtoupper($item['necesidad']) }}</td>
                         </tr>
                     @endforeach
-                    @if (strtoupper($orden['tipo']) == 'SERVICIOS')
+                    @if (strtoupper($orden['tipo']) == 'SERVICIOS' || strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                 <tfoot>
                     <tr>
-                        <td colspan="7" style="text-align: right">
-                            <strong>TOTAL: </strong>
+                        <td colspan="{{ strtoupper($orden['tipo']) == 'SERVICIOS' ? 5 : (strtoupper($orden['estado_pedido']) == strtoupper('Completado') ? 6 : 5) }}"
+                            style="text-align: right">
+                            <strong>TOTAL GENERAL: </strong>
                         </td>
-                        <td><strong>${{ $orden['total_orden'] }}</strong></td>
+                        <td><strong>${{ number_format($orden['total_orden'], 4) }}</strong></td>
+                        <td></td>
                     </tr>
                 </tfoot>
                 @endif
@@ -185,7 +194,7 @@
     </div>
 
     <div class="footer">
-        Esta es una orden de pedido generada electrónicamente. No requiere firma.
+        Esta es un documento generado electrónicamente. No requiere firma.
     </div>
 </body>
 

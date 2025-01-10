@@ -439,7 +439,7 @@ class AdquisicionController extends Controller
                     $editar_button = "<a href='" . route('proyecto.adquisiciones.orden.pedido.edit', $route_parametres) . "' class='dropdown-item'>Editar</a>";
                     $destroy_button = "<a href='#' class='dropdown-item eliminar-pedido' id='" . $pedido->id . "'>Eliminar</a>";
                     $pdf_orden_adquisicion_button = "<a href='" . route('pdf.adquisicion', $pedido->id) . "' class='dropdown-item' target='_blank'>PDF Orden Pedido</a>";
-                    $pdf_orden_recepcion_button = "<a href='" . route('pdf.recepcion', $pedido->id) . "' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
+                    $pdf_orden_recepcion_button = "<a href='" . route('pdf.recepcion', $pedido->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
 
                     $estado = $pedido->estado == 'Finalizado' || $pedido->estado == 'Completado' ? '<span class="badge badge-success">Finalizado</span>' : '<span class="badge badge-warning">' . $pedido->estado . '</span>';
                     $output .= '<tr id="' . $pedido->id . '">' .
@@ -450,7 +450,7 @@ class AdquisicionController extends Controller
                         '<td class="align-middle">' . $pedido->tipo_etapa->descripcion . '</td>' .
                         '<td class="align-middle">' . $estado . '</td>' .
                         '<td class="align-middle align-middle text-right text-truncate">' .
-                        '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar_button . $destroy_button . $pdf_orden_adquisicion_button . $pdf_orden_recepcion_button . '"><i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                        '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar_button . $destroy_button .  $pdf_orden_recepcion_button . '"><i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>' .
                         '</td>' .
                         '</tr>';
@@ -711,13 +711,13 @@ class AdquisicionController extends Controller
             foreach ($adquisiciones as $index => $adquisicion) {
                 $opciones_boton = '';
                 if ($tipo == 'operativo') {
-                    $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
-                    $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
+                    $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Detalle</a>";
+                    $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
                     $opciones_boton .= $editar . $pdf;
                 } else {
                     $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar Pedido</a>";
                     $recepcion = "<a href='" . route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Recepción</a>";
-                    $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>PDF Orden Recepción</a>";
+                    $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
 
                     $opciones_boton .= $editar . $recepcion . $pdf;
                 }

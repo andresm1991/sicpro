@@ -95,15 +95,18 @@ class GenerarPdfController extends Controller
         $total_orden = 0;
 
         foreach ($pedido->adquisiciones_detalle as $key => $detalle) {
-            $total = number_format(($detalle->cantidad_recibida * $detalle->valor), 2);
-            $total_orden = $total_orden + $total;
+
+            $total = $detalle->cantidad_solicitada * $detalle->valor;
+
+            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva) : $total_orden + $total;
 
             $items[] = [
                 'producto' => $detalle->producto->descripcion,
                 'cantidad' => $detalle->cantidad_solicitada,
                 'cantidad_recibida' => $detalle->cantidad_recibida,
                 'unidad_medida' => $detalle->unidad_medida->descripcion ?? '',
-                'valor' => number_format($detalle->valor, 2),
+                'valor' => $detalle->valor,
+                'iva' => $detalle->producto->iva,
                 'total' => $total,
                 'necesidad' => $detalle->necesidad,
                 'kilometraje' => $detalle->kilometraje,
@@ -112,7 +115,7 @@ class GenerarPdfController extends Controller
 
         $orden = [
             'proyecto' => $pedido->proyecto->nombre_proyecto,
-            'numero_pedido' => 'ORD-' . $pedido->numero,
+            'numero_pedido' => $pedido->numero,
             'fecha' => date('d-m-Y', strtotime($pedido->fecha)),
             'proveedor' => $order_recepcion->proveedor->razon_social,
             'etapa' => $pedido->etapa->descripcion,
@@ -120,8 +123,11 @@ class GenerarPdfController extends Controller
             'cliente' => $cliente,
             'forma_pago' => $order_recepcion->forma_pago->descripcion,
             'items' => $items,
-            'total_orden' => number_format($total_orden, 2),
+            'total_orden' => $total_orden,
+            'estado_pedido' => $pedido->estado,
+            'factura' => $pedido->factura,
         ];
+
         //return view('pdf.recepcion', compact('orden'));
 
         $logo_base64 = $this->logoBase64();

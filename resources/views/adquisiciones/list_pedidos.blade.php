@@ -53,12 +53,12 @@
                                         <td class="align-middle">{{ $pedido->etapa->descripcion }}</td>
                                         <td class="align-middle">{{ $pedido->tipo_etapa->descripcion }}</td>
                                         <td class="align-middle">
-                                            @if (preg_match('/\b(Completado|Finalizado)\b/i', $pedido->estado) )
-                                            <span class="badge badge-success ">Finalizado</span>    
+                                            @if (preg_match('/\b(Completado|Finalizado)\b/i', $pedido->estado))
+                                                <span class="badge badge-success ">Finalizado</span>
                                             @else
-                                            <span class="badge badge-warning ">{{ $pedido->estado }}</span>    
+                                                <span class="badge badge-warning ">{{ $pedido->estado }}</span>
                                             @endif
-                                            
+
                                         </td>
                                         <td class="align-middle align-middle text-right text-truncate">
                                             <button type="button" class="btn btn-outline-dark" data-container="body"
@@ -66,8 +66,7 @@
                                                 data-content ="
                                                 <a href='{{ route('proyecto.adquisiciones.orden.pedido.edit', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pedido' => $pedido->id]) }}' class='dropdown-item'>Editar</a>
                                                 <a href='#' class='dropdown-item eliminar-pedido' id='{{ $pedido->id }}'>Eliminar</a>
-                                                <a href='{{ route('pdf.adquisicion', $pedido->id) }}' class='dropdown-item' target='_blank'>PDF Orden Pedido</a>
-                                                <a href='{{ route('pdf.recepcion', $pedido->id) }}' class='dropdown-item' target='_blank'>PDF Orden Recepción</a> ">
+                                                <a href='{{ route('pdf.recepcion', $pedido->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a> ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>
                                         </td>
