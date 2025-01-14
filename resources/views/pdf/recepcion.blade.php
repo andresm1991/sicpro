@@ -100,7 +100,7 @@
     <div class="header">
         <img src="data:image/png;base64,{{ $logo_base64 }}" alt="Logo">
         <div class="order-number">
-            Pedido Nro. <br>{{ $orden['numero_pedido'] }}
+            Adquisición Nro. <br>{{ $orden['numero_pedido'] }}
         </div>
     </div>
 

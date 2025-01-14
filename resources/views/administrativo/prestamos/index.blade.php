@@ -25,7 +25,7 @@
                     <div class="col-md-8 col-12 ">
                         <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                             <i class="fal fa-search fa-lg form-control-icon"></i>
-                            <input type="text" name="prestamo_search" class="form-control form-control-round"
+                            <input type="text" name="search_prestamo" class="form-control form-control-round"
                                 placeholder="Buscar....">
                         </div>
                     </div>
@@ -51,15 +51,32 @@
                                     <td class="align-middle">{{ $prestamo->plazo }} semanas</td>
                                     <td class="align-middle">$ {{ number_format($prestamo->saldo, 2) }}</td>
                                     <td class="align-middle"> {{ dateFormatHumans($prestamo->fecha_vencimiento) }}</td>
-                                    <td class="align-middle"> {{ $prestamo->estado->descripcion }}</td>
-                                    <td class="align-middle align-middle text-right text-truncate">
-                                        <button type="button" class="btn btn-outline-dark" data-container="body"
-                                            data-toggle="popover" data-placement="left" data-trigger="focus"
-                                            data-content ="<a href='{{ route('administrativo.prestamos.detalle.prestamo', $prestamo->id) }}' class='dropdown-item'>Detalle</a>
-                                            <a href='javascript:void(0)' class='dropdown-item editar' id='{{ $prestamo->id }}'>Editar</a>
-                                            <a href='javascript:void(0)' class='dropdown-item eliminar' id='{{ $prestamo->id }}'>Eliminar</a>">
-                                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                        </button>
+                                    <td class="align-middle"> <span
+                                            class="badge badge-{{ $prestamo->estado->descripcion == 'Pagado' ? 'success' : 'warning' }}">{{ $prestamo->estado->descripcion }}</span>
+                                    </td>
+                                    <td class="align-middle ">
+                                        <div class="btn-group  dropleft">
+                                            <button type="button" class="btn btn-outline-dark dropdown-toggle"
+                                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                Opciones
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a href='{{ route('administrativo.prestamos.detalle.prestamo', $prestamo->id) }}'
+                                                    class="dropdown-item">Detalle</a>
+                                                <a class="dropdown-item editar" data-prestamo="{{ $prestamo->id }}"
+                                                    data-monto="{{ $prestamo->monto }}"
+                                                    data-plazo="{{ $prestamo->plazo }}"
+                                                    data-saldo="{{ $prestamo->saldo }}"
+                                                    data-interes="{{ $prestamo->interes }}"
+                                                    data-motivo="{{ $prestamo->motivo }}"
+                                                    data-estado="{{ $prestamo->estado_id }}"
+                                                    data-trabajador="{{ $prestamo->trabajador_id }}"
+                                                    data-fecha-solicitud="{{ $prestamo->fecha_solicitud }}"
+                                                    data-fecha-aprobacion="{{ $prestamo->fecha_aprobacion }}"
+                                                    data-fecha-vencimiento="{{ $prestamo->fecha_vencimiento }}"
+                                                    href="javascript:void(0)">Editar</a>
+                                            </div>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty

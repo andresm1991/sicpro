@@ -57,7 +57,12 @@
                         </div>
                     </div>
 
-
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <button class="btn btn-dark recalcular-pagos-prestamo" id="{{ $prestamo->id }}">Recalcular
+                                Pagos</button>
+                        </div>
+                    </div>
                 </fieldset>
                 <div class="table-responsive" id="tabla-pagos">
                     <table class="table table-bordered table-hover">
@@ -89,11 +94,11 @@
                                             </button>
                                             <div class="dropdown-menu">
                                                 <a class="dropdown-item registrar-pago" href="javascript:void(0)"
-                                                    data-toggle="modal" data-backdrop="static" data-keyboard="false"
-                                                    data-target="#modalPago"
                                                     data-monto-programado="{{ $pago->monto_programado }}"
-                                                    data-pago={{ $pago->id }}>Registrar Pago</a>
-                                                <a class="dropdown-item posponer-pago" href="javascript:void(0)">Posponer
+                                                    data-estado="{{ $pago->estado->descripcion }}"
+                                                    data-pago="{{ $pago->id }}">Registrar Pago</a>
+                                                <a class="dropdown-item posponer-pago" data-pago="{{ $pago->id }}"
+                                                    href="javascript:void(0)">Posponer
                                                     Pago</a>
                                             </div>
                                         </div>

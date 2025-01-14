@@ -181,9 +181,12 @@ Route::group(['middleware' => ['auth']], function () {
         Route::group(['prefix' => 'prestamos', 'as' => 'prestamos.'], function () {
             Route::get('/', [PrestamoController::class, 'index'])->name('index');
             Route::post('/nuevo', [PrestamoController::class, 'create']);
-            Route::put('/actualizar/{prestamo}', [PrestamoController::class, 'update']);
+            Route::put('/actualizar/{prestamo}', [PrestamoController::class, 'updatePrestamo']);
             Route::get('/detalle-prestamo/{prestamo}', [PrestamoController::class, 'detallePrestamo'])->name('detalle.prestamo');
             Route::put('/pago/{pago}', [PrestamoController::class, 'registrarPago']);
+            Route::post('/recalcular_pagos', [PrestamoController::class, 'recalcularPagos']);
+            Route::post('/posponer-pago', [PrestamoController::class, 'posponerPago']);
+            Route::get('/buscar-prestamo', [PrestamoController::class, 'buscar']);
         });
     });
     //** PETICIONES AJAX **
