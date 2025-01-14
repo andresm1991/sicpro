@@ -78,7 +78,7 @@ class ManoObra extends Model
                 $prestamos = Prestamo::with('pagos_prestamo')
                     ->where('trabajador_id', $proveedor_id)
                     ->whereHas('estado', function ($query) {
-                        $query->where('descripcion', 'Pendiente');
+                        $query->where('descripcion', 'Pendiente')->orWhere('descripcion', 'Pagado');
                     })->get();
             }
             //$prestamos = Prestamo::where('trabajador_id', $proveedor_id)->get();
