@@ -245,6 +245,12 @@ class AdministrativoController extends Controller
             }, $request->productos, $request->cantidad, $request->necesidad);
 
             DB::beginTransaction();
+
+            $adquisicion->proyecto_id = $request->proyecto;
+            $adquisicion->etapa_id = $request->etapa;
+            $adquisicion->tipo_etapa_id = $request->actividad;
+            $adquisicion->save();
+
             foreach ($result as $data) {
                 AdquisicionDetalle::updateOrCreate(
                     [

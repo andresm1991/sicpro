@@ -16,7 +16,7 @@
     </div>
     <div class="col-md-4 col-12">
         <div class="form-group">
-            {{ Form::label('', 'Tipo', ['class' => 'col-form-label']) }}
+            {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
             <select name="etapa" class="form-control select2-tag" data-placeholder="selecciona opción">
                 <option></option>
                 @foreach ($etapa as $id => $nombre)
