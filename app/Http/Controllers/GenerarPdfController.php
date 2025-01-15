@@ -55,7 +55,7 @@ class GenerarPdfController extends Controller
             'cliente' => $cliente,
             'items' => $items,
         ];
-        //return view('pdf.adquiscion', compact('orden'));
+
         $logo_base64 = $this->logoBase64();
         $pdf = PDF::loadView('pdf.adquiscion', compact('orden', 'logo_base64'));
 
@@ -128,9 +128,10 @@ class GenerarPdfController extends Controller
             'factura' => $pedido->factura,
         ];
 
-        //return view('pdf.recepcion', compact('orden'));
+
 
         $logo_base64 = $this->logoBase64();
+        //return view('pdf.recepcion', compact('orden', 'logo_base64'));
         $pdf = PDF::loadView('pdf.recepcion', compact('orden', 'logo_base64'));
 
         return $pdf->stream('orden_recepcion_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)

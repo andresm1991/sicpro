@@ -10,6 +10,7 @@
             font-family: Arial, sans-serif;
             font-size: 12px;
             color: #333;
+            text-transform: uppercase;
         }
 
         .header {
