@@ -34,11 +34,11 @@
     @yield('styles')
 </head>
 
-<body>
-    <div id="app">
-        <div class="overlay"></div>
-        @yield('content')
-    </div>
+{!! Auth::check() ? '<body onload="askForPermission()">' : '<body>' !!}
+<div id="app">
+    <div class="overlay"></div>
+    @yield('content')
+</div>
 </body>
 
 <!-- jQuery -->
@@ -88,6 +88,61 @@
     });
 
     var base_url = "{{ url('') }}";
+</script>
+
+<script>
+    navigator.serviceWorker.register("{{ URL::asset('service-worker.js') }}");
+
+    function askForPermission() {
+        Notification.requestPermission().then((permission) => {
+            if (permission === 'granted') {
+
+                // get service worker
+                navigator.serviceWorker.ready.then((sw) => {
+                    // subscribe
+                    return sw.pushManager.subscribe({
+                        userVisibleOnly: true,
+                        applicationServerKey: "BH-NGMNWmMPA88qy-iMBU6ysoc60lirkGi-cuJlsvQIaYZHjsnhEM0Bond4gH3pwJ-7OgZzhb-0_nlR_GW0gwws"
+                    }).then((subscription) => {
+                        //console.log(JSON.stringify(subscription));
+                        saveSub(JSON.stringify(subscription));
+                    });
+                });
+            }
+        });
+    }
+
+    function saveSub(sub) {
+        $.ajax({
+            type: 'post',
+            url: '{{ URL('save-push-notification-sub') }}',
+            data: {
+                '_token': "{{ csrf_token() }}",
+                'sub': sub
+            },
+            success: function(data) {
+                console.log(data);
+            }
+        });
+    }
+
+
+    function sendNotification() {
+        $.ajax({
+            type: 'post',
+            url: '{{ URL('send-push-notification') }}',
+            data: {
+                '_token': "{{ csrf_token() }}",
+                'title': $("#title").val(),
+                'body': $("#body").val(),
+                'idOfProduct': $("#idOfProduct").val(),
+            },
+            success: function(data) {
+                alert('send Successfull');
+                console.log(data);
+            }
+        });
+    }
 </script>
 
 </html>

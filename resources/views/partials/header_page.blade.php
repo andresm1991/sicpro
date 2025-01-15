@@ -44,7 +44,7 @@
                 <div class="menu">
                     <ul>
                         <li><a href="{{ route('perfil.show') }}"><i class="fa-light fa-user"></i>&nbsp;Perfil</a></li>
-                        <li><a href="#"><i class="fa-light fa-envelope"></i>&nbsp;Notificaciones</a></li>
+                        <li><a href="#"><i class="fa-regular fa-bell"></i>&nbsp;Notificaciones</a></li>
                         <li><a href="{{ route('logout') }}"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();"><i
                                     class="fa-light fa-arrow-right-from-bracket"></i>&nbsp;Cerrar

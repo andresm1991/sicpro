@@ -8,6 +8,7 @@ use Throwable;
 use App\Models\Articulo;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
+use App\Models\Inventario;
 use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
@@ -15,15 +16,15 @@ use Illuminate\Http\Request;
 use App\Models\OrdenRecepcion;
 use Yajra\DataTables\DataTables;
 use App\Models\AdquisicionDetalle;
+use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
-use App\Http\Requests\AdquisicionAdministrativoRequest;
-use App\Http\Requests\AdquisicionStoreRequest;
 use Illuminate\Support\Facades\Auth;
+use App\Services\PushNotificationService;
+use App\Http\Requests\AdquisicionStoreRequest;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
-use App\Models\DiccionarioPalabra;
-use App\Models\Inventario;
+use App\Http\Requests\AdquisicionAdministrativoRequest;
 
 class AdquisicionController extends Controller
 {
@@ -211,6 +212,8 @@ class AdquisicionController extends Controller
                 }
 
                 DB::commit();
+
+                PushNotificationService::sendNotification(Auth::user(), 'Adquisicion nro. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision');
                 LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('success', 'Orden de pedido generada con éxito.');
             } else {

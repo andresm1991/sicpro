@@ -39,7 +39,14 @@ class UserController extends Controller
     {
         $user = Auth::user();
         $title_page = 'Mi Perfil';
-        return view('user.perfil', compact('user', 'title_page'));
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Sistema', 'url' => route('sistema.index')],
+            ['name' => 'Usuarios', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('user.perfil', compact('user', 'title_page', 'breadcrumbs'));
     }
 
     /**

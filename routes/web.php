@@ -1,24 +1,25 @@
 <?php
 
-use App\Http\Controllers\AdministrativoController;
-use App\Http\Controllers\AdquisicionController;
-use App\Http\Controllers\ArticuloController;
-use App\Http\Controllers\CatalogoDatoController;
-use App\Http\Controllers\ConfiguracionController;
-use App\Http\Controllers\ContratistaController;
-use App\Http\Controllers\GenerarPdfController;
+use App\Models\CatalogoDato;
+use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SistemaController;
+use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\PrestamoController;
-use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ProyectoController;
-use App\Http\Controllers\SistemaController;
-use App\Http\Controllers\UserController;
-use App\Models\AdquisicionDetalle;
-use App\Models\CatalogoDato;
+use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\GenerarPdfController;
+use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\AdquisicionController;
+use App\Http\Controllers\ContratistaController;
+use App\Http\Controllers\CatalogoDatoController;
+use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\AdministrativoController;
+use App\Http\Controllers\PushNotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -206,6 +207,12 @@ Route::group(['middleware' => ['auth']], function () {
     Route::delete('/orden-trabajo/eliminar/{id}', [ContratistaController::class, 'eliminarOrdenTrabajo']);
     Route::get('/proveedores', [ProveedorController::class, 'getProveedores']);
     Route::get('/forma-pago-prestamo', [CatalogoDatoController::class, 'getFormasPagoPrestamo']);
+
+    // Start Push Notification==========================================================
+    Route::view('push-notification', 'PushNotification.Index');
+    Route::post('save-push-notification-sub', [PushNotificationController::class, 'saveSubscription']);
+    Route::post('send-push-notification', [PushNotificationController::class, 'sendNotification']);
+    // End Push Notification==========================================================
 
     Route::get('/no-access', function () {
         return view('errors.no-access');
