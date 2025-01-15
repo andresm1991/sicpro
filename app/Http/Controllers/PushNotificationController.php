@@ -59,6 +59,42 @@ class PushNotificationController extends Controller
             $items->subscriptions = $data;
             $items->endpoint = $data->endpoint;
             $items->save();
+        } else {
+
+            $auth = [
+                'VAPID' => [
+                    'subject' => 'https://sicpro.test/', // can be a mailto: or your website address
+                    'publicKey' => config('notifications.push_notification_public_key'), // (recommended) uncompressed public key P-256 encoded in Base64-URL
+                    'privateKey' => config('notifications.push_notification_private_key'), // (recommended) in fact the secret multiplier of the private key encoded in Base64-URL
+                ],
+            ];
+
+            $webPush = new WebPush($auth);
+
+            // Construct the payload with the logo
+            $payload = json_encode([
+                'title' => 'sicpro push',
+                'body' => 'esto es una prueba',
+                'url' => '',
+            ]);
+
+            /* $msg = new PushNotificationMsg();
+            $msg->title = $request->title;
+            $msg->body = $request->body;
+            $msg->url = $request->idOfProduct;
+            $msg->save();
+*/
+            $notifications = PushNotification::all();
+
+            foreach ($notifications as $notification) {
+                $webPush->sendOneNotification(
+                    Subscription::create($notification['subscriptions']),
+                    $payload,
+                    ['TTL' => 5000]
+                );
+            }
+
+            return response()->json(['message' => 'send successfully'], 200);
         }
         return response()->json(['message' => 'added successfully'], 200);
     }

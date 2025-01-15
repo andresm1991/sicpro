@@ -102,9 +102,9 @@
                     // subscribe
                     return sw.pushManager.subscribe({
                         userVisibleOnly: true,
-                        applicationServerKey: "BH-NGMNWmMPA88qy-iMBU6ysoc60lirkGi-cuJlsvQIaYZHjsnhEM0Bond4gH3pwJ-7OgZzhb-0_nlR_GW0gwws"
+                        applicationServerKey: "{{ config('notifications.push_notification_public_key') }}"
                     }).then((subscription) => {
-                        //console.log(JSON.stringify(subscription));
+                        console.log(JSON.stringify(subscription));
                         saveSub(JSON.stringify(subscription));
                     });
                 });
