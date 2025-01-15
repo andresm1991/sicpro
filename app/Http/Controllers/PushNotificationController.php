@@ -59,7 +59,8 @@ class PushNotificationController extends Controller
             $items->subscriptions = $data;
             $items->endpoint = $data->endpoint;
             $items->save();
+
+            return response()->json(['message' => 'added successfully'], 200);
         }
-        return response()->json(['message' => 'added successfully'], 200);
     }
 }
