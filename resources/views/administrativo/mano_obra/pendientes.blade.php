@@ -24,8 +24,8 @@
                 <tr id="{{ $mano_obra->id }}">
                     <td class="align-middle">{{ $mano_obra->semana }}</td>
                     <td class="align-middle">{{ strtoupper($mano_obra->proyecto->nombre_proyecto) }}</td>
-                    <td
-                        class="align-middle>{{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}</td>
+                    <td class="align-middle">
+                        {{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}</td>
                     <td class="align-middle">
                         {{ $mano_obra->etapa->descripcion }}</td>
                     <td class="align-middle">
