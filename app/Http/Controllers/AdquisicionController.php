@@ -725,7 +725,7 @@ class AdquisicionController extends Controller
                     $opciones_boton .= $editar . $recepcion . $pdf;
                 }
 
-                $proyecto = $adquisicion->proyecto_id > 0 ? 'strtoupper($adquisicion->proyecto->nombre_proyecto)' : 'OTROS';
+                $proyecto = $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'OTROS';
                 $output .= '<tr id="' . $adquisicion->id . '">' .
                     '<td class="align-middle">' . $adquisicion->numero . '</td>' .
                     '<td class="align-middle">' . date('d-m-Y', strtotime($adquisicion->fecha)) . '</td>' .
