@@ -101,7 +101,7 @@ class AdministrativoController extends Controller
             }
             $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
             $proyectos = $proyectos->toArray(); // Convertir a array
-            $proyectos['0'] = 'Otros'; // Añadir el nuevo elemento al final
+            $proyectos['0'] = 'General'; // Añadir el nuevo elemento al final
             $proyectos = collect($proyectos); // Convertir nuevamente a colección si es necesario
             $etapa = CatalogoDato::getChildrenCatalogo('tipo.costos')->pluck('descripcion', 'id');
             $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');

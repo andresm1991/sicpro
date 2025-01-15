@@ -12,4 +12,9 @@ class PushNotification extends Model
     protected $casts = [
         'subscriptions' => 'array'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

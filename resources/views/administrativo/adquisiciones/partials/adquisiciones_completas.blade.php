@@ -29,7 +29,7 @@
                     <td class="align-middle">{{ $adquisicion->numero }}</td>
                     <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>
                     <td class="align-middle">
-                        {{ $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'OTROS' }}
+                        {{ $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'GENERAL' }}
                     </td>
                     <td class="align-middle">{{ strtoupper($adquisicion->etapa->descripcion) }}</td>
                     <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion) }}</td>

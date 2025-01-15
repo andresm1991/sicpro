@@ -725,7 +725,7 @@ class AdquisicionController extends Controller
                     $opciones_boton .= $editar . $recepcion . $pdf;
                 }
 
-                $proyecto = $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'OTROS';
+                $proyecto = $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'GENERAL';
                 $output .= '<tr id="' . $adquisicion->id . '">' .
                     '<td class="align-middle">' . $adquisicion->numero . '</td>' .
                     '<td class="align-middle">' . date('d-m-Y', strtotime($adquisicion->fecha)) . '</td>' .
@@ -779,7 +779,7 @@ class AdquisicionController extends Controller
         $numero_orden = generarNumeroOrden();
         $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
         $proyectos = $proyectos->toArray(); // Convertir a array
-        $proyectos['0'] = 'Otros'; // Añadir el nuevo elemento al final
+        $proyectos['0'] = 'GENERAL'; // Añadir el nuevo elemento al final
         $proyectos = collect($proyectos); // Convertir nuevamente a colección si es necesario
         $etapa = CatalogoDato::getChildrenCatalogo('tipo.costos')->pluck('descripcion', 'id');
         $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
