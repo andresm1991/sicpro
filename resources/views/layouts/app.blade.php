@@ -104,7 +104,7 @@
                         userVisibleOnly: true,
                         applicationServerKey: "{{ config('notifications.push_notification_public_key') }}"
                     }).then((subscription) => {
-                        console.log(JSON.stringify(subscription));
+                        //console.log(JSON.stringify(subscription));
                         saveSub(JSON.stringify(subscription));
                     });
                 });
