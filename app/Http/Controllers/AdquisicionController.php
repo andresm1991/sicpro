@@ -702,7 +702,7 @@ class AdquisicionController extends Controller
 
         if ($request->ajax()) {
             $buscar = $request->buscar;
-            $tipo_busqueda  = $request->tipo == 'pendientes' ? 'Finalizado' : 'Completado';
+            $tipo_busqueda  = $request->tipo == 'pendientes' ? 'En Proceso' : 'Completado';
             $output = '';
 
             $adquisiciones = Adquisicion::where('numero', 'LIKE', '%' . $buscar . '%')
@@ -725,10 +725,11 @@ class AdquisicionController extends Controller
                     $opciones_boton .= $editar . $recepcion . $pdf;
                 }
 
+                $proyecto = $adquisicion->proyecto_id > 0 ? 'strtoupper($adquisicion->proyecto->nombre_proyecto)' : 'OTROS';
                 $output .= '<tr id="' . $adquisicion->id . '">' .
                     '<td class="align-middle">' . $adquisicion->numero . '</td>' .
                     '<td class="align-middle">' . date('d-m-Y', strtotime($adquisicion->fecha)) . '</td>' .
-                    '<td class="align-middle">' . strtoupper($adquisicion->proyecto->nombre_proyecto) . '</td>' .
+                    '<td class="align-middle">' . $proyecto . '</td>' .
                     '<td class="align-middle">' . strtoupper($adquisicion->etapa->descripcion) . '</td>' .
                     '<td class="align-middle">' . strtoupper($adquisicion->tipo_etapa->descripcion) . '</td>' .
                     '<td class="align-middle align-middle text-right text-truncate">' .
