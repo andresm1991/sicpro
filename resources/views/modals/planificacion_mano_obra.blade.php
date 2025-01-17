@@ -51,13 +51,13 @@
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Fecha Inicio', ['class' => 'col-form-label']) }}
-                                {{ Form::text('fecha_inicio', old('fecha_inicio'), ['class' => 'form-control datepicker-no-back', 'placeholder' => 'Ingrese fecha de inicio']) }}
+                                {{ Form::text('fecha_inicio', old('fecha_inicio'), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese fecha de inicio']) }}
                             </div>
                         </div>
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Fecha Fin', ['class' => 'col-form-label']) }}
-                                {{ Form::text('fecha_fin', old('fecha_fin'), ['class' => 'form-control datepicker-no-back', 'placeholder' => 'Ingrese fecha de finalización']) }}
+                                {{ Form::text('fecha_fin', old('fecha_fin'), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese fecha de finalización']) }}
                             </div>
                         </div>
                     </div>

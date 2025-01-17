@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Throwable;
 use Carbon\Carbon;
-use Carbon\CarbonPeriod;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
+use Carbon\CarbonPeriod;
 use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
@@ -18,6 +18,7 @@ use PhpParser\Node\Expr\FuncCall;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use App\Http\Requests\ValidarFechasPlanificacionRequest;
 
 class ManoObraController extends Controller
 {
@@ -214,7 +215,7 @@ class ManoObraController extends Controller
      * @param Request
      * @return json
      */
-    public function storePlanificacion(Request $request)
+    public function storePlanificacion(ValidarFechasPlanificacionRequest $request)
     {
         if ($request->ajax()) {
             $semana = ManoObra::where('proyecto_id', $request->proyecto_id)
