@@ -184,25 +184,60 @@
     </div>
 
     <div class="content">
-        <h1 class="page-title">{{ $info_mano_obra['proyecto'] }}</h1>
-        <div class="details">
-            <div class="left">
-                <strong class="title">Fecha:</strong> <span
-                    class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
-                <strong class="title">Semana:</strong> <span class="text-content">
-                    {{ $info_mano_obra['semana'] }}</span><br>
-                <strong class="title">Etapa:</strong> <span
-                    class="text-content">{{ $info_mano_obra['etapa'] }}</span><br>
 
-                @if (!is_null($info_mano_obra['actividad']))
-                    <strong class="title">Actividad:</strong> <span
-                        class="text-content">{{ ucfirst($info_mano_obra['actividad']) }}</span>
-                @endif
+        @if ($pago)
+            <h1 class="page-title">
+                Orden Pago mano de obra<br>
+                Nro. {{ $info_mano_obra['pago_nro'] }}
+            </h1>
+
+            <div class="details">
+                <div class="left">
+                    <strong class="title">Proyecto:</strong> <span
+                        class="text-content">{{ $info_mano_obra['proyecto'] }}</span><br>
+                    <strong class="title">Fecha:</strong> <span
+                        class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
+                    <strong class="title">Semana:</strong> <span class="text-content">
+                        {{ $info_mano_obra['semana'] }}</span><br>
+                    <strong class="title">Etapa:</strong> <span
+                        class="text-content">{{ $info_mano_obra['etapa'] }}</span><br>
+
+                    @if (!is_null($info_mano_obra['actividad']))
+                        <strong class="title">Actividad:</strong> <span
+                            class="text-content">{{ ucfirst($info_mano_obra['actividad']) }}</span>
+                    @endif
+                </div>
+
+                <div class="clear"></div>
+
             </div>
+        @else
+            <h1 class="page-title">
+                {{ $info_mano_obra['proyecto'] }}
+            </h1>
 
-            <div class="clear"></div>
+            <div class="details">
+                <div class="left">
+                    <strong class="title">Fecha:</strong> <span
+                        class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
+                    <strong class="title">Semana:</strong> <span class="text-content">
+                        {{ $info_mano_obra['semana'] }}</span><br>
+                    <strong class="title">Etapa:</strong> <span
+                        class="text-content">{{ $info_mano_obra['etapa'] }}</span><br>
 
-        </div>
+                    @if (!is_null($info_mano_obra['actividad']))
+                        <strong class="title">Actividad:</strong> <span
+                            class="text-content">{{ ucfirst($info_mano_obra['actividad']) }}</span>
+                    @endif
+                </div>
+
+                <div class="clear"></div>
+
+            </div>
+        @endif
+
+
+
 
         <div class="items">
             <table>
@@ -222,6 +257,9 @@
                         <th>TOTAL</th>
                         <th>Descuento</th>
                         <th>Detalle Descuento</th>
+                        @if ($pago)
+                            <th>Descuento Prestamo</th>
+                        @endif
                         <th>Liquido a Recibir</th>
                         <th>Observaciones</th>
                         <th>Firma</th>
@@ -239,6 +277,7 @@
                         $totalPagoDias = 0;
                         $totalDescuentos = 0;
                         $totalRecibir = 0;
+                        $totalPagosPrestamos = 0;
                     @endphp
 
                     @foreach ($info_mano_obra['detalle'] as $detalle)
@@ -272,7 +311,9 @@
                             $totalAdicionales += $detalle['total_adicional'];
                             $totalPagoDias += array_sum($detalle['dias']) + $detalle['total_adicional'];
                             $totalDescuentos += $detalle['total_descuento'];
-                            $totalRecibir += $detalle['total'] - $detalle['total_descuento'];
+                            $totalPagosPrestamos += $pago ? collect($detalle['prestamo'])->sum('pagos') : 0;
+                            $pago_prestamo = $pago ? collect($detalle['prestamo'])->sum('pagos') : 0;
+                            $totalRecibir += $detalle['total'] - $detalle['total_descuento'] - $pago_prestamo;
                         @endphp
                         <tr>
                             @if ($isFirstRowForName)
@@ -299,6 +340,13 @@
                             <td>
                                 {{ implode(',', $detalle['detalle_descuento']) }}
                             </td>
+                            <!-- pago prestamo -->
+                            @if ($pago)
+                                <td class="align-middle text-fontsize-12">$
+                                    {{ number_format(collect($detalle['prestamo'])->sum('pagos'), 2) }}
+                                </td>
+                            @endif
+
                             @if ($isFirstRowForName)
                                 <td rowspan="{{ $rowspan }}">$ {{ number_format($liquidoRecibirTotal, 2) }}</td>
                             @endif
@@ -316,6 +364,14 @@
                         <td><strong>$ {{ number_format($totalPagoDias, 2) }}</strong></td>
                         <td><strong>$ {{ number_format($totalDescuentos, 2) }}</strong></td>
                         <td></td> <!-- Detalle descuento -->
+                        <!-- Total descuentos prestamos -->
+                        @if ($pago)
+                            <td>
+                                <strong style="font-size: 12px;">$
+                                    {{ number_format($totalPagosPrestamos, 2) }}</strong>
+                            </td>
+                        @endif
+
                         <td><strong>$ {{ number_format($totalRecibir, 2) }}</strong></td>
                         <td></td>
                         <td></td> <!-- Firma -->

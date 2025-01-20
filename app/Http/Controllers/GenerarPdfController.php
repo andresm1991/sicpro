@@ -137,7 +137,7 @@ class GenerarPdfController extends Controller
         return $pdf->stream('orden_recepcion_' . $pedido->numero . '.pdf'); // para verl el pdf directamnete (stream), para descargar (download)
     }
 
-    public function planificacionManoObraPDF(ManoObra $mano_obra)
+    public function planificacionManoObraPDF(ManoObra $mano_obra, $pago = false)
     {
         // Obtener todos los registros de mano de obra y agruparlos por proveedor y fechas
         $detalles = DetalleManoObra::with(['proveedor', 'articulo'])
@@ -147,6 +147,7 @@ class GenerarPdfController extends Controller
         $agrupados = $detalles->groupBy('proveedor_id');
 
         $info_mano_obra = [
+            'pago_nro' => '',
             'proyecto' => $mano_obra->proyecto->nombre_proyecto,
             'etapa' => $mano_obra->etapa->descripcion,
             'actividad' => $mano_obra->actividad->descripcion ?? null,
@@ -155,74 +156,85 @@ class GenerarPdfController extends Controller
             'detalle' => []  // Para almacenar los detalles procesados
         ];
 
-        foreach ($agrupados as $proveedor_id => $registros_por_proveedor) {
-            $nombre_mostrado = false;  // Bandera para saber si ya mostramos el nombre del proveedor
+        if ($pago) {
+            $pago_nro = $mano_obra->pago_mano_obra()->first();
+            $formateada = Carbon::parse($pago_nro->created_at)->format('Ymd');
+            $numero_orden = $formateada . '-' . str_pad($pago_nro->id, 3, '0', STR_PAD_LEFT);
 
-            foreach ($registros_por_proveedor->groupBy('articulo_id') as $articulo_id => $registros) {
-                // Inicializamos las variables para cada trabajador y su cargo
-                $fila = [
-                    'nombre' => '',
-                    'cargo' => '',
-                    'dias' => array_fill(0, 6, 0),   // Días de la semana en blanco (Lunes a Sábado)
-                    'total_adicional' => 0,
-                    'total' => 0,
-                    'total_descuento' => 0,
-                    'liquido_recibir' => 0,
-                    'observacion' => [],
-                    'detalle_adicional' => [],
-                    'detalle_descuento' => [],
-                ];
+            $detalle = $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id, 'completo');
+            $info_mano_obra['detalle'] = collect($detalle['detalle'])->all();
+            $info_mano_obra['pago_nro'] =  $numero_orden;
+        } else {
+            foreach ($agrupados as $proveedor_id => $registros_por_proveedor) {
+                $nombre_mostrado = false;  // Bandera para saber si ya mostramos el nombre del proveedor
 
-                // Iteramos los registros de cada proveedor y cargo
-                foreach ($registros as $detalle) {
-                    $articulo = $detalle->articulo;
-                    $proveedor = $detalle->proveedor;
+                foreach ($registros_por_proveedor->groupBy('articulo_id') as $articulo_id => $registros) {
+                    // Inicializamos las variables para cada trabajador y su cargo
+                    $fila = [
+                        'nombre' => '',
+                        'cargo' => '',
+                        'dias' => array_fill(0, 6, 0),   // Días de la semana en blanco (Lunes a Sábado)
+                        'total_adicional' => 0,
+                        'total' => 0,
+                        'total_descuento' => 0,
+                        'liquido_recibir' => 0,
+                        'observacion' => [],
+                        'detalle_adicional' => [],
+                        'detalle_descuento' => [],
+                    ];
 
-                    $fila['nombre'] = strtoupper($proveedor->razon_social);
-                    // El cargo puede cambiar por artículo
-                    $fila['cargo'] = $articulo->descripcion;
+                    // Iteramos los registros de cada proveedor y cargo
+                    foreach ($registros as $detalle) {
+                        $articulo = $detalle->articulo;
+                        $proveedor = $detalle->proveedor;
 
-                    // Convertimos la fecha a día de la semana (1 = Lunes, 2 = Martes, etc.)
-                    $diaSemana = Carbon::parse($detalle->fecha)->dayOfWeek;  // 0 = Domingo, 1 = Lunes, etc.
+                        $fila['nombre'] = strtoupper($proveedor->razon_social);
+                        // El cargo puede cambiar por artículo
+                        $fila['cargo'] = $articulo->descripcion;
 
-                    // Si el día de la semana está entre Lunes y Sábado
-                    if ($diaSemana >= 1 && $diaSemana <= 6) {
-                        // Restamos 1 a `diaSemana` para ajustar al índice (Lunes = 0, Sábado = 5)
-                        $fila['dias'][$diaSemana - 1] += $detalle->valor;
+                        // Convertimos la fecha a día de la semana (1 = Lunes, 2 = Martes, etc.)
+                        $diaSemana = Carbon::parse($detalle->fecha)->dayOfWeek;  // 0 = Domingo, 1 = Lunes, etc.
+
+                        // Si el día de la semana está entre Lunes y Sábado
+                        if ($diaSemana >= 1 && $diaSemana <= 6) {
+                            // Restamos 1 a `diaSemana` para ajustar al índice (Lunes = 0, Sábado = 5)
+                            $fila['dias'][$diaSemana - 1] += $detalle->valor;
+                        }
+
+                        // Acumulamos los totales
+                        $fila['total'] += $detalle->valor + $detalle->adicional;
+                        $fila['total_adicional'] += $detalle->adicional;
+                        $fila['total_descuento'] += $detalle->descuento;
+                        if ($detalle->detalle_adicional) {
+                            $fila['detalle_adicional'][] = $detalle->detalle_adicional;
+                        }
+                        if ($detalle->detalle_descuento) {
+                            $fila['detalle_descuento'][] = $detalle->detalle_descuento;
+                        }
+
+
+
+                        // Si existe una observación, la agregamos
+                        if (!empty($detalle->observacion)) {
+                            $fila['observacion'][] = $detalle->observacion;  // Concatenamos las observaciones
+                        }
                     }
 
-                    // Acumulamos los totales
-                    $fila['total'] += $detalle->valor + $detalle->adicional;
-                    $fila['total_adicional'] += $detalle->adicional;
-                    $fila['total_descuento'] += $detalle->descuento;
-                    if ($detalle->detalle_adicional) {
-                        $fila['detalle_adicional'][] = $detalle->detalle_adicional;
-                    }
-                    if ($detalle->detalle_descuento) {
-                        $fila['detalle_descuento'][] = $detalle->detalle_descuento;
-                    }
+                    // Calculamos el líquido a recibir
+                    $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
 
+                    // Añadimos la fila al array de resultados
+                    $info_mano_obra['detalle'][] = $fila;
 
-
-                    // Si existe una observación, la agregamos
-                    if (!empty($detalle->observacion)) {
-                        $fila['observacion'][] = $detalle->observacion;  // Concatenamos las observaciones
-                    }
+                    // Para las siguientes filas del mismo proveedor, dejamos el nombre en blanco
+                    $nombre_mostrado = true;
                 }
-
-                // Calculamos el líquido a recibir
-                $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
-
-                // Añadimos la fila al array de resultados
-                $info_mano_obra['detalle'][] = $fila;
-
-                // Para las siguientes filas del mismo proveedor, dejamos el nombre en blanco
-                $nombre_mostrado = true;
             }
         }
+
         $logo_base64 = $this->logoBase64();
 
-        $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra', 'logo_base64'))->setPaper('a3', 'landscape');
+        $pdf = PDF::loadView('pdf.mano_obra', compact('info_mano_obra', 'logo_base64', 'pago'))->setPaper('a3', 'landscape');
         return $pdf->stream('reporte_mano_obra.pdf');
     }
 

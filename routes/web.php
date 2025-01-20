@@ -193,14 +193,14 @@ Route::group(['middleware' => ['auth']], function () {
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
 
-    // Controllador para generar los pdf del sistema
+    //** RUTAS GENERAR PDF */
     Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
         Route::get('/adquisicion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfPedido'])->name('adquisicion');
         Route::get('/recepcion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfRecepcion'])->name('recepcion');
         Route::get('/mano-obra-pdf/{mano_obra}', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('planificacion.mano.obra');
         Route::get('/orden-trabajo-contratista-pdf/{orden_trabajo}', [GenerarPdfController::class, 'ordenTrabajoContratistaPDF'])->name('orden.trabajo.contratista');
     });
-
+    //** FIN RUTAS GENERAR PDF */
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);
     Route::get('/tipo-cuenta', [CatalogoDatoController::class, 'getTipoCuentas']);
     Route::get('/articulos-proveedor', [ArticuloController::class, 'getArticulosProveedor']);
@@ -213,6 +213,11 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('save-push-notification-sub', [PushNotificationController::class, 'saveSubscription']);
     Route::post('send-push-notification', [PushNotificationController::class, 'sendNotification']);
     // End Push Notification==========================================================
+
+
+    //** RUTAS NOTIFICACION */
+    Route::get('/orde-pago-mano-obra/{mano_obra}/{pago}/view', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('pago.mano.obra');
+    //** FIN RUTAS NOTIFICACIONES */
 
     Route::get('/no-access', function () {
         return view('errors.no-access');

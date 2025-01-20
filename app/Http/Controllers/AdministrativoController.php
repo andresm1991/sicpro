@@ -2,26 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\RecepcionAdquisicionAdministrativoRequest;
-use App\Models\Adquisicion;
-use App\Models\AdquisicionDetalle;
-use App\Models\Articulo;
-use App\Models\CatalogoDato;
-use App\Models\Contratista;
-use App\Models\Inventario;
-use App\Models\ManoObra;
-use App\Models\OrdenRecepcion;
-use App\Models\PagoManoObra;
-use App\Models\PagoOrdenTrabajoContratista;
-use App\Models\Proveedor;
-use App\Models\Proyecto;
-use App\Services\LogService;
 use Exception;
+use Throwable;
+use App\Models\Articulo;
+use App\Models\ManoObra;
+use App\Models\Proyecto;
+use App\Models\Proveedor;
+use App\Models\Inventario;
+use App\Models\Adquisicion;
+use App\Models\Contratista;
+use App\Models\CatalogoDato;
+use App\Models\PagoManoObra;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
-use Illuminate\Support\Facades\Auth;
+use App\Models\OrdenRecepcion;
+use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\DB;
-use Throwable;
+use Illuminate\Support\Facades\Auth;
+use App\Services\PushNotificationService;
+use App\Models\PagoOrdenTrabajoContratista;
+use App\Http\Requests\RecepcionAdquisicionAdministrativoRequest;
 
 class AdministrativoController extends Controller
 {
@@ -218,6 +219,8 @@ class AdministrativoController extends Controller
             // Actualizar el estado a completado 
             if ($estado) {
                 $adquisicion->estado = "Completado";
+
+                PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' completo la información de la aquisición operativa #' . $adquisicion->numero, route('pdf.recepcion', $adquisicion->id));
             }
             $adquisicion->save();
 
@@ -462,6 +465,7 @@ class AdministrativoController extends Controller
                     }
                     DB::commit();
                     LogService::log('info', 'Pago de contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
+                    PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' genero pago a contratista ' . $contratista->proveedor->razon_social);
                     return response()->json(['success' => true, 'message' => 'Pago registrado con éxito.']);
                 } else {
                     DB::rollBack();
@@ -555,6 +559,7 @@ class AdministrativoController extends Controller
 
         $detalle_mano_obra =  $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id, $estado);
         $route_params = ['mano_obra' => $mano_obra, 'detalle_mano_obra' => $detalle_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page, 'tipo' => $estado];
+
         return view('administrativo.mano_obra.detalle', $route_params);
     }
 
@@ -565,20 +570,29 @@ class AdministrativoController extends Controller
         $mano_obra_id = $request->mano_obra;
 
         try {
+
             DB::beginTransaction();
             // Insertar registros en la tabla `pago_mano_obras`
-            foreach ($pagoIds as $pagoId) {
+            if (!empty($pagoIds)) {
+                foreach ($pagoIds as $pagoId) {
+                    PagoManoObra::create([
+                        'pago_prestamo_id' => $pagoId,
+                        'mano_obra_id' => $mano_obra_id,
+                    ]);
+                }
+            } else {
                 PagoManoObra::create([
-                    'pago_prestamo_id' => $pagoId,
                     'mano_obra_id' => $mano_obra_id,
                 ]);
             }
+
             DB::commit();
+            PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' genero pago para la mano de obra.', route('pago.mano.obra', ['mano_obra' => $mano_obra_id, 'pago' => true]));
             return redirect()->route('administrativo.index.mano.obra')->with('success', 'Pago de mano obra generada con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();
             LogService::log('error', 'Error al crear pago mano obra', ['user_id' => auth()->id(), 'message' => $e->getMessage()]);
-            return redirect()->route('administrativo.mano.obra.detalle', $mano_obra_id)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+            return redirect()->route('administrativo.index.mano.obra')->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
     }
 
@@ -617,8 +631,10 @@ class AdministrativoController extends Controller
                     '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
                     '<td class="align-middle">' . $mano_obra->proyecto->tipo_proyecto->descripcion . '</td>' .
                     '<td class="align-middle align-middle text-right text-truncate">' .
-                    '<a href="' . route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' =>  $tipo]) . '" class="btn btn-outline-dark">' .
-                    'Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>' .
+                    ' <a href="' . route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) . '"
+                            class="btn btn-outline-dark" target="__blank">
+                            Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>
+                        </a>' .
                     '</a>' .
                     '</td>' .
                     '</tr>';

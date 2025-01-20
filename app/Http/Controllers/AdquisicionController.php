@@ -84,7 +84,6 @@ class AdquisicionController extends Controller
      */
     public function create(Request $request)
     {
-        PushNotificationService::sendNotification(Auth::user(), 'Adquisicion nro. 00', 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision');
         $route_parametres = $this->getRouteParameters($request);
         $proyecto = $route_parametres['proyecto'];
         $title_page = $proyecto->nombre_proyecto;

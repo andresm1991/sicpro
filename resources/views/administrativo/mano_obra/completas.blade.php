@@ -32,8 +32,8 @@
                     <td class="align-middle">
                         {{ $mano_obra->proyecto->tipo_proyecto->descripcion }}</td>
                     <td class="align-middle align-middle text-right text-truncate">
-                        <a href="{{ route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'completo']) }}"
-                            class="btn btn-outline-dark">
+                        <a href="{{ route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) }}"
+                            class="btn btn-outline-dark" target="__blank">
                             Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>
                         </a>
                     </td>
