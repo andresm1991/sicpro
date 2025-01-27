@@ -10,9 +10,23 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-between">
-                            <div class="col-md-10">
+                            <div class="col-md-8">
                                 <h4>Orden de Pedido #{{ $numero_orden }}</h4>
-                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true,]) !!} <i class="fa-regular fa-calendar-days datepicker-2" id="fecha"></i></h6>
+                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true]) !!} <i class="fa-regular fa-calendar-days datepicker-2"
+                                        id="fecha"></i></h6>
+                            </div>
+
+                            <div class="col-md-2 ">
+                                <div class="select_wrapper">
+                                    <label class="rounded  text-white">
+                                        <input type="checkbox" name="orden_completa" class="d-none" value="true"
+                                            {{ $adquisicion->estado == 'Completado' ? 'checked' : '' }}
+                                            {{ $tipo == 'operativo' && $adquisicion->estado == 'Completado' ? 'disabled' : '' }}>
+                                        <span
+                                            class="text-center d-block py-3">{{ isset($adquisicion->tipo_etapa) && $adquisicion->tipo_etapa->descripcion == 'Servicios' ? 'Pedido Pagado' : 'Pedido Completo' }}
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
 
                             <div class="col-md-2 ">
@@ -36,8 +50,8 @@
                         'id' => 'form_order_pedido',
                     ]) !!}
                     {{ Form::hidden('numero_orden', $numero_orden) }}
-                        @include('administrativo.adquisiciones.partials.form')
-                        @include('adquisiciones.partials.items')
+                    @include('administrativo.adquisiciones.partials.form')
+                    @include('administrativo.adquisiciones.partials.items')
                     {!! Form::close() !!}
                 </div>
             </div>

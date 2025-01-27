@@ -102,6 +102,7 @@ class AdquisicionController extends Controller
         $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
         $unidad_medidas = $unidad_medidas->prepend('', '');
 
+
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => $route_parametres['tipo_etapa']->descripcion, 'url' => route('proyecto.adquisiciones.tipo.etapa', $route_parametres)],
@@ -213,7 +214,7 @@ class AdquisicionController extends Controller
 
                 DB::commit();
 
-                PushNotificationService::sendNotification(Auth::user(), 'Adquisicion nro. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision');
+                PushNotificationService::sendNotification(Auth::user(), 'Adquisicion nro. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision', route('pdf.recepcion', $adquisicion->id));
                 LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('success', 'Orden de pedido generada con éxito.');
             } else {
@@ -770,11 +771,11 @@ class AdquisicionController extends Controller
         return $parametros;
     }
 
-    /** Funciones para el modulo de Adquisisciones administrativas */
+    //** Funciones para el modulo de Adquisisciones administrativas */
     public function nuevaAdquisicionAdministrativo($tipo)
     {
         $title_page = 'Nueva Adquisición';
-        $orden_pedido = new Adquisicion();
+        $adquisicion = new Adquisicion();
 
         $numero_orden = generarNumeroOrden();
         $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
@@ -786,13 +787,16 @@ class AdquisicionController extends Controller
         $productos = Articulo::where('activo', true)
             ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
+        $proveedores = Proveedor::pluck('razon_social', 'id');
+        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => 'Adquisiciones', 'url' => route('administrativo.adquisiciones', $tipo)],
             ['name' => $title_page, 'url' => '']
         ];
 
-        return view('administrativo.adquisiciones.create', compact('orden_pedido', 'numero_orden', 'tipo', 'title_page', 'breadcrumbs', 'productos', 'proyectos', 'etapa', 'actividad'));
+        return view('administrativo.adquisiciones.create', compact('adquisicion', 'numero_orden', 'tipo', 'title_page', 'breadcrumbs', 'productos', 'proyectos', 'etapa', 'actividad', 'proveedores', 'unidad_medidas'));
     }
 
     public function storeAdquisicionAdministrativo(AdquisicionAdministrativoRequest $request, $tipo)

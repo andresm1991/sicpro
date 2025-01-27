@@ -4,12 +4,7 @@
             <tr>
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
-                @if ($tipo == 'operativo')
-                    <th scope="col" class="text-center">Cantidad</th>
-                @else
-                    <th scope="col" class="text-center">Cantidad Solicitada</th>
-                    <th scope="col" class="text-center">Cantidad Recibida</th>
-                @endif
+                <th scope="col" class="text-center">Cantidad</th>
                 <th scope="col" class="text-center">Unidad Medida</th>
                 <th scope="col">Valor Unitario</th>
                 <th scope="col">% IVA</th>
@@ -18,6 +13,7 @@
                 @if ($tipo == 'administrativo')
                     <th scope="col" class="text-center">Inventario</th>
                 @endif
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -25,19 +21,8 @@
                 <tr>
                     <td class="align-middle">{{ $index + 1 }}</td>
                     <td class="align-middle">{{ $detalle->producto->descripcion }}</td>
-                    @if ($tipo == 'operativo')
-                        <td class="align-middle text-center cantidad" data-index="{{ $index }}">
-                            {{ $detalle->cantidad_solicitada }}</td>
-                    @else
-                        <td class="align-middle text-center"">{{ $detalle->cantidad_solicitada }}</td>
-                        <td class="align-middle text-center cantidad" data-index="{{ $index }}">
-                            {{ Form::text('cantidad_recibida[' . $index . ']', old('cantidad_recibida.' . $index, $detalle->cantidad_recibida), ['class' => 'form-control input-double', isset($orden_recepcion) && !$orden_recepcion->editar ? 'disabled' : '']) }}
-                            {!! $errors->first(
-                                'cantidad_recibida.' . $index,
-                                '<small class="help-block text-danger error_mensajes">:message</small>',
-                            ) !!}
-                        </td>
-                    @endif
+                    <td class="align-middle text-center cantidad" data-index="{{ $index }}">
+                        {{ $detalle->cantidad_solicitada }}</td>
 
                     <td class="align-middle">
                         {{ Form::select('unidad_medida[' . $index . ']', getUnidadMedidas(true), $detalle->unidad_medida_id, ['class' => 'form-control col-sm-12 select2-tag', 'data-placeholder' => 'Selecione']) }}
@@ -81,7 +66,7 @@
             @endforeach
 
             <tr id="tr-default" style="display:{{ $adquisicion->id ? 'none' : '' }}">
-                <td colspan="7" class="text-center">No existen elementos en la lista...</td>
+                <td colspan="10" class="text-center">No existen elementos en la lista...</td>
             </tr>
         </tbody>
 

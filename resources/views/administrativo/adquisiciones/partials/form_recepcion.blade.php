@@ -43,7 +43,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Numero Factura', ['class' => 'col-form-label']) }}
-            {{ Form::text('numero_factura', $adquisicion->factura, ['class' => 'form-control input-enteros', 'placeholder' => 'Ingrese el número de factura']) }}
+            {{ Form::text('numero_factura', $adquisicion->factura, ['class' => 'form-control', 'id' => 'nro_factura', 'placeholder' => 'Ingrese el número de factura']) }}
         </div>
     </div>
 </div>
