@@ -271,6 +271,25 @@ $(function () {
         $(this).val(value); // Establece el valor validado
     });
 
+    //** Permite el ingreso del numero con el formato 1234-1//
+    $('#nro_factura').on('input', function () {
+        let value = $(this).val();
+
+        // Permitir solo números y un único "-" después de un número
+        value = value.replace(/[^0-9-]/g, ''); // Eliminar caracteres no válidos
+
+        // Permitir un único "-" después de un número
+        if (!/^\d+-?\d*$/.test(value)) {
+            value = value.replace(/-/, ''); // Eliminar guiones en posiciones inválidas
+        }
+
+        // Eliminar guiones adicionales si ya existe uno
+        value = value.replace(/(?!^)-(?=.*-)/g, '');
+
+        // Actualizar el valor del input
+        $(this).val(value);
+    });
+
     /* $('#calificacion').on('keypress', function (e) {
          const char = String.fromCharCode(e.which);
          // Permitir solo dígitos 1-5
