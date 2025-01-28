@@ -397,8 +397,6 @@ $(function () {
             // Sumar al subtotal
             subtotal += total;
         });
-
-        console.log(subtotal.toFixed(2));
         // Actualizar el total general
         $('#subtotal').val(subtotal.toFixed(2));
     }

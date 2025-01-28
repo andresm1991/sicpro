@@ -290,6 +290,14 @@ $(function () {
         $(this).val(value);
     });
 
+    $(document).on('change', '.inventario', function () {
+        if ($(this).is(':checked')) {
+            $(this).val(1);
+        } else {
+            $(this).val(0);
+        }
+    });
+
     /* $('#calificacion').on('keypress', function (e) {
          const char = String.fromCharCode(e.which);
          // Permitir solo dígitos 1-5

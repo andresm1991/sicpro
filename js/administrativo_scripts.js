@@ -155,10 +155,6 @@ $(function () {
         var iva = $('#iva').val();
         var necesidad = $('#necesidad option:selected').text();
 
-        var tipo_etapa = $('input:hidden[name=slug_adquisicion]').val();
-        var td_servicios = '';
-        var td_inventario = '';
-
         var valid = true;
         $('select[name=productos], select[name=unidad_medida], select[name=necesidad], input[name=cantidad], input[name=valor_unitario], input[name=iva]').removeClass('error-border');
         $('.select2-tag').removeClass('error-border');  // Remover borde rojo en select2
@@ -202,20 +198,7 @@ $(function () {
             return;
         }
 
-        if (tipo_etapa == 'SERVICIOS') {
-            var unidad_medida_id = $('#unidad_medida').val();
-            var unidad_medida_text = $('#unidad_medida option:selected').text();
-            var precio = $('input:text[name=precio_unitario]').val();
-
-            td_servicios = `
-            `;
-        }
-
         numeroFila = $('.elementos-agregados').length + 1;
-
-        if (tipo_etapa == 'METERIALES.HERRAMIENTAS') {
-            td_inventario = ``;
-        }
         // Calcular el subtotal
         let subtotal = parseFloat(cantidad) * parseFloat(valor_unitario);
 
@@ -227,7 +210,7 @@ $(function () {
             <tr class="elementos-agregados">
                 <td>${numeroFila}</td>
                 <td>${producto}</td>
-                <td class="edit-item">
+                <td>
                     <span>${cantidad}</span>
                     <div class="d-flex align-items-center hidden">
                         <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
@@ -240,12 +223,12 @@ $(function () {
                 </td>
                 <td>
                     ${unidad_medida}
-                    <input type="hidden" name="unidad_meddia[]" value="${unidad_medida_id}">
+                    <input type="hidden" name="unidad_medida[]" value="${unidad_medida_id}">
                 </td>
-                <td class="edit-item">
-                    <span>${valor_unitario}</span>
+                <td>
+                    <span>$ ${valor_unitario}</span>
                     <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2 input-double" name="precio[]"
+                        <input type="text" class="form-control mr-2 input-double" name="valor_unitario[]"
                             value="${valor_unitario}">
                         <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
                                 class="fa-solid fa-check"></i></button>
@@ -254,19 +237,25 @@ $(function () {
                     </div>
                 </td>
                 <td class="edit-item col-gasolina">
-                <span>0</span>
-                <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2" name="km[]"
-                            value="">
-                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                class="fa-solid fa-check"></i></button>
-                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                class="fa-solid fa-xmark"></i></button>
-                    </div>
+                    <span>0</span>
+                    <div class="d-flex align-items-center hidden">
+                            <input type="text" class="form-control mr-2" name="km[]"
+                                value="">
+                            <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
+                                    class="fa-solid fa-check"></i></button>
+                            <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
+                                    class="fa-solid fa-xmark"></i></button>
+                        </div>
                 </td>
-                <td>${iva}%</td>
-                <td>${totalConIva.toFixed(2)}</td>
-                <td class="edit-item">
+                <td>
+                    ${iva}%
+                    <input type="hidden" name="iva_producto[]" value="${iva}">
+                </td>
+                <td class="total_unitario">
+                   $ ${totalConIva.toFixed(2)}
+                    <input type="hidden" name="total[]" value="${totalConIva.toFixed(2)}">
+                </td>
+                <td>
                     <span>${necesidad}</span>
                     <div class="d-flex align-items-center hidden">
                         <input type="text" class="form-control mr-2" name="necesidad[]"
@@ -295,6 +284,7 @@ $(function () {
             </tr>
         `;
         $('tbody').append(nuevaFila);
+        calcularTotal();
 
         // Deshabilitar la opción seleccionada
         //$('#productos option[value="' + producto_id + '"]').prop('disabled', true);
@@ -330,6 +320,7 @@ $(function () {
             $('#tr-default').show();
         }
 
+        calcularTotal();
         // habilitar la opción seleccionada
         //$('#productos option[value="' + producto_id + '"]').prop('disabled', false);
         //$("#productos").selectpicker("refresh");
@@ -378,8 +369,12 @@ $(function () {
 
     function clearInputs() {
         $('#productos').val(null).trigger('change');
-        $('#cantidad').val("");
+        $('#unidad_medida').val(null).trigger('change');
         $('#necesidad').val(null).trigger('change');
+        $('#cantidad').val(null);
+        $('#valor_unitario').val(null);
+        $('#iva').val(0);
+
 
         var tipo_etapa = $('input:hidden[name=slug_adquisicion]').val();
         if (tipo_etapa == 'SERVICIOS') {
@@ -390,5 +385,72 @@ $(function () {
 
     $('#form_order_pedido').on('submit', function (e) {
         e.preventDefault(); // Detiene el envío por defecto
+        var completo = $('input[name=orden_completa]').is(':checked');
+        var forma_pago = $('input[name=forma_pago]').is(':checked');
+
+        var valid = true;
+        $('select[name=proyecto], select[name=etapa], select[name=actividad], select[name=proveedor], input[name=numero_factura]').removeClass('error-border');
+        $('.select2-basic-single').removeClass('error-border');  // Remover borde rojo en select2
+        $('.error-message').remove();  // Elimina los mensajes de error anteriores
+
+        if ($('select[name=proyecto]').val() == "") {
+            var valid = false;
+            $('select[name=proyecto]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=proyecto]').parent().append('<span class="error-message">Seleccione proyecto.</span>');
+        }
+        if ($('select[name=etapa]').val() == "") {
+            var valid = false;
+            $('select[name=etapa]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=etapa]').parent().append('<span class="error-message">Seleccione etapa.</span>');
+        }
+
+        if ($('select[name=actividad]').val() == "") {
+            var valid = false;
+            $('select[name=actividad]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=actividad]').parent().append('<span class="error-message">Seleccione tipo.</span>');
+        }
+        if ($('select[name=proveedor]').val() == "") {
+            var valid = false;
+            $('select[name=proveedor]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=proveedor]').parent().append('<span class="error-message">Seleccione proveedor.</span>');
+        }
+
+        if ($('input[name=numero_factura]').val() == "" && completo) {
+            var valid = false;
+            $('input:text[name=numero_factura]').addClass('error-border');
+            $('input:text[name=numero_factura]').parent().append('<span class="error-message">Ingrese factura.</span>');
+        }
+
+        if (!forma_pago) {
+            var valid = false;
+            $('<span>', {
+                text: 'Seleccione forma de pago.',
+                class: 'error-message'
+            }).insertAfter($('input[name=forma_pago]').closest('.select_wrapper'));
+        }
+
+        if (!valid) {
+            return;
+        }
+
+        // Enviar formulario si todo está bien
+        this.submit();
     });
+
+
+    function calcularTotal() {
+        let subtotal = 0;
+
+        // Iterar por cada fila del tbody
+        $('.elementos-agregados').each(function () {
+            let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
+            let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+            // Sumar al subtotal
+            subtotal += total;
+        });
+
+        console.log(subtotal.toFixed(2));
+        // Actualizar el total general
+        $('#total-general').text(subtotal.toFixed(2));
+    }
 });

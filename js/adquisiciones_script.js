@@ -305,14 +305,6 @@ $(function () {
         $('input[name=fecha]').val(fechaSeleccionada);
     });
 
-    $(document).on('change', '.inventario', function () {
-        if ($(this).is(':checked')) {
-            $(this).val(1);
-        } else {
-            $(this).val(0);
-        }
-    });
-
     // Maneja el evento change de select2
     $('#productos').on('change', function () {
         var selected = $('#productos option:selected').text();
