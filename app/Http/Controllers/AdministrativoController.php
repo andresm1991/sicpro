@@ -87,19 +87,16 @@ class AdministrativoController extends Controller
             ['name' => 'Editar', 'url' => '']
         ];
 
+        $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
+            $iva = $detalle->producto->iva ?? 0;
+            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
+            return $total;
+        });
+
         if ($tipo == 'operativo') {
-
-            $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
-                $iva = $detalle->producto->iva ?? 0;
-                $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
-                return $total;
-            });
-
             return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'title_page', 'breadcrumbs'));
         } else {
-            if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado) {
-                return redirect()->route('administrativo.adquisiciones', $tipo)->with('toast_error', 'El pedido ya fue recibido y completado, no puede ser modificado.');
-            }
+
             $proyectos = Proyecto::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
             $proyectos = $proyectos->toArray(); // Convertir a array
             $proyectos['0'] = 'General'; // Añadir el nuevo elemento al final
@@ -107,9 +104,9 @@ class AdministrativoController extends Controller
             $etapa = CatalogoDato::getChildrenCatalogo('tipo.costos')->pluck('descripcion', 'id');
             $actividad = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
             $productos = Articulo::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
-
-            $orden_pedido = $adquisicion;
-            return view('administrativo.adquisiciones.edit_administrativo', compact('orden_pedido', 'tipo', 'proyectos', 'etapa', 'actividad', 'productos', 'title_page', 'breadcrumbs'));
+            $proveedores = Proveedor::pluck('razon_social', 'id');
+            $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+            return view('administrativo.adquisiciones.edit_administrativo', compact('adquisicion', 'tipo', 'proyectos', 'etapa', 'actividad', 'productos', 'title_page', 'breadcrumbs', 'proveedores', 'unidad_medidas', 'totalGeneral'));
         }
     }
     public function actualizarAdquisicion(Request $request, $tipo, Adquisicion $adquisicion)
@@ -237,21 +234,33 @@ class AdministrativoController extends Controller
     private function actualizarAdquisicionAdministrativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
         try {
+            if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->completado) {
+                return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
+            }
+            $orden_completa = $request->has('orden_completa') ? true : false;
             $pedido_id = $adquisicion->id;
             // Combinar arrays en uno solo
-            $result = array_map(function ($producto, $cantidad, $necesidad) {
+            $result = array_map(function ($producto, $cantidad, $necesidad, $unidad_medida, $iva, $valor) {
+                $valoresLimpios = preg_replace('/[^0-9.]/', '', $valor); // Elimina $ y otros caracteres no numéricos
+
                 return [
                     'articulo_id' => $producto,
                     'cantidad_solicitada' => str_replace(',', '', $cantidad),
+                    'unidad_medida_id' => $unidad_medida,
+                    'valor' => $valoresLimpios,
+                    'iva' => $iva,
                     'necesidad' => $necesidad
                 ];
-            }, $request->productos, $request->cantidad, $request->necesidad);
+            }, $request->productos, $request->cantidad, $request->necesidad, $request->unidad_medida, $request->iva_producto, $request->valor);
 
             DB::beginTransaction();
 
             $adquisicion->proyecto_id = $request->proyecto;
             $adquisicion->etapa_id = $request->etapa;
             $adquisicion->tipo_etapa_id = $request->actividad;
+            if ($orden_completa) {
+                $adquisicion->estado = 'Completado';
+            }
             $adquisicion->save();
 
             foreach ($result as $data) {
@@ -262,12 +271,47 @@ class AdministrativoController extends Controller
                     ],
                     [
                         'cantidad_solicitada' => $data['cantidad_solicitada'],
+                        'cantidad_recibida' => $data['cantidad_solicitada'],
+                        'unidad_medida_id' => $data['unidad_medida_id'],
                         'necesidad' => $data['necesidad']
                     ]
                 );
 
                 agregarPalabra($data['necesidad']);
+
+                // registrar precio unitario del producto y el iva
+                $articulo = Articulo::find($data['articulo_id']);
+                $articulo->valor_unitario = $data['valor'];
+                $articulo->iva = $data['iva'];
+                $articulo->save();
             }
+
+            $orden_recepcion = OrdenRecepcion::updateOrCreate([
+                'adquisicion_id' => $pedido_id,
+            ], [
+                'fecha' => date('Y-m-d'),
+                'proveedor_id' => $request->proveedor,
+                'forma_pago_id' => $request->forma_pago,
+                'completado' => $orden_completa,
+                'editar' => $orden_completa ? false : true,
+            ]);
+
+            if ($orden_completa) {
+
+                foreach ($request->inventario as $index => $item) {
+                    if ($item) {
+                        Inventario::create([
+                            'orden_recepcion_id' => $orden_recepcion->id,
+                            'producto_id' => $request->productos[$index],
+                            'cantidad' => str_replace(',', '', $request->cantidad[$index]),
+                            'fecha' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado' => 10,
+                        ]);
+                    }
+                }
+            }
+
 
             // obtener producots existentes del pedido
             $productos_existente = AdquisicionDetalle::where('adquisicion_id', $pedido_id)->pluck('articulo_id')->toArray();

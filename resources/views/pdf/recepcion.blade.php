@@ -164,9 +164,9 @@
                             <td>{{ $item['cantidad'] }}</td>
                             @if (strtoupper($orden['tipo']) == 'SERVICIOS' || strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                                 <td>{{ strtoupper($item['unidad_medida']) }}</td>
-                                <td>${{ $item['valor'] }}</td>
+                                <td>${{ number_format($item['valor'], 4) }}</td>
                                 @if (strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
-                                    <td>${{ $item['iva'] }}</td>
+                                    <td>{{ $item['iva'] }}</td>
                                 @endif
                                 <td>${{ number_format($item['total'], 4) }}</td>
                             @endif
@@ -179,7 +179,7 @@
                     @if (strtoupper($orden['tipo']) == 'SERVICIOS' || strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                 <tfoot>
                     <tr>
-                        <td colspan="{{ strtoupper($orden['tipo']) == 'SERVICIOS' ? 5 : (strtoupper($orden['estado_pedido']) == strtoupper('Completado') ? 6 : 5) }}"
+                        <td colspan="{{ strtoupper($orden['estado_pedido']) == strtoupper('Completado') ? 6 : (strtoupper($orden['tipo']) == 'SERVICIOS' ? 5 : 6) }}"
                             style="text-align: right">
                             <strong>TOTAL GENERAL: </strong>
                         </td>

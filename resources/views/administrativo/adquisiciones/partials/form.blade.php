@@ -2,7 +2,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
-            <select name="proyecto" class="form-control select2-tag" data-placeholder="selecciona proyecto">
+            <select name="proyecto" class="form-control select2-basic-single" data-placeholder="selecciona proyecto">
                 <option></option>
                 @foreach ($proyectos as $id => $nombre)
                     <option value="{{ $id }}"
@@ -17,7 +17,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
-            <select name="etapa" class="form-control select2-tag" data-placeholder="selecciona opción">
+            <select name="etapa" class="form-control select2-basic-single" data-placeholder="selecciona opción">
                 <option></option>
                 @foreach ($etapa as $id => $nombre)
                     <option value="{{ $id }}" {{ $adquisicion->etapa_id == $id ? 'selected' : '' }}>
@@ -31,7 +31,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Tipo', ['class' => 'col-form-label']) }}
-            <select name="actividad" class="form-control select2-tag" data-placeholder="selecciona etapa">
+            <select name="actividad" class="form-control select2-basic-single" data-placeholder="selecciona etapa">
                 <option></option>
                 @foreach ($actividad as $id => $nombre)
                     <option value="{{ $id }}" {{ $adquisicion->tipo_etapa_id == $id ? 'selected' : '' }}>

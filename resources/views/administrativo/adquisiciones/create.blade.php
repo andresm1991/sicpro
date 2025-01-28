@@ -6,6 +6,19 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="container-fuild">
+            {!! Form::open([
+                'route' => [
+                    'administrativo.adquisiciones.store',
+                    [
+                        'tipo' => $tipo,
+                    ],
+                ],
+                'class' => 'form-horizontal',
+                'autocomplete' => 'off',
+                'enctype' => 'multipart/form-data',
+                'id' => 'form_order_pedido',
+            ]) !!}
+            {{ Form::hidden('numero_orden', $numero_orden) }}
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
@@ -37,24 +50,13 @@
                 </ul>
                 <div class="card-body">
                     @include('partials.alerts')
-                    {!! Form::open([
-                        'route' => [
-                            'administrativo.adquisiciones.store',
-                            [
-                                'tipo' => $tipo,
-                            ],
-                        ],
-                        'class' => 'form-horizontal',
-                        'autocomplete' => 'off',
-                        'enctype' => 'multipart/form-data',
-                        'id' => 'form_order_pedido',
-                    ]) !!}
-                    {{ Form::hidden('numero_orden', $numero_orden) }}
+
                     @include('administrativo.adquisiciones.partials.form')
                     @include('administrativo.adquisiciones.partials.items')
-                    {!! Form::close() !!}
+
                 </div>
             </div>
+            {!! Form::close() !!}
         </div>
     </section>
 

@@ -806,10 +806,19 @@ class AdquisicionController extends Controller
         $proyecto_id = $request->proyecto;
         $adquisicion_id = $request->actividad;
         $etapa_id = $request->etapa;
+        $proveedor = $request->proveedor;
+        $numero_factura = $request->numero_factura;
 
         $productos = $request->productos;
         $cantidad = $request->cantidad;
+        $unidad_medida = $request->unidad_medida;
+        $valor_unitario = $request->valor_unitario;
+        $iva_producto = $request->iva_producto;
         $necesidad = $request->necesidad;
+        $inventario = $request->inventario;
+        $orden_completa = $request->has('orden_completa') ? true : false;
+        $forma_pago = $request->forma_pago;
+        $estado = $orden_completa ? 'Completado' : 'En Proceso';
 
         try {
             DB::beginTransaction();
@@ -822,7 +831,8 @@ class AdquisicionController extends Controller
                 'tipo_etapa_id' => $adquisicion_id,
                 'usuario_id' => Auth::user()->id,
                 'tipo_adquisicion' => $tipo,
-                'estado' => 'En Proceso',
+                'estado' => $estado,
+                'factura' => $numero_factura,
             ]);
 
             if ($adquisicion) {
@@ -831,6 +841,9 @@ class AdquisicionController extends Controller
                         'adquisicion_id' => $adquisicion->id,
                         'articulo_id' => '',
                         'cantidad_solicitada' => str_replace(',', '', $cantidad[$index]),
+                        'cantidad_recibida' => str_replace(',', '', $cantidad[$index]),
+                        'unidad_medida_id' => $unidad_medida[$index],
+                        'valor' => $valor_unitario[$index],
                         'necesidad' => $necesidad[$index]
                     ];
 
@@ -842,13 +855,48 @@ class AdquisicionController extends Controller
                         $param_detalle_adquisicion['articulo_id'] = $nuevo_producto->id;
                     }
 
-                    AdquisicionDetalle::create($param_detalle_adquisicion);
+                    $detalle = AdquisicionDetalle::create($param_detalle_adquisicion);
 
                     agregarPalabra($necesidad[$index]);
+
+                    // registrar precio unitario del producto y el iva
+                    $articulo = Articulo::find($detalle->articulo_id);
+                    $articulo->valor_unitario = $valor_unitario[$index];
+                    $articulo->iva = $iva_producto[$index];
+                    $articulo->save();
+                }
+                /// Crear orden de recepcion
+                $orden_recepcion_param = [
+                    'fecha' => $fecha,
+                    'adquisicion_id' => $adquisicion->id,
+                    'proveedor_id' => $proveedor,
+                    'forma_pago_id' => $forma_pago,
+                    'completado' => $orden_completa,
+                    'editar' => $orden_completa ? false : true,
+                ];
+
+                $orden_recepcion = OrdenRecepcion::updateOrCreate(
+                    [
+                        'adquisicion_id' => $adquisicion->id
+                    ],
+                    $orden_recepcion_param
+                );
+
+                foreach ($inventario as $index => $item) {
+                    if ($item && $orden_completa) {
+                        Inventario::create([
+                            'orden_recepcion_id' => $orden_recepcion->id,
+                            'producto_id' => $productos[$index],
+                            'cantidad' => str_replace(',', '', $cantidad[$index]),
+                            'fecha' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado' => 10,
+                        ]);
+                    }
                 }
                 DB::commit();
-                LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
-                return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('success', 'Orden de pedido generada con éxito.');
+                LogService::log('info', 'Adquisición administrativa creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('success', 'Pedido generado con éxito.');
             } else {
                 DB::rollback();
                 LogService::log('error', 'Error al crear Adquisición', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'ocurrio un error al intentar crear la adquisición']);

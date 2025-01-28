@@ -12,17 +12,21 @@
                 <th scope="col">Necesidad</th>
                 @if ($tipo == 'administrativo')
                     <th scope="col" class="text-center">Inventario</th>
+                    <th></th>
                 @endif
-                <th></th>
+
             </tr>
         </thead>
         <tbody>
             @foreach ($adquisicion->adquisiciones_detalle as $index => $detalle)
-                <tr>
+                <tr class="elementos-agregados">
                     <td class="align-middle">{{ $index + 1 }}</td>
                     <td class="align-middle">{{ $detalle->producto->descripcion }}</td>
                     <td class="align-middle text-center cantidad" data-index="{{ $index }}">
-                        {{ $detalle->cantidad_solicitada }}</td>
+                        {{ $detalle->cantidad_solicitada }}
+
+                        {{ Form::hidden('cantidad[' . $index . ']', $detalle->cantidad_solicitada) }}
+                    </td>
 
                     <td class="align-middle">
                         {{ Form::select('unidad_medida[' . $index . ']', getUnidadMedidas(true), $detalle->unidad_medida_id, ['class' => 'form-control col-sm-12 select2-tag', 'data-placeholder' => 'Selecione']) }}
@@ -48,7 +52,10 @@
                     <td class="align-middle calculo-total" data-index="{{ $index }}">$
                         {{ calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva) }}
                     </td>
-                    <td class="align-middle">{{ $detalle->necesidad }}</td>
+                    <td class="align-middle">
+                        {{ $detalle->necesidad }}
+                        {{ Form::hidden('necesidad[' . $index . ']', $detalle->necesidad) }}
+                    </td>
                     @if ($tipo == 'administrativo')
                         <td class="align-middle">
                             <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
@@ -61,6 +68,14 @@
                                     for="cb3-{{ $index }}"></label>
                             </div>
                         </td>
+                        <td class="align-middle table-actions">
+                            <div class="action-buttons">
+                                <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                    id=""><i class="fa-solid fa-trash-can"></i></a>
+                            </div>
+                        </td>
+
+                        <input type="hidden" name="productos[]" value="{{ $detalle->articulo_id }}">
                     @endif
                 </tr>
             @endforeach
