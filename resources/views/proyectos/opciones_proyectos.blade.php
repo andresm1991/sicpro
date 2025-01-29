@@ -19,7 +19,7 @@
                         <img src="{{ asset('images/icons/adquisicion.png') }}" alt="">
                         <span>Adquisiciones</span>
                     </a>
-                    <a href="#" class="circle top-right">
+                    <a href="{{ route('proyecto.presupuesto.index', $proyecto->id) }}" class="circle top-right">
                         <img src="{{ asset('images/icons/presupuesto.png') }}" alt="">
                         <span>Presupuesto</span>
                     </a>

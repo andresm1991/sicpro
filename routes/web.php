@@ -19,6 +19,7 @@ use App\Http\Controllers\ContratistaController;
 use App\Http\Controllers\CatalogoDatoController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\AdministrativoController;
+use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
 
 /*
@@ -90,6 +91,10 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nuevo-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'nuevoPagoOrdenTrabajo'])->name('contratista.nuevo.pago.orden.trabajo');
             Route::post('/{tipo_adquisicion}/contratista/{tipo_etapa}/guardar-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'guardarPagoOrdenTrabajo'])->name('contratista.guardar.pago.orden.trabajo');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/orden-trabajo/buscar', [ContratistaController::class, 'buscarPagoOrdenTrabajo']);
+        });
+
+        Route::group(['prefix' => '/presupuesto', 'as' => 'presupuesto.'], function () {
+            Route::get('/{proyecto}/home', [PresupuestoController::class, 'index'])->name('index');
         });
     });
 
