@@ -18,20 +18,28 @@ class Proyecto extends Model
         'telefono',
         'correo',
         'tipo_proyecto_id',
-        'area_lote', 'area_construccion',
+        'area_lote',
+        'area_construccion',
         'numero_unidades',
         'area_lote_unidad',
         'area_construccion_unidad',
         'presupuesto_total',
         'presupuesto_unidad',
-        'fecha_inicio', 'fecha_finalizacion',
+        'fecha_inicio',
+        'fecha_finalizacion',
         'observacion',
         'portada',
+        'costo_indirecto',
     ];
 
     public function tipo_proyecto()
     {
         return $this->belongsTo(CatalogoDato::class, 'tipo_proyecto_id');
+    }
+
+    public function catalogo_proyecto()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'catalogo_proyecto_id');
     }
 
     public function archivos_proyecto()
@@ -42,5 +50,10 @@ class Proyecto extends Model
     public function adquisiciones()
     {
         return $this->hasMany(Adquisicion::class);
+    }
+
+    public function presupuesto()
+    {
+        return $this->hasOne(PresupuestoProyecto::class);
     }
 }

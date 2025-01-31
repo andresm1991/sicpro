@@ -21,6 +21,7 @@ use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\AdministrativoController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
+use App\Models\PresupuestoProyecto;
 
 /*
 |--------------------------------------------------------------------------
@@ -93,8 +94,10 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/orden-trabajo/buscar', [ContratistaController::class, 'buscarPagoOrdenTrabajo']);
         });
 
+        //** RUTAS PRESUPUESTO */
         Route::group(['prefix' => '/presupuesto', 'as' => 'presupuesto.'], function () {
             Route::get('/{proyecto}/home', [PresupuestoController::class, 'index'])->name('index');
+            Route::post('{proyecto}/store', [PresupuestoController::class, 'store']);
         });
     });
 
@@ -197,6 +200,7 @@ Route::group(['middleware' => ['auth']], function () {
     });
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
+    Route::get('/rubros-presupuesto', [PresupuestoController::class, 'getAjaxRubrosPresupuesto']);
 
     //** RUTAS GENERAR PDF */
     Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
