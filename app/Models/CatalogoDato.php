@@ -35,7 +35,7 @@ class CatalogoDato extends Model
     public static function getChildrenCatalogo($value)
     {
         $catalogo = CatalogoDato::where('slug', $value)->first();
-        return CatalogoDato::where('padre_id', $catalogo->id)->get();
+        return CatalogoDato::where('padre_id', $catalogo->id)->orderBy('descripcion', 'asc')->get();
     }
 
     public static function getEstadoInventarioId($slug)

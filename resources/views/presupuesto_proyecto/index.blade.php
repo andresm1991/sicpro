@@ -25,14 +25,14 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="proveedor_search" class="form-control form-control-round"
-                                    placeholder="Buscar rubro....">
+                                <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto->id }}"
+                                    class="form-control form-control-round" placeholder="Buscar rubro....">
                             </div>
                         </div>
                     </div>
 
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover" id="table-rubros-presupuesto">
                             <thead>
                                 <tr>
                                     <th scope="col">Nro.</th>
@@ -50,7 +50,14 @@
                                         $total_categoria = 0;
                                     @endphp
                                     <tr id="{{ $categoria->id }}" style="background-color: #b6bcdf;">
-                                        <td colspan="7" class="align-middle"><strong>{{ $categoria->nombre }}</strong>
+                                        <td colspan="6" class="align-middle font-weight-bold">
+                                            {{ $categoria->nombre }}
+                                        </td>
+                                        <td class="align-middle">
+                                            <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-categoria"
+                                                data-id="{{ $categoria->id }}" data-proyecto_id="{{ $proyecto->id }}">
+                                                <i class="fa-solid fa-trash-can-xmark"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                     @forelse ($categoria->rubrosPresupuesto as $index => $rubro)
@@ -73,7 +80,12 @@
                                                 </td>
                                             @endforeach
 
-                                            <td class="align-middle"></td>
+                                            <td class="align-middle">
+                                                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
+                                                    data-id="{{ $rubro->id }}">
+                                                    <i class="fa-solid fa-minus"></i>
+                                                </a>
+                                            </td>
                                         </tr>
                                     @empty
                                     @endforelse
@@ -83,6 +95,9 @@
                                         </td>
                                         <td colspan="2" class="font-weight-bold">
                                             $ {{ number_format($total_categoria, 2) }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="7"></td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -103,10 +118,22 @@
                                     });
 
                                     $costos_indirectos = ($costos_directos * $proyecto->costo_indirecto) / 100;
+                                    $total_adquisiciones = $proyecto->adquisiciones
+                                        ->where('estado', 'Completado')
+                                        ->sum(function ($item) {
+                                            return $item->adquisiciones_detalle->sum(function ($item) {
+                                                $iva = $item->producto->iva ? $item->producto->iva : 0;
+                                                return calcularTotalProducto(
+                                                    $item->cantidad_solicitada,
+                                                    $item->valor,
+                                                    $iva,
+                                                );
+                                            });
+                                        });
+
+                                    $saldo = $costos_directos + $costos_indirectos - $total_adquisiciones;
                                 @endphp
-                                <tr>
-                                    <td colspan="7"></td>
-                                </tr>
+
                                 <tr>
                                     <td colspan="5" class="font-weight-bold">
                                         <h4>COSTOS DIRECTOS</h4>
@@ -117,7 +144,9 @@
                                     </td>
                                 </tr>
                                 <tr style="background-color: #b6e5c1;">
-                                    <td colspan="5" class="font-weight-bold">
+                                    <td colspan="5" class="font-weight-bold editar-costo-indirecto"
+                                        style="cursor: pointer;" data-id="{{ $proyecto->id }}"
+                                        data-porcentaje="{{ $proyecto->costo_indirecto }}">
                                         <h4>COSTOS INDIRECTOS {{ $proyecto->costo_indirecto }}% </h4>
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
@@ -134,14 +163,39 @@
                                         {{ number_format($costos_directos + $costos_indirectos, 2) }}
                                     </td>
                                 </tr>
+
+                                <tr>
+                                    <td colspan="5" class="font-weight-bold">
+                                        <h4>ADQUISICIONES</h4>
+                                    </td>
+                                    <td colspan="2" class="font-weight-bold">
+                                        $
+                                        {{ number_format($total_adquisiciones, 2) }}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="5" class="font-weight-bold">
+                                        <h4>SALDO</h4>
+                                    </td>
+                                    <td colspan="2" class="font-weight-bold">
+                                        $
+                                        {{ number_format($saldo, 2) }}
+                                    </td>
+                                </tr>
                             </tfoot>
                         </table>
                     </div>
 
-                    <ul class="list-group list-group-flush mt-0">
-                        <li class="list-group-item p-1">
+                    <ul class="list-group list-group-flush mt-0 border-0">
+                        <li class="list-group-item p-1 border-0">
                             <small>Para cambiar el % del <strong>COSTO INDIRECTO</strong> haz click sobre la fila y te
                                 mostrar una pantalla donde debes ingresar el nuevo valor. </small>
+                        </li>
+                        <li class="list-group-item p-1 border-0">
+                            <small>El valor del <strong class="text-uppercase">saldo</strong> es el calculo entre <strong
+                                    class="text-uppercase">TOTAL</strong> menos
+                                <b class="text-uppercase">ADQUISICIONES</b> </small>
                         </li>
                     </ul>
                 </div>

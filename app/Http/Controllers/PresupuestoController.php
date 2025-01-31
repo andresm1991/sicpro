@@ -98,4 +98,85 @@ class PresupuestoController extends Controller
             return response()->json(['rubros' => $rubros]);
         }
     }
+
+    public function putAjaxCostoIndirecto(Request $request, Proyecto $proyecto)
+    {
+        if ($request->ajax()) {
+            try {
+                $costo_indirecto = $request->porcentaje;
+                $proyecto->costo_indirecto = $costo_indirecto;
+                $proyecto->save();
+                return response()->json(['success' => true, 'mensaje' => 'Costo indirecto actualizado correctamente']);
+            } catch (\Exception $e) {
+                return response()->json(['success' => false, 'mensaje' => $e->getMessage()]);
+            }
+        }
+    }
+
+    public function destroyAjaxRubroPresupuesto(Request $request)
+    {
+        if ($request->ajax()) {
+            $id = $request->rubro;
+            try {
+                DB::beginTransaction();
+                PresupuestoProyecto::where('rubro_presupuesto_id', $id)->delete();
+                DB::commit();
+                return response()->json(['success' => true, 'mensaje' => 'Rubro eliminado correctamente']);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'mensaje' => $e->getMessage()]);
+            }
+        }
+    }
+
+    public function destroyAjaxCategoriaPresupuesto(Request $request)
+    {
+        if ($request->ajax()) {
+            $categoria_id = $request->categoria;
+            $proyecto = $request->proyecto;
+
+            try {
+                DB::beginTransaction();
+                $rubros = RubroPresupuesto::where('categoria_presupuesto_id', $categoria_id)->pluck('id');
+                PresupuestoProyecto::whereIn('rubro_presupuesto_id', $rubros)->where('proyecto_id', $proyecto)->delete();
+                DB::commit();
+                return response()->json(['success' => true, 'mensaje' => 'Categoría eliminada correctamente']);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'mensaje' => $e->getMessage()]);
+            }
+        }
+    }
+
+    public function filtrarRubrosPresupuesto(Request $request)
+    {
+        if ($request->ajax()) {
+            $proyectoId = $request->proyecto;
+            $filtro = $request->filtro;
+
+            $categorias = CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {
+                $query->where('proyecto_id', $proyectoId);
+            })
+                ->where(function ($query) use ($filtro) {
+                    // Filtrar por categoría o por rubro
+                    $query->where('nombre', 'LIKE', '%' . $filtro . '%') // Filtrar por categoría
+                        ->orWhereHas('rubrosPresupuesto', function ($subQuery) use ($filtro) {
+                            $subQuery->where('nombre', 'LIKE', '%' . $filtro . '%'); // Filtrar por rubro
+                        });
+                })
+                ->with(['rubrosPresupuesto' => function ($query) use ($proyectoId, $filtro) {
+                    $query->whereHas('presupuestoProyectos', function ($q) use ($proyectoId) {
+                        $q->where('proyecto_id', $proyectoId); // Relación con el proyecto
+                    });
+
+                    // Aplicar filtro a los rubros solo si el filtro coincide con un rubro, no con una categoría
+                    if (!CategoriaPresupuesto::where('nombre', 'LIKE', '%' . $filtro . '%')->exists()) {
+                        $query->where('nombre', 'LIKE', '%' . $filtro . '%');
+                    }
+                }])
+                ->get();
+
+            return response()->json(['categorias' => $categorias]);
+        }
+    }
 }

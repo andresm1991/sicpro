@@ -201,7 +201,11 @@ Route::group(['middleware' => ['auth']], function () {
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
     Route::get('/rubros-presupuesto', [PresupuestoController::class, 'getAjaxRubrosPresupuesto']);
-
+    Route::put('/actualizar-costo-indirecto/{proyecto}', [PresupuestoController::class, 'putAjaxCostoIndirecto']);
+    // Eliminar  rubros del presupuesto
+    Route::delete('/eliminar-rubro-presupesto/{rubro}', [PresupuestoController::class, 'destroyAjaxRubroPresupuesto']);
+    Route::delete('/eliminar-categoria-presupesto/{categoria}', [PresupuestoController::class, 'destroyAjaxCategoriaPresupuesto']);
+    Route::get('/filtrar-rubros-presupuesto', [PresupuestoController::class, 'filtrarRubrosPresupuesto']);
     //** RUTAS GENERAR PDF */
     Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
         Route::get('/adquisicion-pdf/{pedido}', [GenerarPdfController::class, 'generarPdfPedido'])->name('adquisicion');
