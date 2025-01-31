@@ -162,4 +162,182 @@ $(function () {
             console.log(errors);
         });
     });
+
+    ///** Remover rubros  (Esta acción eliminará la categoría y todos los rubros asociados, ¿Desea continuar?)*/
+    $('.remove-rubro').click(function () {
+        var rubro_id = $(this).data('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Esta acción eliminará el rubro del presupuesto, ¿Desea continuar?",
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, continuar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/eliminar-rubro-presupesto/' + rubro_id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    beforeSend: function () {
+
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.success ? "success" : "error",
+                            text: response.mensaje,
+                            confirmButtonText: 'Aceptar',
+                        }).then((result) => {
+                            location.reload();
+                        });
+
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    var errors = JSON.parse(jqXHR.responseText);
+                    console.log(errors);
+                });
+            }
+        });
+    });
+
+    ///** Remover rubros  (Esta acción eliminará la categoría y todos los rubros asociados, ¿Desea continuar?)*/
+    $('.remove-categoria').click(function () {
+        var categoria_id = $(this).data('id');
+        var proyecto_id = $(this).data('proyecto_id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Esta acción eliminará el rubro del presupuesto, ¿Desea continuar?",
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, continuar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '/eliminar-categoria-presupesto/' + categoria_id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    data: { 'proyecto': proyecto_id },
+                    beforeSend: function () {
+
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.success ? "success" : "error",
+                            text: response.mensaje,
+                            confirmButtonText: 'Aceptar',
+                        }).then((result) => {
+                            location.reload();
+                        });
+
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    var errors = JSON.parse(jqXHR.responseText);
+                    console.log(errors);
+                });
+            }
+        });
+    });
+
+    ///**  Actualizar el procentaje del costo indirecto del proyecto */
+    $('#table-rubros-presupuesto tfoot td.editar-costo-indirecto').click(function () {
+        var proyecto_id = $(this).data('id');
+        var porcentaje = $(this).data('porcentaje');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Esta acción actualizará el porcentaje (%) del costo indirecto del proyecto, ¿Desea continuar?",
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, continuar',
+            cancelButtonText: 'Cancelar',
+            input: "text",
+            inputValue: porcentaje,
+            inputAttributes: {
+                autocapitalize: "off",
+            },
+            customClass: {
+                input: 'form-control ' // Agrega la clase aquí
+            },
+            didOpen: () => {
+                // Inicializa Inputmask en el input de SweetAlert2
+                const input = Swal.getInput();
+                if (input) {
+                    // Aplica Inputmask al input
+                    Inputmask('numeric', {
+                        rightAlign: false,
+                        allowMinus: false,
+                        digits: 0,
+                        min: 0,
+                        max: undefined,
+                        integerDigits: undefined,
+                        placeholder: "",
+                        autoUnmask: true
+                    }).mask(input);
+                }
+            },
+            preConfirm: (value) => {
+                if (!value) {
+                    // Si el campo está vacío, devuelve una promesa rechazada para evitar que el modal se cierre
+                    return Swal.showValidationMessage('Debe ingresar un valor.');
+                }
+                // Si todo está bien, devuelve el nombre ingresado
+                return value;
+            }
+        }).then((result) => {
+            if (result.value && result.isConfirmed) {
+                $.ajax({
+                    url: '/actualizar-costo-indirecto/' + proyecto_id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'PUT',
+                    data: { 'porcentaje': result.value },
+                    beforeSend: function () {
+
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.success ? "success" : "error",
+                            text: response.mensaje,
+                            confirmButtonText: 'Aceptar',
+                        }).then((result) => {
+                            location.reload();
+                        });
+
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    reloadPage = false;
+                    var errors = JSON.parse(jqXHR.responseText);
+                    console.log(errors);
+                });
+
+            }
+        });
+    });
+
+    $('input:text[name=rubros_search]').on('keyup', function () {
+        var csrf = $('meta[name="csrf-token"]').attr('content');
+        var $value = $(this).val();
+        var proyecto_id = $(this).data('proyecto_id');
+
+        $.ajax({
+            url: '/filtrar-rubros-presupuesto',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'filtro': $value, 'proyecto': proyecto_id },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                console.log(data);
+                //$('tbody').html(data);
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
 });
