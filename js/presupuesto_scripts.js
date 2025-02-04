@@ -1,4 +1,6 @@
 import { getFormData } from './helpers.js';
+import { limpiarFormulario } from './helpers.js';
+
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     var reloadPage = false;
@@ -40,7 +42,7 @@ $(function () {
         $('select[name=categoria_rubro], select[name=rubro], select[name=unidad_medida], input[name=cantidad], input[name=valor]').removeClass('error-border');
         $('.select2-tag').removeClass('error-border');  // Remover borde rojo en select2
         $('.error-message').remove();
-
+        limpiarFormulario('#form_rubros_presupuesto');
     });
 
 
@@ -57,6 +59,7 @@ $(function () {
         // Obtén el valor seleccionado
         var selected_value = $(this).val();
         if (isNaN(selected_value)) {
+            $('input[name=valor]').val(0);
             return;
         }
 
@@ -70,8 +73,11 @@ $(function () {
             success: function (response) {
                 // Itera sobre los artículos y crea nuevas opciones
                 $.each(response.rubros, function (index, rubro) {
-                    let option = new Option(rubro, index, false, false);
+                    let option = new Option(rubro.nombre, rubro.id, false, false);
+                    $(option).attr('data-precio', rubro.valor_unitario);
+
                     $select.append(option); // Añade la opción al select
+
                 });
 
                 $select.trigger('change');
@@ -80,6 +86,13 @@ $(function () {
             var errors = JSON.parse(jqXHR.responseText);
             console.log(errors)
         });
+    });
+
+    //** Cargar el precio unitario del rubro selecionado */
+    $('#rubros').on('change', function () {
+        let selectedOption = $(this).find('option:selected');
+        let precio = selectedOption.data('precio');
+        $('input[name=valor]').val(precio);
     });
 
 
@@ -146,6 +159,7 @@ $(function () {
                         '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>' +
                         '<h5><i class="icon fas fa-check"></i> ' + response.mensaje + '</h5>' +
                         '</div>');
+                    limpiarFormulario(form);
                 } else {
                     reloadPage = false;
                     $('#message').html('<div class="alert alert-danger alert-dismissible">' +
@@ -202,14 +216,14 @@ $(function () {
         });
     });
 
-    ///** Remover rubros  (Esta acción eliminará la categoría y todos los rubros asociados, ¿Desea continuar?)*/
+    ///** Remover rubros  */
     $('.remove-categoria').click(function () {
         var categoria_id = $(this).data('id');
         var proyecto_id = $(this).data('proyecto_id');
 
         Swal.fire({
             title: '¿Esta Seguro?',
-            text: "Esta acción eliminará el rubro del presupuesto, ¿Desea continuar?",
+            text: "Esta acción eliminará la categoría y todos los rubros asociados, ¿Desea continuar?",
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
@@ -238,6 +252,11 @@ $(function () {
                 }).fail(function (jqXHR, textStatus, errorThrown) {
                     var errors = JSON.parse(jqXHR.responseText);
                     console.log(errors);
+                    Swal.fire({
+                        icon: "error",
+                        text: "Ocurrió un error al eliminar la categoría.",
+                        confirmButtonText: 'Aceptar',
+                    });
                 });
             }
         });
@@ -319,6 +338,7 @@ $(function () {
         });
     });
 
+    //** Filtrar rubros por nombre o categorias */
     $('input:text[name=rubros_search]').on('keyup', function () {
         var csrf = $('meta[name="csrf-token"]').attr('content');
         var $value = $(this).val();
