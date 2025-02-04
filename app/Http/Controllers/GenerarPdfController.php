@@ -11,6 +11,7 @@ use App\Models\CatalogoDato;
 use App\Models\Contratista;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
+use App\Models\Proyecto;
 
 class GenerarPdfController extends Controller
 {
@@ -281,6 +282,14 @@ class GenerarPdfController extends Controller
         //return $info;
         $pdf = PDF::loadView('pdf.orden_trabajo', compact('info', 'logo_base64'));
         return $pdf->stream('orden_trabajo.pdf');
+    }
+
+
+    public function exportarPresupuestoPDFD(Proyecto $proyecto)
+    {
+        $categorias = Proyecto::presupuestoValorado($proyecto->id);
+        $pdf = PDF::loadView('pdf.presupuesto_referencial', compact('categorias', 'proyecto'));
+        return $pdf->stream('presupuesto_referencial.pdf');
     }
 
     private function logoBase64()

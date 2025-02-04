@@ -22,16 +22,7 @@ class PresupuestoController extends Controller
             ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
         ];
 
-        $proyectoId = $proyecto->id;
-        $categorias = CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {
-            $query->where('proyecto_id', $proyectoId);
-        })
-            ->with(['rubrosPresupuesto' => function ($query) use ($proyectoId) {
-                $query->whereHas('presupuestoProyectos', function ($q) use ($proyectoId) {
-                    $q->where('proyecto_id', $proyectoId);
-                })->with('presupuestoProyectos'); // Cargar presupuestoProyectos dentro de rubrosPresupuesto
-            }])
-            ->get();
+        $categorias = $proyecto->presupuestoValorado($proyecto->id);
 
         $unidades_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
         $categorias_presupuesto = CategoriaPresupuesto::where('activo', 1)->pluck('nombre', 'id');
@@ -70,6 +61,12 @@ class PresupuestoController extends Controller
                         'valor_unitario' => $valor_unitario,
                         'activo' => 1
                     ])->id;
+                } else {
+                    // actualizar valor unitario y unidad de medida si ya existe el rubro
+                    $rubro = RubroPresupuesto::find($rubro);
+                    $rubro->valor_unitario = $valor_unitario;
+                    $rubro->unidad_medida_id = $unidad_medida;
+                    $rubro->save();
                 }
 
 
@@ -94,7 +91,7 @@ class PresupuestoController extends Controller
     {
         if ($request->ajax()) {
             $categoria_id = $request->categoria;
-            $rubros = RubroPresupuesto::where('categoria_presupuesto_id', $categoria_id)->where('activo', 1)->pluck('nombre', 'id');
+            $rubros = RubroPresupuesto::where('categoria_presupuesto_id', $categoria_id)->where('activo', 1)->get();
             return response()->json(['rubros' => $rubros]);
         }
     }

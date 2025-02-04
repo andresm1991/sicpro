@@ -348,4 +348,10 @@ if (!function_exists('palabras')) {
             DiccionarioPalabra::create(['palabra' => $palabra]);
         }
     }
+
+    function logoBase64()
+    {
+        $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
+        return $logo_base64;
+    }
 }

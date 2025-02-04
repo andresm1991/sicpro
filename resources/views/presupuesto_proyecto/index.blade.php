@@ -16,14 +16,23 @@
                     <div class="row">
                         <div class="col-md-4 col-12">
                             <div class="form-group">
-                                <a href="javascript:void(0);" class="btn btn-dark btn-sm" data-toggle="modal"
-                                    data-backdrop="static" data-keyboard="false" data-target="#modalRubrosPresupuesto">
-                                    <i class="fa-light fa-plus"></i> Agregar Rubro
-                                </a>
+                                <div class="d-flex">
+                                    <a href="javascript:void(0);" class="btn btn-dark btn-sm mr-2" data-toggle="modal"
+                                        data-backdrop="static" data-keyboard="false" data-target="#modalRubrosPresupuesto">
+                                        <i class="fa-light fa-plus"></i> Agregar Rubro
+                                    </a>
+
+
+                                    <a href="{{ route('pdf.export.presupuesto', $proyecto->id) }}"
+                                        class="btn btn-secondary btn-sm mr-2" target="_blank">
+                                        <i class="fa-light fa-file-export"></i> Exportar a PDF
+                                    </a>
+                                </div>
                             </div>
                         </div>
+
                         <div class="col-md-8 col-12 ">
-                            <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
+                            <div class="form-group form-search form-icon col-md-10 col-12 float-right  p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
                                 <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto->id }}"
                                     class="form-control form-control-round" placeholder="Buscar rubro....">
@@ -131,7 +140,7 @@
                                             });
                                         });
 
-                                    $saldo = $costos_directos + $costos_indirectos - $total_adquisiciones;
+                                    $saldo = $costos_directos - $total_adquisiciones;
                                 @endphp
 
                                 <tr>
@@ -194,7 +203,7 @@
                         </li>
                         <li class="list-group-item p-1 border-0">
                             <small>El valor del <strong class="text-uppercase">saldo</strong> es el calculo entre <strong
-                                    class="text-uppercase">TOTAL</strong> menos
+                                    class="text-uppercase">costos directos</strong> menos el total de las
                                 <b class="text-uppercase">ADQUISICIONES</b> </small>
                         </li>
                     </ul>

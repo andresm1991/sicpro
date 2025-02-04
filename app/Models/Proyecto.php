@@ -56,4 +56,17 @@ class Proyecto extends Model
     {
         return $this->hasOne(PresupuestoProyecto::class);
     }
+
+    public static function presupuestoValorado($proyectoId)
+    {
+        return CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {
+            $query->where('proyecto_id', $proyectoId);
+        })
+            ->with(['rubrosPresupuesto' => function ($query) use ($proyectoId) {
+                $query->whereHas('presupuestoProyectos', function ($q) use ($proyectoId) {
+                    $q->where('proyecto_id', $proyectoId);
+                })->with('presupuestoProyectos');
+            }])
+            ->get();
+    }
 }
