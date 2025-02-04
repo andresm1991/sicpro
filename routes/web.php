@@ -19,6 +19,7 @@ use App\Http\Controllers\ContratistaController;
 use App\Http\Controllers\CatalogoDatoController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\AdministrativoController;
+use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
 use App\Models\PresupuestoProyecto;
@@ -98,6 +99,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::group(['prefix' => '/presupuesto', 'as' => 'presupuesto.'], function () {
             Route::get('/{proyecto}/home', [PresupuestoController::class, 'index'])->name('index');
             Route::post('{proyecto}/store', [PresupuestoController::class, 'store']);
+        });
+
+        //** RUTAS CRONOGRAMA VALORADO */
+        Route::group(['prefix' => '/cronograma', 'as' => 'cronograma.'], function () {
+            Route::get('/{proyecto}/home', [CronogramaController::class, 'index'])->name('index');
         });
     });
 

@@ -23,7 +23,7 @@
                         <img src="{{ asset('images/icons/presupuesto.png') }}" alt="">
                         <span>Presupuesto</span>
                     </a>
-                    <a href="#" class="circle bottom-left">
+                    <a href="{{ route('proyecto.cronograma.index', $proyecto->id) }}" class="circle bottom-left">
                         <img src="{{ asset('images/icons/estado-de-resultados.png') }}" alt="">
                         <span>Cronograma</span>
                         <span>Valorado</span>

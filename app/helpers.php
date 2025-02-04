@@ -332,6 +332,21 @@ if (!function_exists('calcularFechaFinal')) {
         $precioLimpio = preg_replace('/[^0-9.]/', '', $precioConSimbolo);
         return $precioLimpio;
     }
+
+    function plazoSemanasProyecto($fecha_inicio, $fecha_fin){
+        $fechaInicio = Carbon::parse($fecha_inicio);
+            $fechaFin = Carbon::parse($fecha_fin);
+            $semanas = $fechaInicio->diffInWeeks($fechaFin);
+            return $semanas;
+            $semanas = [];
+
+            while ($fechaInicio->lessThanOrEqualTo($fechaFin)) {
+                $semanas[] = $fechaInicio->format('Y-m-d'); // Guardar la fecha de inicio de la semana
+                $fechaInicio->addWeek(); // Sumar una semana
+            }
+
+            return $semanas;
+    }
 }
 
 if (!function_exists('palabras')) {
