@@ -47,7 +47,7 @@
                                     <th scope="col">Nro.</th>
                                     <th scope="col">Rubro </th>
                                     @for ($i = 0; $i < $plazo_semanas; $i++)
-                                        <th>{{ $i +1 }}</th>    
+                                        <th class="text-center ">{{ $i +1 }}</th>    
                                     @endfor
                                 </tr>
                             </thead>
@@ -66,7 +66,7 @@
                                             <td class="align-middle font-weight-bold">{{ $index + 1 }}</td>
                                             <td class="align-middle"> {{ $rubro->nombre }}</td>
                                             @for ($i = 0; $i < $plazo_semanas; $i++)
-                                                <td></td>
+                                                <td class="align-middle click-semana p-4" id="{{ $i +1 }}"></td>
                                             @endfor
                                         </tr>
                                     @empty
