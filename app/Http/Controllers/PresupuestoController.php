@@ -49,11 +49,10 @@ class PresupuestoController extends Controller
                         'activo' => 1
                     ])->id;
                 }
-
-                if (!is_numeric($rubro)) {
-                    if (!is_numeric($unidad_medida)) {
-                        $unidad_medida = registrarUnidadMedida($unidad_medida);
-                    }
+                if (!is_numeric($unidad_medida)) {
+                    $unidad_medida = registrarUnidadMedida($unidad_medida);
+                }
+                if (!is_numeric($rubro)) {   
                     $rubro = RubroPresupuesto::create([
                         'categoria_presupuesto_id' => $categoria_rubro,
                         'nombre' => $rubro,
@@ -63,10 +62,10 @@ class PresupuestoController extends Controller
                     ])->id;
                 } else {
                     // actualizar valor unitario y unidad de medida si ya existe el rubro
-                    $rubro = RubroPresupuesto::find($rubro);
-                    $rubro->valor_unitario = $valor_unitario;
-                    $rubro->unidad_medida_id = $unidad_medida;
-                    $rubro->save();
+                    $update_rubro = RubroPresupuesto::find($rubro);
+                    $update_rubro->valor_unitario = $valor_unitario;
+                    $update_rubro->unidad_medida_id = $unidad_medida;
+                    $update_rubro->save();
                 }
 
 

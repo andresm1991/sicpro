@@ -52,23 +52,29 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $index = 1;
+                                @endphp
                                 @forelse ($categorias as $categoria)
                                     @php
                                         $total_categoria = 0;
                                     @endphp
-                                    @forelse ($categoria->rubrosPresupuesto as $index => $rubro)
+                                    @forelse ($categoria->rubrosPresupuesto as $rubro)
                                         @php
                                             $total_categoria += $rubro->presupuestoProyectos->sum(function ($item) {
                                                 return $item->cantidad * $item->valor_unitario;
                                             });
                                         @endphp
                                         <tr>
-                                            <td class="align-middle font-weight-bold">{{ $index + 1 }}</td>
+                                            <td class="align-middle font-weight-bold">{{ $index }}</td>
                                             <td class="align-middle"> {{ $rubro->nombre }}</td>
                                             @for ($i = 0; $i < $plazo_semanas; $i++)
-                                                <td class="align-middle click-semana p-4" id="{{ $i +1 }}"></td>
+                                                <td class="align-middle click-semana" data-item="{{ $index }}"  data-semana="{{ $i +1 }}"></td>
                                             @endfor
                                         </tr>
+                                        @php
+                                            $index += 1;
+                                        @endphp
                                     @empty
                                     
                                     @endforelse
@@ -91,6 +97,8 @@
     </section>
 @endsection
 
+@include('modals.actividad_dias_cronograma_modal')
+
 @section('scripts')
-    <script src="{{ asset('js/presupuesto_scripts.js') }}" type="module"></script>
+    <script src="{{ asset('js/cronograma_scripts.js') }}" type="module"></script>
 @endsection

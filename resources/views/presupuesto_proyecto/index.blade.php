@@ -54,6 +54,9 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $index = 1;
+                                @endphp
                                 @forelse ($categorias as $categoria)
                                     @php
                                         $total_categoria = 0;
@@ -69,14 +72,14 @@
                                             </a>
                                         </td>
                                     </tr>
-                                    @forelse ($categoria->rubrosPresupuesto as $index => $rubro)
+                                    @forelse ($categoria->rubrosPresupuesto as $rubro)
                                         @php
                                             $total_categoria += $rubro->presupuestoProyectos->sum(function ($item) {
                                                 return $item->cantidad * $item->valor_unitario;
                                             });
                                         @endphp
                                         <tr>
-                                            <td class="align-middle font-weight-bold">{{ $index + 1 }}</td>
+                                            <td class="align-middle font-weight-bold">{{ $index }}</td>
                                             <td class="align-middle"> {{ $rubro->nombre }}</td>
                                             <td class="align-middle text-uppercase">{{ $rubro->unidad_medida->descripcion }}
                                             </td>
@@ -96,6 +99,9 @@
                                                 </a>
                                             </td>
                                         </tr>
+                                        @php
+                                            $index += 1;
+                                        @endphp
                                     @empty
                                     @endforelse
                                     <tr style="background-color: #d7ecdc;">
