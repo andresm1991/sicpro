@@ -179,28 +179,34 @@ $(function () {
         }
     });
 
-    $('.select2-tag').select2({
-        width: '100%',
-        allowClear: false, // Permite limpiar la selección
-        tags: true, // Permite agregar nuevas opciones
-        placeholder: function () {
-            $(this).data('placeholder');
-        },
-        createTag: function (params) {
-            var term = $.trim(params.term);
-            if (term === '') {
-                return null;
+    $('.select2-tag').each(function () {
+        let $select = $(this);
+    
+        let config = {
+            width: '100%',
+            allowClear: false, // Permite limpiar la selección
+            tags: true, // Permite agregar nuevas opciones escribiendo
+            placeholder: function () {
+                return $(this).data('placeholder');
+            },
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') {
+                    return null;
+                }
+                return {
+                    id: term,
+                    text: term,
+                    newTag: true
+                };
+            },
+            insertTag: function (data, tag) {
+                data.unshift(tag); // Inserta la nueva opción al principio
             }
-            return {
-                id: term,
-                text: term,
-                newTag: true // add additional parameters
-            }
-        },
-        insertTag: function (data, tag) {
-            // Insertar la nueva opción al principio
-            data.unshift(tag);
-        }
+        };
+    
+        // Guardar la configuración original en `data()`
+        $select.data('select2-config', config).select2(config);
     });
 
     // Input mask

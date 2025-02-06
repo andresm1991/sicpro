@@ -1970,6 +1970,13 @@ input.auto-ajustable {
     /* Centra el texto (opcional) */
 }
 
+.pintado {
+    background-color: Crimson !important;
+    color: white !important;
+}
+
+
+/*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
 @media only screen and (max-width: 767px) {
