@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActividadCronograma;
 use App\Models\Proyecto;
 use Illuminate\Http\Request;
 
@@ -20,5 +21,14 @@ class CronogramaController extends Controller
         $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_fin);
 
         return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas'));
+    }
+
+
+    public function getAjaxActividades (Request $request) {
+        if($request->ajax()){
+            $actividades = ActividadCronograma::where('activo', true)->pluck('descripcion', 'id');
+            //$actividades = $actividades->prepend('', '');
+            return response()->json(['actividades' => $actividades]);
+        }
     }
 }

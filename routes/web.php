@@ -208,6 +208,8 @@ Route::group(['middleware' => ['auth']], function () {
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
     Route::get('/rubros-presupuesto', [PresupuestoController::class, 'getAjaxRubrosPresupuesto']);
     Route::put('/actualizar-costo-indirecto/{proyecto}', [PresupuestoController::class, 'putAjaxCostoIndirecto']);
+    Route::get('/actividades-cronograma', [CronogramaController::class, 'getAjaxActividades']);
+
     // Eliminar  rubros del presupuesto
     Route::delete('/eliminar-rubro-presupesto/{rubro}', [PresupuestoController::class, 'destroyAjaxRubroPresupuesto']);
     Route::delete('/eliminar-categoria-presupesto/{categoria}', [PresupuestoController::class, 'destroyAjaxCategoriaPresupuesto']);
