@@ -6,6 +6,15 @@ $(function () {
     var reloadPage = false;
     var dataEdit = '';
 
+    $('.select2-basic-single').select2({
+        width: '100%',
+        dropdownParent: $('#modalRubrosPresupuesto'),
+        placeholder: function () {
+            $(this).data('placeholder');
+        },
+        allowClear: false,
+    });
+
     $('#modalRubrosPresupuesto').on('shown.bs.modal', function (e) {
         $('.select2-tag').select2({
             width: '100%',
@@ -74,7 +83,7 @@ $(function () {
                 // Itera sobre los artículos y crea nuevas opciones
                 $.each(response.rubros, function (index, rubro) {
                     let option = new Option(rubro.nombre, rubro.id, false, false);
-                    $(option).attr('data-precio', rubro.valor_unitario);
+                    $(option).attr({'data-precio': rubro.valor_unitario, 'data-etapa': rubro.etapa_id, 'data-unidad_medida': rubro.unidad_medida_id});
 
                     $select.append(option); // Añade la opción al select
 
@@ -92,7 +101,12 @@ $(function () {
     $('#rubros').on('change', function () {
         let selectedOption = $(this).find('option:selected');
         let precio = selectedOption.data('precio');
+        let etapa = selectedOption.data('etapa');
+        let unidad_medida = selectedOption.data('unidad_medida');
         $('input[name=valor]').val(precio);
+        $('select[name=etapa_construccion]').val(etapa).trigger('change');
+        $('select[name=unidad_medida]').val(unidad_medida).trigger('change');
+        console.log(etapa)
     });
 
 

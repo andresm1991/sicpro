@@ -200,6 +200,15 @@ body {
     /* Mitad de la anchura del nodo */
 }
 
+.top-center {
+    top: 10%;
+    left: 50%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
 .top-right {
     top: 20%;
     left: 80%;
@@ -2026,6 +2035,7 @@ actividades-seleccionadas div {
 
     .central,
     .top-left,
+    .top-center,
     .top-right,
     .bottom-left,
     .bottom-right {

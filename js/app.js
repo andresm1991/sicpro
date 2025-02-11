@@ -147,6 +147,18 @@ $(function () {
 
     });
 
+    $('.timepicker').timepicker({
+        timeFormat: 'HH:mm',
+        interval: 30,
+        minTime: '08',
+        maxTime: '6:00pm',
+        defaultTime: '08',
+        startTime: '08:00',
+        dynamic: false,
+        dropdown: true,
+        scrollbar: true
+    });
+
     $('.select2-basic-single').select2({
         width: '100%',
         placeholder: function () {
