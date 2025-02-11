@@ -1058,82 +1058,82 @@ legend span {
 }
 
 /* tree view */
-.tree,
-.tree ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.tree ul {
-    margin-left: 1em;
-    position: relative
-}
-
-.tree ul ul {
-    margin-left: .5em
-}
-
-.tree ul:before {
-    content: "";
-    display: block;
-    width: 0;
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    border-left: 1px solid
+.tree {
+    --spacing: 1.5rem;
+    --radius: 10px;
 }
 
 .tree li {
-    margin: 0;
-    padding: 0 1em;
-    line-height: 2em;
-    color: var(--primary-color);
-    font-weight: 700;
+    display: block;
     position: relative;
+    padding-left: calc(2 * var(--spacing) - var(--radius) - 2px);
+}
+
+.tree ul {
+    margin-left: calc(var(--radius) - var(--spacing));
+    padding-left: 0;
+}
+
+.tree ul li {
+    border-left: 2px solid #ddd;
+}
+
+.tree ul li:last-child {
+    border-color: transparent;
+}
+
+.tree ul li::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: calc(var(--spacing) / -2);
+    left: -2px;
+    width: calc(var(--spacing) + 2px);
+    height: calc(var(--spacing) + 1px);
+    border: solid #ddd;
+    border-width: 0 0 2px 2px;
+}
+
+.tree summary {
+    display: block;
     cursor: pointer;
 }
 
-.tree ul li:before {
-    content: "";
+.tree summary::marker,
+.tree summary::-webkit-details-marker {
+    display: none;
+}
+
+.tree summary:focus {
+    outline: none;
+}
+
+.tree summary:focus-visible {
+    outline: 1px dotted #000;
+}
+
+.tree li::after,
+.tree summary::before {
+    content: '';
     display: block;
-    width: 10px;
-    height: 0;
-    border-top: 1px solid;
-    margin-top: -1px;
     position: absolute;
-    top: 1em;
-    left: 0
+    top: calc(var(--spacing) / 2 - var(--radius));
+    left: calc(var(--spacing) - var(--radius) - 1px);
+    width: calc(2 * var(--radius));
+    height: calc(2 * var(--radius));
+    border-radius: 50%;
+    background: #ddd;
 }
 
-.tree ul li:last-child:before {
-    background: #fff;
-    height: auto;
-    top: 1em;
-    bottom: 0
+.tree summary::before {
+    z-index: 1;
+    background: #696 url('../images/svg/expand-collapse.svg') 0 0;
 }
 
-.indicator {
-    margin-right: 5px;
+.tree details[open]>summary::before {
+    background-position: calc(-2 * var(--radius)) 0;
 }
 
-.tree li a {
-    text-decoration: none;
-    color: #369;
-}
-
-.tree li button,
-.tree li button:active,
-.tree li button:focus {
-    text-decoration: none;
-    color: #369;
-    border: none;
-    background: transparent;
-    margin: 0px 0px 0px 0px;
-    padding: 0px 0px 0px 0px;
-    outline: 0;
-}
 
 input.auto-ajustable {
     border: none;
@@ -1970,9 +1970,28 @@ input.auto-ajustable {
     /* Centra el texto (opcional) */
 }
 
-.pintado {
+.pintado_pendiente {
     background-color: Crimson !important;
     color: white !important;
+}
+
+.pintado_completado {
+    background-color: rgb(55, 201, 74) !important;
+    color: white !important;
+}
+
+actividades-seleccionadas div {
+    max-width: 100%;
+    /* Limita el ancho del contenedor */
+    word-wrap: break-word;
+    /* Divide palabras largas */
+    overflow-wrap: break-word;
+    /* Maneja palabras extremadamente largas */
+}
+
+.remove-activity {
+    margin-left: 5px;
+    /* Espacio entre el texto y el botón de eliminación */
 }
 
 

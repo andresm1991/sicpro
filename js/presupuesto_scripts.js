@@ -104,7 +104,7 @@ $(function () {
         var type = 'POST';
         var valid = true;
 
-        $('select[name=categoria_rubro], select[name=rubro], select[name=unidad_medida], input[name=cantidad], input[name=valor]').removeClass('error-border');
+        $('select[name=categoria_rubro], select[name=rubro], select[name=unidad_medida], select[name=etapa_construccion], input[name=cantidad], input[name=valor]').removeClass('error-border');
         $('.select2-tag').removeClass('error-border');  // Remover borde rojo en select2
         $('.error-message').remove();  // Elimina los mensajes de error anteriores
 
@@ -122,6 +122,12 @@ $(function () {
             var valid = false;
             $('select[name=unidad_medida]').next('.select2-container').find('.select2-selection').addClass('error-border');
             $('select[name=unidad_medida]').parent().append('<span class="error-message">Seleccione la unidad de medida.</span>');
+        }
+
+        if (data.etapa_construccion == "") {
+            var valid = false;
+            $('select[name=etapa_construccion]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=etapa_construccion]').parent().append('<span class="error-message">Seleccione una opción.</span>');
         }
 
 

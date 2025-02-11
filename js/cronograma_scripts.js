@@ -1,159 +1,86 @@
-$(function() {
+$(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
-    let $tdSeleccionado; // Variable global para almacenar el TD clicado
 
-    // Configuración base para Select2
-    const select2TagConfig = {
-        width: '100%',
-        allowClear: false, // Permite limpiar la selección
-        tags: true, // Permite agregar nuevas opciones escribiendo
-        placeholder: function () {
-            return $(this).data('placeholder');
-        },
-        createTag: function (params) {
-            var term = $.trim(params.term);
-            if (term === '') {
-                return null;
-            }
-            return {
-                id: term,
-                text: term,
-                newTag: true
-            };
-        },
-        insertTag: function (data, tag) {
-            data.unshift(tag); // Inserta la nueva opción al principio
-        }
-    };
-
-   $(document).on('click', '.click-semana', function () {
-    $tdSeleccionado = $(this); // Guardar referencia al TD clicado
-    getActividadesCronograma($('.actividades'));
-    // Verificar si el TD ya está pintado
-    if ($tdSeleccionado.hasClass('pintado')) {
-        $('#modal-text').text('¿Desea despintar esta celda?');
-        $('#btn-confirmar').text('Despintar').removeClass('btn-primary').addClass('btn-danger');
-    } else {
-        $('#modal-text').text('¿Desea pintar esta celda?');
-        $('#btn-confirmar').text('Pintar').removeClass('btn-danger').addClass('btn-primary');
-    }
-
-    // Mostrar el modal
-    $('#modalActividadDiasCronograma').modal({
-        backdrop: 'static', // Evita que el modal se cierre al hacer clic fuera
-        keyboard: false     // Evita que el modal se cierre con la tecla ESC
+    $(document).on('click', '.click-semana', function () {
+        window.location = 'semana/' + $(this).data('semana') + '/rubro/' + $(this).data('rubro');
     });
-    
-    $('#modalActividadDiasCronograma').modal('show');
 
-    return;
+    // Evento clic para los botones "Agregar actividad"
+    $('.add-actividad').on('click', function () {
+        const day = $(this).data('day'); // Obtener el día asociado al botón
+        const $select = $(`#${day}-fields .actividades`); // Encontrar el <select> correspondiente
+        const selectedValue = $select.val(); // Obtener el valor seleccionado
+        const selectedText = $select.find('option:selected').text(); // Obtener el texto seleccionado
 
-
-
-    let currentColor = $(this).css('background-color');
-    let item = $(this).data('item');
-    // modalActividadDiasCronograma
-
-        if (currentColor === 'rgb(220, 20, 60)') { // Lightblue en RGB
-            $(this).html('')
-            $(this).css({'background-color': '', 'color': ''});
-        } else {
-            $(this).css({'background-color':'Crimson', 'color':'white', 'text-align': 'center', 'font-weight': 'bold', 'font-size': '10px'});
-            $(this).text(item)
+        // Validar que se haya seleccionado una opción
+        if (!selectedValue) {
+            alert('Por favor, seleccione una actividad.');
+            return;
         }
-   }); 
 
-   // Agregar campo dinámico debajo del día correspondiente
-   $('.add-field').on('click', function () {
-    let day = $(this).data('day'); // Obtiene el día
-    let container = $('#' + day + '-fields'); // Encuentra el contenedor de ese día
-    
-    // Crear un nuevo <select> con botón de eliminar
-    let newField = $('<div>', {
-        class: 'form-group input-group mb-2',
-        html: [
-            $('<select>', {
-                name: day + '[]',
-                class: 'form-control actividades'
-            }),
-            $('<div>', {
-                class: 'input-group-append',
-                html: $('<button>', {
-                    class: 'btn btn-danger btn-sm remove-field',
+        // Encontrar el contenedor donde se mostrarán las actividades seleccionadas
+        const $container = $(this).closest('.day-item').find('.actividades-seleccionadas');
+
+        // Verificar si la actividad ya está agregada (evitar duplicados)
+        if ($container.find(`[data-value="${selectedValue}"]`).length > 0) {
+            alert('Esta actividad ya ha sido agregada.');
+            return;
+        }
+
+        // Crear un nuevo elemento para mostrar la actividad
+        const newActivity = $('<div>', {
+            class: 'd-flex align-items-center bg-dark text-white rounded p-2 mr-2 mb-2',
+            'data-value': selectedValue,
+            css: { 'max-width': '100%' }, // Limita el ancho máximo del contenedor
+            html: [
+                $('<span>', {
+                    class: 'flex-grow-1 text-wrap',
+                    text: selectedText,
+                    css: {
+                        'word-break': 'break-word', // Divide palabras largas
+                        'overflow-wrap': 'break-word' // Maneja palabras extremadamente largas
+                    }
+                }),
+                $('<a>', {
+                    href: 'javascript:void(0);',
+                    class: 'btn btn-sm btn-danger remove-activity ml-auto',
                     html: '<i class="fa-solid fa-xmark"></i>'
+                }),
+                $('<input>', {
+                    type: 'hidden',
+                    name: `${day}[]`,
+                    value: selectedValue
                 })
-            })
-        ]
+            ]
+        });
+
+        // Añadir la nueva actividad al contenedor
+        $container.append(newActivity);
     });
 
-    container.append(newField); // Agrega el campo
-    // Obtener el nuevo <select> creado
-    let $newSelect = container.find('.actividades').last();
+    // Evento click para eliminar actividades (funciona para elementos dinámicos y estáticos)
+    $(document).on('click', '.remove-activity', function () {
+        const $activityDiv = $(this).closest('.d-flex'); // Encuentra el contenedor de la actividad
+        const day = $activityDiv.closest('.day-item').find('.add-actividad').data('day'); // Obtiene el día asociado
 
-    // Inicializar Select2 con la misma configuración base
-    $newSelect.select2($.extend(true, {}, select2TagConfig, {
-        dropdownParent: container.closest('.modal') // Para que funcione dentro de modales
-    }));
-
-    // Cargar opciones dinámicas para el nuevo <select>
-    getActividadesCronograma($newSelect);
-});
-
-// Eliminar campo dinámico
-$(document).on('click', '.remove-field', function () {
-    $(this).closest('.input-group').remove(); // Elimina el campo correspondiente
-});
-
-   $(document).on('shown.bs.modal', '.modal', function () {
-    $(this).find('.actividades').each(function () {
-        let $select = $(this);
-
-        // Destruir Select2 si ya está inicializado
-        if ($select.data('select2')) {
-            $select.select2('destroy');
-        }
-
-        // Inicializar Select2 con la configuración base y dropdownParent
-        $select.select2($.extend(true, {}, select2TagConfig, {
-            dropdownParent: $(this).closest('.modal') // Para que funcione dentro de modales
-        }));
-
-        // Cargar opciones dinámicas
-        getActividadesCronograma($select);
+        $activityDiv.remove(); // Elimina el contenedor de la actividad
+        updateDynamicFields(day); // Actualiza los campos dinámicos
     });
-   });
 
-   var getActividadesCronograma = function($select) {
-    $.ajax({
-        url: '/actividades-cronograma',
-        headers: { 'X-CSRF-TOKEN': csrf },
-        type: 'GET',
-        success: function (response) {
-            // Limpiar el <select>
-            $select.empty();
+    // Función para actualizar los campos dinámicos
+    function updateDynamicFields(day) {
+        const $container = $(`.day-item [data-day="${day}"]`).closest('.day-item').find('.actividades-seleccionadas');
+        $container.find('input[type="hidden"]').remove(); // Limpiar campos antiguos
 
-            // Agregar una opción vacía para el placeholder
-            $select.append(new Option('', '', false, false));
-
-            // Iterar sobre las actividades y crear nuevas opciones
-            $.each(response.actividades, function (index, actividad) {
-                let option = new Option(actividad, index, false, false);
-                $select.append(option);
-            });
-
-            // Desencadenar el evento 'change' para actualizar Select2
-            $select.trigger('change');
-        }
-    }).fail(function (jqXHR, textStatus, errorThrown) {
-        switch (jqXHR.status) {
-            case 419: // ERROR EXPIRATE SESSION
-                window.location = '/';
-                break;
-
-            default:
-                var errors = JSON.parse(jqXHR.responseText);
-                Swal.fire('Error!',errors,'error');
-        }
-    });
-   };
+        $container.find('[data-value]').each(function () {
+            const value = $(this).data('value');
+            $(this).append(
+                $('<input>', {
+                    type: 'hidden',
+                    name: `${day}[]`,
+                    value: value
+                })
+            );
+        });
+    }
 });
