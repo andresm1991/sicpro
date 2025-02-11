@@ -27,6 +27,12 @@
                     <span>Usuarios</span>
                 </a>
 
+                <a href="{{ route('sistema.rubros.index') }}" class="nodo">
+                    <img src="{{ asset('images/icons/icono_1.png') }}">
+                    <span>Rubros Construcción</span>
+                </a>
+
+
                 {{-- <a href="{{ route('sistema.config.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/configuracion.png') }}">
                     <span>Configuración</span>

@@ -13,7 +13,8 @@ class PresupuestoProyecto extends Model
         'proyecto_id',
         'rubro_presupuesto_id',
         'cantidad',
-        'valor_unitario'
+        'valor_unitario',
+        'etapa_id',
     ];
 
     public function proyecto()
@@ -29,5 +30,15 @@ class PresupuestoProyecto extends Model
     public function rubros_presupuesto()
     {
         return $this->hasMany(RubroPresupuesto::class, 'rubro_presupuesto_id');
+    }
+
+    public function cronograma()
+    {
+        return $this->hasMany(Cronograma::class);
+    }
+
+    public function etapa_construccion()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'etapa_id');
     }
 }

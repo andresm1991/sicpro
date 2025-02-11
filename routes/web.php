@@ -22,6 +22,7 @@ use App\Http\Controllers\AdministrativoController;
 use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
+use App\Http\Controllers\RubroController;
 use App\Models\PresupuestoProyecto;
 
 /*
@@ -104,6 +105,10 @@ Route::group(['middleware' => ['auth']], function () {
         //** RUTAS CRONOGRAMA VALORADO */
         Route::group(['prefix' => '/cronograma', 'as' => 'cronograma.'], function () {
             Route::get('/{proyecto}/home', [CronogramaController::class, 'index'])->name('index');
+            Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'crearCronogramaDiaSemana'])->name('actividad.dia.semana');
+            Route::post('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'storeActividadesDiaSemana'])->name('store.actividad.dias.semana');
+            Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}/editar', [CronogramaController::class, 'editarCronogramaDiaSemana'])->name('edit.actividad.dia.semana');
+            Route::put('/{proyecto}/semana/{semana}/rubro/{rubro}/actualizar/{cronograma}', [CronogramaController::class, 'updateActividadesDiaSemana'])->name('update.actividad.dias.semana');
         });
     });
 
@@ -156,6 +161,12 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/buscar', [InventarioController::class, 'buscar']);
             Route::delete('/detalle/eliminar/{id}', [InventarioController::class, 'destroy']);
             Route::delete('/eliminar/{id}', [InventarioController::class, 'destroyInventario']);
+        });
+
+        //** RUBROS */
+        Route::group(['prefix' => 'rubros', 'as' => 'rubros.'], function () {
+            Route::get('/', [RubroController::class, 'index'])->name('index');
+            Route::delete('/eliminar/{rubro}', [RubroController::class, 'destrory'])->name('destroy');
         });
 
         // Configuraciones
@@ -221,6 +232,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/mano-obra-pdf/{mano_obra}', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('planificacion.mano.obra');
         Route::get('/orden-trabajo-contratista-pdf/{orden_trabajo}', [GenerarPdfController::class, 'ordenTrabajoContratistaPDF'])->name('orden.trabajo.contratista');
         Route::get('/exportar-presupuesto-pdf/{proyecto}', [GenerarPdfController::class, 'exportarPresupuestoPDFD'])->name('export.presupuesto');
+        Route::get('/exportar-cronograma-pdf/{proyecto}', [GenerarPdfController::class, 'exportarCronogramaToPDF'])->name('export.cronograma');
+        Route::get('/exportar-cronograma-actividades-dias-pdf/{cronograma}', [GenerarPdfController::class, 'exportarActividadesDiasCronogramaToPDF'])->name('export.cronograma.actividades.dias');
     });
     //** FIN RUTAS GENERAR PDF */
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);

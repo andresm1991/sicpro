@@ -57,6 +57,10 @@ class Proyecto extends Model
         return $this->hasOne(PresupuestoProyecto::class);
     }
 
+    public function cronograma_dias_semana()
+    {
+        return $this->hasMany(Cronograma::class);
+    }
     public static function presupuestoValorado($proyectoId)
     {
         return CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {

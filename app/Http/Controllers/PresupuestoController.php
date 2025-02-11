@@ -25,9 +25,10 @@ class PresupuestoController extends Controller
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
 
         $unidades_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+        $etapas_construccion = CatalogoDato::getChildrenCatalogo('etapas.construccion')->pluck('descripcion', 'id');
         $categorias_presupuesto = CategoriaPresupuesto::where('activo', 1)->pluck('nombre', 'id');
 
-        return view('presupuesto_proyecto.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'unidades_medidas', 'categorias_presupuesto'));
+        return view('presupuesto_proyecto.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'unidades_medidas', 'categorias_presupuesto', 'etapas_construccion'));
     }
 
 
@@ -37,8 +38,10 @@ class PresupuestoController extends Controller
             $categoria_rubro = $request->categoria_rubro;
             $rubro = $request->rubro;
             $unidad_medida = $request->unidad_medida;
+            $etapa_construccion = $request->etapa_construccion;
             $cantidad = str_replace(',', '', $request->cantidad);
             $valor_unitario = str_replace(',', '', $request->valor);
+
 
             try {
                 DB::beginTransaction();
@@ -52,7 +55,7 @@ class PresupuestoController extends Controller
                 if (!is_numeric($unidad_medida)) {
                     $unidad_medida = registrarUnidadMedida($unidad_medida);
                 }
-                if (!is_numeric($rubro)) {   
+                if (!is_numeric($rubro)) {
                     $rubro = RubroPresupuesto::create([
                         'categoria_presupuesto_id' => $categoria_rubro,
                         'nombre' => $rubro,
@@ -73,7 +76,8 @@ class PresupuestoController extends Controller
                     'proyecto_id' => $proyecto->id,
                     'rubro_presupuesto_id' => $rubro,
                     'cantidad' => $cantidad,
-                    'valor_unitario' => $valor_unitario
+                    'valor_unitario' => $valor_unitario,
+                    'etapa_id' => $etapa_construccion,
                 ]);
 
                 DB::commit();

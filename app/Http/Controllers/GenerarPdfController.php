@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use PDF;
 use Carbon\Carbon;
 use App\Models\ManoObra;
+use App\Models\Proyecto;
 use App\Models\Proveedor;
+use App\Models\Cronograma;
 use App\Models\Adquisicion;
-use App\Models\CatalogoDato;
 use App\Models\Contratista;
+use App\Models\CatalogoDato;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
-use App\Models\Proyecto;
 
 class GenerarPdfController extends Controller
 {
@@ -290,6 +291,50 @@ class GenerarPdfController extends Controller
         $categorias = Proyecto::presupuestoValorado($proyecto->id);
         $pdf = PDF::loadView('pdf.presupuesto_referencial', compact('categorias', 'proyecto'));
         return $pdf->stream('presupuesto_referencial.pdf');
+    }
+
+    public function exportarCronogramaToPDF(Proyecto $proyecto)
+    {
+        $categorias = $proyecto->presupuestoValorado($proyecto->id);
+        $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_fin);
+        $cronograma = Cronograma::where('proyecto_id', $proyecto->id)->get();
+
+        $pdf = PDF::loadView('pdf.cronograma', compact('categorias', 'proyecto', 'plazo_semanas', 'cronograma'))->setPaper('a3', 'landscape');
+        return $pdf->stream('cronograma.pdf');
+    }
+
+    public function exportarActividadesDiasCronogramaToPDF(Cronograma $cronograma)
+    {
+        $dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+        $result = [];
+
+        // Inicializar el array con los días como claves
+        foreach ($dias as $dia) {
+            $result[$dia] = []; // Inicializa cada día con un array vacío
+        }
+
+        // Iterar sobre las actividades del cronograma
+        foreach ($cronograma->actividad_dias as $actividad) {
+            $dia = $actividad->dia; // Obtener el día de la actividad
+            if (in_array($dia, $dias)) { // Verificar si el día es válido
+                $result[$dia][] = $actividad->actividad_cronograma->descripcion; // Agregar la descripción al día correspondiente
+            }
+        }
+
+
+        $fecha_semanas = fechasSemana($cronograma->proyecto->fecha_inicio, $cronograma->proyecto->fecha_finalizacion);
+
+        $info_cronograma_dias = [
+            'proyecto' => $cronograma->proyecto->nombre_proyecto,
+            'semana' => $cronograma->semana,
+            'fecha_semana' => $fecha_semanas[$cronograma->semana],
+            'estado' => $cronograma->completado ? 'Completado' : 'pendiente',
+            'rubro' => $cronograma->rubro->nombre,
+            'actividades' => $result,
+        ];
+
+        $pdf = PDF::loadView('pdf.cronograma_dias', compact('info_cronograma_dias'))->setPaper('a3', 'landscape');
+        return $pdf->stream('actividades_dias.pdf');
     }
 
     private function logoBase64()

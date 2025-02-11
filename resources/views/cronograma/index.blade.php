@@ -4,6 +4,7 @@
 
 @section('content')
     @include('partials.header_page')
+    @include('partials.alerts')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="">
             <div class="card">
@@ -17,13 +18,13 @@
                         <div class="col-md-4 col-12">
                             <div class="form-group">
                                 <div class="d-flex">
+                                    {{--  
                                     <a href="javascript:void(0);" class="btn btn-dark btn-sm mr-2" data-toggle="modal"
                                         data-backdrop="static" data-keyboard="false" data-target="#modalRubrosPresupuesto">
                                         <i class="fa-light fa-plus"></i> Agregar Rubro
                                     </a>
-
-
-                                    <a href="{{ route('pdf.export.presupuesto', $proyecto->id) }}"
+                                    --}}
+                                    <a href="{{ route('pdf.export.cronograma', $proyecto->id) }}"
                                         class="btn btn-secondary btn-sm mr-2" target="_blank">
                                         <i class="fa-light fa-file-export"></i> Exportar a PDF
                                     </a>
@@ -47,7 +48,7 @@
                                     <th scope="col">Nro.</th>
                                     <th scope="col">Rubro </th>
                                     @for ($i = 0; $i < $plazo_semanas; $i++)
-                                        <th class="text-center ">{{ $i +1 }}</th>    
+                                        <th class="text-center ">{{ $i + 1 }}</th>
                                     @endfor
                                 </tr>
                             </thead>
@@ -69,14 +70,28 @@
                                             <td class="align-middle font-weight-bold">{{ $index }}</td>
                                             <td class="align-middle"> {{ $rubro->nombre }}</td>
                                             @for ($i = 0; $i < $plazo_semanas; $i++)
-                                                <td class="align-middle click-semana" data-item="{{ $index }}"  data-semana="{{ $i +1 }}"></td>
+                                                @if ($cronograma->where('semana', $i + 1)->where('rubro_id', $rubro->id)->isNotEmpty())
+                                                    <td class="align-middle text-center {{ $cronograma->where('semana', $i + 1)->where('rubro_id', $rubro->id)->where('completado', true)->isNotEmpty()? 'pintado_completado': 'pintado_pendiente' }}"
+                                                        data-item="{{ $index }}" data-semana="{{ $i + 1 }}"
+                                                        data-proyecto={{ $proyecto->id }} data-rubro="{{ $rubro->id }}">
+                                                        <a href="{{ route('proyecto.cronograma.edit.actividad.dia.semana', ['proyecto' => $proyecto->id, 'semana' => $i + 1, 'rubro' => $rubro->id]) }}"
+                                                            class="text-decoration-none text-white">{{ $index }}
+                                                        </a>
+                                                    </td>
+                                                @else
+                                                    <td class="align-middle text-center click-semana"
+                                                        data-item="{{ $index }}" data-semana="{{ $i + 1 }}"
+                                                        data-proyecto={{ $proyecto->id }}
+                                                        data-rubro="{{ $rubro->id }}">
+                                                        -
+                                                    </td>
+                                                @endif
                                             @endfor
                                         </tr>
                                         @php
                                             $index += 1;
                                         @endphp
                                     @empty
-                                    
                                     @endforelse
                                 @empty
                                     <tr>
@@ -87,7 +102,7 @@
                                 @endforelse
                             </tbody>
                             <tfoot>
-                                
+
                             </tfoot>
                         </table>
                     </div>

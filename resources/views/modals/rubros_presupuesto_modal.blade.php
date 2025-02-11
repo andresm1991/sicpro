@@ -40,6 +40,33 @@
                     </div>
 
                     <div class="row">
+                        <div class="col-md-6 col-12">
+                            <div class="form-group">
+                                {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
+                                <select name="etapa_construccion" class="form-control select2-tag",
+                                    data-placeholder ='seleccione opción'>
+                                    <option value=""></option>
+                                    @foreach ($etapas_construccion as $id => $nombre)
+                                        <option value="{{ $id }}">{{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="form-group">
+                                {{ Form::label('', 'Unidad Media', ['class' => 'col-form-label']) }}
+                                <select name="unidad_medida" class="form-control select2-tag",
+                                    data-placeholder ='seleccione opción'>
+                                    <option value=""></option>
+                                    @foreach ($unidades_medidas as $id => $nombre)
+                                        <option value="{{ $id }}">{{ $nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-3 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Cantidad', ['class' => 'col-form-label']) }}
@@ -51,19 +78,6 @@
                             <div class="form-group">
                                 {{ Form::label('', 'Costo', ['class' => 'col-form-label']) }}
                                 {{ Form::text('valor', '', ['class' => 'form-control money text-right', 'placeholder' => '0']) }}
-                            </div>
-                        </div>
-
-                        <div class="col-md-6 col-12">
-                            <div class="form-group">
-                                {{ Form::label('', 'Unidad Media', ['class' => 'col-form-label']) }}
-                                <select name="unidad_medida" class="form-control select2-tag",
-                                    data-placeholder ='seleccione opción'>
-                                    <option value=""></option>
-                                    @foreach ($unidades_medidas as $id => $nombre)
-                                        <option value="{{ $id }}">{{ $nombre }}</option>
-                                    @endforeach
-                                </select>
                             </div>
                         </div>
                     </div>

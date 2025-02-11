@@ -333,19 +333,29 @@ if (!function_exists('calcularFechaFinal')) {
         return $precioLimpio;
     }
 
-    function plazoSemanasProyecto($fecha_inicio, $fecha_fin){
+    function plazoSemanasProyecto($fecha_inicio, $fecha_fin)
+    {
         $fechaInicio = Carbon::parse($fecha_inicio);
-            $fechaFin = Carbon::parse($fecha_fin);
-            $semanas = $fechaInicio->diffInWeeks($fechaFin);
-            return $semanas;
-            $semanas = [];
+        $fechaFin = Carbon::parse($fecha_fin);
+        // Calcular la diferencia en días
+        $diferenciaEnDias = $fechaInicio->diffInDays($fechaFin);
 
-            while ($fechaInicio->lessThanOrEqualTo($fechaFin)) {
-                $semanas[] = $fechaInicio->format('Y-m-d'); // Guardar la fecha de inicio de la semana
-                $fechaInicio->addWeek(); // Sumar una semana
-            }
+        // Redondear hacia arriba para incluir semanas parciales
+        $semanas = ceil($diferenciaEnDias / 7);
+        return $semanas;
+    }
 
-            return $semanas;
+    function fechasSemana($fecha_inicio, $fecha_fin)
+    {
+        $fechaInicio = Carbon::parse($fecha_inicio);
+        $fechaFin = Carbon::parse($fecha_fin);
+        $semanas = [];
+
+        while ($fechaInicio->lessThanOrEqualTo($fechaFin)) {
+            $semanas[] = $fechaInicio->format('Y-m-d'); // Guardar la fecha de inicio de la semana
+            $fechaInicio->addWeek(); // Sumar una semana
+        }
+        return $semanas;
     }
 }
 

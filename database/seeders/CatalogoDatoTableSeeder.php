@@ -374,7 +374,7 @@ class CatalogoDatoTableSeeder extends Seeder
         */
 
         /**Estados Prestamos */
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Estados Prestamos',
             'detalle' => '',
             'slug' => 'estados.prestamos',
@@ -410,7 +410,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         /**Estados Pagos Prestamos */
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Estados Pagos Prestamos',
             'detalle' => '',
             'slug' => 'estados.pagos.prestamos',
@@ -446,7 +446,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         /**Estados tipo de solicitud */
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Estados tipo de solicitud',
             'detalle' => '',
             'slug' => 'estados.tipo.solicitud.prestamos',
@@ -468,7 +468,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         /** Metodos de pago Prestamo*/
-        $padre = CatalogoDato::create([
+        /*$padre = CatalogoDato::create([
             'descripcion' => 'Metodo de Pagos',
             'detalle' => '',
             'slug' => 'metodos.pagos',
@@ -515,6 +515,47 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Costos Indirectos',
             'detalle' => '',
             'slug' => 'tipo.costos.indirectos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Etapas Construcción',
+            'detalle' => '',
+            'slug' => 'etapas.construccion',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Estructural',
+            'detalle' => '',
+            'slug' => 'etapas.construccion.estructural',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Mamposterias',
+            'detalle' => '',
+            'slug' => 'etapas.construccion.mamposteria',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Enlucidos',
+            'detalle' => '',
+            'slug' => 'etapas.construccion.enlucidos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Acabados',
+            'detalle' => '',
+            'slug' => 'etapas.construccion.acabados',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

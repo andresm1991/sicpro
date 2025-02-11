@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('cronograma', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('presupuesto_proyecto_id')->references('id')->on('presupuesto_proyecto')->onDelete('cascade');
-            $table->foreignId('actividad_cronograma_id')->references('id')->on('actividades_cronograma')->onDelete('cascade');
+            $table->foreignId('proyecto_id')->references('id')->on('proyectos')->onDelete('cascade');
+            $table->foreignId('rubro_id')->references('id')->on('rubros_presupuesto')->onDelete('cascade');
             $table->foreignId('etapa_id')->references('id')->on('catalogo_datos')->onDelete('cascade');
             $table->smallInteger('semana');
             $table->timestamps();

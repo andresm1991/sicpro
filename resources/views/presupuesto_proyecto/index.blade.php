@@ -221,6 +221,7 @@
     @include('modals.rubros_presupuesto_modal', [
         'unidades_medidas' => $unidades_medidas,
         'categorias_presupuesto' => $categorias_presupuesto,
+        'etapas_construccion' => $etapas_construccion,
     ])
 
 @endsection
