@@ -520,6 +520,8 @@ class CatalogoDatoTableSeeder extends Seeder
         ]);
         */
 
+        /// falta por ejecutar en produccion
+        /*
         $padre = CatalogoDato::create([
             'descripcion' => 'Etapas Construcción',
             'detalle' => '',
@@ -556,6 +558,77 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Acabados',
             'detalle' => '',
             'slug' => 'etapas.construccion.acabados',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Tipo Solicitudes',
+            'detalle' => '',
+            'slug' => 'tipo.solicitudes',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Ausencia',
+            'detalle' => '',
+            'slug' => 'tipo.solicitudes.ausencia',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Reposición de Ausencia',
+            'detalle' => '',
+            'slug' => 'tipo.solicitudes.reposición.ausencia',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Eventualidad',
+            'detalle' => '',
+            'slug' => 'tipo.solicitudes.eventualidad',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados Solicitud',
+            'detalle' => '',
+            'slug' => 'estados.solicitud',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Aprobado',
+            'detalle' => '',
+            'slug' => 'estados.solicitud.aprobado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Pendiente',
+            'detalle' => '',
+            'slug' => 'estados.solicitud.pendiente',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Rechazado',
+            'detalle' => '',
+            'slug' => 'estados.solicitud.rechazado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Cancelado',
+            'detalle' => '',
+            'slug' => 'estados.solicitud.cancelado',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

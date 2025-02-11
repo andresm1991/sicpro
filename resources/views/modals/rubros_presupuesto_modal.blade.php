@@ -43,7 +43,7 @@
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
-                                <select name="etapa_construccion" class="form-control select2-tag",
+                                <select name="etapa_construccion" class="form-control select2-basic-single",
                                     data-placeholder ='seleccione opción'>
                                     <option value=""></option>
                                     @foreach ($etapas_construccion as $id => $nombre)

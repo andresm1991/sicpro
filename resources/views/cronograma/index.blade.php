@@ -95,7 +95,7 @@
                                     @endforelse
                                 @empty
                                     <tr>
-                                        <td colspan="2" class="text-center text-danger">
+                                        <td colspan="{{ $plazo_semanas +2 }}" class="text-center text-danger">
                                             No se encontraron datos para mostrar....
                                         </td>
                                     </tr>

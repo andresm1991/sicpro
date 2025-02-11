@@ -15,6 +15,7 @@ class RubroPresupuesto extends Model
         'unidad_medida_id',
         'valor_unitario',
         'activo',
+        'etapa_id',
     ];
 
     public function presupuestoProyectos()

@@ -61,7 +61,8 @@ class PresupuestoController extends Controller
                         'nombre' => $rubro,
                         'unidad_medida_id' => $unidad_medida,
                         'valor_unitario' => $valor_unitario,
-                        'activo' => 1
+                        'activo' => 1,
+                        'etapa_id' => $etapa_construccion,
                     ])->id;
                 } else {
                     // actualizar valor unitario y unidad de medida si ya existe el rubro

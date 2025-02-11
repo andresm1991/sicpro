@@ -23,6 +23,7 @@ use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
 use App\Http\Controllers\RubroController;
+use App\Http\Controllers\SolicitudController;
 use App\Models\PresupuestoProyecto;
 
 /*
@@ -214,6 +215,16 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('/posponer-pago', [PrestamoController::class, 'posponerPago']);
             Route::get('/buscar-prestamo', [PrestamoController::class, 'buscar']);
         });
+    });
+
+    //** RUTAS SOLICITUDES */
+    Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function(){
+        Route::get('/', [SolicitudController::class, 'index'])->name('index');
+        Route::get('/nueva-solicitud', [SolicitudController::class, 'create'])->name('create');
+        Route::post('/guardar-solicitud', [SolicitudController::class, 'store'])->name('store');
+        Route::get('/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('edit');
+        Route::put('/{solicitud}', [SolicitudController::class, 'update'])->name('update');
+        Route::get('/buscar', [SolicitudController::class, 'buscar']);
     });
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);

@@ -9,23 +9,29 @@
             <div class="row justify-content-center align-items-center full-height">
                 <div>
                     <a href="#" class="circle central" id="gerencia">
-                        <img src="{{ asset('images/icons/manager.svg') }}" alt="Gerencia">
+                        <img src="{{ asset('images/svg/manager.svg') }}" alt="Gerencia">
                         <span>Gerencia</span>
                     </a>
                     <a href="{{ route('proyecto.index') }}" class="circle top-left" id="operativo">
-                        <img src="{{ asset('images/icons/constructor.svg') }}" alt="Operativo">
+                        <img src="{{ asset('images/svg/constructor.svg') }}" alt="Operativo">
                         <span>Operativo</span>
                     </a>
+
+                    <a href="{{ route('solicitud.index') }}" class="circle top-center" id="operativo">
+                        <img src="{{ asset('images/svg/solicitud.svg') }}" alt="Operativo">
+                        <span>Solicitudes</span>
+                    </a>
+
                     <a href="#" class="circle top-right" id="marketing">
-                        <img src="{{ asset('images/icons/marketing.svg') }}" alt="Marketing">
+                        <img src="{{ asset('images/svg/marketing.svg') }}" alt="Marketing">
                         <span>Marketing</span>
                     </a>
                     <a href="{{ route('administrativo.index') }}" class="circle bottom-left" id="administrativo">
-                        <img src="{{ asset('images/icons/users.svg') }}" alt="Administrativo">
+                        <img src="{{ asset('images/svg/users.svg') }}" alt="Administrativo">
                         <span>Administrativo</span>
                     </a>
                     <a href="{{ route('sistema.index') }}" class="circle bottom-right" id="base-datos">
-                        <img src="{{ asset('images/icons/sistema.png') }}" alt="Base de Datos">
+                        <img src="{{ asset('images/svg/sistema.svg') }}" alt="Base de Datos">
                         <span>Sistema</span>
                     </a>
                 </div>

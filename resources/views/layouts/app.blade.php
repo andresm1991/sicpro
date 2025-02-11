@@ -29,6 +29,9 @@
     <link rel="stylesheet" href="{{ asset('css/animate.min.css') }}">
     <!-- Datables Css -->
     <link rel="stylesheet" href="{{ asset('plugins/dataTables/datatables.min.css') }}">
+    <!-- JQuery timepicker css -->
+    <link rel="stylesheet" href="{{ asset('plugins/jquery-timepicker-1.3.5/jquery.timepicker.min.css') }}">
+    
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @yield('styles')
@@ -49,6 +52,7 @@
 <!-- InputMask jQuery -->
 <script src="{{ asset('plugins/inputmask/jquery.inputmask.min.js') }}"></script>
 <script src="{{ asset('plugins/jquery/jquery.maskMoney.min.js') }}" type="text/javascript"></script>
+<script src="{{ asset('plugins/jquery-timepicker-1.3.5/jquery.timepicker.min.js') }}" type="text/javascript"></script>
 <script>
     $.widget.bridge('uibutton', $.ui.button)
 </script>
