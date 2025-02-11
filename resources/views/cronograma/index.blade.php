@@ -102,7 +102,85 @@
                                 @endforelse
                             </tbody>
                             <tfoot>
+                                @php
+                                    $total_estructural = $categorias->sum(function ($categoria) {
+                                        return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                                            return $rubro->presupuestoProyectos
+                                                ->filter(function ($proyecto) {
+                                                    // Filtrar proyectos basados en la relación etapa_construccion
+                                                    return $proyecto->etapa_construccion &&
+                                                        $proyecto->etapa_construccion->slug ===
+                                                            'etapas.construccion.estructural';
+                                                })
+                                                ->sum(function ($proyecto) {
+                                                    // Calcular cantidad * valor_unitario
+                                                    return $proyecto->cantidad * $proyecto->valor_unitario;
+                                                });
+                                        });
+                                    });
 
+                                    $total_mpel = $categorias->sum(function ($categoria) {
+                                        return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                                            return $rubro->presupuestoProyectos
+                                                ->filter(function ($proyecto) {
+                                                    // Filtrar proyectos basados en la relación etapa_construccion
+                                                    return $proyecto->etapa_construccion &&
+                                                        $proyecto->etapa_construccion->slug ===
+                                                            'etapas.construccion.mamposteria' &&
+                                                        $proyecto->etapa_construccion->slug ===
+                                                            'etapas.construccion.enlucidos';
+                                                })
+                                                ->sum(function ($proyecto) {
+                                                    // Calcular cantidad * valor_unitario
+                                                    return $proyecto->cantidad * $proyecto->valor_unitario;
+                                                });
+                                        });
+                                    });
+
+                                    $total_acabados = $categorias->sum(function ($categoria) {
+                                        return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                                            return $rubro->presupuestoProyectos
+                                                ->filter(function ($proyecto) {
+                                                    // Filtrar proyectos basados en la relación etapa_construccion
+                                                    return $proyecto->etapa_construccion &&
+                                                        $proyecto->etapa_construccion->slug ===
+                                                            'etapas.construccion.acabados';
+                                                })
+                                                ->sum(function ($proyecto) {
+                                                    // Calcular cantidad * valor_unitario
+                                                    return $proyecto->cantidad * $proyecto->valor_unitario;
+                                                });
+                                        });
+                                    });
+
+                                    $total = $total_estructural + $total_mpel + $total_acabados;
+                                @endphp
+                                <table class="table table-bordered table-hover ">
+                                    <tr>
+                                        <th class="text-center">100 % ESTRUCTURA</th>
+                                        <th class="text-center">ETAPA DE MAMPOSTERIAS Y ENLUCIDOS</th>
+                                        <th rowspan="2" class="text-center">ETAPA DE ACABADOS</th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2" class="text-center">100% OBRA GRIS</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-center">
+                                            $ {{ number_format($total_estructural, 2) }}
+                                        </td>
+                                        <td class="text-center">
+                                            $ {{ number_format($total_mpel, 2) }}
+                                        </td>
+                                        <td class="text-center">
+                                            $ {{ number_format($total_acabados, 2) }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-center">
+                                            $ {{ number_format($total, 2) }}
+                                        </td>
+                                    </tr>
+                                </table>
                             </tfoot>
                         </table>
                     </div>
