@@ -47,20 +47,24 @@
                             <tbody>
                                 @forelse ($solicitudes as $solicitud)
                                     <tr id="{{ $solicitud->id }}">
-                                        <td class="align-middle text-capitalize">{{ $solicitud->user->nombre }}</td>
+                                        <td class="align-middle text-capitalize">{{ $solicitud->id }}</td>
+                                        <td class="align-middle text-capitalize">{{ $solicitud->usuario->nombre }}</td>
                                         <td class="align-middle">{{ dateFormatHumans($solicitud->fecha_solicitud) }}</td>
                                         <td class="align-middle">{{ $solicitud->tipo_solicitud->descripcion }}</td>
                                         <td class="align-middle">{{ $solicitud->recuperable ? 'SI' : 'NO' }}</td>
                                         <td class="align-middle">{{ $solicitud->estado_solicitud->descripcion }}</td>
-                                        <td class="align-middle table-actions">
-                                            <div class="action-buttons">
-                                                <a href="{{ route('solicitud.editar', $solicitud->id) }}"
-                                                    class="btn btn-secondary btn-sm btn-space"><i
-                                                        class="fa-light fa-pen-to-square"></i> Editar</a>
-                                                <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-proveedor"
-                                                    id="{{ $solicitud->id }}"><i class="fa-solid fa-trash-can"></i>
-                                                    Eliminar</a>
-                                            </div>
+                                        <td class="align-middle">
+                                            <div class="btn-group dropleft">
+                                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                  Opciones
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                  <!-- Dropdown menu links -->
+                                                  <a href='' class='dropdown-item {{ $solicitud->recuperable ? '':'disabled' }}'>Resposición</a>
+                                                <a href='{{ route('solicitud.edit', $solicitud->id) }}' class='dropdown-item'>Editar</a>
+                                                <a href='javascript:void(0);' class='dropdown-item eliminar-solicitud' id='{{ $solicitud->id }}'>Eliminar</a>
+                                                </div>
+                                              </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -85,5 +89,5 @@
 @endsection
 
 @section('scripts')
-    
+<script src="{{ asset('js/solicitud_scripts.js') }}"></script>
 @endsection

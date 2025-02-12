@@ -17,7 +17,7 @@ class PushNotificationService
         try {
             $auth = [
                 'VAPID' => [
-                    'subject' => 'https://sicpro.test/', // can be a mailto: or your website address
+                    'subject' => url('/'), // can be a mailto: or your website address
                     'publicKey' => config('notifications.push_notification_public_key'), // (recommended) uncompressed public key P-256 encoded in Base64-URL
                     'privateKey' => config('notifications.push_notification_private_key'), // (recommended) in fact the secret multiplier of the private key encoded in Base64-URL
                 ],
@@ -33,16 +33,17 @@ class PushNotificationService
                 'url' => $url,
             ]);
 
-            $msg = new PushNotificationMsg();
-            $msg->title = $title;
-            $msg->body = $message;
-            $msg->url = $url;
-            $msg->save();
+            $msg = PushNotificationMsg([
+                'title' => $title,
+                'body' => $message,
+                'url' => $url,
+            ]);
 
             $notifications = PushNotification::whereHas('user', function ($query) {
                 $query->whereHas('roles', function ($roleQuery) {
                     $roleQuery->where('name', 'Administrador')
-                        ->orWhere('name', 'Gerencial');
+                        ->orWhere('name', 'Gerencial')
+                        ->orWhere('name', 'Administrativo');
                 });
             })->get();
 

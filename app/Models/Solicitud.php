@@ -10,7 +10,7 @@ class Solicitud extends Model
     use HasFactory;
 
     protected $table = 'solicitudes';
-    protected $fillable = ['usuario_id', 'fecha_solicitud', 'fecha_desde', 'fecha_hasta', 'hora_desde', 'hora_hasta', 'total_tiempo', 'tipo_id', 'estado_id', 'recuperable'];
+    protected $fillable = ['usuario_id', 'fecha_solicitud', 'fecha_desde', 'fecha_hasta', 'hora_desde', 'hora_hasta', 'total_tiempo', 'tipo_id', 'estado_id', 'recuperable', 'detalle'];
 
     public function usuario () {
         return $this->belongsTo(User::class, 'usuario_id');

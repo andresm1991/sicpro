@@ -35,7 +35,7 @@
 
                     {!! Form::close() !!}
 
-                    <div class="col-12 mt-4">
+                    <div class="col-12 mt-4 p-0">
                         <p class="font-italic">Los campos con (*) son obligatorios, por favor complétalos corretéame</p>
                     </div>
                 </div>
@@ -43,8 +43,4 @@
         </div>
     </section>
 
-@endsection
-
-@section('scripts')
-    <script src="{{ asset('js/proveedor_scripts.js') }}"></script>
 @endsection

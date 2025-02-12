@@ -37,6 +37,12 @@ class User extends Authenticatable
         'clave',
     ];
 
+    // Relación: Un usuario tiene muchas solicitudes
+    public function solicitudes()
+    {
+        return $this->hasMany(Solicitud::class, 'usuario_id');
+    }
+
     public function getAuthPassword()
     {
         return $this->clave;

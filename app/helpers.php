@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Models\CatalogoDato;
 use App\Models\DiccionarioPalabra;
 use App\Models\OrdenRecepcion;
+use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 
@@ -106,6 +107,68 @@ if (!function_exists('dateFormat')) {
         }
 
         return $fechas;
+    }
+
+    // Función para validar y formatear la fecha
+    function validarYFormatearFecha($fecha)
+    {
+        // Intentar crear un objeto Carbon desde el formato 'd-m-Y'
+        try {
+            return Carbon::createFromFormat('d-m-Y', $fecha)->format('Y-m-d');
+        } catch (\Exception $e) {
+            // Si falla, asumimos que la fecha ya está en formato 'Y-m-d'
+            return $fecha;
+        }
+    }
+
+    /**
+     * Calcular la diferencia entre las fechas y horas en formato H:m.
+     */
+    function calcularTiempoTotal($fechaDesde, $horaDesde, $fechaHasta, $horaHasta)
+    {
+        // Validar y formatear las fechas
+        $fechaDesdeFormatted = validarYFormatearFecha($fechaDesde);
+        $fechaHastaFormatted = validarYFormatearFecha($fechaHasta);
+
+        // Crear objetos Carbon para el inicio y el fin
+        $inicio = Carbon::createFromFormat('Y-m-d H:i', "$fechaDesdeFormatted $horaDesde");
+        $fin = Carbon::createFromFormat('Y-m-d H:i', "$fechaHastaFormatted $horaHasta");
+
+        // Definir el horario laboral
+        $horaInicioLaboral = '08:00';
+        $horaFinLaboral = '16:00';
+
+        // Inicializar el total de minutos laborales
+        $totalMinutosLaborales = 0;
+
+        // Iterar sobre cada día en el rango de fechas
+        $periodo = CarbonPeriod::create($inicio, $fin);
+        foreach ($periodo as $dia) {
+            // Saltar los fines de semana (opcional)
+            if ($dia->isWeekend()) {
+                continue;
+            }
+
+            // Definir el inicio y fin del día laboral
+            $inicioDiaLaboral = Carbon::parse($dia->format('Y-m-d') . ' ' . $horaInicioLaboral);
+            $finDiaLaboral = Carbon::parse($dia->format('Y-m-d') . ' ' . $horaFinLaboral);
+
+            // Determinar el rango efectivo para este día
+            $inicioEfectivo = $inicio->greaterThan($inicioDiaLaboral) ? $inicio : $inicioDiaLaboral;
+            $finEfectivo = $fin->lessThan($finDiaLaboral) ? $fin : $finDiaLaboral;
+
+            // Asegurarse de que el rango efectivo esté dentro del horario laboral
+            if ($inicioEfectivo->lessThanOrEqualTo($finEfectivo)) {
+                $totalMinutosLaborales += $inicioEfectivo->diffInMinutes($finEfectivo);
+            }
+        }
+
+        // Convertir el total de minutos a horas y minutos
+        $horas = intdiv($totalMinutosLaborales, 60); // Horas completas
+        $minutos = $totalMinutosLaborales % 60; // Minutos restantes
+
+        // Formatear el resultado como "H:m"
+        return sprintf('%d:%02d', $horas, $minutos);
     }
 }
 

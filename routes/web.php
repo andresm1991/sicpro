@@ -220,11 +220,12 @@ Route::group(['middleware' => ['auth']], function () {
     //** RUTAS SOLICITUDES */
     Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function(){
         Route::get('/', [SolicitudController::class, 'index'])->name('index');
+        Route::get('/{tipo}', [SolicitudController::class, 'solicitudes'])->name('view');
         Route::get('/nueva-solicitud', [SolicitudController::class, 'create'])->name('create');
         Route::post('/guardar-solicitud', [SolicitudController::class, 'store'])->name('store');
         Route::get('/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('edit');
         Route::put('/{solicitud}', [SolicitudController::class, 'update'])->name('update');
-        Route::get('/buscar', [SolicitudController::class, 'buscar']);
+        Route::get('/{tipo}/buscar', [SolicitudController::class, 'buscar']);
     });
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
