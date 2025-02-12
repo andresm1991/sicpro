@@ -107,6 +107,58 @@ function cargarTipoCuentas() {
 }
 
 
+/**
+ * Calcular tiempo de entre fechas en formato H:m
+ */
+function calcularTiempoLaboral(fechaDesde, horaDesde, fechaHasta, horaHasta) {
+    // Convertir fechas de 'd-m-Y' a 'Y-m-d'
+    function parseDate(dmy) {
+        let [day, month, year] = dmy.split('-');
+        return `${year}-${month}-${day}`;
+    }
+
+    let inicio = new Date(`${parseDate(fechaDesde)}T${horaDesde}:00`);
+    let fin = new Date(`${parseDate(fechaHasta)}T${horaHasta}:00`);
+
+    // Definir el horario laboral
+    const horaInicioLaboral = 8; // 08:00
+    const horaFinLaboral = 16;   // 16:00
+
+    // Inicializar el total de minutos laborales
+    let totalMinutosLaborales = 0;
+
+    // Iterar sobre cada día en el rango de fechas
+    for (let dia = new Date(inicio); dia <= fin; dia.setDate(dia.getDate() + 1)) {
+        // Saltar los fines de semana (opcional)
+        if (dia.getDay() === 0 || dia.getDay() === 6) { // 0 = Domingo, 6 = Sábado
+            continue;
+        }
+
+        // Definir el inicio y fin del día laboral
+        let inicioDiaLaboral = new Date(dia);
+        inicioDiaLaboral.setHours(horaInicioLaboral, 0, 0, 0);
+
+        let finDiaLaboral = new Date(dia);
+        finDiaLaboral.setHours(horaFinLaboral, 0, 0, 0);
+
+        // Determinar el rango efectivo para este día
+        let inicioEfectivo = inicio > inicioDiaLaboral ? inicio : inicioDiaLaboral;
+        let finEfectivo = fin < finDiaLaboral ? fin : finDiaLaboral;
+
+        // Asegurarse de que el rango efectivo esté dentro del horario laboral
+        if (inicioEfectivo <= finEfectivo) {
+            totalMinutosLaborales += (finEfectivo - inicioEfectivo) / (1000 * 60); // Diferencia en minutos
+        }
+    }
+
+    // Convertir el total de minutos a horas y minutos
+    let horas = Math.floor(totalMinutosLaborales / 60);
+    let minutos = Math.floor(totalMinutosLaborales % 60);
+
+    // Formatear el resultado como "H:m"
+    return `${horas}:${String(minutos).padStart(2, '0')}`;
+}
+
 $(function () {
     $('[data-toggle="popover"]').popover({ html: true });
     $('[data-toggle="tooltip"]').tooltip({ html: true });
@@ -151,12 +203,33 @@ $(function () {
         timeFormat: 'HH:mm',
         interval: 30,
         minTime: '08',
-        maxTime: '6:00pm',
-        defaultTime: '08',
+        maxTime: '18:00',
+        defaultTime: '08:00',
         startTime: '08:00',
         dynamic: false,
         dropdown: true,
-        scrollbar: true
+        scrollbar: true,
+        useSelect:true,
+        change: function(time) {
+            // Obtener el campo de entrada
+            var element = $(this);
+
+            // Si `time` es un objeto Date, formatearlo manualmente
+            let formattedTime;
+            if (time instanceof Date) {
+                let hours = String(time.getHours()).padStart(2, '0');
+                let minutes = String(time.getMinutes()).padStart(2, '0');
+                formattedTime = `${hours}:${minutes}`;
+            } else {
+                formattedTime = time; // Ya debería estar en formato 'HH:mm'
+            }
+
+            // Actualizar el valor del campo de entrada
+            element.val(formattedTime);
+            // Disparar el evento `change` del campo de entrada
+            element.trigger('change');
+
+        }
     });
 
     $('.select2-basic-single').select2({
