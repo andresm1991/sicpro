@@ -216,7 +216,6 @@ $(function () {
         var newValue = $(this).closest('.edit-item').find('input').val();
         // Actualizar el valor del span
         if ($(this).closest('.edit-item').find('input').attr('name') == 'precio_unitario[]') {
-            console.log(newValue)
             $(this).closest('.edit-item').find('span').text(formatoMoneda(newValue));
         } else {
             $(this).closest('.edit-item').find('span').text(newValue);
@@ -380,13 +379,13 @@ $(function () {
         var total = cantidad * precioUnitario;
 
         // Actualizar el valor del td de total con el nuevo valor calculado
-        $row.find('td .total').text('$ ' + total.toFixed(2));
+        $row.find('td .total').text('$ ' + total.toFixed(4));
     }
 
     function formatoMoneda(numero) {
         // Convertir a número en caso de que sea una cadena
         numero = parseFloat(numero) || 0; // Si no es un número válido, se establece a 0
-        return '$' + numero.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        return '$' + numero.toFixed(4).replace(/\d(?=(\d{3})+\.)/g, '$&,');
     }
 
     function calcularTotal() {
