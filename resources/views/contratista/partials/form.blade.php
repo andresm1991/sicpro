@@ -129,7 +129,7 @@
                         {{ Form::hidden('unidad_medida[]', $detalle->unidad_medida_id) }}
                     </td>
                     <td class="edit-item">
-                        <span>$ {{ number_format($detalle->valor_unitario, 2) }}</span>
+                        <span>$ {{ number_format($detalle->valor_unitario, 4) }}</span>
                         <div class="d-flex align-items-center hidden">
                             <input type="text" class="form-control mr-2 input-double" name="precio_unitario[]"
                                 value="{{ $detalle->valor_unitario }}">
@@ -140,7 +140,7 @@
                         </div>
                     </td>
                     <td class="total_unitario"><span
-                            class="total">{{ number_format($detalle->valor_unitario * $detalle->cantidad, 2) }}</span>
+                            class="total">{{ number_format($detalle->valor_unitario * $detalle->cantidad, 4) }}</span>
                     </td>
                     <td class="align-middle table-actions">
                         <div class="action-buttons">
@@ -165,7 +165,7 @@
                 <label for="staticEmail" class="col-sm-6 col-form-label">SubTotal: </label>
                 <div class="col-sm-4">
                     <input type="text" readonly class="form-control-plaintext" id="subtotal"
-                        value="${{ isset($subTotal) ? number_format($subTotal, 2) : '0.00' }}">
+                        value="${{ isset($subTotal) ? number_format($subTotal, 4) : '0.00' }}">
                 </div>
             </div>
 
@@ -180,7 +180,7 @@
                 <label for="staticEmail" class="col-sm-6 col-form-label">Total General: </label>
                 <div class="col-sm-4">
                     <input type="text" readonly class="form-control-plaintext" id="total-general"
-                        value="${{ isset($totalGeneral) ? number_format($totalGeneral, 2) : '0.00' }}">
+                        value="${{ isset($totalGeneral) ? number_format($totalGeneral, 4) : '0.00' }}">
                 </div>
             </div>
         </div>
