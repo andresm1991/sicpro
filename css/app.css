@@ -21,6 +21,10 @@ body {
     text-transform: uppercase !important;
 }
 
+.swal2-title {
+    text-transform: uppercase !important;
+}
+
 .overlay {
     position: fixed;
     top: 0;

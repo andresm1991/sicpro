@@ -73,7 +73,7 @@ $(function () {
         }
 
         $.ajax({
-            url: '/rubros-presupuesto',
+            url: base_url + '/rubros-presupuesto',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'categoria': selected_value },
@@ -83,7 +83,7 @@ $(function () {
                 // Itera sobre los artículos y crea nuevas opciones
                 $.each(response.rubros, function (index, rubro) {
                     let option = new Option(rubro.nombre, rubro.id, false, false);
-                    $(option).attr({'data-precio': rubro.valor_unitario, 'data-etapa': rubro.etapa_id, 'data-unidad_medida': rubro.unidad_medida_id});
+                    $(option).attr({ 'data-precio': rubro.valor_unitario, 'data-etapa': rubro.etapa_id, 'data-unidad_medida': rubro.unidad_medida_id });
 
                     $select.append(option); // Añade la opción al select
 
@@ -212,7 +212,7 @@ $(function () {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/eliminar-rubro-presupesto/' + rubro_id,
+                    url: base_url + '/eliminar-rubro-presupesto/' + rubro_id,
                     headers: { 'X-CSRF-TOKEN': csrf },
                     type: 'DELETE',
                     beforeSend: function () {
@@ -252,7 +252,7 @@ $(function () {
         }).then((result) => {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: '/eliminar-categoria-presupesto/' + categoria_id,
+                    url: base_url + '/eliminar-categoria-presupesto/' + categoria_id,
                     headers: { 'X-CSRF-TOKEN': csrf },
                     type: 'DELETE',
                     data: { 'proyecto': proyecto_id },
@@ -331,7 +331,7 @@ $(function () {
         }).then((result) => {
             if (result.value && result.isConfirmed) {
                 $.ajax({
-                    url: '/actualizar-costo-indirecto/' + proyecto_id,
+                    url: base_url + '/actualizar-costo-indirecto/' + proyecto_id,
                     headers: { 'X-CSRF-TOKEN': csrf },
                     type: 'PUT',
                     data: { 'porcentaje': result.value },
@@ -365,7 +365,7 @@ $(function () {
         var proyecto_id = $(this).data('proyecto_id');
 
         $.ajax({
-            url: '/filtrar-rubros-presupuesto',
+            url: base_url + '/filtrar-rubros-presupuesto',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'filtro': $value, 'proyecto': proyecto_id },

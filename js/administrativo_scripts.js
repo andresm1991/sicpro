@@ -53,7 +53,7 @@ $(function () {
             message().then((resultado) => {
                 if (resultado) {
                     $.ajax({
-                        url: '/pago_orden_trabajo/' + id_pago,
+                        url: base_url + '/pago_orden_trabajo/' + id_pago,
                         headers: { 'X-CSRF-TOKEN': csrf },
                         type: 'PUT',
                         data: { 'id_pago': id_pago },
