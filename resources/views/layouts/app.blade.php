@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="{{ asset('plugins/dataTables/datatables.min.css') }}">
     <!-- JQuery timepicker css -->
     <link rel="stylesheet" href="{{ asset('plugins/jquery-timepicker-1.3.5/jquery.timepicker.min.css') }}">
-    
+
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
     @yield('styles')
@@ -91,7 +91,7 @@
         }
     });
 
-    var base_url = "{{ url('') }}";
+    var base_url = "{{ url('/') }}";
 </script>
 
 <script>
