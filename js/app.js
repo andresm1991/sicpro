@@ -209,8 +209,8 @@ $(function () {
         dynamic: false,
         dropdown: true,
         scrollbar: true,
-        useSelect:true,
-        change: function(time) {
+        useSelect: true,
+        change: function (time) {
             // Obtener el campo de entrada
             var element = $(this);
 
@@ -266,7 +266,7 @@ $(function () {
 
     $('.select2-tag').each(function () {
         let $select = $(this);
-    
+
         let config = {
             width: '100%',
             allowClear: false, // Permite limpiar la selección
@@ -289,7 +289,7 @@ $(function () {
                 data.unshift(tag); // Inserta la nueva opción al principio
             }
         };
-    
+
         // Guardar la configuración original en `data()`
         $select.data('select2-config', config).select2(config);
     });
@@ -299,7 +299,7 @@ $(function () {
         alias: 'decimal',  // Usar el alias "decimal"
         radixPoint: ".",   // Definir el punto decimal
         groupSeparator: ",",  // Separador de miles (opcional)
-        digits: 2,         // Número de dígitos decimales
+        digits: 4,         // Número de dígitos decimales
         autoGroup: true,   // Agrupar los miles
         rightAlign: false, // Alinear a la izquierda
         allowMinus: false,   // Permitir números negativos

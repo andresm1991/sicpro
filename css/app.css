@@ -14,6 +14,11 @@ body {
     margin: 0;
     height: calc(100vh - 100px);
     overflow: auto;
+    text-transform: uppercase;
+}
+
+.text-capitalize {
+    text-transform: uppercase !important;
 }
 
 .overlay {

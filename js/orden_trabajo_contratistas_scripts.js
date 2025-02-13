@@ -114,9 +114,11 @@ $(function () {
             return;
         }
 
+
         var numeroFila = $('.elementos-agregados').length + 1;
+        precio_unitario = parseFloat(precio_unitario).toFixed(4);
         var total = parseFloat(cantidad.replace(/,/g, '')) * parseFloat(precio_unitario.replace(/,/g, ''));
-        var formattedNumber = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        var formattedNumber = total.toFixed(4);//total.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
         var nuevaFila = `
             <tr class="elementos-agregados">
@@ -246,7 +248,7 @@ $(function () {
 
         totalGeneral = $nro_casas * $subTotal;
 
-        $('#total-general').val(`$ ${totalGeneral.toFixed(2)}`);
+        $('#total-general').val(`$ ${totalGeneral.toFixed(4)}`);
     });
 
     $(document).on('click', '.eliminar-orden-trabajo', function () {
@@ -398,7 +400,7 @@ $(function () {
             subtotal += total;
         });
         // Actualizar el total general
-        $('#subtotal').val(subtotal.toFixed(2));
+        $('#subtotal').val(subtotal.toFixed(4));
     }
 
 });
