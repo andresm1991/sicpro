@@ -7,6 +7,7 @@ use App\Models\User;
 use Minishlink\WebPush\WebPush;
 use App\Models\PushNotification;
 use App\Models\PushNotificationMsg;
+use App\Models\PushNotificationUser;
 use Minishlink\WebPush\Subscription;
 
 
@@ -33,7 +34,7 @@ class PushNotificationService
                 'url' => $url,
             ]);
 
-            $msg = PushNotificationMsg([
+            $msg = PushNotificationMsg::create([
                 'title' => $title,
                 'body' => $message,
                 'url' => $url,
@@ -53,8 +54,15 @@ class PushNotificationService
                     $payload,
                     ['TTL' => 5000]
                 );
+
+                PushNotificationUser::create([
+                    'user_id' => $notification->user_id,
+                    'message_id' => $notification->id,
+                ]);
             }
         } catch (Throwable $e) {
+            LogService::log('ERROR', 'Error al enviar notificación push', ['error_message' => $e->getMessage()]);
+            return $e->getMessage();
         }
     }
 }

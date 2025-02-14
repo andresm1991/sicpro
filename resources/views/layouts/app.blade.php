@@ -38,6 +38,10 @@
 </head>
 
 {!! Auth::check() ? '<body onload="askForPermission()">' : '<body>' !!}
+<!-- Loading -->
+<div id="loading">
+    <div class="spinner"></div>
+</div>
 <div id="app">
     <div class="overlay"></div>
     @yield('content')

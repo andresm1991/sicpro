@@ -22,6 +22,7 @@ use App\Http\Controllers\AdministrativoController;
 use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
+use App\Http\Controllers\RecuperacionTiempoController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\SolicitudController;
 use App\Models\PresupuestoProyecto;
@@ -218,20 +219,36 @@ Route::group(['middleware' => ['auth']], function () {
     });
 
     //** RUTAS SOLICITUDES */
-    Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function(){
+    Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function () {
         Route::get('/', [SolicitudController::class, 'index'])->name('index');
-        Route::get('/{tipo}', [SolicitudController::class, 'solicitudes'])->name('view');
-        Route::get('/nueva-solicitud', [SolicitudController::class, 'create'])->name('create');
-        Route::post('/guardar-solicitud', [SolicitudController::class, 'store'])->name('store');
-        Route::get('/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('edit');
-        Route::put('/{solicitud}', [SolicitudController::class, 'update'])->name('update');
-        Route::get('/{tipo}/buscar', [SolicitudController::class, 'buscar']);
+        Route::group(['prefix' => 'permisos', 'as' => 'permisos.'], function () {
+            Route::get('/', [SolicitudController::class, 'permisos'])->name('index');
+            Route::get('/nueva-solicitud', [SolicitudController::class, 'create'])->name('create');
+            Route::post('/guardar-solicitud', [SolicitudController::class, 'store'])->name('store');
+            Route::get('/{solicitud}/detalle', [SolicitudController::class, 'show'])->name('show');
+            Route::get('/{solicitud}/editar', [SolicitudController::class, 'edit'])->name('edit');
+            Route::put('/{solicitud}', [SolicitudController::class, 'update'])->name('update');
+            Route::delete('/eliminar-solicitud/{solicitud}', [SolicitudController::class, 'destroy']);
+            Route::get('/buscar', [SolicitudController::class, 'buscar']);
+        });
+        //** RUTAS REPOSICIONE DE TIEMPO */
+        Route::group(['prefix' => 'reposicion', 'as' => 'reposicion.'], function () {
+            Route::get('/', [RecuperacionTiempoController::class, 'index'])->name('index');
+            Route::get('/nueva-solicitud', [RecuperacionTiempoController::class, 'create'])->name('create');
+            Route::post('/guardar-solicitud', [RecuperacionTiempoController::class, 'store'])->name('store');
+            Route::get('/{solicitud}/detalle', [RecuperacionTiempoController::class, 'show'])->name('show');
+            Route::get('/{solicitud}/editar', [RecuperacionTiempoController::class, 'edit'])->name('edit');
+            Route::put('/{solicitud}', [RecuperacionTiempoController::class, 'update'])->name('update');
+            Route::delete('/eliminar-solicitud/{solicitud}', [RecuperacionTiempoController::class, 'destroy']);
+            Route::get('/buscar', [RecuperacionTiempoController::class, 'buscar']);
+        });
     });
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
     Route::get('/rubros-presupuesto', [PresupuestoController::class, 'getAjaxRubrosPresupuesto']);
     Route::put('/actualizar-costo-indirecto/{proyecto}', [PresupuestoController::class, 'putAjaxCostoIndirecto']);
     Route::get('/actividades-cronograma', [CronogramaController::class, 'getAjaxActividades']);
+    Route::get('/tiempo-permisos', [RecuperacionTiempoController::class, 'getAjaxTiempoPermisosUsuario']);
 
     // Eliminar  rubros del presupuesto
     Route::delete('/eliminar-rubro-presupesto/{rubro}', [PresupuestoController::class, 'destroyAjaxRubroPresupuesto']);

@@ -518,7 +518,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
+        
 
         $padre = CatalogoDato::create([
             'descripcion' => 'Etapas Construcción',
@@ -559,7 +559,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-
+        */
         $padre = CatalogoDato::create([
             'descripcion' => 'Tipo Solicitudes',
             'detalle' => '',

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('recuperacion_solicitudes', function (Blueprint $table) {
+        Schema::create('reposicion_tiempos', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('solicitud_id')->references('id')->on('solicitudes')->onDelete('cascade');
+            $table->foreignId('usuario_id')->references('id')->on('usuarios')->onDelete('cascade');
             $table->date('fecha');
             $table->time('hora_desde');
             $table->time('hora_hasta');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('recuperacion_solicitudes');
+        Schema::dropIfExists('reposicion_tiempos');
     }
 };

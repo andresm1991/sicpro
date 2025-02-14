@@ -4,7 +4,7 @@
 
 @section('content')
     @include('partials.header_page')
-    
+
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="">
             <div class="card">
@@ -17,16 +17,15 @@
                     <div class="row">
                         <div class="col-md-4 col-12">
                             <div class="form-group">
-                                <a href="{{ route('solicitud.create') }}"
-                                    class="btn btn-dark btn-sm">
-                                    <i class="fa-light fa-user-plus"></i> Nueva Solicitud
+                                <a href="{{ route('solicitud.permisos.create', 'solicitud') }}" class="btn btn-dark btn-sm">
+                                    <i class="fa-light fa-plus"></i> Nueva Solicitud
                                 </a>
                             </div>
                         </div>
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="solicitud_search" class="form-control form-control-round"
+                                <input type="text" name="permisos_search" class="form-control form-control-round"
                                     placeholder="Buscar solicitud....">
                             </div>
                         </div>
@@ -55,16 +54,24 @@
                                         <td class="align-middle">{{ $solicitud->estado_solicitud->descripcion }}</td>
                                         <td class="align-middle">
                                             <div class="btn-group dropleft">
-                                                <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                  Opciones
+                                                <button type="button" class="btn btn-secondary dropdown-toggle"
+                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Opciones
                                                 </button>
                                                 <div class="dropdown-menu">
-                                                  <!-- Dropdown menu links -->
-                                                  <a href='' class='dropdown-item {{ $solicitud->recuperable ? '':'disabled' }}'>Resposición</a>
-                                                <a href='{{ route('solicitud.edit', $solicitud->id) }}' class='dropdown-item'>Editar</a>
-                                                <a href='javascript:void(0);' class='dropdown-item eliminar-solicitud' id='{{ $solicitud->id }}'>Eliminar</a>
+                                                    <!-- Dropdown menu links -->
+                                                    @if ($solicitud->estado_solicitud->descripcion == 'Aprobado')
+                                                        <a href='{{ route('solicitud.permisos.show', $solicitud->id) }}'
+                                                            class='dropdown-item'>Detalle</a>
+                                                    @else
+                                                        <a href='{{ route('solicitud.permisos.edit', $solicitud->id) }}'
+                                                            class='dropdown-item'>Editar</a>
+                                                    @endif
+
+                                                    <a href='javascript:void(0);' class='dropdown-item eliminar-solicitud'
+                                                        id='{{ $solicitud->id }}'>Eliminar</a>
                                                 </div>
-                                              </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -89,5 +96,5 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/solicitud_scripts.js') }}"></script>
+    <script src="{{ asset('js/solicitud_scripts.js') }}"></script>
 @endsection

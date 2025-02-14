@@ -12,7 +12,7 @@
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-md-10">
-                                <h4 class="mt-2 font-weight-bold">Formulario de solicitud</h4>
+                                <h4 class="mt-2 font-weight-bold">Detalle de solicitud</h4>
                             </div>
 
                             <div class="col-md-2 ">
@@ -23,12 +23,13 @@
                 </ul>
                 <div class="card-body">
                     @include('partials.alerts')
-                    {!! Form::open([
-                        'route' => ['solicitud.permisos.store'],
+                    {!! Form::model($solicitud, [
+                        'route' => ['solicitud.permisos.update', $solicitud->id],
                         'class' => 'form-horizontal',
                         'autocomplete' => 'off',
                         'enctype' => 'multipart/form-data',
                         'id' => 'form_solicitudes',
+                        'method' => 'PUT',
                     ]) !!}
 
                     @include('solicitudes.partials.form')

@@ -12,11 +12,12 @@
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-center align-items-center">
                             <div class="col-md-10">
-                                <h4 class="mt-2 font-weight-bold">Formulario de solicitud</h4>
+                                <h4 class="mt-2 font-weight-bold">Formulario de Reposición</h4>
                             </div>
 
                             <div class="col-md-2 ">
-                                <button class="btn btn-dark btn-options btn-block" form="form_solicitudes">Guardar</button>
+                                <button class="btn btn-dark btn-options btn-block" id="btn-guardar" form="form_reposicion"
+                                    disabled>Guardar</button>
                             </div>
                         </div>
                     </li>
@@ -24,14 +25,14 @@
                 <div class="card-body">
                     @include('partials.alerts')
                     {!! Form::open([
-                        'route' => ['solicitud.permisos.store'],
+                        'route' => ['solicitud.reposicion.store'],
                         'class' => 'form-horizontal',
                         'autocomplete' => 'off',
                         'enctype' => 'multipart/form-data',
-                        'id' => 'form_solicitudes',
+                        'id' => 'form_reposicion',
                     ]) !!}
 
-                    @include('solicitudes.partials.form')
+                    @include('reposicion_tiempo.partials.form')
 
                     {!! Form::close() !!}
 

@@ -11,7 +11,7 @@ class LogService
         Log::create([
             'level' => $level,
             'message' => $message,
-            'context' => $context,
+            'context' => array_merge(['user_id' => auth()->id()], $context),
         ]);
     }
 }

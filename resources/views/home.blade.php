@@ -17,10 +17,10 @@
                         <span>Operativo</span>
                     </a>
 
-                    {{-- <a href="{{ route('solicitud.index') }}" class="circle top-center" id="operativo">
+                    <a href="{{ route('solicitud.index') }}" class="circle top-center" id="operativo">
                         <img src="{{ asset('images/svg/solicitud.svg') }}" alt="Operativo">
                         <span>Solicitudes</span>
-                    </a> --}}
+                    </a>
 
                     <a href="#" class="circle top-right" id="marketing">
                         <img src="{{ asset('images/svg/marketing.svg') }}" alt="Marketing">
