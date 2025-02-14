@@ -204,7 +204,7 @@ $(function () {
         interval: 30,
         minTime: '08',
         maxTime: '18:00',
-        defaultTime: '08:00',
+        defaultTime: false,
         startTime: '08:00',
         dynamic: false,
         dropdown: true,
@@ -341,6 +341,13 @@ $(function () {
         clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
         unmaskAsNumber: true,          // Convierte el valor en número sin el símbolo
     }).mask(".currency_two_decimals");
+
+    Inputmask({
+        alias: "datetime",
+        inputFormat: "HH:MM",
+        placeholder: "00:00",
+
+    }).mask(".dateTime");
 
     $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false });
 
