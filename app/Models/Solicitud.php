@@ -48,7 +48,8 @@ class Solicitud extends Model
             }])
             ->whereHas('estado_solicitud', function ($query) {
                 $query->where('slug', 'estados.solicitud.aprobado');
-            });
+            })
+            ->where('recuperable', true);
 
         // Filtrar por usuario si el parámetro no está vacío
         if (!empty($usuario)) {
