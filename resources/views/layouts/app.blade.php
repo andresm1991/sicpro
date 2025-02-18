@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="{{ asset('plugins/jquery-timepicker-1.3.5/jquery.timepicker.min.css') }}">
 
     <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app.css?v=' . config('app.version', '')) }}" rel="stylesheet">
     @yield('styles')
 </head>
 
