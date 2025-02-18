@@ -95,7 +95,7 @@
                                     @endforelse
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $plazo_semanas +2 }}" class="text-center text-danger">
+                                        <td colspan="{{ $plazo_semanas + 2 }}" class="text-center text-danger">
                                             No se encontraron datos para mostrar....
                                         </td>
                                     </tr>
@@ -125,10 +125,10 @@
                                                 ->filter(function ($proyecto) {
                                                     // Filtrar proyectos basados en la relación etapa_construccion
                                                     return $proyecto->etapa_construccion &&
-                                                        $proyecto->etapa_construccion->slug ===
-                                                            'etapas.construccion.mamposteria' &&
-                                                        $proyecto->etapa_construccion->slug ===
-                                                            'etapas.construccion.enlucidos';
+                                                        ($proyecto->etapa_construccion->slug ===
+                                                            'etapas.construccion.mamposteria' ||
+                                                            $proyecto->etapa_construccion->slug ===
+                                                                'etapas.construccion.enlucidos');
                                                 })
                                                 ->sum(function ($proyecto) {
                                                     // Calcular cantidad * valor_unitario

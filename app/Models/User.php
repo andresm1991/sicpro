@@ -47,4 +47,18 @@ class User extends Authenticatable
     {
         return $this->clave;
     }
+
+
+    public static function getUsusarios()
+    {
+        $user_id = auth()->user()->id;
+        if ($user_id > 1) {
+            $users =  User::where('activo', true)
+                ->where('id', $user_id)->get();
+        } else {
+            $users = User::where('activo', true)->orderBy('nombre', 'asc')->get();
+        }
+
+        return $users;
+    }
 }

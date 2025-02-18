@@ -2,32 +2,16 @@
     <div class="col-sm-4 col-12">
         <div class="form-group">
             <label class="col-form-label">Colaborador <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            @if (isset($users))
-                <select name="user" id="" class="select2-basic-single" data-placeholder="Selecione colaborador">
-                    <option value=""></option>
-                    @foreach ($users as $index => $nombre)
-                        <option value="{{ $index }}">{{ $nombre }}</option>
-                    @endforeach
-                </select>
-                {!! $errors->first('user', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
-            @else
-                <input type="text" class="form-control" value="{{ $solicitud->usuario->nombre }}" disabled>
-            @endif
+            {{ Form::select('user', $users->prepend('', ''), old('users', $solicitud->usuario_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
 
-
+            {!! $errors->first('user', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
     </div>
 
     <div class="col-sm-4 col-12">
         <div class="form-group">
             <label class="col-form-label">Tipo Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            <select name="tipo_solicitud" class="select2-basic-single" data-placeholder="Selecione opción">
-                <option value=""></option>
-                @foreach ($tipo_solicitudes as $index => $nombre)
-                    <option value="{{ $index }}" {{ $solicitud->tipo_id == $index ? 'selected' : '' }}>
-                        {{ $nombre }}</option>
-                @endforeach
-            </select>
+            {{ Form::select('tipo_solicitud', $tipo_solicitudes->prepend('', ''), old('tipo_solicitud', $solicitud->tipo_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
 
             {!! $errors->first('tipo_solicitud', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
@@ -36,18 +20,15 @@
     <div class="col-sm-4 col-12">
         <div class="form-group">
             <label class="col-form-label">Estado Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            <select name="estado_solicitud" class="select2-basic-single" data-placeholder="Selecione opción">
-                <option value=""></option>
-                @foreach ($estados_solicitud as $index => $nombre)
-                    <option value="{{ $index }}" {{ $solicitud->estado_id == $index ? 'selected' : '' }}>
-                        {{ $nombre }}</option>
-                @endforeach
-            </select>
+            {{ Form::select('estado_solicitud', $estados_solicitud->prepend('', ''), old('estado_solicitud', $solicitud->estado_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
 
             {!! $errors->first('estado_solicitud', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
     </div>
 
+</div>
+
+<div class="row" id="disabled">
     <div class="col-sm-2">
         <div class="form-group">
             <label class="col-form-label">Fecha Desde <i class="fa-regular fa-asterisk fa-2xs"></i></label>
@@ -103,7 +84,6 @@
         {{ $solicitud->recuperable ? 'checked' : '' }}>
     <label class="form-check-label" for="check_recuperable">Recuperable</label>
 </div>
-
 
 @section('scripts')
     <script src="{{ asset('js/solicitud_scripts.js') }}"></script>

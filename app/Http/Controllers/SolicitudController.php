@@ -32,7 +32,7 @@ class SolicitudController extends Controller
     public function permisos()
     {
         $title_page = 'Pemirsos';
-        $solicitudes = Solicitud::orderBy('fecha_solicitud', 'desc')->paginate(15);
+        $solicitudes = Solicitud::getSolicitudesPorUsuario();
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -53,32 +53,40 @@ class SolicitudController extends Controller
         ];
 
         $solicitud = new Solicitud();
-        $users = User::where('activo', true)
-            ->where('id', '>', 1)->pluck('nombre', 'id');
         $tipo_solicitudes = CatalogoDato::getChildrenCatalogo('tipo.solicitudes')->pluck('descripcion', 'id');
         $estados_solicitud = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
+        $users = User::getUsusarios()->pluck('nombre', 'id');
+        //$tipo_solicitud = $tipo_solicitudes->prepend('', '');
 
         return view('solicitudes.create', compact('title_page', 'breadcrumbs', 'solicitud', 'users', 'tipo_solicitudes', 'estados_solicitud'));
     }
 
     public function store(SolicitudStoreRequest $request)
     {
-        $tipo = $request->tipo;
         try {
             DB::beginTransaction();
             $user = $request->user;
             $tipo_solicitud = $request->tipo_solicitud;
             $estado_solicitud = $request->estado_solicitud;
-            $fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
-            $hora_desde = $request->hora_inicio;
-            $fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
-            $hora_hasta = $request->hora_fin;
-            $detalle = $request->detalle;
-            $total_horas = calcularTiempoTotal($fecha_desde, $hora_desde, $fecha_hasta, $hora_hasta);
-            $recuperable = $request->recuperable ? true : false;
+            $solicitud = CatalogoDato::find($tipo_solicitud);
 
-            $resposicion = CatalogoDato::where('id', $tipo_solicitud)
-                ->where('slug', 'tipo.solicitudes.reposición.ausencia')->exists();
+            if (isset($solicitud) && $solicitud->slug != 'tipo.solicitudes.eventualidad') {
+                $fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
+                $hora_desde = $request->hora_inicio;
+                $fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
+                $hora_hasta = $request->hora_fin;
+                $total_horas = calcularTiempoTotal($fecha_desde, $hora_desde, $fecha_hasta, $hora_hasta);
+            } else {
+                $fecha_desde = date('Y-m-d');
+                $hora_desde = '08:00';
+                $fecha_hasta = date('Y-m-d');
+                $hora_hasta = '08:00';
+                $total_horas = '0:00';
+            }
+
+            $detalle = $request->detalle;
+            $recuperable = $request->recuperable ? true : false;
+            //$resposicion = CatalogoDato::where('id', $tipo_solicitud)->where('slug', 'tipo.solicitudes.reposición.ausencia')->exists();
 
             $store_solicitud = Solicitud::create([
                 'usuario_id' => $user,
@@ -97,13 +105,14 @@ class SolicitudController extends Controller
             DB::commit();
 
             try {
-                PushNotificationService::sendNotification(User::find($user), "Solicitud", "Se genero una solicitud de {$store_solicitud->tipo_solicitud->descripcion} para el colaborador {$store_solicitud->usuario->nombre}", route('solicitud.permisos.edit', $store_solicitud->id));
+                PushNotificationService::sendNotification(User::find($user), "Solicitud", "Se genero una solicitud de {$store_solicitud->tipo_solicitud->descripcion} para el colaborador {$store_solicitud->usuario->nombre}", route('solicitud.permisos.show', $store_solicitud->id));
             } catch (Throwable $e) {
             }
             return redirect()->route('solicitud.permisos.create')->with('success', MessagesConstant::INSERT);
         } catch (Throwable $e) {
             DB::rollBack();
-            LogService::log('ERROR', 'Error al actualizar solicitud de permiso', ['message' => $e->getMessage()]);
+            return $e;
+            LogService::log('ERROR', 'Error al crear solicitud', ['execption' => $e, 'message' => $e->getMessage()]);
             return redirect()->route('solicitud.permisos.create')->with('success', MessagesConstant::DEFAUL_ERROR);
         }
     }
@@ -119,8 +128,9 @@ class SolicitudController extends Controller
 
         $tipo_solicitudes = CatalogoDato::getChildrenCatalogo('tipo.solicitudes')->pluck('descripcion', 'id');
         $estados_solicitud = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
+        $users = User::getUsusarios()->pluck('nombre', 'id');
 
-        return view('solicitudes.edit', compact('title_page', 'breadcrumbs', 'solicitud', 'tipo_solicitudes', 'estados_solicitud'));
+        return view('solicitudes.edit', compact('title_page', 'breadcrumbs', 'solicitud', 'users', 'tipo_solicitudes', 'estados_solicitud'));
     }
 
     public function update(Request $request, Solicitud $solicitud)

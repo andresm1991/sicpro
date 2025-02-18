@@ -47,8 +47,8 @@ class RecuperacionTiempoController extends Controller
 
 
         $reposicion = new ReposicionTiempo();
-        $users = User::where('activo', true)
-            ->where('id', '>', 1)->pluck('nombre', 'id');
+
+        $users = User::getUsusarios()->pluck('nombre', 'id');
 
 
         return view('reposicion_tiempo.create', compact('title_page', 'breadcrumbs', 'reposicion', 'users'));
@@ -140,15 +140,12 @@ class RecuperacionTiempoController extends Controller
                         '<td class="align-middle text-capitalize">' . $recuperacion->usuario->nombre . '</td>' .
                         '<td class="align-middle">' . $recuperacion->tiempo_formateado . '</td>' .
                         '<td class="align-middle">' . $recuperacion->suma_reposiciones_formateada . '</td>' .
-                        '<td class="align-middle">' .
-                        '<a class="btn btn-outline-secondary btn-sm">reposición</a>' .
-                        '</td>' .
                         '</tr>';
                 }
 
                 if (empty($output)) {
                     $output .= '<tr>' .
-                        '<td colspan="5" class="text-center">' .
+                        '<td colspan="4" class="text-center">' .
                         '<span class="text-danger">No existen datos para mostrar.</span>' .
                         '</td>' .
                         '</tr>';

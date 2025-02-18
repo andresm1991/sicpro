@@ -32,6 +32,20 @@ class Solicitud extends Model
         return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 
+    public static function getSolicitudesPorUsuario()
+    {
+        $user_id = auth()->user()->id;
+        if ($user_id > 1) {
+            $solicitudes = Solicitud::where('usuario_id', $user_id)
+                ->orderBy('fecha_solicitud', 'desc')
+                ->paginate(15);
+        } else {
+            $solicitudes = Solicitud::orderBy('fecha_solicitud', 'desc')
+                ->paginate(15);
+        }
+        return  $solicitudes;
+    }
+
 
     /**
      * Obtener las solicitudes agrupadas por usuario, con datos de ReposicionTiempo y paginados.
@@ -49,8 +63,16 @@ class Solicitud extends Model
             ->whereHas('estado_solicitud', function ($query) {
                 $query->where('slug', 'estados.solicitud.aprobado');
             })
+            ->whereHas('tipo_solicitud', function ($query) {
+                $query->where('slug', 'tipo.solicitudes.ausencia');
+            })
             ->where('recuperable', true);
 
+        if (auth()->user()->id > 1) {
+            $query->whereHas('usuario', function ($q) {
+                $q->where('id', auth()->user()->id);
+            });
+        }
         // Filtrar por usuario si el parámetro no está vacío
         if (!empty($usuario)) {
             $query->whereHas('usuario', function ($q) use ($usuario) {
@@ -91,6 +113,9 @@ class Solicitud extends Model
         $segundosTotales = Solicitud::where('usuario_id', $usuarioId)
             ->whereHas('estado_solicitud', function ($query) {
                 $query->where('slug', 'estados.solicitud.aprobado');
+            })
+            ->whereHas('tipo_solicitud', function ($query) {
+                $query->where('slug', 'tipo.solicitudes.ausencia');
             })
             ->selectRaw('SUM(TIME_TO_SEC(total_tiempo)) as total_segundos')
             ->value('total_segundos') ?? 0;

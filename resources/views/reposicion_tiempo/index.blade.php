@@ -38,7 +38,6 @@
                                     <th scope="col">Colaborador</th>
                                     <th scope="col">Tiempo Acumulado</th>
                                     <th scope="col">Tiempo Recuperado</th>
-                                    <th class="table-actions"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -48,15 +47,10 @@
                                         <td class="align-middle text-capitalize">{{ $recuperacion->usuario->nombre }}</td>
                                         <td class="align-middle">{{ $recuperacion->tiempo_formateado }}</td>
                                         <td class="align-middle">{{ $recuperacion->suma_reposiciones_formateada }}</td>
-                                        <td class="align-middle">
-                                            <a class="btn btn-outline-secondary btn-sm">
-                                                reposición
-                                            </a>
-                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center text-danger">No se encontraron datos para
+                                        <td colspan="4" class="text-center text-danger">No se encontraron datos para
                                             mostrar....
                                         </td>
                                     </tr>
