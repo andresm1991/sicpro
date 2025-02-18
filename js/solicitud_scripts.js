@@ -2,10 +2,16 @@ $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
     $('select[name=tipo_solicitud]').on('change', function () {
-        let selectedOption = $(this).find('option:selected').text();
-        if (selectedOption === 'Reposición de Ausencia') {
+        let selectedOption = $(this).find('option:selected').text().trim();
+        if (selectedOption.toLowerCase() === 'eventualidad') {
+            $("#disabled")
+                .find("input, select") // Selecciona los elementos interactivos
+                .prop("disabled", true);
             $('#check_recuperable').attr('disabled', true);
         } else {
+            $("#disabled")
+                .find("input, select") // Selecciona los elementos interactivos
+                .prop("disabled", false);
             $('#check_recuperable').attr('disabled', false);
         }
     });
