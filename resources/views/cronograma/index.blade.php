@@ -18,12 +18,10 @@
                         <div class="col-md-4 col-12">
                             <div class="form-group">
                                 <div class="d-flex">
-                                    {{--  
                                     <a href="javascript:void(0);" class="btn btn-dark btn-sm mr-2" data-toggle="modal"
-                                        data-backdrop="static" data-keyboard="false" data-target="#modalRubrosPresupuesto">
+                                        data-backdrop="static" data-keyboard="false" data-target="#modalRubroCronograma">
                                         <i class="fa-light fa-plus"></i> Agregar Rubro
                                     </a>
-                                    --}}
                                     <a href="{{ route('pdf.export.cronograma', $proyecto->id) }}"
                                         class="btn btn-secondary btn-sm mr-2" target="_blank">
                                         <i class="fa-light fa-file-export"></i> Exportar a PDF
@@ -53,51 +51,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $index = 1;
-                                @endphp
-                                @forelse ($categorias as $categoria)
-                                    @php
-                                        $total_categoria = 0;
-                                    @endphp
-                                    @forelse ($categoria->rubrosPresupuesto as $rubro)
-                                        @php
-                                            $total_categoria += $rubro->presupuestoProyectos->sum(function ($item) {
-                                                return $item->cantidad * $item->valor_unitario;
-                                            });
-                                        @endphp
-                                        <tr>
-                                            <td class="align-middle font-weight-bold">{{ $index }}</td>
-                                            <td class="align-middle"> {{ $rubro->nombre }}</td>
-                                            @for ($i = 0; $i < $plazo_semanas; $i++)
-                                                @if ($cronograma->where('semana', $i + 1)->where('rubro_id', $rubro->id)->isNotEmpty())
-                                                    <td class="align-middle text-center {{ $cronograma->where('semana', $i + 1)->where('rubro_id', $rubro->id)->where('completado', true)->isNotEmpty()? 'pintado_completado': 'pintado_pendiente' }}"
-                                                        data-item="{{ $index }}" data-semana="{{ $i + 1 }}"
-                                                        data-proyecto={{ $proyecto->id }} data-rubro="{{ $rubro->id }}">
-                                                        <a href="{{ route('proyecto.cronograma.edit.actividad.dia.semana', ['proyecto' => $proyecto->id, 'semana' => $i + 1, 'rubro' => $rubro->id]) }}"
-                                                            class="text-decoration-none text-white">{{ $index }}
-                                                        </a>
-                                                    </td>
-                                                @else
-                                                    <td class="align-middle text-center click-semana"
-                                                        data-item="{{ $index }}" data-semana="{{ $i + 1 }}"
-                                                        data-proyecto={{ $proyecto->id }}
-                                                        data-rubro="{{ $rubro->id }}">
-                                                        -
-                                                    </td>
-                                                @endif
-                                            @endfor
-                                        </tr>
-                                        @php
-                                            $index += 1;
-                                        @endphp
-                                    @empty
-                                    @endforelse
+
+                                @forelse ($cronograma as $index => $rubro)
+                                    <tr id="{{ $rubro->id }}">
+                                        <td class="aling-middle">{{ $index + 1 }}</td>
+                                        <td class="aling-middle"></td>
+                                        @for ($i = 0; $i < $plazo_semanas; $i++)
+                                            <td class="text-center ">-</td>
+                                        @endfor
+                                    </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="{{ $plazo_semanas + 2 }}" class="text-center text-danger">
-                                            No se encontraron datos para mostrar....
-                                        </td>
+                                        <td colspan="{{ $plazo_semanas + 2 }}" class="text-center">No existen datos para
+                                            mostrar.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -190,7 +156,12 @@
     </section>
 @endsection
 
-@include('modals.actividad_dias_cronograma_modal')
+@include('modals.rubro_cronograma_modal', [
+    'plazo_semanas',
+    $plazo_semanas,
+    'rubros_cronograma',
+    $rubros_cronograma,
+])
 
 @section('scripts')
     <script src="{{ asset('js/cronograma_scripts.js') }}" type="module"></script>

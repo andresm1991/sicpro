@@ -111,6 +111,8 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'storeActividadesDiaSemana'])->name('store.actividad.dias.semana');
             Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}/editar', [CronogramaController::class, 'editarCronogramaDiaSemana'])->name('edit.actividad.dia.semana');
             Route::put('/{proyecto}/semana/{semana}/rubro/{rubro}/actualizar/{cronograma}', [CronogramaController::class, 'updateActividadesDiaSemana'])->name('update.actividad.dias.semana');
+
+            Route::post('{proyecto}/guardar/rubro-cronograma', [CronogramaController::class, 'ajaxStoreRubrosCronograma']);
         });
     });
 

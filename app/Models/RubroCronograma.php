@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ActividadCronograma extends Model
+class RubroCronograma extends Model
 {
     use HasFactory;
-    protected $table = 'actividades_cronograma';
+    protected $table =  'rubro_cronogramas';
     protected $fillable = ['descripcion', 'activo'];
 }

@@ -9,21 +9,11 @@ class Cronograma extends Model
 {
     use HasFactory;
     protected $table = 'cronograma';
-    protected $fillable = ['proyecto_id', 'rubro_id', 'etapa_id', 'semana', 'completado'];
+    protected $fillable = ['proyecto_id', 'rubro_cronograma_id', 'semana', 'dia', 'observacion'];
 
-    public function rubro()
+    public function rubro_cronograma()
     {
-        return $this->belongsTo(RubroPresupuesto::class, 'rubro_id');
-    }
-
-    public function etapa()
-    {
-        return $this->belongsTo(CatalogoDato::class, 'etapa_id');
-    }
-
-    public function actividad_dias()
-    {
-        return $this->hasMany(ActividadDiaCronograma::class);
+        return $this->belongsTo(RubroCronograma::class, 'rubro_cronograma_id');
     }
 
     public function proyecto()

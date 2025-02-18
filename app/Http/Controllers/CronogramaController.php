@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Constants\MessagesConstant;
 use App\Models\Proyecto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\ActividadCronograma;
 use App\Models\PresupuestoProyecto;
 use App\Http\Requests\StoreActividadCronogramaRequest;
-use App\Models\ActividadDiaCronograma;
 use App\Models\Cronograma;
+use App\Models\RubroCronograma;
+use App\Services\LogService;
 
 class CronogramaController extends Controller
 {
@@ -34,9 +35,29 @@ class CronogramaController extends Controller
 
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
         $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
-        $cronograma = Cronograma::where('proyecto_id', $proyecto->id)->get();
+        $cronograma = Cronograma::with('rubroCronograma')
+            ->selectRaw('rubro_cronograma_id, semana, proyecto_id')
+            ->groupBy('rubro_cronograma_id', 'semana', 'proyecto_id')
+            ->where('proyecto_id', $proyecto)
+            ->get()
+            ->map(function ($grupo) {
+                // Obtener los días asociados al grupo
+                $dias = Cronograma::where('rubro_cronograma_id', $grupo->rubro_cronograma_id)
+                    ->where('semana', $grupo->semana)
+                    ->pluck('dia');
 
-        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma'));
+                // Agregar los días al grupo
+                $grupo->dias = $dias;
+
+                // Cargar la descripción del rubro_cronograma
+                $grupo->rubro_cronograma_nombre = $grupo->rubroCronograma->nombre;
+
+                return $grupo;
+            });
+        return $cronograma;
+        $rubros_cronograma = RubroCronograma::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
+
+        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma'));
     }
 
     public function crearCronogramaDiaSemana(Proyecto $proyecto, $semana, $rubro)
@@ -197,6 +218,52 @@ class CronogramaController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             return back()->with('error', 'Ocurrió un error al actualizar las actividades');
+        }
+    }
+
+    public function ajaxStoreRubrosCronograma(Request $request)
+    {
+        try {
+            if ($request->ajax()) {
+                DB::beginTransaction();
+                $proyecto = $request->proyecto;
+                $rubro_cronograma = $request->rubro_cronograma;
+                $semana = $request->semana;
+                $dias = $request->dias;
+
+                // validar si es numerico el rubro_cronograma
+                if (!is_numeric($rubro_cronograma)) {
+                    // Verificar si el rubro ya existe en la base de datos
+                    $existe = RubroCronograma::where('descripcion', $rubro_cronograma)->exists();
+                    if (!$existe) {
+                        // Guardar el rubro si no existe y obtener el id
+                        $rubro_cronograma = RubroCronograma::create([
+                            'descripcion' => $rubro_cronograma,
+                            'activo' => true,
+                        ])->id;
+                    }
+                }
+
+                // Filtrar solo los días marcados (checked = true)
+                foreach ($dias as $dia => $info) {
+                    if (isset($info['checked'])) { // Solo procesar si el día está marcado
+                        Cronograma::create([
+                            'proyecto_id' => $proyecto,
+                            'rubro_cronograma_id' => $rubro_cronograma,
+                            'semana' => $semana,
+                            'dia' => $dia,
+                            'observacion' => $info['observacion'] ?? null,
+                        ]);
+                    }
+                }
+
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
+            }
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            LogService::log('ERROR', 'ajaxStoreRubrosCronograma', ['error' => $e]);
+            return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
         }
     }
 

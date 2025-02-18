@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('actividades_dias_cronograma', function (Blueprint $table) {
+        Schema::create('rubro_cronogramas', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('cronograma_id')->references('id')->on('cronograma')->onDelete('cascade');
-            $table->foreignId('actividad_cronograma_id')->references('id')->on('actividades_cronograma')->onDelete('cascade');
-            $table->string('dia', 20);
+            $table->string('descripcion');
+            $table->boolean('activo')->default(true);
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('actividades_dias_cronograma');
+        Schema::dropIfExists('rubro_cronogramas');
     }
 };
