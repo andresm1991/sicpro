@@ -1,5 +1,113 @@
+import { getFormData } from './helpers.js';
+
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
+
+    $(document).on('click', '#guardar', function () {
+        var form = $("#form_rubro_cronograma");
+        var data = getFormData(form);
+        $.ajax({
+            url: 'guardar/rubro-cronograma',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: data,
+            beforeSend: function () {
+                $('#modal-overlay').show();
+            },
+            success: function (response) {
+
+                Swal.fire({
+                    icon: response.success ? "success" : "error",
+                    text: response.message,
+                    confirmButtonText: 'Aceptar',
+                }).then((result) => {
+                    if (response.success) {
+                        location.reload();
+                    }
+                });
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#modal-overlay').hide();
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+    });
+
+    // Inicializar Select2 dentro del modal
+    $(document).on('shown.bs.modal', '#modalRubroCronograma', function () {
+        $(this).find('.select2-tag').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+
+        $(this).find('.select2-basic-single').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+    });
+
 
     $(document).on('click', '.click-semana', function () {
         window.location = 'semana/' + $(this).data('semana') + '/rubro/' + $(this).data('rubro');
