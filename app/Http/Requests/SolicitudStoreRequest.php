@@ -23,6 +23,7 @@ class SolicitudStoreRequest extends FormRequest
     public function rules(): array
     {
         $rules = [
+            'user' => 'required',
             'tipo_solicitud' => 'required',
             'estado_solicitud' => 'required',
             'detalle' => 'required',
