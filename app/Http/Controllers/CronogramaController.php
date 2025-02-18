@@ -54,7 +54,6 @@ class CronogramaController extends Controller
 
                 return $grupo;
             });
-        return $cronograma;
         $rubros_cronograma = RubroCronograma::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
         return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma'));
