@@ -5,7 +5,7 @@
 @section('content')
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
-        {!! Form::model($cronograma, [
+        {{--  {!! Form::model($cronograma, [
             'route' => [
                 'proyecto.cronograma.update.actividad.dias.semana',
                 [
@@ -20,25 +20,23 @@
             'enctype' => 'multipart/form-data',
             'method' => 'PUT',
         ]) !!}
+        --}}
+
         <div class="card">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
                     <div class="row d-flex justify-content-between">
                         <div class="col-md-8">
-                            <h4 class="mt-2 font-weight-bold">Días semana</h4>
+                            <h4 class="mt-2 font-weight-bold">Actividades</h4>
 
                         </div>
 
                         <div class="col-md-2">
-                            <div class="select_wrapper">
-                                <label class="rounded  text-white">
-                                    <input type="checkbox" name="completadas" class="d-none" value="true"
-                                        {{ $cronograma->completado ? 'checked' : '' }}
-                                        {{ $cronograma->completado ? 'disabled' : '' }}>
-                                    <span class="text-center d-block py-3">
-                                        Actividades Completadas
-                                    </span>
-                                </label>
+                            <div class="form-group">
+                                <a href="{{ route('pdf.export.cronograma.actividades.dias', $proyecto->id) }}"
+                                    class="btn btn-secondary btn-options" target="_blank">
+                                    <i class="fa-light fa-file-export"></i> Generar PDF
+                                </a>
                             </div>
                         </div>
 

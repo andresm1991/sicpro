@@ -26,6 +26,7 @@ class CronogramaController extends Controller
     public function index(Proyecto $proyecto)
     {
         $title_page = 'Cronograma';
+        $proyectoId = $proyecto->id;
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -35,30 +36,175 @@ class CronogramaController extends Controller
 
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
         $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
-        $cronograma = Cronograma::with('rubroCronograma')
-            ->selectRaw('rubro_cronograma_id, semana, proyecto_id')
-            ->groupBy('rubro_cronograma_id', 'semana', 'proyecto_id')
-            ->where('proyecto_id', $proyecto)
-            ->get()
-            ->map(function ($grupo) {
-                // Obtener los días asociados al grupo
-                $dias = Cronograma::where('rubro_cronograma_id', $grupo->rubro_cronograma_id)
-                    ->where('semana', $grupo->semana)
-                    ->pluck('dia');
+        // Consulta agrupada por rubro_cronograma_id y semana, filtrada por proyecto_id
+        // Consulta inicial para obtener todos los registros filtrados por proyecto_id
+        $cronogramas = Cronograma::with('rubro_cronograma')
+            ->where('proyecto_id', $proyectoId)
+            ->get();
 
-                // Agregar los días al grupo
-                $grupo->dias = $dias;
+        // Agrupar los datos por rubro_cronograma_id
+        $cronograma = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
+            // Obtener el nombre del rubro
+            $rubroCronogramaNombre = $grupo->first()->rubro_cronograma->descripcion;
+            // Obtener el id del rubro_cronograma
+            $rubro_cronograma_id = $grupo->first()->rubro_cronograma->id;
 
-                // Cargar la descripción del rubro_cronograma
-                $grupo->rubro_cronograma_nombre = $grupo->rubroCronograma->nombre;
-
-                return $grupo;
+            // Crear un array con las semanas donde el rubro está presente
+            // Organizar las semanas con sus días correspondientes
+            $semanas = $grupo->groupBy('semana')->map(function ($semanaGrupo) {
+                return $semanaGrupo->pluck('dia')->toArray();
             });
+
+            return [
+                'rubro_cronograma_id' => $rubro_cronograma_id,
+                'rubro_cronograma_nombre' => $rubroCronogramaNombre,
+                'semanas' => $semanas,
+            ];
+        });
+
+        //return $cronograma;
+
         $rubros_cronograma = RubroCronograma::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
-        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma'));
+        $total_estructural = $categorias->sum(function ($categoria) {
+            return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                return $rubro->presupuestoProyectos
+                    ->filter(function ($proyecto) {
+                        // Filtrar proyectos basados en la relación etapa_construccion
+                        return $proyecto->etapa_construccion &&
+                            $proyecto->etapa_construccion->slug ===
+                            'etapas.construccion.estructural';
+                    })
+                    ->sum(function ($proyecto) {
+                        // Calcular cantidad * valor_unitario
+                        return $proyecto->cantidad * $proyecto->valor_unitario;
+                    });
+            });
+        });
+
+        $total_mpel = $categorias->sum(function ($categoria) {
+            return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                return $rubro->presupuestoProyectos
+                    ->filter(function ($proyecto) {
+                        // Filtrar proyectos basados en la relación etapa_construccion
+                        return $proyecto->etapa_construccion &&
+                            ($proyecto->etapa_construccion->slug ===
+                                'etapas.construccion.mamposteria' ||
+                                $proyecto->etapa_construccion->slug ===
+                                'etapas.construccion.enlucidos');
+                    })
+                    ->sum(function ($proyecto) {
+                        // Calcular cantidad * valor_unitario
+                        return $proyecto->cantidad * $proyecto->valor_unitario;
+                    });
+            });
+        });
+
+        $total_acabados = $categorias->sum(function ($categoria) {
+            return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                return $rubro->presupuestoProyectos
+                    ->filter(function ($proyecto) {
+                        // Filtrar proyectos basados en la relación etapa_construccion
+                        return $proyecto->etapa_construccion &&
+                            $proyecto->etapa_construccion->slug ===
+                            'etapas.construccion.acabados';
+                    })
+                    ->sum(function ($proyecto) {
+                        // Calcular cantidad * valor_unitario
+                        return $proyecto->cantidad * $proyecto->valor_unitario;
+                    });
+            });
+        });
+
+        $total = $total_estructural + $total_mpel + $total_acabados;
+
+        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_mpel', 'total_acabados', 'total'));
     }
 
+    public function editarActividadesSemana(Proyecto $proyecto, $semana)
+    {
+        $title_page = 'Actividades de la semana ' . $semana;
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Cronograma', 'url' => route('proyecto.cronograma.index', ['proyecto' => $proyecto->id])],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        $cronogramas = Cronograma::with('rubro_cronograma')
+            ->where('proyecto_id', $proyecto->id)
+            ->where('semana', $semana)
+            ->get();
+
+        // Agrupar los datos por rubro_cronograma_id
+        $actividades = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
+            // Obtener el nombre del rubro
+            $rubroCronogramaNombre = $grupo->first()->rubro_cronograma->descripcion;
+            // Obtener el id del rubro_cronograma
+            $rubro_cronograma_id = $grupo->first()->rubro_cronograma->id;
+
+            // Crear un array con las semanas donde el rubro está presente
+            // Organizar las semanas con sus días correspondientes
+            $semanas = $grupo->groupBy('semana')->map(function ($semanaGrupo) {
+                return $semanaGrupo->pluck('dia')->toArray();
+            });
+
+            return [
+                'rubro_cronograma_id' => $rubro_cronograma_id,
+                'rubro_cronograma_nombre' => $rubroCronogramaNombre,
+                'semanas' => $semanas,
+            ];
+        });
+
+        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'actividades'));
+    }
+
+    public function ajaxStoreRubrosCronograma(Request $request)
+    {
+        try {
+            if ($request->ajax()) {
+                DB::beginTransaction();
+                $proyecto = $request->proyecto;
+                $rubro_cronograma = $request->rubro_cronograma;
+                $semana = $request->semana;
+                $dias = $request->dias;
+
+                // validar si es numerico el rubro_cronograma
+                if (!is_numeric($rubro_cronograma)) {
+                    // Verificar si el rubro ya existe en la base de datos
+                    $existe = RubroCronograma::where('descripcion', $rubro_cronograma)->exists();
+                    if (!$existe) {
+                        // Guardar el rubro si no existe y obtener el id
+                        $rubro_cronograma = RubroCronograma::create([
+                            'descripcion' => $rubro_cronograma,
+                            'activo' => true,
+                        ])->id;
+                    }
+                }
+
+                // Filtrar solo los días marcados (checked = true)
+                foreach ($dias as $dia => $info) {
+                    if (isset($info['checked'])) { // Solo procesar si el día está marcado
+                        Cronograma::create([
+                            'proyecto_id' => $proyecto,
+                            'rubro_cronograma_id' => $rubro_cronograma,
+                            'semana' => $semana,
+                            'dia' => $dia,
+                            'observacion' => $info['observacion'] ?? null,
+                        ]);
+                    }
+                }
+
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
+            }
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            LogService::log('ERROR', 'ajaxStoreRubrosCronograma', ['error' => $e]);
+            return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
+        }
+    }
+    /*
     public function crearCronogramaDiaSemana(Proyecto $proyecto, $semana, $rubro)
     {
         $title_page = 'Actividades de la semana ' . $semana;
@@ -220,52 +366,6 @@ class CronogramaController extends Controller
         }
     }
 
-    public function ajaxStoreRubrosCronograma(Request $request)
-    {
-        try {
-            if ($request->ajax()) {
-                DB::beginTransaction();
-                $proyecto = $request->proyecto;
-                $rubro_cronograma = $request->rubro_cronograma;
-                $semana = $request->semana;
-                $dias = $request->dias;
-
-                // validar si es numerico el rubro_cronograma
-                if (!is_numeric($rubro_cronograma)) {
-                    // Verificar si el rubro ya existe en la base de datos
-                    $existe = RubroCronograma::where('descripcion', $rubro_cronograma)->exists();
-                    if (!$existe) {
-                        // Guardar el rubro si no existe y obtener el id
-                        $rubro_cronograma = RubroCronograma::create([
-                            'descripcion' => $rubro_cronograma,
-                            'activo' => true,
-                        ])->id;
-                    }
-                }
-
-                // Filtrar solo los días marcados (checked = true)
-                foreach ($dias as $dia => $info) {
-                    if (isset($info['checked'])) { // Solo procesar si el día está marcado
-                        Cronograma::create([
-                            'proyecto_id' => $proyecto,
-                            'rubro_cronograma_id' => $rubro_cronograma,
-                            'semana' => $semana,
-                            'dia' => $dia,
-                            'observacion' => $info['observacion'] ?? null,
-                        ]);
-                    }
-                }
-
-                DB::commit();
-                return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
-            }
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            LogService::log('ERROR', 'ajaxStoreRubrosCronograma', ['error' => $e]);
-            return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
-        }
-    }
-
     public function getAjaxActividades(Request $request)
     {
         if ($request->ajax()) {
@@ -274,4 +374,6 @@ class CronogramaController extends Controller
             return response()->json(['actividades' => $actividades]);
         }
     }
+      
+*/
 }

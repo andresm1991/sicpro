@@ -107,7 +107,7 @@ Route::group(['middleware' => ['auth']], function () {
         //** RUTAS CRONOGRAMA VALORADO */
         Route::group(['prefix' => '/cronograma', 'as' => 'cronograma.'], function () {
             Route::get('/{proyecto}/home', [CronogramaController::class, 'index'])->name('index');
-            Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'crearCronogramaDiaSemana'])->name('actividad.dia.semana');
+            Route::get('/{proyecto}/semana/{semana}', [CronogramaController::class, 'editarActividadesSemana'])->name('actividades.semana');
             Route::post('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'storeActividadesDiaSemana'])->name('store.actividad.dias.semana');
             Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}/editar', [CronogramaController::class, 'editarCronogramaDiaSemana'])->name('edit.actividad.dia.semana');
             Route::put('/{proyecto}/semana/{semana}/rubro/{rubro}/actualizar/{cronograma}', [CronogramaController::class, 'updateActividadesDiaSemana'])->name('update.actividad.dias.semana');
