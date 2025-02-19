@@ -55,6 +55,35 @@ $(function () {
         });
     });
 
+    // Capturar clic en las columnas con la clase 'editar-semana'
+    $('.editar-semana').on('click', function () {
+        // Obtener el número de semana desde el atributo 'data-semana'
+        let semana = $(this).data('semana');
+
+        // Crear un objeto para almacenar los datos de la semana
+        let datosSemana = {};
+
+        // Iterar sobre las filas de la tabla para recopilar los datos de la semana
+        $('#table-rubros-cronograma tbody tr').each(function () {
+            let rubro = $(this).find('td:eq(1)').text().trim(); // Nombre del rubro
+            let celdaSemana = $(this).find('td:eq(' + (semana + 1) + ')'); // Celda correspondiente a la semana
+            let dias = celdaSemana.data('dias'); // Obtener los días desde el atributo 'data-dias'
+
+            if (dias) {
+                // Almacenar los datos del rubro para esta semana
+                datosSemana[rubro] = dias;
+            }
+
+        });
+
+        // Mostrar los datos en la consola (o puedes usarlos como desees)
+        console.log(`Datos de la semana ${semana}:`, datosSemana);
+
+        // Ejemplo: Mostrar los datos en un modal o alerta
+        alert(`Datos de la semana ${semana}:\n${JSON.stringify(datosSemana, null, 2)}`);
+    });
+
+
     // Inicializar Select2 dentro del modal
     $(document).on('shown.bs.modal', '#modalRubroCronograma', function () {
         $(this).find('.select2-tag').each(function () {

@@ -456,6 +456,7 @@ textarea {
 .btn-options {
     min-height: 50px !important;
     min-width: 15%;
+    align-content: center;
 }
 
 
