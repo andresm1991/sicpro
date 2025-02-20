@@ -244,6 +244,14 @@ button {
     /* Mitad de la anchura del nodo */
 }
 
+.bottom-center {
+    top: 90%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
 .bottom-right {
     top: 80%;
     left: 80%;
@@ -591,6 +599,7 @@ textarea {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .text-truncate-max-line-1 {
@@ -598,6 +607,7 @@ textarea {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .neumorphism {
