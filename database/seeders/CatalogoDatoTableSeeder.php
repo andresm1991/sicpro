@@ -559,7 +559,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
+        
         $padre = CatalogoDato::create([
             'descripcion' => 'Tipo Solicitudes',
             'detalle' => '',
@@ -626,6 +626,39 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Cancelado',
             'detalle' => '',
             'slug' => 'estados.solicitud.cancelado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados Tarea',
+            'detalle' => '',
+            'slug' => 'estados.tarea',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Por Hacer',
+            'detalle' => '',
+            'slug' => 'estados.tarea.porhacer',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'En Curso',
+            'detalle' => '',
+            'slug' => 'estados.tarea.encurso',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Finalizado',
+            'detalle' => '',
+            'slug' => 'estados.tarea.finalizado',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

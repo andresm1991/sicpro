@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->hasMany(Solicitud::class, 'usuario_id');
     }
 
+    public function tareas()
+    {
+        return $this->belongsToMany(Tarea::class, 'usuario_tareas', 'usuario_id', 'tarea_id');
+    }
+
     public function getAuthPassword()
     {
         return $this->clave;

@@ -65,7 +65,8 @@
                                             <td class="aling-middle text-center editar-rubro {{ isset($rubro['semanas'][$i]) ? 'pintado_pendiente' : '' }}"
                                                 data-dias="{{ isset($rubro['semanas'][$i]) ? implode(', ', $rubro['semanas'][$i]) : '' }}"
                                                 data-rubro="{{ isset($rubro['semanas'][$i]) ? $rubro['rubro_cronograma_id'] : '' }}"
-                                                data-semana="{{ isset($rubro['semanas'][$i]) ? $i : '' }}">
+                                                data-semana="{{ isset($rubro['semanas'][$i]) ? $i : '' }}"
+                                                style="cursor:pointer;">
                                                 @if (isset($rubro['semanas'][$i]))
                                                     {{ $nro }}
                                                 @else

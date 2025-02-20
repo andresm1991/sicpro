@@ -36,10 +36,12 @@ class CronogramaController extends Controller
 
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
         $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
+
         // Consulta agrupada por rubro_cronograma_id y semana, filtrada por proyecto_id
         // Consulta inicial para obtener todos los registros filtrados por proyecto_id
         $cronogramas = Cronograma::with('rubro_cronograma')
             ->where('proyecto_id', $proyectoId)
+            ->orderBy('id', 'asc')
             ->get();
 
         // Agrupar los datos por rubro_cronograma_id
@@ -246,10 +248,11 @@ class CronogramaController extends Controller
                         );
                     } else {
                         // Si el rubro no esta checked, eliminar el registro del cronograma para ese día y semana del proyecto
-                        /* Cronograma::where('proyecto_id', $proyecto)
+                        Cronograma::where('proyecto_id', $proyecto)
                             ->where('semana', $semana)
                             ->where('dia', $dia)
-                            ->delete();*/
+                            ->where('rubro_cronograma_id', $rubro_cronograma)
+                            ->delete();
                     }
                 }
 

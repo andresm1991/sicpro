@@ -420,6 +420,16 @@ if (!function_exists('calcularFechaFinal')) {
         }
         return $semanas;
     }
+
+    function calcularMesesEntreFechas($fechaInicio, $fechaFin)
+    {
+        // Convertir las fechas a objetos Carbon
+        $inicio = Carbon::parse($fechaInicio);
+        $fin = Carbon::parse($fechaFin);
+
+        // Calcular la diferencia en meses
+        return $inicio->diffInMonths($fin);
+    }
 }
 
 if (!function_exists('palabras')) {

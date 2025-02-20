@@ -4,7 +4,7 @@
 
 @section('content')
     @include('partials.header_page')
-    <section>
+    <section style="padding: 10px 0 50px 0;">
         <div class="container">
             <div class="row justify-content-center align-items-center full-height">
                 <div>
@@ -30,6 +30,12 @@
                         <img src="{{ asset('images/svg/users.svg') }}" alt="Administrativo">
                         <span>Administrativo</span>
                     </a>
+
+                    <a href="{{ route('tarea.index') }}" class="circle bottom-center" id="administrativo">
+                        <img src="{{ asset('images/svg/lista-de-tareas.svg') }}" alt="Administrativo">
+                        <span>Agenda</span>
+                    </a>
+
                     <a href="{{ route('sistema.index') }}" class="circle bottom-right" id="base-datos">
                         <img src="{{ asset('images/svg/sistema.svg') }}" alt="Base de Datos">
                         <span>Sistema</span>

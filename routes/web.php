@@ -25,6 +25,7 @@ use App\Http\Controllers\PushNotificationController;
 use App\Http\Controllers\RecuperacionTiempoController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\TareaController;
 use App\Models\PresupuestoProyecto;
 
 /*
@@ -245,6 +246,14 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/buscar', [RecuperacionTiempoController::class, 'buscar']);
         });
     });
+
+    //** RUTAS AGENDA */
+    Route::group(['prefix' => 'agenda', 'as' => 'tarea.'], function () {
+        Route::get('/', [TareaController::class, 'index'])->name('index');
+        Route::post('/guardar-tarea', [TareaController::class, 'store'])->name('store');
+        Route::post('/guardar-comentario', [TareaController::class, 'storeComentario']);
+    });
+
     //** PETICIONES AJAX **
     Route::put('/pago_orden_trabajo/{pago}', [AdministrativoController::class, 'pagoOrdenTrabajo']);
     Route::get('/rubros-presupuesto', [PresupuestoController::class, 'getAjaxRubrosPresupuesto']);

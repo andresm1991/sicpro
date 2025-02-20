@@ -195,7 +195,7 @@
                             <span style="font-weight: bold">Inicio:
                             </span><span>{{ dateFormatHumans($proyecto->fecha_inicio) }}</span><br>
                             <span style="font-weight: bold">Plazo de ejecución:
-                            </span><span>{{ plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_fin) }}
+                            </span><span>{{ $plazo_meses }}
                                 meses</span><br>
                             <span style="font-weight: bold">Monto de inversión:
                             </span><span>{{ number_format($proyecto->presupuesto_total, 2) }}</span><br>
@@ -220,87 +220,38 @@
             </thead>
             <tbody>
                 @php
-                    $index = 1;
+                    $nro = 1;
                 @endphp
-                @forelse ($categorias as $categoria)
-                    @foreach ($categoria->rubrosPresupuesto as $rubro)
-                        <tr>
-                            <td class="align-middle font-weight-bold">{{ $index }}</td>
-                            <td class="align-middle">{{ $rubro->nombre }}</td>
-                            @for ($i = 0; $i < $plazo_semanas; $i++)
-                                @if ($cronograma->where('semana', $i + 1)->where('rubro_id', $rubro->id)->isNotEmpty())
-                                    <td
-                                        class="align-middle text-center {{ $cronograma->where('semana', $i + 1)->where('rubro_id', $rubro->id)->where('completado', true)->isNotEmpty()? 'pintado_completado': 'pintado_pendiente' }}">
-                                        {{ $index }}</td>
+                @forelse ($cronograma as $index => $rubro)
+                    <tr id="{{ $index }}">
+                        <td class="aling-middle">{{ $nro }}</td>
+                        <td class="aling-middle">{{ $rubro['rubro_cronograma_nombre'] }}</td>
+                        @for ($i = 1; $i <= $plazo_semanas; $i++)
+                            <td class="aling-middle text-center editar-rubro {{ isset($rubro['semanas'][$i]) ? 'pintado_pendiente' : '' }}"
+                                data-dias="{{ isset($rubro['semanas'][$i]) ? implode(', ', $rubro['semanas'][$i]) : '' }}"
+                                data-rubro="{{ isset($rubro['semanas'][$i]) ? $rubro['rubro_cronograma_id'] : '' }}"
+                                data-semana="{{ isset($rubro['semanas'][$i]) ? $i : '' }}" style="cursor:pointer;">
+                                @if (isset($rubro['semanas'][$i]))
+                                    {{ $nro }}
                                 @else
-                                    <td class="align-middle text-center">-</td>
+                                    -
                                 @endif
-                            @endfor
-                        </tr>
-                        @php
-                            $index += 1;
-                        @endphp
-                    @endforeach
+                            </td>
+                        @endfor
+                    </tr>
+                    @php
+                        $nro += 1;
+                    @endphp
                 @empty
                     <tr>
-                        <td colspan="{{ $plazo_semanas + 2 }}" class="text-center text-danger">
-                            No se encontraron datos para mostrar.
-                        </td>
+                        <td colspan="{{ $plazo_semanas + 2 }}" class="text-center">No existen datos para
+                            mostrar.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
         <br>
         <table class="tabla-totales">
-            @php
-                $total_estructural = $categorias->sum(function ($categoria) {
-                    return $categoria->rubrosPresupuesto->sum(function ($rubro) {
-                        return $rubro->presupuestoProyectos
-                            ->filter(function ($proyecto) {
-                                // Filtrar proyectos basados en la relación etapa_construccion
-                                return $proyecto->etapa_construccion &&
-                                    $proyecto->etapa_construccion->slug === 'etapas.construccion.estructural';
-                            })
-                            ->sum(function ($proyecto) {
-                                // Calcular cantidad * valor_unitario
-                                return $proyecto->cantidad * $proyecto->valor_unitario;
-                            });
-                    });
-                });
-
-                $total_mpel = $categorias->sum(function ($categoria) {
-                    return $categoria->rubrosPresupuesto->sum(function ($rubro) {
-                        return $rubro->presupuestoProyectos
-                            ->filter(function ($proyecto) {
-                                // Filtrar proyectos basados en la relación etapa_construccion
-                                return $proyecto->etapa_construccion &&
-                                    $proyecto->etapa_construccion->slug === 'etapas.construccion.mamposteria' &&
-                                    $proyecto->etapa_construccion->slug === 'etapas.construccion.enlucidos';
-                            })
-                            ->sum(function ($proyecto) {
-                                // Calcular cantidad * valor_unitario
-                                return $proyecto->cantidad * $proyecto->valor_unitario;
-                            });
-                    });
-                });
-
-                $total_acabados = $categorias->sum(function ($categoria) {
-                    return $categoria->rubrosPresupuesto->sum(function ($rubro) {
-                        return $rubro->presupuestoProyectos
-                            ->filter(function ($proyecto) {
-                                // Filtrar proyectos basados en la relación etapa_construccion
-                                return $proyecto->etapa_construccion &&
-                                    $proyecto->etapa_construccion->slug === 'etapas.construccion.acabados';
-                            })
-                            ->sum(function ($proyecto) {
-                                // Calcular cantidad * valor_unitario
-                                return $proyecto->cantidad * $proyecto->valor_unitario;
-                            });
-                    });
-                });
-
-                $total = $total_estructural + $total_mpel + $total_acabados;
-            @endphp
             <tr>
                 <th>100 % ESTRUCTURA</th>
                 <th>ETAPA DE MAMPOSTERIAS Y ENLUCIDOS</th>

@@ -13,6 +13,7 @@ use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
+use App\Models\RubroCronograma;
 
 class GenerarPdfController extends Controller
 {
@@ -296,10 +297,90 @@ class GenerarPdfController extends Controller
     public function exportarCronogramaToPDF(Proyecto $proyecto)
     {
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
-        $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_fin);
-        $cronograma = Cronograma::where('proyecto_id', $proyecto->id)->get();
+        $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
+        $plazo_meses = calcularMesesEntreFechas($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
+        $cronogramas = Cronograma::with('rubro_cronograma')
+            ->where('proyecto_id', $proyecto->id)
+            ->orderBy('id', 'asc')
+            ->get();
 
-        $pdf = PDF::loadView('pdf.cronograma', compact('categorias', 'proyecto', 'plazo_semanas', 'cronograma'))->setPaper('a3', 'landscape');
+        // Agrupar los datos por rubro_cronograma_id
+        $cronograma = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
+            // Obtener el nombre del rubro
+            $rubroCronogramaNombre = $grupo->first()->rubro_cronograma->descripcion;
+            // Obtener el id del rubro_cronograma
+            $rubro_cronograma_id = $grupo->first()->rubro_cronograma->id;
+
+            // Crear un array con las semanas donde el rubro está presente
+            // Organizar las semanas con sus días correspondientes
+            $semanas = $grupo->groupBy('semana')->map(function ($semanaGrupo) {
+                return $semanaGrupo->pluck('dia')->toArray();
+            });
+
+            return [
+                'rubro_cronograma_id' => $rubro_cronograma_id,
+                'rubro_cronograma_nombre' => $rubroCronogramaNombre,
+                'semanas' => $semanas,
+            ];
+        });
+
+        //return $cronograma;
+
+        $rubros_cronograma = RubroCronograma::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
+
+        $total_estructural = $categorias->sum(function ($categoria) {
+            return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                return $rubro->presupuestoProyectos
+                    ->filter(function ($proyecto) {
+                        // Filtrar proyectos basados en la relación etapa_construccion
+                        return $proyecto->etapa_construccion &&
+                            $proyecto->etapa_construccion->slug ===
+                            'etapas.construccion.estructural';
+                    })
+                    ->sum(function ($proyecto) {
+                        // Calcular cantidad * valor_unitario
+                        return $proyecto->cantidad * $proyecto->valor_unitario;
+                    });
+            });
+        });
+
+        $total_mpel = $categorias->sum(function ($categoria) {
+            return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                return $rubro->presupuestoProyectos
+                    ->filter(function ($proyecto) {
+                        // Filtrar proyectos basados en la relación etapa_construccion
+                        return $proyecto->etapa_construccion &&
+                            ($proyecto->etapa_construccion->slug ===
+                                'etapas.construccion.mamposteria' ||
+                                $proyecto->etapa_construccion->slug ===
+                                'etapas.construccion.enlucidos');
+                    })
+                    ->sum(function ($proyecto) {
+                        // Calcular cantidad * valor_unitario
+                        return $proyecto->cantidad * $proyecto->valor_unitario;
+                    });
+            });
+        });
+
+        $total_acabados = $categorias->sum(function ($categoria) {
+            return $categoria->rubrosPresupuesto->sum(function ($rubro) {
+                return $rubro->presupuestoProyectos
+                    ->filter(function ($proyecto) {
+                        // Filtrar proyectos basados en la relación etapa_construccion
+                        return $proyecto->etapa_construccion &&
+                            $proyecto->etapa_construccion->slug ===
+                            'etapas.construccion.acabados';
+                    })
+                    ->sum(function ($proyecto) {
+                        // Calcular cantidad * valor_unitario
+                        return $proyecto->cantidad * $proyecto->valor_unitario;
+                    });
+            });
+        });
+
+        $total = $total_estructural + $total_mpel + $total_acabados;
+
+        $pdf = PDF::loadView('pdf.cronograma', compact('proyecto', 'categorias', 'plazo_semanas', 'plazo_meses', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_mpel', 'total_acabados', 'total'))->setPaper('a3', 'landscape');
         return $pdf->stream('cronograma.pdf');
     }
 
