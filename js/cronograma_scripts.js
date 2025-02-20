@@ -55,6 +55,32 @@ $(function () {
         });
     });
 
+    $('.editar-rubro').on('click', function () {
+        // Obtener el número de semana desde el atributo 'data-semana'
+        let semana = $(this).data('semana');
+        let rubro = $(this).data('rubro');
+        let dias = $(this).data('dias');
+
+
+        $('#titleModal').html('Editar Rubro');
+        $('select[name=rubro_cronograma]').val(rubro).trigger('change');
+        $('select[name=semana]').val(semana).trigger('change');
+        if (dias) {
+            let diasArray = dias.split(", ").map(dia => dia.trim()); // Convertir a array y limpiar espacios
+
+            // Recorrer los días y marcar los checkboxes correspondientes
+            diasArray.forEach(dia => {
+                $("#check_" + dia).prop("checked", true);
+            });
+        }
+        console.log(dias);
+
+        $('#modalRubroCronograma').modal({
+            backdrop: 'static', // No permite cerrar el modal al hacer clic fuera
+            keyboard: false     // No permite cerrar el modal usando la tecla ESC
+        }).modal('show');
+    });
+
     // Capturar clic en las columnas con la clase 'editar-semana'
     $('.editar-semana').on('click', function () {
         // Obtener el número de semana desde el atributo 'data-semana'
@@ -135,6 +161,18 @@ $(function () {
             // Inicializar Select2 con la configuración fusionada
             $select.select2(newOptions);
         });
+    });
+    // Cerrar el modal
+    $('#modalRubroCronograma').on('hidden.bs.modal', function () {
+        $('#titleModal').html('Agregar Rubro');
+        // Restablecer el formulario completo
+        $('#form_rubro_cronograma')[0].reset();
+
+        // Restablecer los select2
+        $('.select2-tag, .select2-basic-single').val(null).trigger('change');
+
+        // Desmarcar los checkboxes manualmente
+        $('input[type="checkbox"]').prop('checked', false);
     });
 
 
