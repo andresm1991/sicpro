@@ -110,7 +110,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::get('/{proyecto}/semana/{semana}', [CronogramaController::class, 'editarActividadesSemana'])->name('actividades.semana');
             Route::post('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'storeActividadesDiaSemana'])->name('store.actividad.dias.semana');
             Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}/editar', [CronogramaController::class, 'editarCronogramaDiaSemana'])->name('edit.actividad.dia.semana');
-            Route::put('/{proyecto}/semana/{semana}/rubro/{rubro}/actualizar/{cronograma}', [CronogramaController::class, 'updateActividadesDiaSemana'])->name('update.actividad.dias.semana');
+            Route::put('/{proyecto}/semana/{semana}', [CronogramaController::class, 'updateActividadesDiaSemana'])->name('update.actividades.semana');
 
             Route::post('{proyecto}/guardar/rubro-cronograma', [CronogramaController::class, 'ajaxStoreRubrosCronograma']);
         });
@@ -264,7 +264,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/orden-trabajo-contratista-pdf/{orden_trabajo}', [GenerarPdfController::class, 'ordenTrabajoContratistaPDF'])->name('orden.trabajo.contratista');
         Route::get('/exportar-presupuesto-pdf/{proyecto}', [GenerarPdfController::class, 'exportarPresupuestoPDFD'])->name('export.presupuesto');
         Route::get('/exportar-cronograma-pdf/{proyecto}', [GenerarPdfController::class, 'exportarCronogramaToPDF'])->name('export.cronograma');
-        Route::get('/exportar-cronograma-actividades-dias-pdf/{cronograma}', [GenerarPdfController::class, 'exportarActividadesDiasCronogramaToPDF'])->name('export.cronograma.actividades.dias');
+        Route::get('/exportar-cronograma-actividades-dias-pdf/{proyecto}/{semana}', [GenerarPdfController::class, 'exportarActividadesDiasCronogramaToPDF'])->name('export.cronograma.actividades.dias');
     });
     //** FIN RUTAS GENERAR PDF */
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);

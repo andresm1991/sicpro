@@ -30,13 +30,13 @@
                             </div>
                         </div>
 
-                        <div class="col-md-8 col-12 ">
+                        {{--  <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right  p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
                                 <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto->id }}"
                                     class="form-control form-control-round" placeholder="Buscar rubro....">
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
 
                     <div class="table-responsive">
@@ -54,21 +54,29 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $nro = 1;
+                                @endphp
                                 @forelse ($cronograma as $index => $rubro)
                                     <tr id="{{ $index }}">
-                                        <td class="aling-middle">{{ $index }}</td>
+                                        <td class="aling-middle">{{ $nro }}</td>
                                         <td class="aling-middle">{{ $rubro['rubro_cronograma_nombre'] }}</td>
                                         @for ($i = 1; $i <= $plazo_semanas; $i++)
-                                            <td class="text-center {{ isset($rubro['semanas'][$i]) ? 'pintado_pendiente' : '' }}"
-                                                data-dias="{{ isset($rubro['semanas'][$i]) ? implode(', ', $rubro['semanas'][$i]) : '' }}">
+                                            <td class="aling-middle text-center editar-rubro {{ isset($rubro['semanas'][$i]) ? 'pintado_pendiente' : '' }}"
+                                                data-dias="{{ isset($rubro['semanas'][$i]) ? implode(', ', $rubro['semanas'][$i]) : '' }}"
+                                                data-rubro="{{ isset($rubro['semanas'][$i]) ? $rubro['rubro_cronograma_id'] : '' }}"
+                                                data-semana="{{ isset($rubro['semanas'][$i]) ? $i : '' }}">
                                                 @if (isset($rubro['semanas'][$i]))
-                                                    {{ $index }}
+                                                    {{ $nro }}
                                                 @else
                                                     -
                                                 @endif
                                             </td>
                                         @endfor
                                     </tr>
+                                    @php
+                                        $nro += 1;
+                                    @endphp
                                 @empty
                                     <tr>
                                         <td colspan="{{ $plazo_semanas + 2 }}" class="text-center">No existen datos para

@@ -5,14 +5,12 @@
 @section('content')
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
-        {{--  {!! Form::model($cronograma, [
+        {!! Form::model($proyecto, [
             'route' => [
-                'proyecto.cronograma.update.actividad.dias.semana',
+                'proyecto.cronograma.update.actividades.semana',
                 [
                     'proyecto' => $proyecto->id,
                     'semana' => $semana,
-                    'rubro' => $rubro,
-                    'cronograma' => $cronograma->id,
                 ],
             ],
             'class' => 'form-horizontal',
@@ -20,7 +18,7 @@
             'enctype' => 'multipart/form-data',
             'method' => 'PUT',
         ]) !!}
-        --}}
+
 
         <div class="card">
             <ul class="list-group list-group-flush">
@@ -33,7 +31,7 @@
 
                         <div class="col-md-2">
                             <div class="form-group">
-                                <a href="{{ route('pdf.export.cronograma.actividades.dias', $proyecto->id) }}"
+                                <a href="{{ route('pdf.export.cronograma.actividades.dias', [$proyecto->id, $semana]) }}"
                                     class="btn btn-secondary btn-options" target="_blank">
                                     <i class="fa-light fa-file-export"></i> Generar PDF
                                 </a>
@@ -50,7 +48,7 @@
                 @include('cronograma.partials.form')
             </div>
         </div>
-        </div>
+        {{ Form::close() }}
     </section>
 @endsection
 

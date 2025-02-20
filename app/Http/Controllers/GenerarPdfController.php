@@ -303,34 +303,57 @@ class GenerarPdfController extends Controller
         return $pdf->stream('cronograma.pdf');
     }
 
-    public function exportarActividadesDiasCronogramaToPDF(Cronograma $cronograma)
+    public function exportarActividadesDiasCronogramaToPDF(Proyecto $proyecto, $semana)
     {
-        $dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-        $result = [];
+        $cronogramas = Cronograma::with('rubro_cronograma')
+            ->where('proyecto_id', $proyecto->id)
+            ->where('semana', $semana)
+            ->get();
 
-        // Inicializar el array con los días como claves
-        foreach ($dias as $dia) {
-            $result[$dia] = []; // Inicializa cada día con un array vacío
-        }
+        // Agrupar los datos por rubro_cronograma_id
+        $actividades = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
+            return [
+                'rubro_cronograma_id' => $grupo->first()->rubro_cronograma->id,
+                'rubro_cronograma_nombre' => $grupo->first()->rubro_cronograma->descripcion,
+                'dias' => $grupo->mapWithKeys(function ($item) {
+                    return [$item->dia => $item->observacion];
+                })->toArray(),
+            ];
+        });
 
-        // Iterar sobre las actividades del cronograma
-        foreach ($cronograma->actividad_dias as $actividad) {
-            $dia = $actividad->dia; // Obtener el día de la actividad
-            if (in_array($dia, $dias)) { // Verificar si el día es válido
-                $result[$dia][] = $actividad->actividad_cronograma->descripcion; // Agregar la descripción al día correspondiente
+
+        // Extraer todos los días únicos (lunes a domingo)
+        $diasSemana = config('app.diasSemana', []);
+
+        $rubrosPorDia = [];
+        // Procesar actividades para mapear días y rubros
+        foreach ($actividades as $actividad) {
+            foreach ($actividad['dias'] as $dia => $observacion) {
+                $rubrosPorDia[$dia] = [
+                    'id' => $actividad['rubro_cronograma_id'],
+                    'nombre' => $actividad['rubro_cronograma_nombre'],
+                    'observacion' => $observacion
+                ];
             }
         }
 
+        // Agrupar rubros por ID para contar los rowspan
+        $rubrosAgrupados = [];
+        foreach ($rubrosPorDia as $dia => $rubro) {
+            $rubrosAgrupados[$rubro['id']]['nombre'] = $rubro['nombre'];
+            $rubrosAgrupados[$rubro['id']]['dias'][] = $dia;
+        }
 
-        $fecha_semanas = fechasSemana($cronograma->proyecto->fecha_inicio, $cronograma->proyecto->fecha_finalizacion);
+
+        $fecha_semanas = fechasSemana($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
 
         $info_cronograma_dias = [
-            'proyecto' => $cronograma->proyecto->nombre_proyecto,
-            'semana' => $cronograma->semana,
-            'fecha_semana' => $fecha_semanas[$cronograma->semana],
-            'estado' => $cronograma->completado ? 'Completado' : 'pendiente',
-            'rubro' => $cronograma->rubro->nombre,
-            'actividades' => $result,
+            'proyecto' => $proyecto->nombre_proyecto,
+            'semana' => $semana,
+            'fecha_semana' => $fecha_semanas[$semana],
+            'rubrosPorDia' => $rubrosPorDia,
+            'rubrosAgrupados' => $rubrosAgrupados,
+            'diasSemana' => $diasSemana,
         ];
 
         $pdf = PDF::loadView('pdf.cronograma_dias', compact('info_cronograma_dias'))->setPaper('a3', 'landscape');

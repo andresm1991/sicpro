@@ -138,25 +138,73 @@ class CronogramaController extends Controller
 
         // Agrupar los datos por rubro_cronograma_id
         $actividades = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
-            // Obtener el nombre del rubro
-            $rubroCronogramaNombre = $grupo->first()->rubro_cronograma->descripcion;
-            // Obtener el id del rubro_cronograma
-            $rubro_cronograma_id = $grupo->first()->rubro_cronograma->id;
-
-            // Crear un array con las semanas donde el rubro está presente
-            // Organizar las semanas con sus días correspondientes
-            $semanas = $grupo->groupBy('semana')->map(function ($semanaGrupo) {
-                return $semanaGrupo->pluck('dia')->toArray();
-            });
-
             return [
-                'rubro_cronograma_id' => $rubro_cronograma_id,
-                'rubro_cronograma_nombre' => $rubroCronogramaNombre,
-                'semanas' => $semanas,
+                'rubro_cronograma_id' => $grupo->first()->rubro_cronograma->id,
+                'rubro_cronograma_nombre' => $grupo->first()->rubro_cronograma->descripcion,
+                'dias' => $grupo->mapWithKeys(function ($item) {
+                    return [$item->dia => $item->observacion];
+                })->toArray(),
             ];
         });
 
-        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'actividades'));
+
+        // Extraer todos los días únicos (lunes a domingo)
+        $diasSemana = config('app.diasSemana', []);
+
+        $rubrosPorDia = [];
+        // Procesar actividades para mapear días y rubros
+        foreach ($actividades as $actividad) {
+            foreach ($actividad['dias'] as $dia => $observacion) {
+                $rubrosPorDia[$dia] = [
+                    'id' => $actividad['rubro_cronograma_id'],
+                    'nombre' => $actividad['rubro_cronograma_nombre'],
+                    'observacion' => $observacion
+                ];
+            }
+        }
+
+        // Agrupar rubros por ID para contar los rowspan
+        $rubrosAgrupados = [];
+        foreach ($rubrosPorDia as $dia => $rubro) {
+            $rubrosAgrupados[$rubro['id']]['nombre'] = $rubro['nombre'];
+            $rubrosAgrupados[$rubro['id']]['dias'][] = $dia;
+        }
+
+        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'actividades', 'rubrosPorDia', 'rubrosAgrupados', 'diasSemana'));
+    }
+
+    public function updateActividadesDiaSemana(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $proyecto = $request->proyecto;
+            $semana = $request->semana;
+            $dias = $request->dias;
+            foreach ($dias as $dia => $data) {
+                // Verificar si el día tiene un rubro asignado
+                if (!empty($data['rubo'])) {
+                    // Buscar o crear el cronograma con el día, semana y rubro
+                    Cronograma::updateOrCreate(
+                        [
+                            'proyecto_id' => $proyecto,
+                            'semana' => $semana,
+                            'dia' => $dia
+                        ],
+                        [
+                            'rubro_cronograma_id' => $data['rubo'],
+                            'observacion' => $data['observacion'] ?? null
+                        ]
+                    );
+                }
+            }
+
+            DB::commit();
+            return redirect()->route('proyecto.cronograma.actividades.semana', ['proyecto' => $proyecto, 'semana' => $semana])->with('success', MessagesConstant::UPDATE);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            LogService::log('ERROR', 'Actualizar actividades semana cronograma', ['error' => $e]);
+            return redirect()->back()->with('error', MessagesConstant::CATCH_ERROR);
+        }
     }
 
     public function ajaxStoreRubrosCronograma(Request $request)
@@ -185,13 +233,23 @@ class CronogramaController extends Controller
                 // Filtrar solo los días marcados (checked = true)
                 foreach ($dias as $dia => $info) {
                     if (isset($info['checked'])) { // Solo procesar si el día está marcado
-                        Cronograma::create([
-                            'proyecto_id' => $proyecto,
-                            'rubro_cronograma_id' => $rubro_cronograma,
-                            'semana' => $semana,
-                            'dia' => $dia,
-                            'observacion' => $info['observacion'] ?? null,
-                        ]);
+                        Cronograma::updateOrCreate(
+                            [
+                                'proyecto_id' => $proyecto,
+                                'semana' => $semana,
+                                'dia' => $dia
+                            ],
+                            [
+                                'rubro_cronograma_id' => $rubro_cronograma,
+                                'observacion' => $info['observacion'] ?? null
+                            ]
+                        );
+                    } else {
+                        // Si el rubro no esta checked, eliminar el registro del cronograma para ese día y semana del proyecto
+                        /* Cronograma::where('proyecto_id', $proyecto)
+                            ->where('semana', $semana)
+                            ->where('dia', $dia)
+                            ->delete();*/
                     }
                 }
 

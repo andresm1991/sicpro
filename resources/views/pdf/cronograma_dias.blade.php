@@ -151,14 +151,10 @@
                 <tr>
                     <td colspan="2">
                         <div class="details">
-                            <span style="font-weight: bold">Rubro:
-                            </span><span>{{ $info_cronograma_dias['rubro'] }}</span><br>
                             <span style="font-weight: bold">Semana:
                             </span><span>{{ $info_cronograma_dias['semana'] }}</span><br>
                             <span style="font-weight: bold">Fecha:
                             </span><span>{{ dateFormatHumans($info_cronograma_dias['fecha_semana']) }}</span><br>
-                            <span style="font-weight: bold">estado:
-                            </span><span>{{ $info_cronograma_dias['estado'] }}</span><br>
 
                         </div>
                     </td>
@@ -166,38 +162,77 @@
             </tbody>
         </table>
 
-
-        @php
-            $dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
-        @endphp
-
         <!-- Tabla -->
         <table class="tabla-actividades">
-            <thead>
+            <thead class="thead-dark">
                 <tr>
-                    @foreach ($dias as $dia)
-                        <th scope="col">{{ $dia }}</th>
-                    @endforeach
+                    <th scope="col">Día</th>
+                    <th scope="col">Rubro</th>
+                    <th scope="col">Observación</th>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    @foreach ($dias as $dia)
-                        <td>
-                            @if (!empty($info_cronograma_dias['actividades'][$dia]))
-                                <ul>
-                                    @foreach ($info_cronograma_dias['actividades'][$dia] as $actividad)
-                                        <li>{{ $actividad }}</li>
-                                    @endforeach
-                                </ul>
-                            @else
-                                <p>No hay actividades programadas.</p>
-                            @endif
+                @php
+                    $rubroActual = null; // Rastrea el rubro actual
+                    $rubrosPorDia = $info_cronograma_dias['rubrosPorDia'];
+                    $rubrosAgrupados = $info_cronograma_dias['rubrosAgrupados'];
+                    $diasSemana = $info_cronograma_dias['diasSemana'];
+                @endphp
+
+                @foreach ($diasSemana as $dia)
+                    @php
+
+                        $rubroDia = $rubrosPorDia[$dia] ?? null;
+                        $esInicioRubro = false;
+
+                        // Detectar el inicio de un nuevo rubro
+                        if ($rubroDia && $rubroDia['id'] !== ($rubroActual['id'] ?? null)) {
+                            $rubroActual = $rubroDia;
+                            $esInicioRubro = true;
+                        }
+
+                        // Contar cuántos días abarca este rubro para el rowspan
+                        $rowspan = 1;
+                        if ($esInicioRubro) {
+                            $rowspan = count($rubrosAgrupados[$rubroDia['id']]['dias']);
+                        }
+
+                        // Obtener la observación del día (si existe)
+                        $observacion = $rubroDia['observacion'] ?? '';
+                    @endphp
+
+                    <tr>
+                        <!-- Nombre del día con checkbox -->
+                        <td class="align-middle font-weight-bold">
+                            <div class="form-check">
+                                <input name="dias[{{ $dia }}][checked]" class="form-check-input"
+                                    type="checkbox" value="{{ $rubroDia['id'] ?? '' }}" id="check_{{ $dia }}"
+                                    {{ isset($rubroDia) ? 'checked' : '' }} data-rubro-id="{{ $rubroDia['id'] ?? '' }}">
+                                <label class="form-check-label" for="check_{{ $dia }}">
+                                    {{ ucfirst($dia) }}
+                                </label>
+                            </div>
                         </td>
-                    @endforeach
-                </tr>
+
+                        <!-- Rubro (solo en la primera fila del grupo) -->
+                        @if ($esInicioRubro)
+                            <td rowspan="{{ $rowspan }}" class="align-middle text-center font-weight-bold">
+                                {{ $rubroDia['nombre'] }}
+                            </td>
+                        @elseif(!$rubroDia)
+                            <td class="align-middle text-center font-weight-bold"></td>
+                        @endif
+
+                        <!-- Observación -->
+                        <td class="align-middle">
+                            {!! $observacion !!}
+                        </td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
+
+
     </div>
 </body>
 
