@@ -25,18 +25,19 @@ class TareaController extends Controller
 
         $todoTasks = Tarea::whereHas('estado', function ($query) {
             $query->where('slug', 'estados.tarea.porhacer');
-        })->with('usuarios', 'comentarios')->paginate(15);
+        })->with('usuarios', 'comentarios')->get();
 
         $inProgressTasks = Tarea::whereHas('estado', function ($query) {
             $query->where('slug', 'estados.tarea.encurso');
-        })->with('usuarios', 'comentarios')->paginate(15);
+        })->with('usuarios', 'comentarios')->get();
 
         $completedTasks = Tarea::whereHas('estado', function ($query) {
-            $query->where('slug', 'estados.tarea.finalizada');
-        })->with('usuarios', 'comentarios')->paginate(15);
+            $query->where('slug', 'estados.tarea.finalizado');
+        })->with('usuarios', 'comentarios')->get();
 
+        $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
-        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks'));
+        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados'));
     }
 
     /**
@@ -88,6 +89,102 @@ class TareaController extends Controller
             } catch (\Throwable $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
+            }
+        }
+    }
+
+    /** 
+     * Get comentarios by tarea
+     */
+
+    public function getComentariosTarea(Request $request)
+    {
+        if ($request->ajax()) {
+            $comentarios = ComentarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
+            foreach ($comentarios as $comentario) {
+                $comentario->created_at_formateado = $comentario->created_at_formateado;
+                $comentario->updated_at_formateado = $comentario->updated_at_formateado;
+            }
+            return response()->json(['success' => true, 'comentarios' => $comentarios]);
+        }
+    }
+
+    /**
+     * PUT - Actualizar comentarios de tarea
+     */
+
+    public function updateComentario(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
+                $comentario = ComentarioTarea::find($request->comentarioId);
+                $comentario->comentario = $request->comentario;
+                $comentario->save();
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);
+            }
+        }
+    }
+    /**
+     * PUT - Actualizar estado tarea
+     */
+
+    public function updateEstadoTarea(Request $request, Tarea $tarea)
+    {
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
+                $tarea->estado_id = $request->estado;
+                $tarea->save();
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);
+            }
+        }
+    }
+
+    /**
+     * DELETE - Eliminar comentarios de tarea
+     */
+
+    public function deleteComentario(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
+                $comentario = ComentarioTarea::find($request->comentario);
+                $comentario->delete();
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::DELETE]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);
+            }
+        }
+    }
+
+    /**
+     * DELETE - Eliminar tarea
+     */
+
+    public function deleteTarea(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
+                $tarea = Tarea::find($request->tarea);
+                $tarea->delete();
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::DELETE]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);
             }
         }
     }

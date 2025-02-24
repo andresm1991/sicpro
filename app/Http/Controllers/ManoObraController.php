@@ -230,6 +230,7 @@ class ManoObraController extends Controller
 
             // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
             $fechasExistentes = ManoObra::where('etapa_id', $request->tipo_adquisicion)
+                ->where('proyecto_id', $request->proyecto_id)
                 ->where(function ($query) use ($fechaInicio, $fechaFin) {
                     $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
                         ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
@@ -251,7 +252,8 @@ class ManoObraController extends Controller
                     'required',
                     'date',
                     Rule::unique('mano_obra', 'fecha_inicio')->where(function ($query) use ($request) {
-                        return $query->where('etapa_id', $request->tipo_adquisicion);
+                        return $query->where('etapa_id', $request->tipo_adquisicion)
+                            ->where('proyecto_id', $request->proyecto_id);
                     }),
                 ],
                 'fecha_fin' => [
@@ -259,7 +261,8 @@ class ManoObraController extends Controller
                     'date',
                     'after:fecha_inicio',
                     Rule::unique('mano_obra', 'fecha_fin')->where(function ($query) use ($request) {
-                        return $query->where('etapa_id', $request->tipo_adquisicion);
+                        return $query->where('etapa_id', $request->tipo_adquisicion)
+                            ->where('proyecto_id', $request->proyecto_id);;
                     }),
                 ],
             ], [

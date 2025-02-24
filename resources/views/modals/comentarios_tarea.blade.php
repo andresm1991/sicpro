@@ -1,6 +1,6 @@
 <!-- Modal -->
 <div class="modal fade" id="comentarioTareaModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content card-outline card-primary">
             <!-- Overlay -->
             <div id="modal-overlay" style="display:none;">
@@ -10,7 +10,29 @@
                 </div>
             </div>
             <div class="modal-header">
-                <h5 class="modal-title font-weight-bold text-dark" id="titleComentarioModal"></h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <h5 class="modal-title font-weight-bold text-dark" id="titleComentarioModal"></h5>
+                        </div>
+
+                        <div class="col-sm-auto">
+                            <label class="col-form-label">Estado</label>
+                        </div>
+                        <div class="col-sm-2">
+                            <select name="estado" data-tags="false" data-placeholder="Select an option"
+                                data-allow-clear="false" class="form-control" data-width = "150"
+                                data-minimum-results-for-search="Infinity">
+                                @foreach ($estados as $index => $name)
+                                    <option value="{{ $index }}">{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+
+
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -24,15 +46,20 @@
                         </div>
 
                         <div class="col-12 form-group">
-                            {{ Form::textarea('comentario', '', ['class' => 'form-control', 'placeholder' => 'Añadir un comentario...', 'rows' => '5']) }}
+                            {{ Form::label('', 'Comentarios', ['class' => 'col-form-label']) }}
+                            {{ Form::textarea('comentario', '', ['class' => 'form-control', 'placeholder' => 'Añadir un comentario...', 'rows' => '3']) }}
                         </div>
                     </div>
+
+                    <button type="button" class="btn btn-dark mb-4" id="guardar-comentario">Agregar</button>
                 </form>
+                <div class="row">
+                    <div class="col-12" id="comentarios">
+
+                    </div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-dark" id="guardar-comentario">Guardar</button>
-            </div>
+
         </div>
     </div>
 </div>

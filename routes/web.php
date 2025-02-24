@@ -23,6 +23,7 @@ use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
 use App\Http\Controllers\RecuperacionTiempoController;
+use App\Http\Controllers\ResumenPagoSemanalController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\TareaController;
@@ -219,6 +220,11 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('/posponer-pago', [PrestamoController::class, 'posponerPago']);
             Route::get('/buscar-prestamo', [PrestamoController::class, 'buscar']);
         });
+
+        //** RUTAS RESUMEN DE PAGOS SEMANAL */
+        Route::group(['prefix' => 'resumen-pagos-semanales', 'as' => 'resumen.pagos.semanal.'], function () {
+            Route::get('/', [ResumenPagoSemanalController::class, 'index'])->name('index');
+        });
     });
 
     //** RUTAS SOLICITUDES */
@@ -252,6 +258,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/', [TareaController::class, 'index'])->name('index');
         Route::post('/guardar-tarea', [TareaController::class, 'store'])->name('store');
         Route::post('/guardar-comentario', [TareaController::class, 'storeComentario']);
+        Route::get('/comentarios-tarea', [TareaController::class, 'getComentariosTarea']);
+        Route::put('/comentarios-tarea/{comentarioId}', [TareaController::class, 'updateComentario']);
+        Route::delete('/eliminar-comentario/{comentario}', [TareaController::class, 'deleteComentario']);
+        Route::delete('/eliminar-tarea/{tarea}', [TareaController::class, 'deleteTarea']);
+        Route::put('/actualizar-estado-tarea/{tarea}', [TareaController::class, 'updateEstadoTarea']);
     });
 
     //** PETICIONES AJAX **

@@ -22,13 +22,13 @@
                                 </a>
                             </div>
                         </div>
-                        <div class="col-md-8 col-12 ">
+                        {{-- <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
                                 <input type="text" name="users_search" class="form-control form-control-round"
                                     placeholder="Buscar tarea....">
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
 
                     <div class="row">
@@ -41,19 +41,22 @@
                                 <div class="card-body">
                                     <div class="list-group">
                                         @forelse ($todoTasks as $task)
-                                            <a href="javascript:void(0);"
-                                                class="list-group-item list-group-item-action agregar-comentario"
-                                                id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
-                                                data-descripcion="{{ $task->descripcion }}">
-                                                <div class="d-flex w-100 justify-content-between">
-                                                    <h5 class="mb-1">{{ $task->titulo }}</h5>
-                                                    <small class="text-muted">{{ $task->created_at_formateado }}</small>
-                                                </div>
-                                                <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
-                                                <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
-                                                    class="btn btn-sm btn-danger">Eliminar</button>
-                                            </a>
+                                            <div class="list-group-item list-group-item-action">
+                                                <a href="javascript:void(0);"
+                                                    class="text-decoration-none text-dark agregar-comentario"
+                                                    id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
+                                                    data-descripcion="{{ $task->descripcion }}"
+                                                    data-estado = "{{ $task->estado_id }}">
+                                                    <div class="d-flex w-100 justify-content-between">
+                                                        <h5 class="mb-1">{{ $task->titulo }}</h5>
+                                                        <small class="text-muted">{{ $task->created_at_formateado }}</small>
+                                                    </div>
+                                                    <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
 
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-danger eliminar-tarea"
+                                                    id="{{ $task->id }}">Eliminar</button>
+                                            </div>
                                         @empty
                                             <small class="text-center">no existen datos para mostrar.</small>
                                         @endforelse
@@ -73,19 +76,19 @@
                                 <div class="card-body">
                                     <div class="list-group">
                                         @forelse ($inProgressTasks as $task)
-                                            <div class="list-group-item">
-                                                <h5>{{ $task->title }}</h5>
-                                                <p>{{ $task->description }}</p>
-                                                <small class="text-muted">Asignados:
-                                                    @foreach ($task->usuarios as $user)
-                                                        {{ $user->name }}
-                                                    @endforeach
-                                                </small>
-                                                <div>
-                                                    <a href="{{ route('tasks.show', $task->id) }}"
-                                                        class="btn btn-sm btn-info">Ver</a>
+                                            <a href="javascript:void(0);"
+                                                class="list-group-item list-group-item-action agregar-comentario"
+                                                id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
+                                                data-descripcion="{{ $task->descripcion }}"
+                                                data-estado = "{{ $task->estado_id }}">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h5 class="mb-1">{{ $task->titulo }}</h5>
+                                                    <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                                 </div>
-                                            </div>
+                                                <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                                <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
+                                                    class="btn btn-sm btn-danger">Eliminar</button>
+                                            </a>
 
                                         @empty
                                             <small class="text-center">no existen datos para mostrar.</small>
@@ -104,20 +107,19 @@
                                 <div class="card-body">
                                     <div class="list-group">
                                         @forelse ($completedTasks as $task)
-                                            <div class="list-group-item">
-                                                <h5>{{ $task->title }}</h5>
-                                                <p>{{ $task->description }}</p>
-                                                <small class="text-muted">Asignados:
-                                                    @foreach ($task->usuarios as $user)
-                                                        {{ $user->name }}
-                                                    @endforeach
-                                                </small>
-                                                <div>
-                                                    <a href="{{ route('tasks.show', $task->id) }}"
-                                                        class="btn btn-sm btn-info">Ver</a>
+                                            <a href="javascript:void(0);"
+                                                class="list-group-item list-group-item-action agregar-comentario"
+                                                id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
+                                                data-descripcion="{{ $task->descripcion }}"
+                                                data-estado = "{{ $task->estado_id }}">
+                                                <div class="d-flex w-100 justify-content-between">
+                                                    <h5 class="mb-1">{{ $task->titulo }}</h5>
+                                                    <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                                 </div>
-                                            </div>
-
+                                                <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                                <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
+                                                    class="btn btn-sm btn-danger">Eliminar</button>
+                                            </a>
                                         @empty
                                             <small class="text-center">no existen datos para mostrar.</small>
                                         @endforelse
@@ -132,7 +134,7 @@
         </div>
     </section>
     @include('modals.tareas')
-    @include('modals.comentarios_tarea')
+    @include('modals.comentarios_tarea', ['estados' => $estados])
 @endsection
 
 @section('scripts')

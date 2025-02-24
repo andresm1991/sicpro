@@ -20,4 +20,14 @@ class ComentarioTarea extends Model
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
+
+    // Accesor para formatear created_at
+    public function getCreatedAtFormateadoAttribute()
+    {
+        return $this->created_at->diffForHumans();
+    }
+    public function getUpdatedAtFormateadoAttribute()
+    {
+        return $this->updated_at->diffForHumans();
+    }
 }
