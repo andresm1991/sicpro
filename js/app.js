@@ -232,6 +232,8 @@ $(function () {
         }
     });
 
+    $("select").select2();
+
     $('.select2-basic-single').each(function () {
         let $select = $(this);
 
