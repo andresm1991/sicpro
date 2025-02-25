@@ -449,8 +449,16 @@ if (!function_exists('palabras')) {
 
     function logoBase64()
     {
-        $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
-        return $logo_base64;
+        $rutaImagen = public_path('images/logo_empresa.jpg');
+
+        if (!file_exists($rutaImagen)) {
+            return false;
+        }
+
+        $tipo_mime = mime_content_type($rutaImagen);
+        $contenido_base64 = base64_encode(file_get_contents($rutaImagen));
+
+        return "data:$tipo_mime;base64,$contenido_base64";
     }
 
     // Función para limpiar un valor

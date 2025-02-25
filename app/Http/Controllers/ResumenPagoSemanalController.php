@@ -6,6 +6,7 @@ use App\Models\CatalogoDato;
 use App\Models\DetalleResumenPagoSemanal;
 use Illuminate\Http\Request;
 use App\Models\ResumenPagoSemanal;
+use App\Services\PushNotificationService;
 use Illuminate\Support\Facades\DB;
 
 class ResumenPagoSemanalController extends Controller
@@ -73,6 +74,8 @@ class ResumenPagoSemanalController extends Controller
 
             DB::commit();
 
+            PushNotificationService::sendNotification(auth()->user(), 'Resumen de pagos semanales', 'Se ha generado el resumenen de pagos', route('pdf.resumen.pago.semanal', $resumen->id));
+
             return response()->json([
                 'success' => true,
                 'message' => 'Resumen de pago semanal creado correctamente',
@@ -115,6 +118,64 @@ class ResumenPagoSemanalController extends Controller
                 'message' => 'Ocurrió un error al eliminar el resumen de pago semanal',
                 'error' => $e->getMessage(),
             ]);
+        }
+    }
+
+
+    public function buscar(Request $request)
+    {
+        if ($request->ajax()) {
+            $buscar = $request->text;
+            $output = "";
+            $resumen_pagos = ResumenPagoSemanal::where('fecha', 'LIKE', '%' . $buscar . '%')
+                ->orWhere('total', 'LIKE', '%' . $buscar . '%')
+                //->orWhereHas('estado', function ($query) use ($buscar) {
+                //  $query->where('descripcion', 'LIKE', '%' . $buscar . '%');
+                //})
+                ->get();
+
+            if ($resumen_pagos) {
+                foreach ($resumen_pagos as $resumen) {
+                    if ($resumen->estado->slug == 'estados.resumen.pagos.semanales.pendiente') {
+                        $estado = '<span class="badge badge-warning">' . $resumen->estado->descripcion . '</span>';
+                    } elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.aprobado') {
+                        $estado = '<span class="badge badge-success">' . $resumen->estado->descripcion . '</span>';
+                    } elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.cancelado') {
+                        $estado = '<span class="badge badge-danger">' . $resumen->estado->descripcion . '</span>';
+                    } else {
+                        $estado = 'Sin definir';
+                    }
+
+                    $output .= '<tr id="' . $resumen->id . '">' .
+                        '<th class="align-middle">' . $resumen->id . '</th>' .
+                        '<td class="align-middle">' . dateFormat('Y-m-d', 'd-m-Y', $resumen->fecha) . '</td>' .
+                        '<td class="align-middle">$ ' . number_format($resumen->total, 4) . '</td>' .
+                        '<td class="align-middle"><span class="badge badge-success">Generado</span></td>' .
+                        '<td class="align-middle table-actions">' .
+                        '<a href="javascript:void(0);" class="btn btn-dark btn-sm editar-resumen mr-1"
+                                            data-toggle="modal" data-backdrop="static" data-keyboard="false"
+                                            data-target="#pagoSemanalModal" id="' . $resumen->id . '">
+                                            <i class="fa-light fa-edit"></i>
+                                        </a>' .
+                        '<a href="' . route('pdf.resumen.pago.semanal', $resumen->id) . '"
+                                            class="btn btn-dark btn-sm mr-1" target="__blank">
+                                            <i class="fa-solid fa-file-pdf"></i>
+                                        </a>' .
+                        '<a href="javascript:void(0);" class="btn btn-dark btn-sm eliminar-resumen"
+                                            id="' . $resumen->id . '">
+                                            <i class="fa-light fa-trash"></i>
+                                        </a>' .
+                        '</td>' .
+                        '</tr>';
+                }
+
+                if (empty($output)) {
+                    $output .= '<tr>' .
+                        '<td colspan="5" class="text-center text-danger">No existen datos para mostrar.</td>' .
+                        '</tr>';
+                }
+                return Response($output);
+            }
         }
     }
 }

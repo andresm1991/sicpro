@@ -227,6 +227,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('/guardar', [ResumenPagoSemanalController::class, 'store']);
             Route::get('/editar/{id}', [ResumenPagoSemanalController::class, 'edit']);
             Route::delete('/eliminar/{id}', [ResumenPagoSemanalController::class, 'destroy']);
+            Route::get('/buscar-resumen-pagos', [ResumenPagoSemanalController::class, 'buscar']);
         });
     });
 
@@ -288,6 +289,8 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/exportar-presupuesto-pdf/{proyecto}', [GenerarPdfController::class, 'exportarPresupuestoPDFD'])->name('export.presupuesto');
         Route::get('/exportar-cronograma-pdf/{proyecto}', [GenerarPdfController::class, 'exportarCronogramaToPDF'])->name('export.cronograma');
         Route::get('/exportar-cronograma-actividades-dias-pdf/{proyecto}/{semana}', [GenerarPdfController::class, 'exportarActividadesDiasCronogramaToPDF'])->name('export.cronograma.actividades.dias');
+
+        Route::get('/resumen-pago-semanal-pdf/{resumen}', [GenerarPdfController::class, 'pdfResumenPagoSemanal'])->name('resumen.pago.semanal');
     });
     //** FIN RUTAS GENERAR PDF */
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);

@@ -20,7 +20,7 @@
                                 <div class="d-flex">
                                     <a href="javascript:void(0);" class="btn btn-dark btn-sm mr-2" data-toggle="modal"
                                         data-backdrop="static" data-keyboard="false" data-target="#modalRubroCronograma">
-                                        <i class="fa-light fa-plus"></i> Agregar Rubro
+                                        <i class="fa-light fa-plus"></i> Agregar Actividad
                                     </a>
                                     <a href="{{ route('pdf.export.cronograma', $proyecto->id) }}"
                                         class="btn btn-secondary btn-sm mr-2" target="_blank">
@@ -44,7 +44,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Nro.</th>
-                                    <th scope="col">Rubro </th>
+                                    <th scope="col">Actividades </th>
                                     @for ($i = 1; $i <= $plazo_semanas; $i++)
                                         <th class="text-center" data-semana={{ $i }}>
                                             <a
@@ -88,13 +88,11 @@
                             <tfoot>
                                 <table class="table table-bordered ">
                                     <tr>
-                                        <th class="text-center">100 % ESTRUCTURA</th>
-                                        <th class="text-center">ETAPA DE MAMPOSTERIAS Y ENLUCIDOS</th>
-                                        <th rowspan="2" class="text-center">ETAPA DE ACABADOS</th>
+                                        <th class="text-center">etapa ESTRUCTURAl</th>
+                                        <th class="text-center">Etapa OBRA GRIS</th>
+                                        <th class="text-center">ETAPA DE ACABADOS</th>
                                     </tr>
-                                    <tr>
-                                        <td colspan="2" class="text-center">100% OBRA GRIS</td>
-                                    </tr>
+
                                     <tr>
                                         <td class="text-center">
                                             $ {{ number_format($total_estructural, 2) }}

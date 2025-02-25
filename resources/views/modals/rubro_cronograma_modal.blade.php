@@ -11,7 +11,7 @@
                 </div>
             </div>
             <div class="modal-header">
-                <h5 class="modal-title font-weight-bold text-dark" id="titleModal">Agregar Rubro</h5>
+                <h5 class="modal-title font-weight-bold text-dark" id="titleModal">Agregar Actividades</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -26,10 +26,10 @@
 
                         <div class="col-sm-8 col-12">
                             <div class="from-group">
-                                <label class="font-weight-bold">Rubros Cronograma</label>
+                                <label class="font-weight-bold">Actividades Cronograma</label>
                                 {!! Form::select('rubro_cronograma', $rubros_cronograma->prepend('', ''), null, [
                                     'class' => 'form-control  select2-tag',
-                                    'data-placeholder' => 'Selecciona o ingresa el rubro',
+                                    'data-placeholder' => 'Selecciona o ingresa la actividad',
                                 ]) !!}
                             </div>
                         </div>

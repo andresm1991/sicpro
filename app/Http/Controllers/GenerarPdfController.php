@@ -13,6 +13,7 @@ use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
+use App\Models\ResumenPagoSemanal;
 use App\Models\RubroCronograma;
 
 class GenerarPdfController extends Controller
@@ -439,6 +440,12 @@ class GenerarPdfController extends Controller
 
         $pdf = PDF::loadView('pdf.cronograma_dias', compact('info_cronograma_dias'))->setPaper('a3', 'landscape');
         return $pdf->stream('actividades_dias.pdf');
+    }
+
+    public function pdfResumenPagoSemanal(ResumenPagoSemanal $resumen)
+    {
+        $pdf = PDF::loadView('pdf.resuemen_pago_semanal', compact('resumen'));
+        return $pdf->stream('resuemen_pago_semanal.pdf');
     }
 
     private function logoBase64()

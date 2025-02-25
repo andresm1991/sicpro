@@ -25,14 +25,14 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="users_search" class="form-control form-control-round"
+                                <input type="text" name="resumen_pagos_search" class="form-control form-control-round"
                                     placeholder="Buscar pago....">
                             </div>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover" id="resumen_pagos_table">
-                            <thead>
+                            <thead class="thead-dark">
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Fecha</th>
@@ -48,13 +48,7 @@
                                         <td class="align-middle">{{ dateFormat('Y-m-d', 'd-m-Y', $resumen->fecha) }}</td>
                                         <td class="align-middle">$ {{ number_format($resumen->total, 4) }}</td>
                                         <td class="align-middle">
-                                            @if ($resumen->estado->slug == 'estados.resumen.pagos.semanales.pendiente')
-                                                <span class="badge badge-warning">{{ $resumen->estado->descripcion }}</span>
-                                            @elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.aprobado')
-                                                <span class="badge badge-success">{{ $resumen->estado->descripcion }}</span>
-                                            @elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.cancelado')
-                                                <span class="badge badge-danger">{{ $resumen->estado->descripcion }}</span>
-                                            @endif
+                                            <span class="badge badge-success">Generado</span>
                                         </td>
                                         <td class="align-middle table-actions">
                                             <a href="javascript:void(0);" class="btn btn-dark btn-sm editar-resumen"
@@ -62,8 +56,8 @@
                                                 data-target="#pagoSemanalModal" id="{{ $resumen->id }}">
                                                 <i class="fa-light fa-edit"></i>
                                             </a>
-                                            <a href="javascript:void(0);" class="btn btn-dark btn-sm"
-                                                id="{{ $resumen->id }}">
+                                            <a href="{{ route('pdf.resumen.pago.semanal', $resumen->id) }}"
+                                                class="btn btn-dark btn-sm" target="__blank">
                                                 <i class="fa-solid fa-file-pdf"></i>
                                             </a>
                                             <a href="javascript:void(0);" class="btn btn-dark btn-sm eliminar-resumen"
