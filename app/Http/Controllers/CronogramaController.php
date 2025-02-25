@@ -262,7 +262,7 @@ class CronogramaController extends Controller
         } catch (\Throwable $e) {
             DB::rollBack();
             LogService::log('ERROR', 'ajaxStoreRubrosCronograma', ['error' => $e]);
-            return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
+            return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
         }
     }
     /*

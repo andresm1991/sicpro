@@ -224,6 +224,9 @@ Route::group(['middleware' => ['auth']], function () {
         //** RUTAS RESUMEN DE PAGOS SEMANAL */
         Route::group(['prefix' => 'resumen-pagos-semanales', 'as' => 'resumen.pagos.semanal.'], function () {
             Route::get('/', [ResumenPagoSemanalController::class, 'index'])->name('index');
+            Route::post('/guardar', [ResumenPagoSemanalController::class, 'store']);
+            Route::get('/editar/{id}', [ResumenPagoSemanalController::class, 'edit']);
+            Route::delete('/eliminar/{id}', [ResumenPagoSemanalController::class, 'destroy']);
         });
     });
 

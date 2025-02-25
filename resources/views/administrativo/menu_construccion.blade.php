@@ -42,12 +42,12 @@
                     </a>
                 </div>
 
-                {{--  <div class="max-auto">
+                <div class="max-auto">
                     <a href="{{ route('administrativo.resumen.pagos.semanal.index') }}" class="nodo">
                         <img src="{{ asset('images/svg/dar-dinero.svg') }}" alt="">
                         <span>resumen pagos semanal</span>
                     </a>
-                </div> --}}
+                </div>
 
 
             </div>

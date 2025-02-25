@@ -452,4 +452,10 @@ if (!function_exists('palabras')) {
         $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
         return $logo_base64;
     }
+
+    // Función para limpiar un valor
+    function limpiarValor($valor)
+    {
+        return floatval(preg_replace('/[^0-9.-]/', '', $valor)); // Elimina "$", ",", etc.
+    }
 }

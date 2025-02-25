@@ -19,14 +19,57 @@
             <div class="modal-body">
                 <form autocomplete="off" enctype="multipart/form-data" id="form_resumen_pagos_semanales">
                     {{ Form::hidden('resumen_id') }}
-                    <div class="row">
+                    <div class="row mb-2">
                         <div class="col-12 form-group">
                             <label class="col-form-label">Fecha registro: </label>
-                            <label for="">{{ date('Y-m-d') }}</label>
+                            <label id="fecha_registro">{{ date('Y-m-d') }}</label>
                         </div>
 
-                        <div class="col-12 form-group">
+                        <div class="col-12">
+                            <div class="form-row align-items-center">
+                                <div class="form-group col-md-6">
+                                    <label class="col-form-label">Descripción</label>
+                                    {{ Form::text('descripcion', '', ['class' => 'form-control', 'placeholder' => 'Ingrese la descripción']) }}
+                                </div>
 
+                                <div class="form-group col-md-2 col-12">
+                                    <label class="col-form-label">Valor</label>
+                                    {{ Form::text('valor', '', ['class' => 'form-control currency_separador_miles']) }}
+                                </div>
+
+                                <div class="col-md-4 col-12 d-flex align-items-center mt-4">
+                                    <button type="button" class="btn btn-dark" id="agregar-item">Agregar</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="tabla_items">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Item</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="tr-default">
+                                    <td colspan="4" class="aling-middle text-center">No existen elemento en al lista
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-10 text-right align-self-center font-weight-bold">
+                            Total General
+                        </div>
+                        <div class="col-2">
+                            <input type="text" class="form-control-plaintext" id="total_general" value="$ 0.0000"
+                                readonly>
                         </div>
                     </div>
                 </form>

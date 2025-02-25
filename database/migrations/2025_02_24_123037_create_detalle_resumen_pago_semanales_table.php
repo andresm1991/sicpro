@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('resumen_pago_semanales', function (Blueprint $table) {
+        Schema::create('detalle_resumen_pago_semanales', function (Blueprint $table) {
             $table->id();
-            $table->date('fecha');
-            $table->decimal('total', 10, 4);
-            $table->foreignId('estado_id')->references('id')->on('catalogo_datos')->onDelete('cascade');
+            $table->foreignId('resumen_pago_semanal_id')->references('id')->on('resumen_pago_semanales')->onDelete('cascade'); 
+            $table->string('descripcion');
+            $table->decimal('monto', 10, 4);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('resumen_pago_semanales');
+        Schema::dropIfExists('detalle_resumen_pago_semanales');
     }
 };

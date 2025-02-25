@@ -31,42 +31,50 @@
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
+                        <table class="table table-bordered table-hover" id="resumen_pagos_table">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
                                     <th scope="col">Fecha</th>
+                                    <th scope="col">Total</th>
+                                    <th scope="col">Estado</th>
                                     <th class="table-actions"></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($resumen_pagos as $user)
-                                    <tr id="{{ $user->id }}">
-                                        <td class="align-middle">{{ $user->id }}</td>
-                                        <td class="align-middle text-capitalize">{{ $user->nombre }}</td>
-                                        <td class="align-middle">{{ $user->usuario }}</td>
-                                        <td class="align-middle">{{ $user->roles()->first()->name }}</td>
+                                @forelse ($resumen_pagos as $resumen)
+                                    <tr id="{{ $resumen->id }}">
+                                        <th class="align-middle">{{ $resumen->id }}</th>
+                                        <td class="align-middle">{{ dateFormat('Y-m-d', 'd-m-Y', $resumen->fecha) }}</td>
+                                        <td class="align-middle">$ {{ number_format($resumen->total, 4) }}</td>
                                         <td class="align-middle">
-                                            @if ($user->activo)
-                                                <span class="badge badge-success">Activo</span>
-                                            @else
-                                                <span class="badge badge-danger">Inactivo</span>
+                                            @if ($resumen->estado->slug == 'estados.resumen.pagos.semanales.pendiente')
+                                                <span class="badge badge-warning">{{ $resumen->estado->descripcion }}</span>
+                                            @elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.aprobado')
+                                                <span class="badge badge-success">{{ $resumen->estado->descripcion }}</span>
+                                            @elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.cancelado')
+                                                <span class="badge badge-danger">{{ $resumen->estado->descripcion }}</span>
                                             @endif
                                         </td>
                                         <td class="align-middle table-actions">
-                                            <div class="action-buttons">
-                                                <a href="{{ route('sistema.users.edit', $user->id) }}"
-                                                    class="btn btn-secondary btn-sm btn-space"><i
-                                                        class="fa-light fa-pen-to-square"></i> Editar</a>
-                                                <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-user"
-                                                    id="{{ $user->id }}"><i class="fa-solid fa-trash-can"></i>
-                                                    Eliminar</a>
-                                            </div>
+                                            <a href="javascript:void(0);" class="btn btn-dark btn-sm editar-resumen"
+                                                data-toggle="modal" data-backdrop="static" data-keyboard="false"
+                                                data-target="#pagoSemanalModal" id="{{ $resumen->id }}">
+                                                <i class="fa-light fa-edit"></i>
+                                            </a>
+                                            <a href="javascript:void(0);" class="btn btn-dark btn-sm"
+                                                id="{{ $resumen->id }}">
+                                                <i class="fa-solid fa-file-pdf"></i>
+                                            </a>
+                                            <a href="javascript:void(0);" class="btn btn-dark btn-sm eliminar-resumen"
+                                                id="{{ $resumen->id }}">
+                                                <i class="fa-light fa-trash"></i>
+                                            </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center text-danger">No se encontraron datos para
+                                        <td colspan="5" class="text-center text-danger">No se encontraron datos para
                                             mostrar....
                                         </td>
                                     </tr>
@@ -87,5 +95,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/user_scripts.js') }}"></script>
+    <script src="{{ asset('js/resumen_pagos_semanales_scripts.js') }}" type="module"></script>
 @endsection
