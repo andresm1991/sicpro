@@ -62,7 +62,7 @@ $(function () {
         let dias = $(this).data('dias');
 
 
-        $('#titleModal').html('Editar Rubro');
+        $('#titleModal').html('Editar Actividades');
         $('select[name=rubro_cronograma]').val(rubro).trigger('change');
         $('select[name=semana]').val(semana).trigger('change');
         if (dias) {
@@ -164,7 +164,7 @@ $(function () {
     });
     // Cerrar el modal
     $('#modalRubroCronograma').on('hidden.bs.modal', function () {
-        $('#titleModal').html('Agregar Rubro');
+        $('#titleModal').html('Agregar Actividades');
         // Restablecer el formulario completo
         $('#form_rubro_cronograma')[0].reset();
 

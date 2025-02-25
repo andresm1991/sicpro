@@ -119,7 +119,6 @@ $(function () {
     $(document).on("click", ".eliminar-resumen", function () {
         var id = $(this).attr('id');
         var $this = $(this);
-        $("#" + id).remove();
 
         // Confirmar la eliminación
         Swal.fire({
@@ -242,6 +241,24 @@ $(function () {
         $('#tr-default').show();
     });
 
+
+    $('input:text[name=resumen_pagos_search]').on('keyup', function () {
+        var $value = $(this).val();
+        $.ajax({
+            url: 'resumen-pagos-semanales/buscar-resumen-pagos',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'text': $value },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                $('#resumen_pagos_table tbody').html(data);
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
 
     function calcularTotal() {
         let total = 0;
