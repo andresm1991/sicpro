@@ -342,6 +342,18 @@ $(function () {
     Inputmask({
         alias: "currency",
         prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: ",",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 4,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_separador_miles");
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
         groupSeparator: "",         // Separador de miles
         autoGroup: true,             // Agrupación automática
         digits: 2,                   // Número de decimales

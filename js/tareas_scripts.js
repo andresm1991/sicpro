@@ -206,20 +206,6 @@ $(function () {
                     });
             }
         });
-
-        // Enviar la solicitud AJAX para eliminar la tarea
-        $.ajax({
-            url: `/tareas/${tareaId}`, // Endpoint para eliminar la tarea
-            method: 'DELETE',
-            success: function (response) {
-                // Eliminar el elemento del DOM si la solicitud es exitosa
-                $item.remove();
-            },
-            error: function (error) {
-                console.error('Error:', error);
-                alert('Ocurrió un error al eliminar la tarea.');
-            }
-        });
     });
 
     // Manejar el evento de clic en "Aceptar"

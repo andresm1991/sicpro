@@ -24,3 +24,7 @@ export const limpiarFormulario = ($formularioId) => {
     // Si hay checkboxes o radios, deseleccionarlos
     $($formularioId).find('input[type="checkbox"], input[type="radio"]').prop('checked', false);
 }
+
+export const limpiarValores = ($valor) => {
+    return parseFloat($valor.replace(/[^0-9.-]/g, '')); // Elimina "$", ",", etc.
+}
