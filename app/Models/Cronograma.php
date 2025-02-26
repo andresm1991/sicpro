@@ -20,4 +20,34 @@ class Cronograma extends Model
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
     }
+
+    public static function TotalAdquisicionesEtapa($proyectoId, $slug)
+    {
+        $total_aquisiciones = AdquisicionDetalle::whereHas('adquisicion', function ($query) use ($proyectoId, $slug) {
+            $query->where('proyecto_id', $proyectoId)
+                ->whereHas('etapa', function ($q) use ($slug) {
+                    $q->where('slug', $slug);
+                });
+        })->sum('valor');
+
+
+        $total_mano_obra = DetalleManoObra::whereHas('mano_obra', function ($query) use ($proyectoId, $slug) {
+            $query->where('proyecto_id', $proyectoId)
+                ->whereHas('etapa', function ($q) use ($slug) {
+                    $q->where('slug', $slug);
+                });
+        })
+            ->whereHas('mano_obra.pago_mano_obra') // Filtrar solo los detalles relacionados con PagoManoObra
+            ->sum('valor');
+
+        $total_contratista = PagoOrdenTrabajoContratista::whereHas('contratista', function ($query) use ($proyectoId, $slug) {
+            $query->where('proyecto_id', $proyectoId)
+                ->whereHas('etapa', function ($q) use ($slug) {
+                    $q->where('slug', $slug);
+                });
+        })->where('pagado', true)
+            ->sum('valor');
+
+        return ['totalAdquisiciones' => $total_aquisiciones, 'totalManoObra' => $total_mano_obra, 'totalContratista' => $total_contratista];
+    }
 }

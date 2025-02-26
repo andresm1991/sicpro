@@ -8,7 +8,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\PresupuestoProyecto;
 use App\Http\Requests\StoreActividadCronogramaRequest;
+use App\Models\Adquisicion;
+use App\Models\AdquisicionDetalle;
+use App\Models\Contratista;
 use App\Models\Cronograma;
+use App\Models\DetalleContratista;
+use App\Models\DetalleManoObra;
+use App\Models\ManoObra;
+use App\Models\PagoOrdenTrabajoContratista;
 use App\Models\RubroCronograma;
 use App\Services\LogService;
 
@@ -64,8 +71,6 @@ class CronogramaController extends Controller
             ];
         });
 
-        //return $cronograma;
-
         $rubros_cronograma = RubroCronograma::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
         $total_estructural = $categorias->sum(function ($categoria) {
@@ -120,7 +125,38 @@ class CronogramaController extends Controller
 
         $total = $total_estructural + $total_mpel + $total_acabados;
 
-        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_mpel', 'total_acabados', 'total'));
+
+        $total_aquisiciones_estructural = AdquisicionDetalle::whereHas('adquisicion', function ($query) use ($proyectoId) {
+            $query->where('proyecto_id', $proyectoId)
+                ->whereHas('etapa', function ($q) {
+                    $q->where('slug', 'menu.adquisciones.estructural');
+                });
+        })->sum('valor');
+
+
+        $total_mano_obra_estructural = DetalleManoObra::whereHas('mano_obra', function ($query) use ($proyectoId) {
+            $query->where('proyecto_id', $proyectoId)
+                ->whereHas('etapa', function ($q) {
+                    $q->where('slug', 'menu.adquisciones.estructural');
+                });
+        })
+            ->whereHas('mano_obra.pago_mano_obra') // Filtrar solo los detalles relacionados con PagoManoObra
+            ->sum('valor');
+
+        $total_contratista_estructural = PagoOrdenTrabajoContratista::whereHas('contratista', function ($query) use ($proyectoId) {
+            $query->where('proyecto_id', $proyectoId)
+                ->whereHas('etapa', function ($q) {
+                    $q->where('slug', 'menu.adquisciones.estructural');
+                });
+        })->where('pagado', true)
+            ->sum('valor');
+
+        $totales_estructural = Cronograma::TotalAdquisicionesEtapa($proyectoId, 'menu.adquisciones.estructural');
+        $totales_obra_gris = Cronograma::TotalAdquisicionesEtapa($proyectoId, 'menu.adquisciones.obra.gris');
+        $totales_acabados = Cronograma::TotalAdquisicionesEtapa($proyectoId, 'menu.adquisciones.acabados');
+
+
+        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_mpel', 'total_acabados', 'total', 'totales_estructural', 'totales_obra_gris', 'totales_acabados'));
     }
 
     public function editarActividadesSemana(Proyecto $proyecto, $semana)

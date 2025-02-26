@@ -88,27 +88,43 @@
                             <tfoot>
                                 <table class="table table-bordered ">
                                     <tr>
+                                        <th>Totales</th>
                                         <th class="text-center">etapa ESTRUCTURAl</th>
                                         <th class="text-center">Etapa OBRA GRIS</th>
                                         <th class="text-center">ETAPA DE ACABADOS</th>
                                     </tr>
 
                                     <tr>
+                                        <th>presupuesto</th>
                                         <td class="text-center">
-                                            $ {{ number_format($total_estructural, 2) }}
+                                            $ {{ number_format($total_estructural, 4) }}
                                         </td>
                                         <td class="text-center">
-                                            $ {{ number_format($total_mpel, 2) }}
+                                            $ {{ number_format($total_mpel, 4) }}
                                         </td>
                                         <td class="text-center">
-                                            $ {{ number_format($total_acabados, 2) }}
+                                            $ {{ number_format($total_acabados, 4) }}
+                                        </td>
+                                    </tr>
+                                    {{-- totales adquisisicones, mano de obra, contratista --}}
+                                    <tr>
+                                        <th>adquisiciones</th>
+                                        <td class="aling-middle text-center">
+                                            $ {{ number_format($totales_estructural['totalAdquisiciones'], 4) }}
+                                        </td>
+                                        <td class="aling-middle text-center">
+                                            $ {{ number_format($totales_estructural['totalManoObra'], 4) }}
+                                        </td>
+                                        <td class="aling-middle text-center">
+                                            $ {{ number_format($totales_estructural['totalContratista'], 4) }}
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-center">
-                                            $ {{ number_format($total, 2) }}
+                                        <td colspan="4" class="text-center">
+                                            $ {{ number_format($total, 4) }}
                                         </td>
                                     </tr>
+
                                 </table>
                             </tfoot>
                         </table>
