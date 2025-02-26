@@ -1,0 +1,80 @@
+/*==== NUEVO CSS PARA LOS ICONO =====*/
+
+.circle {
+    z-index: 2;
+    position: absolute;
+    /* Mantiene la posición */
+    width: 180px;
+    height: 180px;
+    border-radius: 30px;
+    /* Ajuste del radio */
+    background-color: #e2e2e2;
+    color: rgb(17, 17, 17);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    padding: 0;
+    box-shadow: 6px 6px 24px #3d3d3d, -6px -6px 24px #5f5a5a;
+    text-decoration: none;
+    transition: transform 0.3s;
+    transform-origin: center;
+    overflow: hidden;
+}
+
+.circle:hover {
+    transform: scale(1.1);
+    text-decoration: none;
+    color: #9b2d2d;
+    cursor: pointer;
+}
+
+/* Nueva estructura para la imagen y el texto */
+.circle-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* La imagen ocupa todo el espacio */
+.circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    /* Detrás del texto */
+}
+
+/* Ajustar el texto sobre la imagen */
+.circle-text {
+    position: relative;
+    z-index: 2;
+    color: white;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.3);
+    /* Opcional: fondo semi-transparente */
+    padding: 5px;
+    border-radius: 5px;
+}
+
+
+
+/*======= esto va en el html ====*/
+/*
+<div class="circle-content">
+    <img src="{{ asset('images/bg/sistema.avif') }}" alt="sistema">
+    <span class="circle-text">Sistema</span>
+</div>
+*/
