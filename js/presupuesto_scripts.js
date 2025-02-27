@@ -160,7 +160,7 @@ $(function () {
         if (!valid) return;
 
         if (dataEdit != '') {
-            endPoint = 'actualizar/' + dataEdit.data('prestamo');
+            endPoint = 'actualizar-rubro-presupuesto/' + dataEdit.attr('id');
             type = 'PUT';
         }
 
@@ -195,6 +195,24 @@ $(function () {
             var errors = JSON.parse(jqXHR.responseText);
             console.log(errors);
         });
+    });
+
+    //** Editar rubro */
+    $(document).on('click', '.editar-rubro', function () {
+        var id = $(this).attr('id');
+        $('#titleModal').text('Editar Rubro');
+        $('#guardar').text('Actualizar');
+        $('input:hidden[name=rubro_presupuesto_id]').val(id);
+        $('#categoria').attr('disabled', true);
+        $('#rubros').attr('disabled', true);
+        $('#categoria').val($(this).data('categoria_id')).trigger('change');
+        $('#rubros').val(id).trigger('change');
+        $('#etapa_construccion').val($(this).data('etapa_id')).trigger('change');
+        $('#unidad_medida').val($(this).data('unidad_medida_id')).trigger('change');
+        $('input:text[name=cantidad]').val($(this).data('cantidad'));
+        $('input:text[name=valor]').val($(this).data('valor_unitario'));
+
+        dataEdit = $(this);
     });
 
     ///** Remover rubros  (Esta acción eliminará la categoría y todos los rubros asociados, ¿Desea continuar?)*/
@@ -360,24 +378,48 @@ $(function () {
 
     //** Filtrar rubros por nombre o categorias */
     $('input:text[name=rubros_search]').on('keyup', function () {
-        var csrf = $('meta[name="csrf-token"]').attr('content');
-        var $value = $(this).val();
-        var proyecto_id = $(this).data('proyecto_id');
+        let filtro = $(this).val().toLowerCase();
 
-        $.ajax({
-            url: base_url + '/filtrar-rubros-presupuesto',
-            headers: { 'X-CSRF-TOKEN': csrf },
-            type: 'GET',
-            data: { 'filtro': $value, 'proyecto': proyecto_id },
-            beforeSend: function () {
-            },
-            success: function (data) {
-                console.log(data);
-                //$('tbody').html(data);
+        // Iterar sobre todas las filas de la tabla
+        $('#table-rubros-presupuesto tbody tr').each(function () {
+            // Ignorar filas de totales
+            if ($(this).hasClass('fila-total')) {
+                return; // No ocultar ni mostrar estas filas
             }
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-            var errors = JSON.parse(jqXHR.responseText);
-            console.log(errors)
+
+            // Obtener el contenido de la fila
+            let contenidoFila = $(this).find('.filtrable').text().toLowerCase();
+            let categoriaId = $(this).data('categoria-id'); // ID de la categoría asociada
+
+            // Si es una fila de categoría
+            if ($(this).hasClass('fila-categoria')) {
+                if (contenidoFila.includes(filtro)) {
+                    $(this).show(); // Mostrar la fila de categoría
+                    $(`tr[data-categoria-id="${categoriaId}"].fila-rubro`).show(); // Mostrar todos los rubros asociados
+                } else {
+                    $(this).hide(); // Ocultar la fila de categoría temporalmente
+                }
+            }
+
+            // Si es una fila de rubro
+            if ($(this).hasClass('fila-rubro')) {
+                if (contenidoFila.includes(filtro)) {
+                    $(this).show(); // Mostrar el rubro si coincide
+                    $(`tr#categoria-${categoriaId}.fila-categoria`).show(); // Mostrar la categoría asociada
+                } else {
+                    $(this).hide(); // Ocultar el rubro si no coincide
+                }
+            }
         });
+    });
+
+    //** Cerrar modal resetear campos y valores */
+    $('#modalRubrosPresupuesto').on('hidden.bs.modal', function (e) {
+        $('#titleModal').text('Agregar Rubro');
+        $('#categoria').attr('disabled', false);
+        $('#rubros').attr('disabled', false);
+        $('#guardar').text('Guardar');
+        dataEdit = '';
+        limpiarFormulario('#form_rubros_presupuesto');
     });
 });
