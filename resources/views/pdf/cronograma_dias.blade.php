@@ -134,14 +134,14 @@
 <body>
     <!-- Marca de agua -->
     <div class="watermark">
-        <img src="data:image/png;base64,{{ logoBase64() }}" />
+        <img src="{{ logoBase64() }}" />
     </div>
     <div class="container">
         <table class="table-header">
             <tbody>
                 <tr>
                     <td style="width: 1px;">
-                        <img src="data:image/png;base64,{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
+                        <img src="{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
                     </td>
                     <td class="text-center">
                         <h2>Cronograma de actividades por días</h2>

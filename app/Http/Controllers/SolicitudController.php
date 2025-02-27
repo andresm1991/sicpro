@@ -67,7 +67,7 @@ class SolicitudController extends Controller
             DB::beginTransaction();
             $user = $request->user;
             $tipo_solicitud = $request->tipo_solicitud;
-            $estado_solicitud = $request->estado_solicitud;
+            $estado_solicitud = $request->estado_solicitud ?? CatalogoDato::getIdCatalogo('estados.solicitud.pendiente');
             $solicitud = CatalogoDato::find($tipo_solicitud);
 
             if (isset($solicitud) && $solicitud->slug != 'tipo.solicitudes.eventualidad') {

@@ -25,7 +25,6 @@ class SolicitudStoreRequest extends FormRequest
         $rules = [
             'user' => 'required',
             'tipo_solicitud' => 'required',
-            'estado_solicitud' => 'required',
             'detalle' => 'required',
         ];
 

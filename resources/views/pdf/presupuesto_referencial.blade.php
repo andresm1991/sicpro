@@ -80,7 +80,7 @@
 <body>
 
     <div class="header">
-        <img src="data:image/png;base64,{{ logoBase64() }}" alt="Logo">
+        <img src="{{ logoBase64() }}" alt="Logo">
         <div class="content" style="text-align: center; width: 100%;  transform: translateX(-25%) translateY(25%) ;">
             <small class="text-center">PRESUPUESTO REFERENCIAL</small><br>
             <small>{{ $proyecto->nombre_proyecto }}</small>

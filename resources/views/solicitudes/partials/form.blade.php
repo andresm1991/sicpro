@@ -17,14 +17,23 @@
         </div>
     </div>
 
-    <div class="col-sm-4 col-12">
-        <div class="form-group">
-            <label class="col-form-label">Estado Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            {{ Form::select('estado_solicitud', $estados_solicitud->prepend('', ''), old('estado_solicitud', $solicitud->estado_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
 
-            {!! $errors->first('estado_solicitud', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
+
+
+    @if (auth()->user()->hasRole('Administrador') ||
+            auth()->user()->hasRole('Gerencial') ||
+            auth()->user()->hasRole('Administrativo'))
+        <div class="col-sm-4 col-12">
+            <div class="form-group">
+                <label class="col-form-label">Estado Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
+                {{ Form::select('estado_solicitud', $estados_solicitud->prepend('', ''), old('estado_solicitud', $solicitud->estado_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
+
+                {!! $errors->first('estado_solicitud', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
+            </div>
         </div>
-    </div>
+    @endif
+
+
 
 </div>
 

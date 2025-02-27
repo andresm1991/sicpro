@@ -274,7 +274,7 @@
 <body>
     <!-- Marca de agua -->
     <div class="watermark">
-        <img src="data:image/png;base64,{{ $logo_base64 }}" />
+        <img src="{{ logoBase64() }}" />
     </div>
 
     <h1 class="page-title">ORDEN DE TRABAJO CONTRATISTA<br> Nro. {{ $info['orden'] }}</h1>
