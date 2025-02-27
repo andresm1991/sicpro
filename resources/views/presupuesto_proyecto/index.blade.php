@@ -35,7 +35,7 @@
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right  p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
                                 <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto->id }}"
-                                    class="form-control form-control-round" placeholder="Buscar rubro....">
+                                    class="form-control form-control-round" placeholder="Buscar por categoría o rubro...">
                             </div>
                         </div>
                     </div>
@@ -61,8 +61,9 @@
                                     @php
                                         $total_categoria = 0;
                                     @endphp
-                                    <tr id="{{ $categoria->id }}" style="background-color: #b6bcdf;">
-                                        <td colspan="6" class="align-middle font-weight-bold">
+                                    <tr id="categoria-{{ $categoria->id }}" data-categoria-id="{{ $categoria->id }}"
+                                        class="fila-categoria" style="background-color: #b6bcdf;">
+                                        <td colspan="6" class="align-middle font-weight-bold filtrable">
                                             {{ $categoria->nombre }}
                                         </td>
                                         <td class="align-middle">
@@ -78,10 +79,11 @@
                                                 return $item->cantidad * $item->valor_unitario;
                                             });
                                         @endphp
-                                        <tr>
+                                        <tr data-categoria-id="{{ $categoria->id }}" class="fila-rubro">
                                             <td class="align-middle font-weight-bold">{{ $index }}</td>
-                                            <td class="align-middle"> {{ $rubro->nombre }}</td>
-                                            <td class="align-middle text-uppercase">{{ $rubro->unidad_medida->descripcion }}
+                                            <td class="align-middle filtrable"> {{ $rubro->nombre }}</td>
+                                            <td class="align-middle text-uppercase">
+                                                {{ $rubro->unidad_medida->descripcion }}
                                             </td>
                                             @foreach ($rubro->presupuestoProyectos as $presupuestoProyecto)
                                                 <td class="align-middle">{{ $presupuestoProyecto->cantidad }}</td>
@@ -90,21 +92,33 @@
                                                     $
                                                     {{ number_format($presupuestoProyecto->cantidad * $presupuestoProyecto->valor_unitario, 2) }}
                                                 </td>
-                                            @endforeach
 
-                                            <td class="align-middle">
-                                                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
-                                                    data-id="{{ $rubro->id }}">
-                                                    <i class="fa-solid fa-minus"></i>
-                                                </a>
-                                            </td>
+
+                                                <td class="align-middle table-actions">
+                                                    <a href="javascript:void(0);"
+                                                        class="btn btn-sm btn-secondary editar-rubro" data-toggle="modal"
+                                                        data-backdrop="static" data-keyboard="false"
+                                                        data-target="#modalRubrosPresupuesto" id="{{ $rubro->id }}"
+                                                        data-categoria_id="{{ $categoria->id }}"
+                                                        data-unidad_medida_id = "{{ $rubro->unidad_medida_id }}"
+                                                        data-etapa_id="{{ $rubro->etapa_id }}"
+                                                        data-cantidad = "{{ $presupuestoProyecto->cantidad }}"
+                                                        data-valor_unitario = "{{ $presupuestoProyecto->valor_unitario }}">
+                                                        <i class="fa-regular fa-pen-to-square"></i>
+                                                    </a>
+                                                    <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
+                                                        data-id="{{ $rubro->id }}">
+                                                        <i class="fa-regular fa-xmark"></i>
+                                                    </a>
+                                                </td>
+                                            @endforeach
                                         </tr>
                                         @php
                                             $index += 1;
                                         @endphp
                                     @empty
                                     @endforelse
-                                    <tr style="background-color: #d7ecdc;">
+                                    <tr style="background-color: #d7ecdc;" class="fila-total">
                                         <td colspan="5" class="font-weight-bold">
                                             Total General
                                         </td>
@@ -181,7 +195,7 @@
 
                                 <tr>
                                     <td colspan="5" class="font-weight-bold">
-                                        <h4>ADQUISICIONES</h4>
+                                        <h4>gastos</h4>
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
@@ -209,8 +223,8 @@
                         </li>
                         <li class="list-group-item p-1 border-0">
                             <small>El valor del <strong class="text-uppercase">saldo</strong> es el calculo entre <strong
-                                    class="text-uppercase">costos directos</strong> menos el total de las
-                                <b class="text-uppercase">ADQUISICIONES</b> </small>
+                                    class="text-uppercase">costos directos</strong> menos el total de los
+                                <b class="text-uppercase">gastos</b> </small>
                         </li>
                     </ul>
                 </div>

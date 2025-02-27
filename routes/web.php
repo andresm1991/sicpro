@@ -104,6 +104,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::group(['prefix' => '/presupuesto', 'as' => 'presupuesto.'], function () {
             Route::get('/{proyecto}/home', [PresupuestoController::class, 'index'])->name('index');
             Route::post('{proyecto}/store', [PresupuestoController::class, 'store']);
+            Route::put('{proyecto}/actualizar-rubro-presupuesto/{rubroPresupuesto}', [PresupuestoController::class, 'putAjaxRubroPresupuesto']);
         });
 
         //** RUTAS CRONOGRAMA VALORADO */

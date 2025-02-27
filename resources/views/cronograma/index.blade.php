@@ -88,14 +88,14 @@
                             <tfoot>
                                 <table class="table table-bordered ">
                                     <tr>
-                                        <th>Totales</th>
+                                        <th>presupuesto</th>
                                         <th class="text-center">etapa ESTRUCTURAl</th>
                                         <th class="text-center">Etapa OBRA GRIS</th>
                                         <th class="text-center">ETAPA DE ACABADOS</th>
                                     </tr>
 
                                     <tr>
-                                        <th>presupuesto</th>
+                                        <th>contemplado</th>
                                         <td class="text-center">
                                             $ {{ number_format($total_estructural, 4) }}
                                         </td>
@@ -108,7 +108,7 @@
                                     </tr>
                                     {{-- totales adquisisicones, mano de obra, contratista --}}
                                     <tr>
-                                        <th>adquisiciones</th>
+                                        <th>ejecutado</th>
                                         <td class="aling-middle text-center">
                                             $ {{ number_format($totales_estructural['totalAdquisiciones'], 4) }}
                                         </td>

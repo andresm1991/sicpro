@@ -114,6 +114,29 @@ class PresupuestoController extends Controller
         }
     }
 
+    public function putAjaxRubroPresupuesto(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                $presupuestoProyecto = PresupuestoProyecto::find($request->rubro_presupuesto_id);
+                $presupuestoProyecto->cantidad = $request->cantidad;
+                $presupuestoProyecto->valor_unitario = $request->valor;
+                $presupuestoProyecto->etapa_id = $request->etapa_construccion;
+                $presupuestoProyecto->save();
+
+                $rubro = RubroPresupuesto::find($presupuestoProyecto->rubro_presupuesto_id);
+                $rubro->valor_unitario = $request->valor;
+                $rubro->unidad_medida_id = $request->unidad_medida;
+                $rubro->etapa_id = $request->etapa_construccion;
+                $rubro->save();
+
+                return response()->json(['success' => true, 'mensaje' => 'Rubro actualizado correctamente']);
+            } catch (\Throwable $th) {
+                return response()->json(['success' => false, 'mensaje' => 'Error al actualizar el rubro']);
+            }
+        }
+    }
+
     public function destroyAjaxRubroPresupuesto(Request $request)
     {
         if ($request->ajax()) {
@@ -174,7 +197,7 @@ class PresupuestoController extends Controller
                     if (!CategoriaPresupuesto::where('nombre', 'LIKE', '%' . $filtro . '%')->exists()) {
                         $query->where('nombre', 'LIKE', '%' . $filtro . '%');
                     }
-                }])
+                }])->with('rubrosPresupuesto.unidad_medida')
                 ->get();
 
             return response()->json(['categorias' => $categorias]);

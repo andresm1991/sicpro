@@ -18,6 +18,7 @@
             </div>
             <div class="modal-body">
                 <form autocomplete = "off" enctype = "multipart/form-data" id = "form_rubros_presupuesto">
+                    {{ Form::hidden('rubro_presupuesto_id') }}
                     <div class="row">
                         <div class="col-md-6 col-12">
                             <div class="form-group">
@@ -43,8 +44,8 @@
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
-                                <select name="etapa_construccion" class="form-control select2-basic-single",
-                                    data-placeholder ='seleccione opción'>
+                                <select name="etapa_construccion" id="etapa_construccion"
+                                    class="form-control select2-basic-single", data-placeholder ='seleccione opción'>
                                     <option value=""></option>
                                     @foreach ($etapas_construccion as $id => $nombre)
                                         <option value="{{ $id }}">{{ $nombre }}</option>
@@ -55,7 +56,7 @@
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Unidad Media', ['class' => 'col-form-label']) }}
-                                <select name="unidad_medida" class="form-control select2-tag",
+                                <select name="unidad_medida" id="unidad_medida" class="form-control select2-tag",
                                     data-placeholder ='seleccione opción'>
                                     <option value=""></option>
                                     @foreach ($unidades_medidas as $id => $nombre)
