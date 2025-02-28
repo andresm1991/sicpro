@@ -321,6 +321,66 @@ $(function () {
 
 
     /**
+     * Solicitar editicon de adqusicion
+     */
+
+    $('.solicitar-edicion-pedido').on('click', function () {
+        var csrf = $('meta[name="csrf-token"]').attr('content');
+        var $this = $(this);
+        var id = $(this).attr('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Se notificará al personal autorizado para que habilite esta adquisición.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'solicitud-edicion-adquisicion',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'POST',
+                    data: { 'solicitud_id': id },
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "7" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+    /**
      * Funciones
      */
     function clearInputs() {
