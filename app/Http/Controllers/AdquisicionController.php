@@ -25,6 +25,7 @@ use App\Http\Requests\AdquisicionStoreRequest;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
 use App\Http\Requests\AdquisicionAdministrativoRequest;
+use App\Models\User;
 
 class AdquisicionController extends Controller
 {

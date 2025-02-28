@@ -10,7 +10,7 @@
                 <div class="max-auto">
                     <a href="{{ route('solicitud.permisos.index') }}" class="nodo">
                         <img src="{{ asset('images/svg/evaluacion.svg') }}" alt="">
-                        <span>Solicitudes</span>
+                        <span>Aucencias & Eventualidades</span>
                     </a>
                 </div>
 
@@ -21,6 +21,16 @@
                     </a>
                 </div>
 
+                @if (auth()->user()->hasRole('Administrador') ||
+                        auth()->user()->hasRole('Gerencial') ||
+                        auth()->user()->hasRole('Administrativo'))
+                    <div class="max-auto">
+                        <a href="{{ route('solicitud.autorizacion.index') }}" class="nodo">
+                            <img src="{{ asset('images/svg/administrador.svg') }}" alt="">
+                            <span>Peticiones de Edición</span>
+                        </a>
+                    </div>
+                @endif
 
             </div>
         </div>

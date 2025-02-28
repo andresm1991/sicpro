@@ -40,11 +40,13 @@ class PushNotificationService
                 'url' => $url,
             ]);
 
+            $users = User::whereHas('roles', function ($q) {
+                $q->whereIn('name', ['Administrador', 'Gerencial', 'Administrativo']);
+            })->get();
+
             $notifications = PushNotification::whereHas('user', function ($query) {
                 $query->whereHas('roles', function ($roleQuery) {
-                    $roleQuery->where('name', 'Administrador')
-                        ->orWhere('name', 'Gerencial')
-                        ->orWhere('name', 'Administrativo');
+                    $roleQuery->whereIn('name', ['Administrador', 'Gerencial', 'Administrativo']);
                 });
             })->get();
 

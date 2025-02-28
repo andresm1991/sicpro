@@ -256,6 +256,18 @@ Route::group(['middleware' => ['auth']], function () {
             Route::delete('/eliminar-solicitud/{solicitud}', [RecuperacionTiempoController::class, 'destroy']);
             Route::get('/buscar', [RecuperacionTiempoController::class, 'buscar']);
         });
+
+        //** RUTAS AUTORIZACIONES DE SOLICITUD EDICIONES ADQUISICIONES, ETC */
+        Route::group(['prefix' => 'autorizaciones', 'as' => 'autorizacion.'], function () {
+            Route::get('/', [RecuperacionTiempoController::class, 'index'])->name('index');
+            Route::get('/nueva-solicitud', [RecuperacionTiempoController::class, 'create'])->name('create');
+            Route::post('/guardar-solicitud', [RecuperacionTiempoController::class, 'store'])->name('store');
+            Route::get('/{solicitud}/detalle', [RecuperacionTiempoController::class, 'show'])->name('show');
+            Route::get('/{solicitud}/editar', [RecuperacionTiempoController::class, 'edit'])->name('edit');
+            Route::put('/{solicitud}', [RecuperacionTiempoController::class, 'update'])->name('update');
+            Route::delete('/eliminar-solicitud/{solicitud}', [RecuperacionTiempoController::class, 'destroy']);
+            Route::get('/buscar', [RecuperacionTiempoController::class, 'buscar']);
+        });
     });
 
     //** RUTAS AGENDA */
