@@ -6,6 +6,7 @@ use App\Models\Articulo;
 use App\Models\CatalogoDato;
 use App\Models\DiccionarioPalabra;
 use App\Models\OrdenRecepcion;
+use App\Models\User;
 use Carbon\CarbonPeriod;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
@@ -465,5 +466,13 @@ if (!function_exists('palabras')) {
     function limpiarValor($valor)
     {
         return floatval(preg_replace('/[^0-9.-]/', '', $valor)); // Elimina "$", ",", etc.
+    }
+
+    function usuariosPluck()
+    {
+        $usuarios = User::where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
+        // Add an empty option at the beginning
+        $usuarios->prepend('', '');
+        return $usuarios;
     }
 }

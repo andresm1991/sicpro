@@ -16,7 +16,7 @@ class Tarea extends Model
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
-    public function usuarios()
+    public function usuario_tareas()
     {
         return $this->belongsToMany(User::class, 'usuario_tareas', 'tarea_id', 'usuario_id');
     }

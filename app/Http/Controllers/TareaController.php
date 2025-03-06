@@ -25,15 +25,15 @@ class TareaController extends Controller
 
         $todoTasks = Tarea::whereHas('estado', function ($query) {
             $query->where('slug', 'estados.tarea.porhacer');
-        })->with('usuarios', 'comentarios')->get();
+        })->with('usuario_tareas', 'comentarios')->get();
 
         $inProgressTasks = Tarea::whereHas('estado', function ($query) {
             $query->where('slug', 'estados.tarea.encurso');
-        })->with('usuarios', 'comentarios')->get();
+        })->with('usuario_tareas', 'comentarios')->get();
 
         $completedTasks = Tarea::whereHas('estado', function ($query) {
             $query->where('slug', 'estados.tarea.finalizado');
-        })->with('usuarios', 'comentarios')->get();
+        })->with('usuario_tareas', 'comentarios')->get();
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
@@ -45,6 +45,7 @@ class TareaController extends Controller
      */
     public function store(Request $request)
     {
+        return $request->all();
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();

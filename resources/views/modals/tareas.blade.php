@@ -21,12 +21,17 @@
 
                         <div class=" col-12 form-group">
                             <label class="col-form-label">Título</label>
-                            {{ Form::text('titulo', '', ['class' => 'form-control', 'placeholder' => 'Iingrese el título']) }}
+                            {{ Form::text('titulo', '', ['class' => 'form-control', 'placeholder' => 'Ingrese el título']) }}
                         </div>
 
                         <div class="col-12 form-group">
                             <label class="col-form-label">Desacripción</label>
                             {{ Form::textarea('descripcion', '', ['class' => 'form-control', 'rows' => '5', 'placeholder' => 'Ingrese el Detalle']) }}
+                        </div>
+
+                        <div class="col-12 form-group">
+                            <label class="col-form-label">Colaboradores</label>
+                            {{ Form::select('list_usuarios[]', usuariosPluck(), 0, ['class' => 'select2-basic-single form-control', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE OPCIONES']) }}
                         </div>
                     </div>
                 </form>

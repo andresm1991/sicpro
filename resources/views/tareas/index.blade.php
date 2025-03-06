@@ -133,6 +133,7 @@
             </div>
         </div>
     </section>
+
     @include('modals.tareas')
     @include('modals.comentarios_tarea', ['estados' => $estados])
 @endsection
