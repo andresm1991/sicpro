@@ -234,6 +234,19 @@ $(function () {
 
     $("select").select2();
 
+    $('.select2-basic-multiple').each(function () {
+        let $select = $(this);
+
+        let config = {
+            width: '100%',
+            placeholder: $select.data('placeholder'), // Get the placeholder from data-placeholder
+            allowClear: false,
+        };
+
+        // Guardar la configuración original en `data()`
+        $select.data('select2-config', config).select2(config);
+    });
+
     $('.select2-basic-single').each(function () {
         let $select = $(this);
 
@@ -250,7 +263,8 @@ $(function () {
     });
 
     $('.select2-multiple').select2({
-        minimumResultsForSearch: Infinity,
+        width: '100%',
+        //minimumResultsForSearch: Infinity,
         placeholder: function () {
             $(this).data('placeholder');
         },
