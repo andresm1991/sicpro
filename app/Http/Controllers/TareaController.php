@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\MessagesConstant;
-use App\Models\CatalogoDato;
-use App\Models\ComentarioTarea;
 use App\Models\Tarea;
-use App\Services\PushNotificationService;
+use App\Models\CatalogoDato;
+use App\Models\UsuarioTarea;
 use Illuminate\Http\Request;
+use App\Models\ComentarioTarea;
 use Illuminate\Support\Facades\DB;
+use App\Constants\MessagesConstant;
+use Illuminate\Support\Facades\Auth;
+use App\Services\PushNotificationService;
 
 class TareaController extends Controller
 {
@@ -23,17 +25,10 @@ class TareaController extends Controller
             ['name' => 'Agenda', 'url' => '']
         ];
 
-        $todoTasks = Tarea::whereHas('estado', function ($query) {
-            $query->where('slug', 'estados.tarea.porhacer');
-        })->with('usuario_tareas', 'comentarios')->get();
 
-        $inProgressTasks = Tarea::whereHas('estado', function ($query) {
-            $query->where('slug', 'estados.tarea.encurso');
-        })->with('usuario_tareas', 'comentarios')->get();
-
-        $completedTasks = Tarea::whereHas('estado', function ($query) {
-            $query->where('slug', 'estados.tarea.finalizado');
-        })->with('usuario_tareas', 'comentarios')->get();
+        $todoTasks = $this->getTasksByState('estados.tarea.porhacer');
+        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso');
+        $completedTasks = $this->getTasksByState('estados.tarea.finalizado');
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
@@ -45,17 +40,24 @@ class TareaController extends Controller
      */
     public function store(Request $request)
     {
-        return $request->all();
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();
-                Tarea::create([
+                $usuarios = $request->input('list_usuarios', []);
+
+                $tarea = Tarea::create([
                     'usuario_id' => auth()->user()->id,
                     'titulo' => $request->titulo,
                     'descripcion' => $request->descripcion,
                     'estado_id' => CatalogoDato::getIdCatalogo('estados.tarea.porhacer'),
                 ]);
 
+                foreach ($usuarios as $usuario) {
+                    UsuarioTarea::create([
+                        'usuario_id' => $usuario,
+                        'tarea_id' => $tarea->id,
+                    ]);
+                }
                 DB::commit();
 
                 PushNotificationService::sendNotification(auth()->user(), 'Tarea creada', "El usuario " . auth()->user()->nombre . " creo una nueva tarea en agenda", route('tarea.index'));
@@ -63,7 +65,7 @@ class TareaController extends Controller
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {
                 DB::rollBack();
-                return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
+                return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
             }
         }
     }
@@ -73,14 +75,34 @@ class TareaController extends Controller
      */
     public function storeComentario(Request $request)
     {
+
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();
-                ComentarioTarea::create([
-                    'tarea_id' => $request->tarea_id,
-                    'usuario_id' => auth()->user()->id,
-                    'comentario' => $request->comentario,
-                ]);
+                if ($request->comentario != null) {
+                    ComentarioTarea::create([
+                        'tarea_id' => $request->tarea_id,
+                        'usuario_id' => auth()->user()->id,
+                        'comentario' => $request->comentario,
+                    ]);
+                }
+
+                $usuarioIds = $request->input('list_usuarios', []);
+                $usuarios_tarea_actuales = UsuarioTarea::where('tarea_id', $request->tarea_id)->pluck('usuario_id')->toArray();
+
+                $usuarios_a_eliminar = array_diff($usuarios_tarea_actuales, $usuarioIds);
+                $usuarios_a_agregar = array_diff($usuarioIds, $usuarios_tarea_actuales);
+
+                foreach ($usuarios_a_eliminar as $usuario) {
+                    UsuarioTarea::where('tarea_id', $request->tarea_id)->where('usuario_id', $usuario)->delete();
+                }
+
+                foreach ($usuarios_a_agregar as $usuario) {
+                    UsuarioTarea::create([
+                        'usuario_id' => $usuario,
+                        'tarea_id' => $request->tarea_id,
+                    ]);
+                }
 
                 DB::commit();
 
@@ -89,7 +111,7 @@ class TareaController extends Controller
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {
                 DB::rollBack();
-                return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR]);
+                return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
             }
         }
     }
@@ -102,16 +124,18 @@ class TareaController extends Controller
     {
         if ($request->ajax()) {
             $comentarios = ComentarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
+            $colaboradores = UsuarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
+
             foreach ($comentarios as $comentario) {
                 $comentario->created_at_formateado = $comentario->created_at_formateado;
                 $comentario->updated_at_formateado = $comentario->updated_at_formateado;
             }
-            return response()->json(['success' => true, 'comentarios' => $comentarios]);
+            return response()->json(['success' => true, 'comentarios' => $comentarios, 'colaboradores' => $colaboradores]);
         }
     }
 
     /**
-     * PUT - Actualizar comentarios de tarea
+     * PUT - Actualizar comentario de tarea
      */
 
     public function updateComentario(Request $request)
@@ -190,35 +214,24 @@ class TareaController extends Controller
         }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    private function getTasksByState($stateSlug)
     {
-        //
-    }
+        $hasRole = auth()->user()->hasRole('Administrador');
+        $userId = Auth::user()->id;
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $tasks = Tarea::whereHas('estado', function ($query) use ($stateSlug) {
+            $query->where('slug', $stateSlug);
+        });
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        if (!$hasRole) {
+            $tasks = $tasks->where(function ($query) use ($userId) {
+                $query->where('usuario_id', $userId)
+                    ->orWhereHas('usuario_tareas', function ($query) use ($userId) {
+                        $query->where('usuario_id', $userId);
+                    });
+            });
+        }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return $tasks->with('usuario_tareas', 'comentarios')->get();
     }
 }

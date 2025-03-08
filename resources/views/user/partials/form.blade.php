@@ -60,11 +60,11 @@
     </div>
 
     <div class="form-group col-md-6">
-        {{ Form::select('perfil', $roles, old('perfil', $user->roles), ['class' => 'selectpicker show-tick show-menu-arrow form-control  border ', 'data-style' => '', 'title' => 'Seleccione perfil de usuario']) }}
+        {{ Form::select('perfil', $roles, old('perfil', $user->roles), ['class' => 'show-tick show-menu-arrow form-control  border ', 'data-style' => '', 'title' => 'Seleccione perfil de usuario']) }}
         {!! $errors->first('perfil', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
     </div>
     <div class="form-group col-md-4">
-        {{ Form::select('activo', ['1' => 'Activo', '0' => 'Inactivo'], old('activo', $user->activo), ['class' => 'selectpicker show-tick show-menu-arrow form-control border ', 'data-style' => '', 'title' => 'Seleccione estado']) }}
+        {{ Form::select('activo', ['1' => 'Activo', '0' => 'Inactivo'], old('activo', $user->activo), ['class' => 'show-tick show-menu-arrow form-control border ', 'data-style' => '', 'title' => 'Seleccione estado']) }}
         {!! $errors->first('activo', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
     </div>
 </div>

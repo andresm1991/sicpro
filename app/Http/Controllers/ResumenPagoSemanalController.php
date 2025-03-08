@@ -20,9 +20,15 @@ class ResumenPagoSemanalController extends Controller
             ['name' => 'resumen pagos semanales', 'url' => '']
         ];
 
-        $resumen_pagos = ResumenPagoSemanal::paginate(15);
+        $resumen_pagos_pendientes = ResumenPagoSemanal::whereHas('estado', function ($query) {
+            $query->where('slug', 'estados.resumen.pagos.semanales.pendiente');
+        })->paginate(15);
 
-        return view('resumen_pagos_semanales.index', compact('title_page', 'breadcrumbs', 'resumen_pagos'));
+        $resumen_pagos_completos = ResumenPagoSemanal::whereHas('estado', function ($query) {
+            $query->where('slug', 'estados.resumen.pagos.semanales.aprobado');
+        })->paginate(15);
+
+        return view('resumen_pagos_semanales.index', compact('title_page', 'breadcrumbs', 'resumen_pagos_pendientes', 'resumen_pagos_completos'));
     }
 
     public function store(Request $request)
@@ -37,15 +43,18 @@ class ResumenPagoSemanalController extends Controller
             // Calcular el total
             $total = array_sum($valoresLimpios);
 
+            $estado = $request->completado ? CatalogoDato::getIdCatalogo('estados.resumen.pagos.semanales.aprobado') :  CatalogoDato::getIdCatalogo('estados.resumen.pagos.semanales.pendiente');
+
             if ($resumen_id != null) {
                 $resumen = ResumenPagoSemanal::find($resumen_id);
                 $resumen->total = $total;
+                $resumen->estado_id = $estado;
                 $resumen->save();
             } else {
                 $resumen = ResumenPagoSemanal::create([
                     'fecha' => date('Y-m-d'),
                     'total' => $total,
-                    'estado_id' => CatalogoDato::getIdCatalogo('estados.resumen.pagos.semanales.pendiente'),
+                    'estado_id' => $estado,
                 ]);
             }
             $detale_actuales = $resumen->detalle_resumen_pago_semanal()->pluck('id')->toArray();
@@ -92,7 +101,7 @@ class ResumenPagoSemanalController extends Controller
 
     public function edit(Request $request)
     {
-        $resumen_pago = ResumenPagoSemanal::with('detalle_resumen_pago_semanal')->find($request->id);
+        $resumen_pago = ResumenPagoSemanal::with('detalle_resumen_pago_semanal', 'estado')->find($request->id);
         // $detalle = $resumen_pago->detalle_resumen_pago_semanal;
         return response()->json([
             'success' => true,
@@ -126,31 +135,23 @@ class ResumenPagoSemanalController extends Controller
     {
         if ($request->ajax()) {
             $buscar = $request->text;
+            $tipo = $request->tipo;
+
             $output = "";
-            $resumen_pagos = ResumenPagoSemanal::where('fecha', 'LIKE', '%' . $buscar . '%')
-                ->orWhere('total', 'LIKE', '%' . $buscar . '%')
-                //->orWhereHas('estado', function ($query) use ($buscar) {
-                //  $query->where('descripcion', 'LIKE', '%' . $buscar . '%');
-                //})
-                ->get();
+            $resumen_pagos = ResumenPagoSemanal::with('estado')->whereHas('estado', function ($q) use ($tipo) {
+                $estado = $tipo == 'pendientes' ? 'Pendiente' : 'Aprobado';
+                $q->where('descripcion', $estado);
+            })->where(function ($query) use ($buscar) {
+                $query->where('fecha', 'LIKE', '%' . $buscar . '%')
+                    ->orWhere('total', 'LIKE', '%' . $buscar . '%');
+            })->get();
 
             if ($resumen_pagos) {
                 foreach ($resumen_pagos as $resumen) {
-                    if ($resumen->estado->slug == 'estados.resumen.pagos.semanales.pendiente') {
-                        $estado = '<span class="badge badge-warning">' . $resumen->estado->descripcion . '</span>';
-                    } elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.aprobado') {
-                        $estado = '<span class="badge badge-success">' . $resumen->estado->descripcion . '</span>';
-                    } elseif ($resumen->estado->slug == 'estados.resumen.pagos.semanales.cancelado') {
-                        $estado = '<span class="badge badge-danger">' . $resumen->estado->descripcion . '</span>';
-                    } else {
-                        $estado = 'Sin definir';
-                    }
-
                     $output .= '<tr id="' . $resumen->id . '">' .
                         '<th class="align-middle">' . $resumen->id . '</th>' .
                         '<td class="align-middle">' . dateFormat('Y-m-d', 'd-m-Y', $resumen->fecha) . '</td>' .
                         '<td class="align-middle">$ ' . number_format($resumen->total, 4) . '</td>' .
-                        '<td class="align-middle"><span class="badge badge-success">Generado</span></td>' .
                         '<td class="align-middle table-actions">' .
                         '<a href="javascript:void(0);" class="btn btn-dark btn-sm editar-resumen mr-1"
                                             data-toggle="modal" data-backdrop="static" data-keyboard="false"

@@ -1,15 +1,16 @@
 <?php
 
-use App\Models\Adquisicion;
 use Carbon\Carbon;
-use App\Models\Articulo;
-use App\Models\CatalogoDato;
-use App\Models\DiccionarioPalabra;
-use App\Models\OrdenRecepcion;
 use App\Models\User;
+use App\Models\Articulo;
 use Carbon\CarbonPeriod;
+use App\Models\Adquisicion;
+use App\Models\CatalogoDato;
+use App\Models\OrdenRecepcion;
+use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
+use App\Models\DetalleResumenPagoSemanal;
 
 if (!function_exists('encrypted_route')) {
     function encrypted_route($name, $parameters = [], $absolute = true)
@@ -470,9 +471,23 @@ if (!function_exists('palabras')) {
 
     function usuariosPluck()
     {
-        $usuarios = User::where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
+        $has_role = auth()->user()->hasRole('Administrador');
+        if ($has_role) {
+            $usuarios = User::where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
+        } else {
+            $usuarios = User::where('id', '!=', auth()->user()->id)->whereHas('roles', function ($query) {
+                $query->where('name', '!=', 'Administrador');
+            })->pluck('nombre', 'id');
+        }
         // Add an empty option at the beginning
         $usuarios->prepend('', '');
         return $usuarios;
+    }
+
+    function pluckDescripcionesResumenPagosSemanales()
+    {
+        $detalle = DetalleResumenPagoSemanal::groupBy('descripcion')->pluck('descripcion', 'descripcion');
+        $detalle->prepend('', '');
+        return $detalle;
     }
 }

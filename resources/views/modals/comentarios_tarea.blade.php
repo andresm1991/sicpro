@@ -12,7 +12,7 @@
             <div class="modal-header">
                 <div class="container">
                     <div class="row">
-                        <div class="col-sm-8">
+                        <div class="col-sm-8 p-0">
                             <h5 class="modal-title font-weight-bold text-dark" id="titleComentarioModal"></h5>
                         </div>
 
@@ -46,8 +46,13 @@
                         </div>
 
                         <div class="col-12 form-group">
+                            {{ Form::label('', 'Colaboradores', ['class' => 'col-form-label']) }}
+                            {{ Form::select('list_usuarios[]', usuariosPluck(), 0, ['class' => 'select2-basic-single form-control', 'id' => 'list_usuarios', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE USUARIOS']) }}
+                        </div>
+
+                        <div class="col-12 form-group">
                             {{ Form::label('', 'Comentarios', ['class' => 'col-form-label']) }}
-                            {{ Form::textarea('comentario', '', ['class' => 'form-control', 'placeholder' => 'Añadir un comentario...', 'rows' => '3']) }}
+                            {{ Form::textarea('comentario', '', ['class' => 'form-control', 'id' => 'comentario', 'placeholder' => 'Añadir un comentario...', 'rows' => '3']) }}
                         </div>
                     </div>
 

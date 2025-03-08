@@ -25,11 +25,13 @@
                             <label id="fecha_registro">{{ date('Y-m-d') }}</label>
                         </div>
 
+
+
                         <div class="col-12">
                             <div class="form-row align-items-center">
                                 <div class="form-group col-md-6">
                                     <label class="col-form-label">Descripción</label>
-                                    {{ Form::text('descripcion', '', ['class' => 'form-control', 'placeholder' => 'Ingrese la descripción']) }}
+                                    {{ Form::select('descripcion', pluckDescripcionesResumenPagosSemanales(), '', ['class' => 'select2-tag', 'data-placeholder' => 'Seleccione o ingrese descripción']) }}
                                 </div>
 
                                 <div class="form-group col-md-2 col-12">
@@ -37,8 +39,18 @@
                                     {{ Form::text('valor', '', ['class' => 'form-control currency_separador_miles']) }}
                                 </div>
 
-                                <div class="col-md-4 col-12 d-flex align-items-center mt-4">
+                                <div class="col-md-2 col-12 d-flex align-items-center mt-4">
                                     <button type="button" class="btn btn-dark" id="agregar-item">Agregar</button>
+                                </div>
+                                <div class="col-12">
+                                    <div class="select_wrapper">
+                                        <label class="rounded  text-white">
+                                            <input type="checkbox" name="completado" class="d-none" value="true">
+                                            <span class="text-center d-block py-3">
+                                                Completado
+                                            </span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
