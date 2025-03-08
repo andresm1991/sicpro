@@ -5,7 +5,7 @@ $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
     $("#agregar-item").on("click", function () {
-        var item = $('input[name=descripcion]').val();
+        var item = $('select[name=descripcion]').val();
         var valor = $('input[name=valor]').val();
 
         if (item == "" || valor == "") {
@@ -184,6 +184,10 @@ $(function () {
             },
             success: function (response) {
                 $("#fecha_registro").text(response.resumen_pago.fecha);
+                if (response.resumen_pago.estado.descripcion == 'Aprobado') {
+                    $('input:checkbox[name=completado]').prop('checked', true);
+                }
+
                 $.each(response.resumen_pago.detalle_resumen_pago_semanal, function (index, item) {
 
                     // Contar el número de filas actuales para generar el índice
@@ -225,11 +229,40 @@ $(function () {
         });
     });
 
+    $('#pagoSemanalModal').on('show.bs.modal', function (e) {
+        $(this).find('.select2-tag').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+    });
+
+
     $('#pagoSemanalModal').on('hidden.bs.modal', function (e) {
         $('input:hidden[name=resumen_id]').val('');
         // Limpiar los campos de entrada
         $('input[name=descripcion]').val("");
         $('input[name=valor]').val("");
+        $('input:checkbox[name=completado]').prop('checked', false);
 
         // Limpiar la tabla de items
         $(".elementos-agregados").remove();
@@ -244,15 +277,22 @@ $(function () {
 
     $('input:text[name=resumen_pagos_search]').on('keyup', function () {
         var $value = $(this).val();
+        var tipo = $(this).attr('id');
+
         $.ajax({
             url: 'resumen-pagos-semanales/buscar-resumen-pagos',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
-            data: { 'text': $value },
+            data: { 'text': $value, 'tipo': tipo },
             beforeSend: function () {
             },
             success: function (data) {
-                $('#resumen_pagos_table tbody').html(data);
+                if (tipo == 'pendientes') {
+                    $('#resumen_pagos_pendientes_table tbody').html(data);
+                } else {
+                    $('#resumen_pagos_completos_table tbody').html(data);
+                }
+
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
             var errors = JSON.parse(jqXHR.responseText);

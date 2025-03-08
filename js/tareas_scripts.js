@@ -18,7 +18,6 @@ $(function () {
                 $('#tareasModal #modal-overlay').show();
             },
             success: function (response) {
-
                 Swal.fire({
                     icon: response.success ? "success" : "error",
                     text: response.message,
@@ -71,7 +70,6 @@ $(function () {
                 $('#comentarioTareaModal #modal-overlay').show();
             },
             success: function (response) {
-
                 Swal.fire({
                     icon: response.success ? "success" : "error",
                     text: response.message,
@@ -79,6 +77,7 @@ $(function () {
                 }).then((result) => {
                     if (response.success) {
                         getComentariosTarea();
+                        $("#comentario").val('');
                     }
                 });
 
@@ -418,6 +417,10 @@ $(function () {
                                         </div>
                                     </div>`);
                 });
+                // Recopilar los IDs de los colaboradores
+                let colaboradoresIds = response.colaboradores.map(colaborador => colaborador.usuario.id);
+                // Asignar el array de IDs al select múltiple
+                $("#list_usuarios").val(colaboradoresIds).trigger('change');
 
                 $('[data-toggle="tooltip"]').tooltip();
                 $('[data-toggle="popover"]').popover({ html: true });
