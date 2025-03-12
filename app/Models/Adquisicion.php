@@ -20,6 +20,7 @@ class Adquisicion extends Model
         'estado',
         'tipo_adquisicion',
         'factura',
+        'archivo',
     ];
 
     public function proyecto()

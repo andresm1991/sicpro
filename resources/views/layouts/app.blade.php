@@ -63,6 +63,7 @@
 <!-- Bootstrap 4 -->
 <script src="{{ asset('plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ asset('plugins/moment/moment.min.js') }}"></script>
+<script src="{{ asset('plugins/bs-custom-file-input-master/bs-custom-file-input.min.js') }}"></script>
 <!-- Bootstrap-Select -->
 <script src="{{ asset('plugins/bootstrap-select/js/bootstrap-select.min.js') }}"></script>
 <!-- Select2 -->

@@ -52,7 +52,20 @@
 
                     @include('adquisiciones.partials.form')
 
-
+                    @if (isset($orden_pedido->orden_recepcion->completado) && $orden_pedido->orden_recepcion->completado)
+                        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
+                            role="alert">
+                            <i class="fa-regular fa-triangle-exclamation fa-3x"></i>
+                            <small class="mx-4">La orden de recepción fue completada. Por motivos de seguridad, si desea
+                                actualizar la información, por favor solicite al administrador que habilite esta orden. Para
+                                hacerlo, haga clic en el siguiente enlace: <a href="javascript:void(0);"
+                                    class="text-dark font-weight-bold -solicitar-edicion-pedido"
+                                    id={{ $orden_pedido->orden_recepcion->id }}>
+                                    Solicitar
+                                    edición de la orden.</a>
+                            </small>
+                        </div>
+                    @endif
                 </div>
             </div>
             {!! Form::close() !!}

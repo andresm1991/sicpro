@@ -27,23 +27,51 @@
             {!! $errors->first('proveedor', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
         </div>
 
-        <div class="form-group">
-            {{ Form::label('', 'Forma de Pago', ['class' => 'col-form-label']) }}
-            <div class="select_wrapper">
-                @forelse ($forma_pagos as $key => $value)
-                    <label class="rounded-0 text-white">
-                        <input type="radio" name="forma_pago" class="d-none" value="{{ $key }}"
-                            {{ old('forma_pago') == $key || (isset($orden_pedido->orden_recepcion->forma_pago->id) && $orden_pedido->orden_recepcion->forma_pago->id == $key) ? 'checked' : '' }}
-                            {{ isset($orden_pedido->orden_recepcion) && !$orden_pedido->orden_recepcion->editar ? 'disabled' : '' }}>
-                        <span class="text-center d-block py-3">{{ $value }}</span>
-                    </label>
-                @empty
-                    <small class="help-block text-danger error_mensajes">No existen formas de pagos
-                        registrados.</small>
-                @endforelse
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    {{ Form::label('', 'Archivo', ['class' => 'col-form-label']) }}
+
+                    <div class="form-group form-search form-icon col-md-10 col-12  p-0">
+                        <i class="fa-solid fa-upload fa-lg form-control-icon"></i>
+                        <input type="file" name="archivo" class="d-none" id="archivo">
+                        <label for="archivo" id="archivo-label" class="form-control text-truncate">Seleccionar
+                            Archivo...</label>
+
+                        @isset($orden_pedido->archivo)
+                            <a href="{{ doTemporaryUrl($orden_pedido->archivo) }}" target="__blank"
+                                class="badge badge-secondary">
+                                {{ substr($orden_pedido->archivo, strrpos($orden_pedido->archivo, '/') + 1) }} <i
+                                    class="fa-solid fa-download"></i>
+                            </a>
+                        @endisset
+
+                    </div>
+
+                    {!! $errors->first('archivo', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+                </div>
             </div>
-            {!! $errors->first('forma_pago', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+            <div class="col-sm-6">
+                <div class="form-group">
+                    {{ Form::label('', 'Forma de Pago', ['class' => 'col-form-label']) }}
+                    <div class="select_wrapper">
+                        @forelse ($forma_pagos as $key => $value)
+                            <label class="rounded-0 text-white">
+                                <input type="radio" name="forma_pago" class="d-none" value="{{ $key }}"
+                                    {{ old('forma_pago') == $key || (isset($orden_pedido->orden_recepcion->forma_pago->id) && $orden_pedido->orden_recepcion->forma_pago->id == $key) ? 'checked' : '' }}
+                                    {{ isset($orden_pedido->orden_recepcion) && !$orden_pedido->orden_recepcion->editar ? 'disabled' : '' }}>
+                                <span class="text-center d-block py-3">{{ $value }}</span>
+                            </label>
+                        @empty
+                            <small class="help-block text-danger error_mensajes">No existen formas de pagos
+                                registrados.</small>
+                        @endforelse
+                    </div>
+                    {!! $errors->first('forma_pago', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+                </div>
+            </div>
         </div>
+
     </div>
 </div>
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use PDF;
 use Exception;
 use Throwable;
+use App\Models\User;
 use App\Models\Articulo;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
@@ -20,12 +21,12 @@ use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
 use App\Http\Requests\AdquisicionStoreRequest;
 use App\Http\Requests\OrdenRecepcionStoreRequest;
 use App\Http\Requests\OrdenRecepcionUpdateRequest;
 use App\Http\Requests\AdquisicionAdministrativoRequest;
-use App\Models\User;
 
 class AdquisicionController extends Controller
 {
@@ -213,6 +214,12 @@ class AdquisicionController extends Controller
                     throw new Exception('Error al intentar guardar la adquisición.');
                 }
 
+                if ($request->hasFile('archivo')) {
+                    $path_archivo = $this->subriArchivo($request->file('archivo'), $adquisicion->numero);
+                    $adquisicion->archivo = $path_archivo;
+                    $adquisicion->save();
+                }
+
                 DB::commit();
 
                 PushNotificationService::sendNotification(Auth::user(), 'Adquisicion nro. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision', route('pdf.recepcion', $adquisicion->id));
@@ -367,6 +374,12 @@ class AdquisicionController extends Controller
                 }
             }
 
+            if ($request->hasFile('archivo')) {
+                $path_archivo = $this->subriArchivo($request->file('archivo'), $pedido->numero);
+                $pedido->archivo = $path_archivo;
+                $pedido->save();
+            }
+
             DB::commit();
             LogService::log('info', 'Adquisición actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
             $route_params = array_merge($route_params, ['pedido' => $pedido_id]);
@@ -387,8 +400,12 @@ class AdquisicionController extends Controller
     {
         $pedido = Adquisicion::find($request->route('pedido'));
 
-        if ($pedido->estado != 'Finalizado') {
+        if ($pedido->estado != 'Finalizado' && $pedido->estado != 'Completado') {
+            $info_pedido = $pedido;
             if ($pedido->delete()) {
+                if (Storage::disk('digitalocean')->exists($info_pedido->archivo)) {
+                    Storage::disk('digitalocean')->delete($info_pedido->archivo);
+                }
                 LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
                 return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
             } else {
@@ -908,5 +925,13 @@ class AdquisicionController extends Controller
             LogService::log('error', 'Error al crear Adquisición', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
+    }
+
+    private function subriArchivo($file, $name)
+    {
+        $extension = $file->getClientOriginalExtension();
+        $path_file = Storage::disk('digitalocean')->putFileAs('adquisiciones', $file, $name . '.' . $extension);
+
+        return $path_file;
     }
 }
