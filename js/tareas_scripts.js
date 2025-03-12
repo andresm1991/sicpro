@@ -392,6 +392,31 @@ $(function () {
             // Inicializar Select2 con la configuración fusionada
             $select.select2(newOptions);
         });
+
+        $(this).find('.select2-tag').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
     });
 
     function getComentariosTarea() {
