@@ -21,7 +21,7 @@
 
                         <div class=" col-12 form-group">
                             <label class="col-form-label">Título</label>
-                            {{ Form::text('titulo', '', ['class' => 'form-control', 'placeholder' => 'Ingrese el título']) }}
+                            {{ Form::select('titulo', pluckTitulosTareas(), '', ['class' => 'select2-tag form-control', 'data-placeholder' => 'SELECCIONE o ingrese título']) }}
                         </div>
 
                         <div class="col-12 form-group">

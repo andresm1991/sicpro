@@ -11,6 +11,7 @@ use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DetalleResumenPagoSemanal;
+use App\Models\Tarea;
 
 if (!function_exists('encrypted_route')) {
     function encrypted_route($name, $parameters = [], $absolute = true)
@@ -489,5 +490,12 @@ if (!function_exists('palabras')) {
         $detalle = DetalleResumenPagoSemanal::groupBy('descripcion')->pluck('descripcion', 'descripcion');
         $detalle->prepend('', '');
         return $detalle;
+    }
+
+    function pluckTitulosTareas()
+    {
+        $titulos = Tarea::groupBy('titulo')->pluck('titulo', 'titulo');
+        $titulos->prepend('', '');
+        return $titulos;
     }
 }
