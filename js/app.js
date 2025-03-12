@@ -167,6 +167,10 @@ $(function () {
     });
 
 
+    $('#archivo').change(function (e) {
+        let fileName = (e.target.files.length > 0) ? e.target.files[0].name : 'seleccionar archivo...';
+        $('#archivo-label').text(fileName);
+    });
 
     $('.datepicker').datepicker({
         language: "es",
