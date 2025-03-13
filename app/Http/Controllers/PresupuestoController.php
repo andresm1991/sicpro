@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Proyecto;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
+use App\Models\DetalleManoObra;
 use App\Models\RubroPresupuesto;
 use Illuminate\Support\Facades\DB;
 use App\Models\PresupuestoProyecto;
 use App\Models\CategoriaPresupuesto;
+use App\Models\PagoOrdenTrabajoContratista;
 
 class PresupuestoController extends Controller
 {
@@ -28,7 +30,34 @@ class PresupuestoController extends Controller
         $etapas_construccion = CatalogoDato::getChildrenCatalogo('etapas.construccion')->pluck('descripcion', 'id');
         $categorias_presupuesto = CategoriaPresupuesto::where('activo', 1)->pluck('nombre', 'id');
 
-        return view('presupuesto_proyecto.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'unidades_medidas', 'categorias_presupuesto', 'etapas_construccion'));
+        $total_adquisiciones = $proyecto->adquisiciones
+            ->where('estado', 'Completado')
+            ->sum(function ($item) {
+                $sumAdquisiciones = $item->adquisiciones_detalle->sum(function ($item) {
+                    $iva = $item->producto->iva ? $item->producto->iva : 0;
+                    return calcularTotalProducto(
+                        $item->cantidad_solicitada,
+                        $item->valor,
+                        $iva,
+                    );
+                });
+
+                return $sumAdquisiciones;
+            });
+
+        $total_mano_obra = DetalleManoObra::whereHas('mano_obra', function ($query) use ($proyecto) {
+            $query->where('proyecto_id', $proyecto->id);
+        })
+            ->whereHas('mano_obra.pago_mano_obra') // Filtrar solo los detalles relacionados con PagoManoObra
+            ->sum('valor');
+
+        $total_contratista = PagoOrdenTrabajoContratista::whereHas('contratista', function ($query) use ($proyecto) {
+            $query->where('proyecto_id', $proyecto->id);
+        })->where('pagado', true)
+            ->sum('valor');
+
+        $total_gatos = $total_adquisiciones + $total_mano_obra + $total_contratista;
+        return view('presupuesto_proyecto.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'unidades_medidas', 'categorias_presupuesto', 'etapas_construccion', 'total_gatos'));
     }
 
 

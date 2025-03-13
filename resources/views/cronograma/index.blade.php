@@ -110,13 +110,13 @@
                                     <tr>
                                         <th>ejecutado</th>
                                         <td class="aling-middle text-center">
-                                            $ {{ number_format($totales_estructural['totalAdquisiciones'], 4) }}
+                                            $ {{ number_format($totales_estructural['total_general'], 4) }}
                                         </td>
                                         <td class="aling-middle text-center">
-                                            $ {{ number_format($totales_estructural['totalManoObra'], 4) }}
+                                            $ {{ number_format($totales_obra_gris['total_general'], 4) }}
                                         </td>
                                         <td class="aling-middle text-center">
-                                            $ {{ number_format($totales_estructural['totalContratista'], 4) }}
+                                            $ {{ number_format($totales_acabados['total_general'], 4) }}
                                         </td>
                                     </tr>
                                     <tr>

@@ -20,10 +20,8 @@
                         <span>Reposición de Tiempo</span>
                     </a>
                 </div>
-
-                @if (auth()->user()->hasRole('Administrador') ||
-                        auth()->user()->hasRole('Gerencial') ||
-                        auth()->user()->hasRole('Administrativo'))
+                {{--  
+                @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial') || auth()->user()->hasRole('Administrativo'))
                     <div class="max-auto">
                         <a href="{{ route('solicitud.autorizacion.index') }}" class="nodo">
                             <img src="{{ asset('images/svg/administrador.svg') }}" alt="">
@@ -31,7 +29,7 @@
                         </a>
                     </div>
                 @endif
-
+                --}}
             </div>
         </div>
     </section>

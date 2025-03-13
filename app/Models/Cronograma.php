@@ -23,12 +23,20 @@ class Cronograma extends Model
 
     public static function TotalAdquisicionesEtapa($proyectoId, $slug)
     {
-        $total_aquisiciones = AdquisicionDetalle::whereHas('adquisicion', function ($query) use ($proyectoId, $slug) {
-            $query->where('proyecto_id', $proyectoId)
-                ->whereHas('etapa', function ($q) use ($slug) {
-                    $q->where('slug', $slug);
+        $total_adquisiciones = Adquisicion::where('proyecto_id', $proyectoId)
+            ->where('estado', 'Completado')
+            ->with('adquisiciones_detalle.producto') // Cargar relaciones necesarias
+            ->get() // Obtener todas las adquisiciones completadas
+            ->sum(function ($adquisicion) {
+                return $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
+                    $iva = $detalle->producto->iva ?? 0; // Usar el operador null coalescing
+                    return calcularTotalProducto(
+                        $detalle->cantidad_solicitada,
+                        $detalle->valor,
+                        $iva
+                    );
                 });
-        })->sum('valor');
+            });
 
 
         $total_mano_obra = DetalleManoObra::whereHas('mano_obra', function ($query) use ($proyectoId, $slug) {
@@ -48,6 +56,9 @@ class Cronograma extends Model
         })->where('pagado', true)
             ->sum('valor');
 
-        return ['totalAdquisiciones' => $total_aquisiciones, 'totalManoObra' => $total_mano_obra, 'totalContratista' => $total_contratista];
+        $total_general = $total_adquisiciones + $total_mano_obra + $total_contratista;
+
+
+        return ['totalAdquisiciones' => $total_adquisiciones, 'totalManoObra' => $total_mano_obra, 'totalContratista' => $total_contratista, 'total_general' => $total_general];
     }
 }

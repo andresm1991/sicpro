@@ -7,7 +7,57 @@
     <section style="padding: 10px 0 50px 0;">
         <div class="container">
             <div class="row justify-content-center align-items-center full-height">
-                <div>
+                <div class="col-sm-3 col-12">
+                    <a href="#" class="nodo" id="gerencia">
+                        <img src="{{ asset('images/svg/manager.svg') }}" alt="Gerencia">
+                        <span>Gerencia</span>
+                    </a>
+                </div>
+
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('proyecto.index') }}" class="nodo" id="operativo">
+                        <img src="{{ asset('images/svg/constructor.svg') }}" alt="Operativo">
+                        <span>Operativo</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('solicitud.index') }}" class="nodo" id="operativo">
+                        <img src="{{ asset('images/svg/solicitud.svg') }}" alt="Operativo">
+                        <span>Solicitudes</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="#" class="nodo" id="marketing">
+                        <img src="{{ asset('images/svg/marketing.svg') }}" alt="Marketing">
+                        <span>Marketing</span>
+                    </a>
+                </div>
+
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('administrativo.index') }}" class="nodo" id="administrativo">
+                        <img src="{{ asset('images/svg/users.svg') }}" alt="Administrativo">
+                        <span>Administrativo</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('tarea.index') }}" class="nodo" id="administrativo">
+                        <img src="{{ asset('images/svg/lista-de-tareas.svg') }}" alt="Administrativo">
+                        <span>Agenda</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="#" class="nodo">
+                        <img src="{{ asset('images/icons/descripcion-general.png') }}" alt="">
+                        <span>Rerportes</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('sistema.index') }}" class="nodo" id="base-datos">
+                        <img src="{{ asset('images/svg/sistema.svg') }}" alt="Base de Datos">
+                        <span>Sistema</span>
+                    </a>
+                </div>
+                {{--  <div>
                     <a href="#" class="circle central" id="gerencia">
                         <img src="{{ asset('images/svg/manager.svg') }}" alt="Gerencia">
                         <span>Gerencia</span>
@@ -40,7 +90,7 @@
                         <img src="{{ asset('images/svg/sistema.svg') }}" alt="Base de Datos">
                         <span>Sistema</span>
                     </a>
-                </div>
+                </div> --}}
             </div>
         </div>
     </section>

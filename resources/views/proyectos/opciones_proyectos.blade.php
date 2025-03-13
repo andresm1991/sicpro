@@ -4,10 +4,38 @@
 
 @section('content')
     @include('partials.header_page')
-    <section>
+    <section class="content">
         <div class="container">
-            <div class="row justify-content-center align-items-center full-height">
-                <div>
+            <div class="row align-items-center full-height">
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('proyecto.informacion.general', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]) }}"
+                        class="nodo">
+                        <img src="{{ asset('images/icons/informacion.png') }}" alt="">
+                        <span>Información</span>
+                        <span>General</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('proyecto.adquisiciones.menu', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]) }}"
+                        class="nodo center">
+                        <img src="{{ asset('images/icons/adquisicion.png') }}" alt="">
+                        <span>Adquisiciones</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('proyecto.presupuesto.index', $proyecto->id) }}" class="nodo">
+                        <img src="{{ asset('images/icons/presupuesto.png') }}" alt="">
+                        <span>Presupuesto</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('proyecto.cronograma.index', $proyecto->id) }}" class="nodo">
+                        <img src="{{ asset('images/icons/estado-de-resultados.png') }}" alt="">
+                        <span>Cronograma</span>
+                        <span>Valorado</span>
+                    </a>
+                </div>
+                {{-- <div>
                     <a href="{{ route('proyecto.informacion.general', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]) }}"
                         class="circle central">
                         <img src="{{ asset('images/icons/informacion.png') }}" alt="">
@@ -28,15 +56,17 @@
                         <span>Cronograma</span>
                         <span>Valorado</span>
                     </a>
-                    <a href="#" class="circle bottom-right">
-                        <img src="{{ asset('images/icons/descripcion-general.png') }}" alt="">
-                        <span>Rerportes</span>
-                    </a>
-                </div>
+                </div> --}}
             </div>
         </div>
     </section>
     {{-- 
+
+    <a href="#" class="circle bottom-right">
+                        <img src="{{ asset('images/icons/descripcion-general.png') }}" alt="">
+                        <span>Rerportes</span>
+                    </a>
+
     <section class="content">
         <div class="container">
             <div class="row">

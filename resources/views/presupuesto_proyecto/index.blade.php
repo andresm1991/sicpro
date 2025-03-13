@@ -147,20 +147,8 @@
                                     });
 
                                     $costos_indirectos = ($costos_directos * $proyecto->costo_indirecto) / 100;
-                                    $total_adquisiciones = $proyecto->adquisiciones
-                                        ->where('estado', 'Completado')
-                                        ->sum(function ($item) {
-                                            return $item->adquisiciones_detalle->sum(function ($item) {
-                                                $iva = $item->producto->iva ? $item->producto->iva : 0;
-                                                return calcularTotalProducto(
-                                                    $item->cantidad_solicitada,
-                                                    $item->valor,
-                                                    $iva,
-                                                );
-                                            });
-                                        });
 
-                                    $saldo = $costos_directos - $total_adquisiciones;
+                                    $saldo = $costos_directos - $total_gatos;
                                 @endphp
 
                                 <tr>
@@ -199,7 +187,7 @@
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
-                                        {{ number_format($total_adquisiciones, 2) }}
+                                        {{ number_format($total_gatos, 2) }}
                                     </td>
                                 </tr>
 
