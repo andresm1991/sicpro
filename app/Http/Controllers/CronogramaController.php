@@ -89,16 +89,14 @@ class CronogramaController extends Controller
             });
         });
 
-        $total_mpel = $categorias->sum(function ($categoria) {
+        $total_obra_gris = $categorias->sum(function ($categoria) {
             return $categoria->rubrosPresupuesto->sum(function ($rubro) {
                 return $rubro->presupuestoProyectos
                     ->filter(function ($proyecto) {
                         // Filtrar proyectos basados en la relación etapa_construccion
                         return $proyecto->etapa_construccion &&
                             ($proyecto->etapa_construccion->slug ===
-                                'etapas.construccion.mamposteria' ||
-                                $proyecto->etapa_construccion->slug ===
-                                'etapas.construccion.enlucidos');
+                                'etapas.construccion.obra.gris');
                     })
                     ->sum(function ($proyecto) {
                         // Calcular cantidad * valor_unitario
@@ -123,7 +121,7 @@ class CronogramaController extends Controller
             });
         });
 
-        $total = $total_estructural + $total_mpel + $total_acabados;
+        $total = $total_estructural + $total_obra_gris + $total_acabados;
 
 
         $total_aquisiciones_estructural = AdquisicionDetalle::whereHas('adquisicion', function ($query) use ($proyectoId) {
@@ -156,7 +154,7 @@ class CronogramaController extends Controller
         $totales_acabados = Cronograma::TotalAdquisicionesEtapa($proyectoId, 'menu.adquisciones.acabados');
 
 
-        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_mpel', 'total_acabados', 'total', 'totales_estructural', 'totales_obra_gris', 'totales_acabados'));
+        return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_obra_gris', 'total_acabados', 'total', 'totales_estructural', 'totales_obra_gris', 'totales_acabados'));
     }
 
     public function editarActividadesSemana(Proyecto $proyecto, $semana)

@@ -100,7 +100,7 @@
                                             $ {{ number_format($total_estructural, 4) }}
                                         </td>
                                         <td class="text-center">
-                                            $ {{ number_format($total_mpel, 4) }}
+                                            $ {{ number_format($total_obra_gris, 4) }}
                                         </td>
                                         <td class="text-center">
                                             $ {{ number_format($total_acabados, 4) }}
