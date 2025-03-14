@@ -27,9 +27,15 @@
                                 @enderror
                             </div>
                             <div class="form-group">
-                                <input type="password" name="password"
-                                    class="form-control form-control-lg @error('password') is-invalid @enderror"
-                                    placeholder="Contraseña">
+                                <div class="input-group" id="show_hide_password">
+                                    <input name="password" type="password"
+                                        class="form-control form-control-lg @error('password') is-invalid @enderror"
+                                        placeholder="Contraseña">
+                                    <div class="input-group-addon">
+                                        <a href="javascript:void(0);" class="text-secondary"><i class="fa fa-eye-slash"
+                                                aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
 
                                 @error('password')
                                     <span class="invalid-feedback" role="alert">

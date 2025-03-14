@@ -41,7 +41,7 @@ class RecuperacionTiempoController extends Controller
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
-            ['name' => 'Resposicones', 'url' => route('solicitud.reposicion.index')],
+            ['name' => 'Reposicones', 'url' => route('solicitud.reposicion.index')],
             ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
         ];
 

@@ -10,7 +10,7 @@ class Tarea extends Model
     use HasFactory;
     protected $table = 'tareas';
 
-    protected $fillable = ['usuario_id', 'titulo', 'descripcion', 'estado_id'];
+    protected $fillable = ['usuario_id', 'titulo', 'descripcion', 'estado_id', 'categoria_id'];
 
     public function usuario()
     {
@@ -31,6 +31,10 @@ class Tarea extends Model
         return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 
+    public function categoria()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'categoria_id');
+    }
     // Accesor para formatear created_at
     public function getCreatedAtFormateadoAttribute()
     {

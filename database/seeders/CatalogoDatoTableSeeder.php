@@ -662,7 +662,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
+        
         $padre = CatalogoDato::create([
             'descripcion' => 'Estados Resuman pagos Semanales',
             'detalle' => '',
@@ -690,6 +690,37 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Cancelado',
             'detalle' => '',
             'slug' => 'estados.resumen.pagos.semanales.cancelado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Categorias Agenda',
+            'detalle' => '',
+            'slug' => 'categorias.agenda',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Laboral',
+            'detalle' => '',
+            'slug' => 'categoria.agenda.laboral',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Personal',
+            'detalle' => '',
+            'slug' => 'categoria.agenda.personal',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Compartida',
+            'detalle' => '',
+            'slug' => 'categoria.agenda.compartida',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

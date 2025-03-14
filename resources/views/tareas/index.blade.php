@@ -10,6 +10,17 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <h4 class="mt-2 font-weight-bold">Agenda de tareas</h4>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">Filtrar agenda por</label>
+                            <div class="col-sm-4">
+                                {{ Form::select('filtrar_agenda', categoriasAgenda(), old('filtrar_agenda'), ['class' => 'form-control', 'id' => 'filtro-agenda', 'data-placeholder' => 'Seleccionar opción para filtrar...']) }}
+                            </div>
+
+                            <div class="col-sm-4">
+                                <button type="button" class="btn btn-dark" id="aplicar-filtro">Aplicar</button>
+                            </div>
+                        </div>
+
                     </li>
                 </ul>
                 <div class="card-body ">
@@ -22,6 +33,8 @@
                                 </a>
                             </div>
                         </div>
+
+
                         {{-- <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>

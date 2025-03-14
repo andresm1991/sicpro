@@ -100,9 +100,9 @@ class GenerarPdfController extends Controller
 
         foreach ($pedido->adquisiciones_detalle as $key => $detalle) {
 
-            $total = $detalle->cantidad_solicitada * $detalle->valor;
+            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva);
 
-            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva) : $total_orden + $total;
+            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva) : $total;
 
             $items[] = [
                 'producto' => $detalle->producto->descripcion,
@@ -131,8 +131,6 @@ class GenerarPdfController extends Controller
             'estado_pedido' => $pedido->estado,
             'factura' => $pedido->factura,
         ];
-
-
 
         $logo_base64 = $this->logoBase64();
         //return view('pdf.recepcion', compact('orden', 'logo_base64'));

@@ -15,7 +15,7 @@
             @endif
         </div>
         <div class="form-group row">
-            <label class="col-sm-auto">Tiempo pendiente de resposición: </label>
+            <label class="col-sm-auto">Tiempo pendiente de reposición: </label>
             <div class="col-sm-auto p-0">
                 <input type="text" readonly class="form-control-plaintext text-uppercase p-0" id="tiempo_pendiente"
                     value="0 horas y 0 minutos">
@@ -38,25 +38,25 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     <label class="col-form-label">Hora Desde <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('hora_inicio', old('hora_inicio', $reposicion->hora_desde ? Str::substr($reposicion->hora_desde, 0, 5) : '08:00'), ['class' => 'form-control dateTime', 'id' => 'hora_inicio', 'placeholder' => '0:00']) }}
+                    {{ Form::text('hora_inicio', old('hora_inicio', $reposicion->hora_desde ? Str::substr($reposicion->hora_desde, 0, 5) : '08:00'), ['class' => 'form-control timepicker', 'id' => 'hora_inicio', 'placeholder' => '0:00']) }}
                     {!! $errors->first('hora_inicio', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                 </div>
             </div>
             <div class="col-sm-4">
                 <div class="form-group">
                     <label class="col-form-label">Hora Hasta <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('hora_fin', old('hora_fin', $reposicion->hora_hasta ? Str::substr($reposicion->hora_hasta, 0, 5) : '08:00'), ['class' => 'form-control dateTime', 'id' => 'hora_fin', 'placeholder' => '0:00']) }}
+                    {{ Form::text('hora_fin', old('hora_fin', $reposicion->hora_hasta ? Str::substr($reposicion->hora_hasta, 0, 5) : '08:00'), ['class' => 'form-control timepicker', 'id' => 'hora_fin', 'placeholder' => '0:00']) }}
                     {!! $errors->first('hora_fin', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                 </div>
             </div>
 
             <div class="col-12">
                 <div class="form-group row">
-                    <label class="col-sm-auto">Tiempo de resposición: </label>
-                    <div class="col-sm-auto p-0">
-                        <input type="text" readonly class="form-control-plaintext text-uppercase p-0"
-                            id="tiempo_reposicion" value="0 horas y 0 minutos">
-                    </div>
+                    <p>Tiempo de reposición: <span class="text-uppercase" id="tiempo_reposicion">
+                            0 horas y 0 minutos
+                        </span>
+                    </p>
+
                     <small class="text-danger col-12" id="mensaje"></small>
                 </div>
             </div>

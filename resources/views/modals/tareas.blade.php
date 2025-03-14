@@ -33,6 +33,11 @@
                             <label class="col-form-label">Colaboradores</label>
                             {{ Form::select('list_usuarios[]', usuariosPluck(), 0, ['class' => 'select2-basic-single form-control', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE OPCIONES']) }}
                         </div>
+
+                        <div class="col-12 form-group">
+                            <label class="col-form-label">Categoria</label>
+                            {{ Form::select('categoria_tarea', categoriasAgenda(), '', ['class' => 'select2-tag form-control', 'data-placeholder' => 'SELECCIONE OPCIÓN']) }}
+                        </div>
                     </div>
                 </form>
             </div>

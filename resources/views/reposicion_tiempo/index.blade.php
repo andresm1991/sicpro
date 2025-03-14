@@ -10,7 +10,7 @@
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h4 class="mt-2 font-weight-bold">Resposiciones de tiempo</h4>
+                        <h4 class="mt-2 font-weight-bold">Reposiciones de tiempo</h4>
                     </li>
                 </ul>
                 <div class="card-body ">

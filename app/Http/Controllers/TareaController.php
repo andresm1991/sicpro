@@ -17,18 +17,21 @@ class TareaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+
         $title_page = 'Agenda';
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => 'Agenda', 'url' => '']
         ];
 
+        // Aplicar filtro si existe el parámetro
+        $filtroAgenda = $request->input('filtrar_agenda');
 
-        $todoTasks = $this->getTasksByState('estados.tarea.porhacer');
-        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso');
-        $completedTasks = $this->getTasksByState('estados.tarea.finalizado');
+        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', $filtroAgenda);
+        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', $filtroAgenda);
+        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', $filtroAgenda);
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
@@ -50,6 +53,7 @@ class TareaController extends Controller
                     'titulo' => $request->titulo,
                     'descripcion' => $request->descripcion,
                     'estado_id' => CatalogoDato::getIdCatalogo('estados.tarea.porhacer'),
+                    'categoria_id' => is_numeric($request->categoria_tarea) ? $request->categoria_tarea : newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda'),
                 ]);
 
                 foreach ($usuarios as $usuario) {
@@ -104,6 +108,12 @@ class TareaController extends Controller
                     ]);
                 }
 
+                $tarea = Tarea::find($request->tarea_id);
+                if ($tarea->categoria_id != $request->categoria_tarea) {
+                    $tarea->categoria_id = is_numeric($request->categoria_tarea) ? $request->categoria_tarea : newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda');
+                    $tarea->save();
+                }
+
                 DB::commit();
 
                 PushNotificationService::sendNotification(auth()->user(), 'Comentario creado', "El usuario " . auth()->user()->nombre . " comento en una tarea en agenda", route('tarea.index'));
@@ -125,12 +135,13 @@ class TareaController extends Controller
         if ($request->ajax()) {
             $comentarios = ComentarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
             $colaboradores = UsuarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
+            $categoria = Tarea::find($request->tarea_id)->categoria->id;
 
             foreach ($comentarios as $comentario) {
                 $comentario->created_at_formateado = $comentario->created_at_formateado;
                 $comentario->updated_at_formateado = $comentario->updated_at_formateado;
             }
-            return response()->json(['success' => true, 'comentarios' => $comentarios, 'colaboradores' => $colaboradores]);
+            return response()->json(['success' => true, 'comentarios' => $comentarios, 'colaboradores' => $colaboradores, 'categoria' => $categoria]);
         }
     }
 
@@ -214,7 +225,7 @@ class TareaController extends Controller
         }
     }
 
-    private function getTasksByState($stateSlug)
+    private function getTasksByState($stateSlug, $filtroAgenda = '')
     {
         $hasRole = auth()->user()->hasRole('Administrador');
         $userId = Auth::user()->id;
@@ -231,6 +242,11 @@ class TareaController extends Controller
                     });
             });
         }
+
+        if (isset($filtroAgenda)) {
+            $tasks = $tasks->where('categoria_id', $filtroAgenda);
+        }
+
 
         return $tasks->with('usuario_tareas', 'comentarios')->get();
     }

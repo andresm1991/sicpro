@@ -25,6 +25,9 @@ class Cronograma extends Model
     {
         $total_adquisiciones = Adquisicion::where('proyecto_id', $proyectoId)
             ->where('estado', 'Completado')
+            ->whereHas('etapa', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })
             ->with('adquisiciones_detalle.producto') // Cargar relaciones necesarias
             ->get() // Obtener todas las adquisiciones completadas
             ->sum(function ($adquisicion) {

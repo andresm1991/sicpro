@@ -498,4 +498,11 @@ if (!function_exists('palabras')) {
         $titulos->prepend('', '');
         return $titulos;
     }
+
+    function categoriasAgenda()
+    {
+        $categorias = CatalogoDato::getChildrenCatalogo('categorias.agenda')->pluck('descripcion', 'id');
+        $categorias->prepend('', '');
+        return $categorias;
+    }
 }

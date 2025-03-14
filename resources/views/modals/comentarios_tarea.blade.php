@@ -51,6 +51,11 @@
                         </div>
 
                         <div class="col-12 form-group">
+                            <label class="col-form-label">Categoria</label>
+                            {{ Form::select('categoria_tarea', categoriasAgenda(), '', ['class' => 'select2-tag form-control', 'id' => 'categoria_tarea', 'data-placeholder' => 'SELECCIONE OPCIÓN']) }}
+                        </div>
+
+                        <div class="col-12 form-group">
                             {{ Form::label('', 'Comentarios', ['class' => 'col-form-label']) }}
                             {{ Form::textarea('comentario', '', ['class' => 'form-control', 'id' => 'comentario', 'placeholder' => 'Añadir un comentario...', 'rows' => '3']) }}
                         </div>
