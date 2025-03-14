@@ -56,8 +56,13 @@ $(function () {
         });
     });
 
+    $('#hora_inicio, #hora_fin').on('change', function () {
+        console.log('entro ' + $(this).val())
+        calcularYMostrarTiempoLaboral();
+
+    });
     // Validar los campos en tiempo real
-    $("#hora_inicio, #hora_fin").on("input", function () {
+    function calcularYMostrarTiempoLaboral() {
         let mensaje = $("#mensaje");
         let tiempoResposicion = $("#tiempo_reposicion");
         let botonEnviar = $("#btn-guardar");
@@ -66,7 +71,7 @@ $(function () {
 
         // Limpiar mensaje inicialmente
         mensaje.text("");
-        tiempoResposicion.val("0 horas y 0 minutos");
+        tiempoResposicion.html("0 horas y 0 minutos");
         botonEnviar.prop("disabled", true);
 
         // Validar que ambos campos estén completos
@@ -127,10 +132,10 @@ $(function () {
         }
 
         // Mostrar el tiempo total si todo está correcto
-        tiempoResposicion.val(tiempoCalculado);
+        tiempoResposicion.html(tiempoCalculado);
         // Habilitar el botón de envío si todas las validaciones pasan
         botonEnviar.prop("disabled", false);
-    });
+    };
 
     // Función para validar una hora dentro del rango permitido
     function validarRangoHora(hora) {

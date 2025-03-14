@@ -2,15 +2,17 @@
 let profile = document.querySelector('.profile');
 let menu = document.querySelector('.menu');
 
-profile.onclick = function () {
-    menu.classList.toggle('active');
-}
+if (profile && menu) {
+    profile.onclick = function () {
+        menu.classList.toggle('active');
+    };
 
-document.onclick = function (event) {
-    // Verifica si el clic fue fuera del profile y del menu
-    if (!profile.contains(event.target) && !menu.contains(event.target)) {
-        menu.classList.remove('active');
-    }
+    document.onclick = function (event) {
+        // Verifica si el clic fue fuera del profile y del menu
+        if (!profile.contains(event.target) && !menu.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    };
 }
 
 
@@ -166,6 +168,18 @@ $(function () {
         container: 'body' // Forzar que el menú se renderice en el body
     });
 
+    $("#show_hide_password a").on('click', function (event) {
+        event.preventDefault();
+        if ($('#show_hide_password input').attr("type") == "text") {
+            $('#show_hide_password input').attr('type', 'password');
+            $('#show_hide_password i').addClass("fa-eye-slash");
+            $('#show_hide_password i').removeClass("fa-eye");
+        } else if ($('#show_hide_password input').attr("type") == "password") {
+            $('#show_hide_password input').attr('type', 'text');
+            $('#show_hide_password i').removeClass("fa-eye-slash");
+            $('#show_hide_password i').addClass("fa-eye");
+        }
+    });
 
     $('#archivo').change(function (e) {
         let fileName = (e.target.files.length > 0) ? e.target.files[0].name : 'seleccionar archivo...';

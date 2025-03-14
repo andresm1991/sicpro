@@ -367,7 +367,20 @@ $(function () {
 
     });
 
-    $(document).on('shown.bs.modal', '#tareasModal', function () {
+    $('#aplicar-filtro').on('click', function () {
+        // Obtener el valor seleccionado del filtro
+        const filtroValor = $('#filtro-agenda').val();
+
+        // Validar que se haya seleccionado un valor
+        if (!filtroValor) {
+
+        }
+
+        // Redirigir a la misma página con el parámetro de filtro
+        window.location.href = `?filtrar_agenda=${encodeURIComponent(filtroValor)}`;
+    });
+
+    $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal', function () {
         $(this).find('.select2-basic-single').each(function () {
             let $select = $(this);
 
@@ -430,6 +443,7 @@ $(function () {
                 $("#comentarios").html('');
             },
             success: function (response) {
+                console.log(response);
                 $.each(response.comentarios, function (index, tarea) {
                     $("#comentarios").append(`<div class="list-group list-comentarios">
                                         <div class="list-group-item list-group-item-action tarea-item" data-id="${tarea.id}">
@@ -446,6 +460,8 @@ $(function () {
                 let colaboradoresIds = response.colaboradores.map(colaborador => colaborador.usuario.id);
                 // Asignar el array de IDs al select múltiple
                 $("#list_usuarios").val(colaboradoresIds).trigger('change');
+
+                $("#categoria_tarea").val(response.categoria).trigger('change');
 
                 $('[data-toggle="tooltip"]').tooltip();
                 $('[data-toggle="popover"]').popover({ html: true });

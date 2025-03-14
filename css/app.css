@@ -2086,6 +2086,32 @@ actividades-seleccionadas div {
     font-size: 12px;
 }
 
+.input-group {
+    position: relative;
+}
+
+.input-group .form-control {
+    padding-right: 2.5rem;
+    /* Asegura espacio para el icono */
+}
+
+.input-group .input-group-addon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    /*pointer-events: none;  Elimina esta linea */
+    /* Asegura que el icono no interfiera con el input */
+    z-index: 10;
+    /* Asegura que el icono este por encima del input */
+}
+
+.input-group .input-group-addon a {
+    pointer-events: all;
+    /* Permite la interacción con el icono */
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
