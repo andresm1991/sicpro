@@ -503,6 +503,7 @@ if (!function_exists('palabras')) {
     {
         $categorias = CatalogoDato::getChildrenCatalogo('categorias.agenda')->pluck('descripcion', 'id');
         $categorias->prepend('', '');
+        $categorias->prepend('todos', 'todos');
         return $categorias;
     }
 }

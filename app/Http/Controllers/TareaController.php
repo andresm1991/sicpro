@@ -243,7 +243,7 @@ class TareaController extends Controller
             });
         }
 
-        if (isset($filtroAgenda)) {
+        if (isset($filtroAgenda) && $filtroAgenda != 'todos') {
             $tasks = $tasks->where('categoria_id', $filtroAgenda);
         }
 
