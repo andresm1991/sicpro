@@ -238,19 +238,11 @@ class TareaController extends Controller
         if (!$hasRole) {
             $tasks = $tasks->where(function ($query) use ($userId, $filtroAgendaUser) {
                 $query->where('usuario_id', $userId)
-                    ->orWhereHas('usuario_tareas', function ($query) use ($userId) {
-                        $query->where('usuario_id', $userId);
+                    ->orWhereHas('usuario_tareas', function ($query) use ($userId, $filtroAgendaUser) {
+                        $query->where('usuario_id', !empty($filtroAgendaUser) ? $filtroAgendaUser : $userId);
                     });
-
-                if (!empty($filtroAgendaUser)) {
-                    $query->orWhere('usuario_id', $filtroAgendaUser)
-                        ->orWhereHas('usuario_tareas', function ($query) use ($filtroAgendaUser) {
-                            $query->where('usuario_id', $filtroAgendaUser);
-                        });
-                }
             });
         } else {
-
             if (!empty($filtroAgendaUser)) {
                 $tasks = $tasks->where(function ($query) use ($filtroAgendaUser) {
                     $query->where('usuario_id', $filtroAgendaUser)
