@@ -23,6 +23,7 @@ use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
 use App\Http\Controllers\RecuperacionTiempoController;
+use App\Http\Controllers\ReporteriaController;
 use App\Http\Controllers\ResumenPagoSemanalController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\SolicitudController;
@@ -280,6 +281,11 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/eliminar-comentario/{comentario}', [TareaController::class, 'deleteComentario']);
         Route::delete('/eliminar-tarea/{tarea}', [TareaController::class, 'deleteTarea']);
         Route::put('/actualizar-estado-tarea/{tarea}', [TareaController::class, 'updateEstadoTarea']);
+    });
+
+    //**  RUTAS REPORTES */
+    Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
+        Route::get('/', [ReporteriaController::class, 'index'])->name('index');
     });
 
     //** PETICIONES AJAX **

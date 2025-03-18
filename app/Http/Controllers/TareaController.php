@@ -34,6 +34,7 @@ class TareaController extends Controller
         $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', $filtroAgenda, $filtroAgendaUser);
         $completedTasks = $this->getTasksByState('estados.tarea.finalizado', $filtroAgenda, $filtroAgendaUser);
 
+
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
         return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados'));
@@ -228,21 +229,26 @@ class TareaController extends Controller
 
     private function getTasksByState($stateSlug, $filtroAgenda = '', $filtroAgendaUser = '')
     {
+        // Verificar si el usuario es administrador
         $hasRole = auth()->user()->hasRole('Administrador');
-        $userId = Auth::user()->id;
+        $userId = !empty($filtroAgendaUser) ? $filtroAgendaUser : Auth::user()->id;
 
+        // Consulta base: Filtrar tareas por estado
         $tasks = Tarea::whereHas('estado', function ($query) use ($stateSlug) {
             $query->where('slug', $stateSlug);
         });
 
+        // Aplicar filtro por usuario asignado
         if (!$hasRole) {
-            $tasks = $tasks->where(function ($query) use ($userId, $filtroAgendaUser) {
+            // Si no es administrador, filtrar solo las tareas del usuario autenticado
+            $tasks = $tasks->where(function ($query) use ($userId) {
                 $query->where('usuario_id', $userId)
-                    ->orWhereHas('usuario_tareas', function ($query) use ($userId, $filtroAgendaUser) {
-                        $query->where('usuario_id', !empty($filtroAgendaUser) ? $filtroAgendaUser : $userId);
+                    ->orWhereHas('usuario_tareas', function ($query) use ($userId) {
+                        $query->where('usuario_id', $userId);
                     });
             });
         } else {
+            // Si es administrador, aplicar filtro por $filtroAgendaUser si está presente
             if (!empty($filtroAgendaUser)) {
                 $tasks = $tasks->where(function ($query) use ($filtroAgendaUser) {
                     $query->where('usuario_id', $filtroAgendaUser)
@@ -253,10 +259,12 @@ class TareaController extends Controller
             }
         }
 
-        if (isset($filtroAgenda) && $filtroAgenda != 'todos') {
+        // Aplicar filtro por categoría ($filtroAgenda)
+        if (!empty($filtroAgenda) && $filtroAgenda !== 'todos') {
             $tasks = $tasks->where('categoria_id', $filtroAgenda);
         }
 
+        // Cargar relaciones necesarias
         return $tasks->with('usuario_tareas', 'comentarios')->get();
     }
 }
