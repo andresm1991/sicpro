@@ -367,17 +367,26 @@ $(function () {
 
     });
 
+    $('#filtro-agenda').on('change', function () {
+
+        // Redirigir a la misma página con el parámetro de filtro
+    });
+
     $('#aplicar-filtro').on('click', function () {
         // Obtener el valor seleccionado del filtro
         const filtroValor = $('#filtro-agenda').val();
+        const filtroTexto = $('#filtro-agenda option:selected').text().toLowerCase();
 
-        // Validar que se haya seleccionado un valor
-        if (!filtroValor) {
-
+        if (filtroTexto !== 'todos' && filtroTexto !== 'laboral' && filtroTexto !== 'personal') {
+            // Redirigir a la misma página con el parámetro de filtro
+            window.location.href = `?filtrar_agenda=&user=${encodeURIComponent(filtroValor)}`;
+        } else {
+            // Redirigir a la misma página con el parámetro de filtro
+            window.location.href = `?filtrar_agenda=${encodeURIComponent(filtroValor)}`;
         }
 
-        // Redirigir a la misma página con el parámetro de filtro
-        window.location.href = `?filtrar_agenda=${encodeURIComponent(filtroValor)}`;
+
+
     });
 
     $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal', function () {

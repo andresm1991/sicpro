@@ -106,7 +106,6 @@ $(function () {
         $('input[name=valor]').val(precio);
         $('select[name=etapa_construccion]').val(etapa).trigger('change');
         $('select[name=unidad_medida]').val(unidad_medida).trigger('change');
-        console.log(etapa)
     });
 
 
@@ -179,7 +178,9 @@ $(function () {
                         '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>' +
                         '<h5><i class="icon fas fa-check"></i> ' + response.mensaje + '</h5>' +
                         '</div>');
-                    limpiarFormulario(form);
+                    if (dataEdit != '') {
+                        limpiarFormulario(form);
+                    }
                 } else {
                     reloadPage = false;
                     $('#message').html('<div class="alert alert-danger alert-dismissible">' +
