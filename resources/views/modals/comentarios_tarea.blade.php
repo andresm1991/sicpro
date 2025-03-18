@@ -50,10 +50,13 @@
                             {{ Form::select('list_usuarios[]', usuariosPluck(), 0, ['class' => 'select2-basic-single form-control', 'id' => 'list_usuarios', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE USUARIOS']) }}
                         </div>
 
-                        <div class="col-12 form-group">
-                            <label class="col-form-label">Categoria</label>
-                            {{ Form::select('categoria_tarea', categoriasAgenda(), '', ['class' => 'select2-tag form-control', 'id' => 'categoria_tarea', 'data-placeholder' => 'SELECCIONE OPCIÓN']) }}
-                        </div>
+                        @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial'))
+                            <div class="col-12 form-group">
+                                <label class="col-form-label">Categoria</label>
+                                {{ Form::select('categoria_tarea', categoriasAgenda(), '', ['class' => 'select2-tag form-control', 'id' => 'categoria_tarea', 'data-placeholder' => 'SELECCIONE OPCIÓN']) }}
+                            </div>
+                        @endif
+
 
                         <div class="col-12 form-group">
                             {{ Form::label('', 'Comentarios', ['class' => 'col-form-label']) }}

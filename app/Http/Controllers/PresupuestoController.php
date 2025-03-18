@@ -71,7 +71,6 @@ class PresupuestoController extends Controller
             $cantidad = str_replace(',', '', $request->cantidad);
             $valor_unitario = str_replace(',', '', $request->valor);
 
-
             try {
                 DB::beginTransaction();
 

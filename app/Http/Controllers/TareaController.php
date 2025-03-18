@@ -28,10 +28,11 @@ class TareaController extends Controller
 
         // Aplicar filtro si existe el parámetro
         $filtroAgenda = $request->input('filtrar_agenda');
+        $filtroAgendaUser = $request->input('user');
 
-        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', $filtroAgenda);
-        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', $filtroAgenda);
-        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', $filtroAgenda);
+        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', $filtroAgenda, $filtroAgendaUser);
+        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', $filtroAgenda, $filtroAgendaUser);
+        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', $filtroAgenda, $filtroAgendaUser);
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
@@ -53,7 +54,7 @@ class TareaController extends Controller
                     'titulo' => $request->titulo,
                     'descripcion' => $request->descripcion,
                     'estado_id' => CatalogoDato::getIdCatalogo('estados.tarea.porhacer'),
-                    'categoria_id' => is_numeric($request->categoria_tarea) ? $request->categoria_tarea : newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda'),
+                    'categoria_id' => is_numeric($request->categoria_tarea) ? $request->categoria_tarea : (isset($request->categoria_tarea) ? newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda') : null),
                 ]);
 
                 foreach ($usuarios as $usuario) {
@@ -135,7 +136,7 @@ class TareaController extends Controller
         if ($request->ajax()) {
             $comentarios = ComentarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
             $colaboradores = UsuarioTarea::where('tarea_id', $request->tarea_id)->with('usuario')->orderBy('updated_at', 'desc')->get();
-            $categoria = Tarea::find($request->tarea_id)->categoria->id;
+            $categoria = Tarea::find($request->tarea_id)->categoria->id ?? null;
 
             foreach ($comentarios as $comentario) {
                 $comentario->created_at_formateado = $comentario->created_at_formateado;
@@ -225,7 +226,7 @@ class TareaController extends Controller
         }
     }
 
-    private function getTasksByState($stateSlug, $filtroAgenda = '')
+    private function getTasksByState($stateSlug, $filtroAgenda = '', $filtroAgendaUser = '')
     {
         $hasRole = auth()->user()->hasRole('Administrador');
         $userId = Auth::user()->id;
@@ -245,6 +246,10 @@ class TareaController extends Controller
 
         if (isset($filtroAgenda) && $filtroAgenda != 'todos') {
             $tasks = $tasks->where('categoria_id', $filtroAgenda);
+        } elseif (isset($filtroAgendaUser) && !empty($filtroAgendaUser)) {
+            $tasks = $tasks->whereHas('usuario_tareas', function ($query) use ($filtroAgendaUser) {
+                $query->where('usuario_id', $filtroAgendaUser);
+            });
         }
 
 

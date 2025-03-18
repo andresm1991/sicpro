@@ -294,6 +294,7 @@ class ContratistaController extends Controller
             $orden_trabajo = Contratista::find($request->orden_trabajo);
             $valor = str_replace(',', '', $request->valor);
             $pagos = $orden_trabajo->pagos_contratistas + $valor;
+
             $total_pagar = $orden_trabajo->total_contratistas;
 
             if ($pagos > $total_pagar) {

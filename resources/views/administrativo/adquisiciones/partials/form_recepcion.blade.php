@@ -46,6 +46,26 @@
             {{ Form::text('numero_factura', $adquisicion->factura, ['class' => 'form-control', 'id' => 'nro_factura', 'placeholder' => 'Ingrese el número de factura']) }}
         </div>
     </div>
+    <div class="col-md-4 col-12">
+        <div class="form-group">
+            {{ Form::label('', 'Archivo', ['class' => 'col-form-label']) }}
+            <div class="form-group form-search form-icon col-md-10 col-12  p-0">
+                <i
+                    class="fa-regular  {{ isset($adquisicion->archivo) ? 'fa-download' : '  fa-circle-exclamation' }} fa-lg form-control-icon"></i>
+
+
+                @isset($adquisicion->archivo)
+                    <a href="{{ doTemporaryUrl($adquisicion->archivo) }}" target="__blank"
+                        class="form-control text-truncate text-decoration-none">
+                        {{ substr($adquisicion->archivo, strrpos($adquisicion->archivo, '/') + 1) }}
+                    </a>
+                @else
+                    <label for="archivo" id="archivo-label" class="form-control text-truncate ">Sin archivo cargado</label>
+                @endisset
+
+            </div>
+        </div>
+    </div>
 </div>
 
 <h4>Detalle pedido</h4>

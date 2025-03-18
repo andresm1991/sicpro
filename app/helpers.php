@@ -499,11 +499,21 @@ if (!function_exists('palabras')) {
         return $titulos;
     }
 
-    function categoriasAgenda()
+    function categoriasAgenda($filtre = false)
     {
         $categorias = CatalogoDato::getChildrenCatalogo('categorias.agenda')->pluck('descripcion', 'id');
-        $categorias->prepend('', '');
-        $categorias->prepend('todos', 'todos');
-        return $categorias;
+        $users = User::where('id', '!=', auth()->user()->id)->where('id', '!=', 1)->pluck('nombre', 'id');
+
+        if ($filtre) {
+            $categorias->prepend('todos', 'todos');
+            // Combinar las categorías y los usuarios en una sola lista
+            $combined = $categorias->union($users);
+        } else {
+            $combined = $categorias;
+        }
+        // Prepend an empty option at the beginning
+        $combined->prepend('', '');
+
+        return $combined;
     }
 }

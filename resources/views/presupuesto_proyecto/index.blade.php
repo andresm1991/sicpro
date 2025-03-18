@@ -79,14 +79,18 @@
                                                 return $item->cantidad * $item->valor_unitario;
                                             });
                                         @endphp
+
                                         <tr data-categoria-id="{{ $categoria->id }}" class="fila-rubro">
                                             <td class="align-middle font-weight-bold">{{ $index }}</td>
-                                            <td class="align-middle filtrable"> {{ $rubro->nombre }}</td>
+                                            <td class="align-middle filtrable"> {{ $rubro->nombre }}
+                                            </td>
                                             <td class="align-middle text-uppercase">
                                                 {{ $rubro->unidad_medida->descripcion }}
                                             </td>
                                             @foreach ($rubro->presupuestoProyectos as $presupuestoProyecto)
-                                                <td class="align-middle">{{ $presupuestoProyecto->cantidad }}</td>
+                                                <td class="align-middle">
+                                                    {{ $presupuestoProyecto->cantidad }}
+                                                </td>
                                                 <td class="align-middle">$ {{ $presupuestoProyecto->valor_unitario }}</td>
                                                 <td class="align-middle">
                                                     $
@@ -98,7 +102,8 @@
                                                     <a href="javascript:void(0);"
                                                         class="btn btn-sm btn-secondary editar-rubro" data-toggle="modal"
                                                         data-backdrop="static" data-keyboard="false"
-                                                        data-target="#modalRubrosPresupuesto" id="{{ $rubro->id }}"
+                                                        data-target="#modalRubrosPresupuesto"
+                                                        id="{{ $presupuestoProyecto->id }}"
                                                         data-categoria_id="{{ $categoria->id }}"
                                                         data-unidad_medida_id = "{{ $rubro->unidad_medida_id }}"
                                                         data-etapa_id="{{ $rubro->etapa_id }}"

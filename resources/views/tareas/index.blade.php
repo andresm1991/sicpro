@@ -10,17 +10,18 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <h4 class="mt-2 font-weight-bold">Agenda de tareas</h4>
-                        <div class="form-group row">
-                            <label class="col-sm-2 col-form-label">Filtrar agenda por</label>
-                            <div class="col-sm-4">
-                                {{ Form::select('filtrar_agenda', categoriasAgenda(), old('filtrar_agenda'), ['class' => 'form-control', 'id' => 'filtro-agenda', 'data-placeholder' => 'Seleccionar opción para filtrar...']) }}
-                            </div>
+                        @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial'))
+                            <div class="form-group row">
+                                <label class="col-sm-2 col-form-label">Filtrar agenda por</label>
+                                <div class="col-sm-4">
+                                    {{ Form::select('filtrar_agenda', categoriasAgenda(true), old('filtrar_agenda'), ['class' => 'form-control', 'id' => 'filtro-agenda', 'data-placeholder' => 'Seleccionar opción para filtrar...']) }}
+                                </div>
 
-                            <div class="col-sm-4">
-                                <button type="button" class="btn btn-dark" id="aplicar-filtro">Aplicar</button>
+                                <div class="col-sm-4">
+                                    <button type="button" class="btn btn-dark" id="aplicar-filtro">Aplicar</button>
+                                </div>
                             </div>
-                        </div>
-
+                        @endif
                     </li>
                 </ul>
                 <div class="card-body ">
