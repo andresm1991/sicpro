@@ -41,7 +41,7 @@
     <div class="col-sm-2">
         <div class="form-group">
             <label class="col-form-label">Fecha Desde <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            {{ Form::text('fecha_desde', old('fecha_desde', $solicitud->fecha_desde ? \Carbon\Carbon::createFromFormat('Y-m-d', $solicitud->fecha_desde)->format('d-m-Y') : now()->format('d-m-Y')), ['class' => 'form-control datepicker-no-back', 'placeholder' => 'DD-MM-YYYY']) }}
+            {{ Form::text('fecha_desde', old('fecha_desde', $solicitud->fecha_desde ? \Carbon\Carbon::createFromFormat('Y-m-d', $solicitud->fecha_desde)->format('d-m-Y') : now()->format('d-m-Y')), ['class' => 'form-control datepicker', 'placeholder' => 'DD-MM-YYYY']) }}
             {!! $errors->first('fecha_desde', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
     </div>
@@ -49,7 +49,7 @@
     <div class="col-sm-2">
         <div class="form-group">
             <label class="col-form-label">Fecha Hasta <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            {{ Form::text('fecha_hasta', old('fecha_hasta', $solicitud->fecha_hasta ? \Carbon\Carbon::createFromFormat('Y-m-d', $solicitud->fecha_hasta)->format('d-m-Y') : now()->format('d-m-Y')), ['class' => 'form-control datepicker-no-back', 'placeholder' => 'DD-MM-YYYY']) }}
+            {{ Form::text('fecha_hasta', old('fecha_hasta', $solicitud->fecha_hasta ? \Carbon\Carbon::createFromFormat('Y-m-d', $solicitud->fecha_hasta)->format('d-m-Y') : now()->format('d-m-Y')), ['class' => 'form-control datepicker', 'placeholder' => 'DD-MM-YYYY']) }}
             {!! $errors->first('fecha_hasta', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
     </div>
