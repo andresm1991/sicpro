@@ -286,6 +286,7 @@ Route::group(['middleware' => ['auth']], function () {
     //**  RUTAS REPORTES */
     Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
         Route::get('/', [ReporteriaController::class, 'index'])->name('index');
+        Route::get('/adquisiciones', [ReporteriaController::class, 'reporteAdquisiciones'])->name('adquisiciones');
     });
 
     //** PETICIONES AJAX **
