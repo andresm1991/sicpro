@@ -185,6 +185,13 @@ $(function () {
         let fileName = (e.target.files.length > 0) ? e.target.files[0].name : 'seleccionar archivo...';
         $('#archivo-label').text(fileName);
     });
+    moment.locale('es');
+
+    $('.daterange').daterangepicker({
+        opens: 'left'
+    }, function (start, end, label) {
+        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    });
 
     $('.datepicker').datepicker({
         language: "es",
@@ -250,7 +257,9 @@ $(function () {
         }
     });
 
-    $("select").select2();
+    $("select").select2({
+        with: '100%',
+    });
 
     $('.select2-basic-multiple').each(function () {
         let $select = $(this);

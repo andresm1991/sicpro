@@ -2112,6 +2112,11 @@ actividades-seleccionadas div {
     /* Permite la interacción con el icono */
 }
 
+section {
+    padding-bottom: 20px;
+    margin: 20px 0 0 0;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
