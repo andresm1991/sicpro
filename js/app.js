@@ -258,7 +258,7 @@ $(function () {
     });
 
     $("select").select2({
-        with: '100%',
+        with: 'resolve',
     });
 
     $('.select2-basic-multiple').each(function () {
