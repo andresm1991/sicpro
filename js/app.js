@@ -188,9 +188,20 @@ $(function () {
     moment.locale('es');
 
     $('.daterange').daterangepicker({
-        opens: 'left'
+        opens: 'left',
+        autoUpdateInput: false,
+        locale: {
+            cancelLabel: 'Clear'
+        }
     }, function (start, end, label) {
         console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    });
+
+    $('.daterange').on('apply.daterangepicker', function (ev, picker) {
+        $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+    });
+    $('.daterange').on('cancel.daterangepicker', function (ev, picker) {
+        $(this).val('');
     });
 
     $('.datepicker').datepicker({

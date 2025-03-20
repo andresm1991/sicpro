@@ -434,27 +434,27 @@ button {
 
 ::-webkit-input-placeholder {
     /* WebKit browsers */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 :-moz-placeholder {
     /* Mozilla Firefox 4 to 18 */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 ::-moz-placeholder {
     /* Mozilla Firefox 19+ */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 :-ms-input-placeholder {
     /* Internet Explorer 10+ */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 ::placeholder {
     /* Recent browsers */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 textarea {
