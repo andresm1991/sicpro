@@ -11,10 +11,11 @@ use App\Models\Cronograma;
 use App\Models\Adquisicion;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
+use Illuminate\Http\Request;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
-use App\Models\ResumenPagoSemanal;
 use App\Models\RubroCronograma;
+use App\Models\ResumenPagoSemanal;
 
 class GenerarPdfController extends Controller
 {
@@ -444,6 +445,79 @@ class GenerarPdfController extends Controller
     {
         $pdf = PDF::loadView('pdf.resuemen_pago_semanal', compact('resumen'));
         return $pdf->stream('resuemen_pago_semanal.pdf');
+    }
+
+    public function reportAdquisiciones(Request $request)
+    {
+
+        $ordenado = $request->input('ordenado'); // Ejemplo: "secuencial"
+        $fechas = $request->input('fechas'); // Ejemplo: "03/12/2025 - 03/30/2025"
+        $estado = $request->input('estado'); // Ejemplo: null o "Completado"
+        $proyecto = $request->input('proyecto'); // Ejemplo: null o ID del proyecto
+        $etapa = $request->input('etapa'); // Ejemplo: null o ID de la etapa
+        $tipo = $request->input('tipo'); // Ejemplo: null o tipo_etapa_id
+        $necesidad = $request->input('necesidad'); // Ejemplo: null o valor de necesidad
+        $costo = $request->input('costo'); // Ejemplo: null o valor de costo
+        $tipo_reporte = $request->input('tipo_reporte'); // Ejemplo: null o "pdf/excel"
+
+        if ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaFin))->format('Y-m-d');
+        }
+
+        $query = Adquisicion::query();
+
+        // Filtrar por estado
+        $query->when($estado, function ($q, $estado) {
+            $q->where('estado', $estado);
+        });
+
+        // Filtrar por proyecto
+        $query->when($proyecto, function ($q, $proyecto) {
+            $q->where('proyecto_id', $proyecto);
+        });
+
+        // Filtrar por etapa
+        $query->when($etapa, function ($q, $etapa) {
+            $q->where('etapa_id', $etapa);
+        });
+
+        // Filtrar por tipo_etapa
+        $query->when($tipo, function ($q, $tipo) {
+            $q->where('tipo_etapa_id', $tipo);
+        });
+
+        // Filtrar por rango de fechas
+        $query->when(isset($fechaInicioFormatted) && isset($fechaFinFormatted), function ($q) use ($fechaInicioFormatted, $fechaFinFormatted) {
+            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+        });
+
+        // Filtrar por costo (INDIRECTOS O DIRECTOS)
+        $query->when($costo, function ($q, $costo) {
+            $q->where('etapa_id', $costo);
+        });
+
+        // Ordenar por secuencial u otro criterio
+        switch ($ordenado) {
+            case 'secuencial':
+                $query->orderBy('numero', 'asc');
+                break;
+            case 'fecha':
+                $query->orderBy('fecha', 'asc');
+                break;
+            case 'alfabetico':
+                $query->orderBy('tipo_adquisicion', 'asc');
+                break;
+            default:
+                # code...
+                break;
+        }
+
+        // Obtener los resultados
+        $resultados = $query->get();
+
+        return $resultados;
     }
 
     private function logoBase64()

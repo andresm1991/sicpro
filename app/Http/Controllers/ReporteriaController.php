@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\CatalogoDato;
+use App\Models\DiccionarioPalabra;
 use App\Models\Proyecto;
 use Illuminate\Http\Request;
 
@@ -31,7 +32,8 @@ class ReporteriaController extends Controller
         $proyectos = Proyecto::pluck('nombre_proyecto', 'id')->prepend('', '');
         $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id')->prepend('', '');
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->where('slug', '!=', 'profecionales')->pluck('descripcion', 'id')->prepend('', '');
+        $necesidades = DiccionarioPalabra::pluck('palabra', 'id')->prepend('', '');
 
-        return view('reportes.adquisiciones', compact('title_page', 'breadcrumbs', 'proyectos', 'etapas', 'tipoAdquisiciones'));
+        return view('reportes.adquisiciones', compact('title_page', 'breadcrumbs', 'proyectos', 'etapas', 'tipoAdquisiciones', 'necesidades'));
     }
 }

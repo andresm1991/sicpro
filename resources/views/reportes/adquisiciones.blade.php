@@ -6,6 +6,15 @@
     @include('partials.header_page')
     <section>
         <div class="container-fluid">
+            {!! Form::open([
+                'route' => ['pdf.reporte.adquisiciones', ''],
+                'class' => 'form-horizontal',
+                'autocomplete' => 'off',
+                'enctype' => 'multipart/form-data',
+                'id' => 'form-reporte-adquisiciones',
+                'target' => '_blank',
+            ]) !!}
+
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title text-center">reporte de adquisiciones</h5>
@@ -32,7 +41,7 @@
                         </div>
                         <div class="form-group col-sm-4">
                             <label for="" class="col-form-label ">Fecha</label>
-                            {{ Form::text('fechas', old('fechas'), ['class' => 'form-control daterange']) }}
+                            {{ Form::text('fechas', '', ['class' => 'form-control daterange', 'placeholder' => 'seleccione rago de fechas']) }}
                         </div>
 
                         <div class="form-group col-sm-4">
@@ -57,7 +66,7 @@
 
                         <div class="form-group col-sm-4">
                             <label for="" class="col-form-label">Necesidad </label>
-                            {{ Form::text('necesidad', old('necesidad'), ['class' => 'form-control', 'placeholder' => 'INGRESAS NECESIDAD']) }}
+                            {{ Form::select('necesidad', $necesidades, '', ['class' => 'form-control', 'data-placeholder' => 'seleccione necesidad', 'data-allow-clear' => 'true']) }}
                         </div>
 
                         <div class="form-group col-sm-4">
@@ -78,10 +87,16 @@
                 </div>
 
                 <div class="card-footer bg-transparent text-right">
-                    <button type="button" class="btn btn-dark" data-dismiss="modal">Generar pdf</button>
-                    <button type="button" class="btn btn-dark" id="guardar">Exportar a excel</button>
+                    <button type="button" class="btn btn-dark generar-reporte" data-action="pdf">Generar pdf</button>
+                    <button type="button" class="btn btn-dark generar-reporte" data-action="excel">Exportar a
+                        excel</button>
                 </div>
             </div>
+            {{ Form::close() }}
         </div>
     </section>
+@endsection
+
+@section('scripts')
+    <script src="{{ asset('js/reportes_scripts.js') }}" type="module"></script>
 @endsection
