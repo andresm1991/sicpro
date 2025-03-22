@@ -1,3 +1,5 @@
+import { getFormData } from './helpers.js';
+
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     // Obtén la URL completa
@@ -21,7 +23,7 @@ $(function () {
         var $tipo = $(this).attr('id');
 
         $.ajax({
-            url: url + '/buscar-adquisicion',
+            url: base_url + '/administrativo/adquisiciones/operativo/buscar-adquisicion',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'buscar': $value, 'tipo': $tipo },
@@ -437,6 +439,233 @@ $(function () {
         this.submit();
     });
 
+    $(document).on('click', '.eliminar-adquisicion', function () {
+        let adquisicionId = $(this).attr('id');
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'eliminar/' + adquisicionId,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#table-list-pedidos-pendientes #" + id).remove();
+
+                            if ($('#table-list-pedidos-pendientes tbody').children().length == 0) {
+                                $('#table-list-pedidos-pendientes tbody').html('<tr>' +
+                                    '<td colspan = "6" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+
+    $(document).on('shown.bs.modal', '#agregarProductosModal', function () {
+
+        $(this).find('.select2-tag').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+    });
+
+    $('#agregar-producto').on('click', function () {
+        var form = $("#form_agregar_productos");
+        var data = getFormData(form);
+
+        var valid = true;
+
+        $('select[name=producto], select[name=unidad_medida], select[name=necesidad],  input[name=cantidad], input[name=valor_unitario]').removeClass('error-border');
+        $('.select2-tag').removeClass('error-border');  // Remover borde rojo en select2
+        $('.error-message').remove();  // Elimina los mensajes de error anteriores
+
+        if (data.producto == "") {
+            var valid = false;
+            $('select[name=producto]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=producto]').parent().append('<span class="error-message">Seleccione el producto.</span>');
+        }
+        if (data.necesidad == "") {
+            var valid = false;
+            $('select[name=necesidad]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=necesidad]').parent().append('<span class="error-message">Seleccione o ingrese una necesidad.</span>');
+        }
+        if (data.unidad_medida == "") {
+            var valid = false;
+            $('select[name=unidad_medida]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=unidad_medida]').parent().append('<span class="error-message">Seleccione la unidad de medida.</span>');
+        }
+
+        if (data.cantidad == "") {
+            var valid = false;
+            $('input:text[name=cantidad]').addClass('error-border');
+            $('input:text[name=cantidad]').parent().append('<span class="error-message">Ingrese la cantidad.</span>');
+        }
+
+        if (data.valor_unitario == "" || data.valor_unitario == 0) {
+            var valid = false;
+            $('input:text[name=valor_unitario]').addClass('error-border');
+            $('input:text[name=valor_unitario]').parent().append('<span class="error-message">Ingrese un valor mayor a 0.</span>');
+        }
+
+        if (!valid) return;
+
+        numeroFila = $('.elementos-agregados').length + 1;
+        // Calcular el subtotal
+        let subtotal = parseFloat(data.cantidad) * parseFloat(data.valor_unitario);
+        // Calcular el total con IVA
+        let totalConIva = subtotal * (1 + parseFloat(data.iva) / 100);
+
+        // Seleccionar el último <select> con nombre que comience con "unidad_medida"
+        const unidadMedidaSelect = $('select[name^="unidad_medida"]').last();
+        // Crear el nuevo <select> dinámicamente
+        const nuevoSelectHTML = `<select name="unidad_medida[${numeroFila - 1}]" class="form-control col-sm-12 select2-tag" data-placeholder="Seleccione">${unidadMedidaSelect.find('option').map(function () {
+            return `<option value="${$(this).val()}" ${$(this).val() == data.unidad_medida ? 'selected' : ''}>${$(this).text()}</option>`;
+        }).get().join('')}</select>`;
+
+        // Crear una nueva fila con los datos
+        var nuevaFila = `
+            <tr class="elementos-agregados">
+                <td class="align-middle">${numeroFila}</td>
+                <td class="align-middle">
+                ${$('#producto option:selected').text()}
+                <input type="hidden" name="productos[${numeroFila - 1}]" value="${data.producto}">
+                </td>
+                <td class="align-middle text-center cantidad col-md-1 col-12" data-index = "${numeroFila - 1}">
+                    <input type="text" class="form-control input-double" name="cantidad[${numeroFila - 1}]" value="${data.cantidad}" placeholder="0" data-index = "${numeroFila - 1}">
+                </td>
+                <td class="align-middle">
+                    ${nuevoSelectHTML}
+                </td>
+                <td class="align-middle col-md-1 col-12">
+                    <input type="text" class="form-control currency precio-unitario" name="valor[${numeroFila - 1}]"
+                        value="${data.valor_unitario}" placeholder="$ 0.00" data-index = "${numeroFila - 1}">
+                </td>
+                
+                <td class="align-middle col-md-1 col-12">
+                    <input type="text" class="form-control col-sm-12 input-enteros iva-producto" name="iva_producto[${numeroFila - 1}]" value="${data.iva}" placeholder="0" data-index = "${numeroFila - 1}">
+                </td>
+                <td class="align-middle calculo-total" data-index="${numeroFila - 1}">
+                     $ ${totalConIva.toFixed(4)}
+                </td>
+                <td class="align-middle">
+                    <span>${$('#necesidad option:selected').text()}</span>
+                    <input type="hidden" name="necesidad[${numeroFila - 1}]" value="${$('#necesidad option:selected').text()}">
+                </td>
+                <td class="align-middle table-actions">
+                        <div class="action-buttons">
+                            <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                id="">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+        `;
+        $('tbody').append(nuevaFila);
+        inicializarPlugins();
+        calcularTotalFilasYGeneral();
+        clearInputs();
+
+        return;
+        $.ajax({
+            url: base_url + '/administrativo/adquisicion/agregar-producto/' + data.adquisicion_id,
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'PUT',
+            data: data,
+            beforeSend: function () {
+                $('#modal-overlay').show();
+            },
+            success: function (response) {
+                Swal.fire({
+                    icon: response.success ? "success" : "error",
+                    text: response.message,
+                    confirmButtonText: 'Aceptar',
+                }).then((result) => {
+                    if (response.success) {
+                        window.location.reload();
+                    }
+                });
+            },
+            complete: function () {
+                $('#modal-overlay').hide();
+            },
+            error: function (xhr, status, error) {
+                console.error("Error en la solicitud AJAX:", error);
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+
+    });
+
 
     function calcularTotal() {
         let subtotal = 0;
@@ -448,9 +677,8 @@ $(function () {
             // Sumar al subtotal
             subtotal += total;
         });
-
-        console.log(subtotal.toFixed(2));
         // Actualizar el total general
         $('#total-general').text(subtotal.toFixed(2));
     }
+
 });

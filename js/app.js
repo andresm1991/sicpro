@@ -520,9 +520,8 @@ $(function () {
     /**
      * Calculpo entre valor unitario y cantidad
      */
-    $('#table-adquisiciones').on('input', '.cantidad input, .iva-producto, .precio-unitario', function () {
-        console.log('cargo')
-        calcularTotal();
+    $(document).on('input', '#table-adquisiciones', '.cantidad input, .iva-producto, .precio-unitario', function () {
+        calcularTotalFilasYGeneral();
     });
 
 
@@ -549,38 +548,6 @@ $(function () {
             }
         }
     });
-
-
-    // Función para calcular el total de cada fila y el total general
-    function calcularTotal() {
-        let totalGeneral = 0;
-
-        $('.precio-unitario').each(function () {
-            let index = $(this).data('index');
-            let cantidad;
-
-            // Verifica si 'cantidad' es un campo input o un texto en td
-            if ($(`.cantidad[data-index='${index}'] input`).length > 0) {
-                cantidad = parseFloat($(`.cantidad[data-index='${index}'] input`).val()) || 0;
-            } else {
-                cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
-            }
-
-            let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
-            let totalFila = cantidad * precioUnitario;
-            let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
-            let iva = (totalFila * porcentaje_iva) / 100;
-            let total = totalFila + iva;
-            // Actualiza el total de la fila en el td.calculo-total correspondiente
-            $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(4)}`);
-
-            // Sumar el total de esta fila al total general
-            totalGeneral += total;
-        });
-
-        // Actualiza el total general
-        $('#total-general').text(`$ ${totalGeneral.toFixed(4)}`);
-    }
 
 
     /*$('#form_proyectos').on('submit', function (event) {
@@ -673,3 +640,148 @@ $(function () {
     }
 
 });
+
+function calcularTotalProducto($cantidad, $valor, $iva) {
+    console.log($cantidad);
+    console.log($valor);
+    console.log($iva);
+    let totalFila = $cantidad * $valor;
+    let iva = (totalFila * $iva) / 100;
+    let total = totalFila + iva;
+    return total;
+}
+
+// Función para calcular el total de cada fila y el total general
+function calcularTotalFilasYGeneral() {
+    let totalGeneral = 0;
+
+    $('.precio-unitario').each(function () {
+        let index = $(this).data('index');
+        let cantidad;
+
+        // Verifica si 'cantidad' es un campo input o un texto en td
+        if ($(`.cantidad[data-index='${index}'] input`).length > 0) {
+            cantidad = parseFloat($(`.cantidad[data-index='${index}'] input`).val()) || 0;
+        } else {
+            cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
+        }
+
+        let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
+        let totalFila = cantidad * precioUnitario;
+        let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
+        let iva = (totalFila * porcentaje_iva) / 100;
+        let total = totalFila + iva;
+        // Actualiza el total de la fila en el td.calculo-total correspondiente
+        $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(4)}`);
+
+        // Sumar el total de esta fila al total general
+        totalGeneral += total;
+    });
+
+    // Actualiza el total general
+    $('#total-general').text(`$ ${totalGeneral.toFixed(4)}`);
+}
+
+
+
+
+function inicializarPlugins() {
+    // Input mask
+    $('.input-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ".",   // Definir el punto decimal
+        groupSeparator: ",",  // Separador de miles (opcional)
+        digits: 4,         // Número de dígitos decimales
+        autoGroup: true,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: false,   // Permitir números negativos
+        placeholder: $('.input-double').data('placeholder')
+    });
+
+    $('.input-enteros').inputmask({
+        alias: 'numeric',
+        rightAlign: false,      // No alinear a la derecha
+        allowMinus: false,      // No permitir números negativos
+        digits: 0,              // No permitir decimales
+        min: 0,                 // Valor mínimo (0 o positivo)
+        max: undefined,         // Puedes establecer un valor máximo si lo deseas
+        integerDigits: undefined, // Número máximo de dígitos permitidos en el entero (opcional)
+        placeholder: "",         // Dejar vacío el placeholder si lo deseas
+        autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
+    });
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: "",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 4,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency");
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: ",",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 4,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_separador_miles");
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: "",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 2,                   // Número de decimales
+        digitsOptional: true,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true,          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_two_decimals");
+
+    Inputmask({
+        alias: "datetime",
+        inputFormat: "HH:MM",
+        placeholder: "00:00",
+
+    }).mask(".dateTime");
+
+    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false });
+
+    $('.select2-tag').each(function () {
+        let $select = $(this);
+
+        let config = {
+            width: '100%',
+            allowClear: false, // Permite limpiar la selección
+            tags: true, // Permite agregar nuevas opciones escribiendo
+            placeholder: function () {
+                return $(this).data('placeholder');
+            },
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') {
+                    return null;
+                }
+                return {
+                    id: term,
+                    text: term,
+                    newTag: true
+                };
+            },
+            insertTag: function (data, tag) {
+                data.unshift(tag); // Inserta la nueva opción al principio
+            }
+        };
+
+        // Guardar la configuración original en `data()`
+        $select.data('select2-config', config).select2(config);
+    });
+}

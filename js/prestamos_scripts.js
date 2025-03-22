@@ -16,7 +16,7 @@ $(function () {
         });
 
         $.ajax({
-            url: '/proveedores',
+            url: base_url + '/proveedores',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'categoria_proveedor': 5 },
