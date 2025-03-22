@@ -112,7 +112,7 @@
                                                         <i class="fa-regular fa-pen-to-square"></i>
                                                     </a>
                                                     <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
-                                                        data-id="{{ $rubro->id }}">
+                                                        data-id="{{ $presupuestoProyecto->id }}">
                                                         <i class="fa-regular fa-xmark"></i>
                                                     </a>
                                                 </td>

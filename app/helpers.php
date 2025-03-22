@@ -199,13 +199,13 @@ if (!function_exists('generateProductCode')) {
 }
 
 if (!function_exists('registrarProducto')) {
-    function registrarProducto($tipo, $descripcion)
+    function registrarProducto($tipo, $descripcion, $valor = null, $iva = null)
     {
         $tipo_producto = $tipo->slug == 'meteriales.herramientas' ? 'tipo.adquisiciones.bienes' : 'tipo.adquisiciones.servicios';
         $categoria = CatalogoDato::where('slug', $tipo_producto)->first();
         $type = $tipo->slug == 'meteriales.herramientas' ? 'B-' : 'S-';
         $code = generateProductCode($type);
-        $create =  Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'activo' => true]);
+        $create =  Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'valor_unitario' => $valor, 'iva' => $iva, 'activo' => true]);
 
         return $create;
     }
@@ -269,11 +269,12 @@ if (!function_exists('registrarProducto')) {
 
     function getUnidadMedidas($isSelected = false)
     {
-        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
+        $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida');
         if ($isSelected) {
-            $unidad_medidas = $unidad_medidas->prepend('', '');
+            $unidad_medidas = $unidad_medidas->pluck('descripcion', 'id')->prepend('', '');
+        } else {
+            $unidad_medidas = $unidad_medidas->get();
         }
-
         return $unidad_medidas;
     }
 
@@ -292,7 +293,7 @@ if (!function_exists('registrarProducto')) {
         $subTotal = $cantidad * $valor;
         $iva = ($subTotal * $iva) / 100;
         $total = $subTotal + $iva;
-        return $total;
+        return  $total;
     }
 
     /**
@@ -515,5 +516,24 @@ if (!function_exists('palabras')) {
         $combined->prepend('', '');
 
         return $combined;
+    }
+
+    function produtosPluck()
+    {
+        $productos = Articulo::where('activo', true)->pluck('descripcion', 'id');
+        $productos->prepend('', '');
+        return $productos;
+    }
+
+    function getNecesidades($isSelected = false)
+    {
+        if ($isSelected) {
+            $necesidades = DiccionarioPalabra::orderBy('palabra', 'asc')->pluck('palabra', 'id');
+            $necesidades->prepend('', '');
+        } else {
+            $necesidades = DiccionarioPalabra::orderBy('palabra', 'asc')->get();
+        }
+
+        return $necesidades;
     }
 }

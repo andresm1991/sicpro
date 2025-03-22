@@ -66,6 +66,9 @@
             </div>
         </div>
     </div>
+    {{-- abrir modal para agregar nuevo producto al pedido  --}}
+    <div class="col-12">
+        <button type="button" class="btn btn-dark" data-toggle="modal" data-backdrop="static" data-keyboard="false"
+            data-target="#agregarProductosModal">Agregar producto</button>
+    </div>
 </div>
-
-<h4>Detalle pedido</h4>

@@ -200,6 +200,9 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/adquisiciones/{tipo}/crear', [AdquisicionController::class, 'nuevaAdquisicionAdministrativo'])->name('adquisiciones.create');
         Route::post('/adquisiciones/{tipo}/guardar', [AdquisicionController::class, 'storeAdquisicionAdministrativo'])->name('adquisiciones.store');
         Route::get('/adquisiciones/{tipo}/buscar-adquisicion', [AdquisicionController::class, 'buscarAdquisicionAdministrativo']);
+        Route::put('{tipo}/agregar-producto/{adquisicion}', [AdministrativoController::class, 'agergarProductoAdquisicion']);
+        Route::delete('/adquisiciones/eliminar/{adquisicionId}', [AdministrativoController::class, 'destroyPedido']);
+
 
         Route::get('/contratistas', [AdministrativoController::class, 'indexContratistas'])->name('index.contratistas');
         Route::get('/contratistas/detalle/{contratista}', [AdministrativoController::class, 'detalleContratistas'])->name('contratista.detalle');

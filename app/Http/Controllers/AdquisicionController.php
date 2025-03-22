@@ -721,14 +721,14 @@ class AdquisicionController extends Controller
 
         if ($request->ajax()) {
             $buscar = $request->buscar;
-            $tipo_busqueda  = $request->tipo == 'pendientes' ? 'En Proceso' : 'Completado';
+            $tipo_busqueda  = $request->tipo == 'pendientes' ? 'Finalizado' : 'Completado';
             $output = '';
 
             $adquisiciones = Adquisicion::where('numero', 'LIKE', '%' . $buscar . '%')
                 ->where('tipo_adquisicion', $tipo)
                 ->where('estado', $tipo_busqueda)
                 ->orderBy('fecha', 'desc')
-                ->get();
+                ->paginate(15);
 
             foreach ($adquisiciones as $index => $adquisicion) {
                 $opciones_boton = '';

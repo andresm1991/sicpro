@@ -51,7 +51,7 @@
 
                     @include('administrativo.adquisiciones.partials.form')
                     @include('administrativo.adquisiciones.partials.items')
-
+                    {{--  
                     @if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado)
                         <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
                             role="alert">
@@ -63,7 +63,7 @@
                                     edición de la orden.</a></small>
                         </div>
                     @endif
-
+                    --}}
                 </div>
             </div>
             {!! Form::close() !!}

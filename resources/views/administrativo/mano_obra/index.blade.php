@@ -32,5 +32,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/administrativo_scripts.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/administrativo_scripts.js') }}" type="module"></script>
 @endsection

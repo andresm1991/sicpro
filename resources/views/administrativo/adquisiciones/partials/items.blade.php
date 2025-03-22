@@ -1,9 +1,13 @@
+<h4 class="mt-4">Detalle pedido</h4>
 <div class="table-responsive" id="table">
     <table class="table table-bordered table-hover" id="table-adquisiciones">
         <thead>
             <tr>
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
+                @if ($adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
+                    <th scope="col">KM</th>
+                @endif
                 <th scope="col" class="text-center">Cantidad</th>
                 <th scope="col" class="text-center">Unidad Medida</th>
                 <th scope="col">Valor Unitario</th>
@@ -12,20 +16,25 @@
                 <th scope="col">Necesidad</th>
                 @if ($tipo == 'administrativo')
                     <th scope="col" class="text-center">Inventario</th>
-                    <th></th>
                 @endif
-
+                <th scope="col"></th>
             </tr>
         </thead>
         <tbody>
             @foreach ($adquisicion->adquisiciones_detalle as $index => $detalle)
                 <tr class="elementos-agregados">
                     <td class="align-middle">{{ $index + 1 }}</td>
-                    <td class="align-middle">{{ $detalle->producto->descripcion }}</td>
-                    <td class="align-middle text-center cantidad" data-index="{{ $index }}">
-                        {{ $detalle->cantidad_solicitada }}
-
-                        {{ Form::hidden('cantidad[' . $index . ']', $detalle->cantidad_solicitada) }}
+                    <td class="align-middle">
+                        {{ $detalle->producto->descripcion }}
+                        {{ Form::hidden('productos[' . $index . ']', $detalle->articulo_id) }}
+                    </td>
+                    @if ($adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
+                        <td class="align-middle">
+                            <span>{{ $detalle->kilometraje }}</span>
+                        </td>
+                    @endif
+                    <td class="align-middle text-center cantidad col-md-1 col-12" data-index="{{ $index }}">
+                        {{ Form::text('cantidad[' . $index . ']', old('cantidad.' . $index, $detalle->cantidad_solicitada), ['class' => 'form-control input-double', 'placeholder' => '0', 'data-index' => $index]) }}
                     </td>
 
                     <td class="align-middle">
@@ -50,7 +59,7 @@
                         ) !!}
                     </td>
                     <td class="align-middle calculo-total" data-index="{{ $index }}">$
-                        {{ calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva) }}
+                        {{ number_format(calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva), 4) }}
                     </td>
                     <td class="align-middle">
                         {{ $detalle->necesidad }}
@@ -68,15 +77,15 @@
                                     for="cb3-{{ $index }}"></label>
                             </div>
                         </td>
-                        <td class="align-middle table-actions">
-                            <div class="action-buttons">
-                                <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
-                                    id=""><i class="fa-solid fa-trash-can"></i></a>
-                            </div>
-                        </td>
-
-                        <input type="hidden" name="productos[]" value="{{ $detalle->articulo_id }}">
                     @endif
+                    <td class="align-middle table-actions">
+                        <div class="action-buttons">
+                            <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                id="">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
                 </tr>
             @endforeach
 

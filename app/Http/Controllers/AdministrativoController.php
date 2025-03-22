@@ -20,6 +20,7 @@ use App\Models\OrdenRecepcion;
 use App\Models\AdquisicionDetalle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Http\Requests\RecepcionAdquisicionAdministrativoRequest;
@@ -119,26 +120,22 @@ class AdministrativoController extends Controller
     }
 
     /**
-     * Funcion que actualiza solo los valores de las aquisicones operativas
+     * Funcion que actualiza aquisicones operativas
      */
     private function actualizarAdquisicionOperativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
-        if ($adquisicion->estado == 'Completado' && is_null($adquisicion->factura) && !empty($request->numero_factura)) {
-            $adquisicion->factura = $request->numero_factura;
-            $adquisicion->save();
-
-            LogService::log('info', 'Actualizacion factura de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
-
-            return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la factura con éxito.');
-        } elseif ($adquisicion->estado == 'Completado') {
+        if ($adquisicion->estado == 'Completado') {
+            if (is_null($adquisicion->factura) && !empty($request->numero_factura)) {
+                $adquisicion->factura = $request->numero_factura;
+                $adquisicion->save();
+                LogService::log('info', 'Actualizacion factura de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
+                return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la factura con éxito.');
+            }
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible actualizar la información de una adquisición que está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
         }
 
         // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
-        $valoresLimpios = array_map(function ($value) {
-            return preg_replace('/[^0-9.]/', '', $value); // Elimina $ y otros caracteres no numéricos
-        }, $request->input('valor', []));
-
+        $valoresLimpios = array_map(fn($value) => preg_replace('/[^0-9.]/', '', $value), $request->input('valor', []));
         // Reemplaza los valores en el request con los valores limpios
         $request->merge(['valor' => $valoresLimpios]);
 
@@ -177,49 +174,58 @@ class AdministrativoController extends Controller
         $array_unidad_medida = $request->unidad_medida;
         $array_valor_unidatrio = $request->valor;
         $array_iva_producto = $request->iva_producto;
-        $unidadMedidaCase = "CASE";
-        $valorCase = "CASE";
-        $ids = [];
+        $array_cantidad = $request->cantidad;
+        $array_necesidad = $request->necesidad;
+        $array_productos = $request->productos;
+
+        $adquisicionesActuales = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->pluck('articulo_id')->toArray();
+        $productos_eliminar = array_diff($adquisicionesActuales, $array_productos);
+
         try {
-            foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
-                if (!is_numeric($array_unidad_medida[$index])) {
-                    $id = registrarUnidadMedida($array_unidad_medida[$index]);
-                } else {
-                    $id = $array_unidad_medida[$index];
-                }
-                $valor = quitarSimboloUSD($array_valor_unidatrio[$index]);
-
-                $unidadMedidaCase .= " WHEN id = {$detalle->id} THEN '{$id}'";
-                $valorCase .= " WHEN id = {$detalle->id} THEN {$valor}";
-                $ids[] = $detalle->id;
-
-                // registrar precio unitario del producto y el iva
-                $articulo = Articulo::find($detalle->articulo_id);
-                $articulo->valor_unitario = $array_valor_unidatrio[$index];
-                $articulo->iva = $array_iva_producto[$index];
-                $articulo->save();
-            }
-
-            $unidadMedidaCase .= " END";
-            $valorCase .= " END";
-
             DB::beginTransaction();
-            DB::table('adquisiciones_detalle')
-                ->whereIn('id', $ids)
-                ->update([
-                    'unidad_medida_id' => DB::raw($unidadMedidaCase),
-                    'valor' => DB::raw($valorCase)
-                ]);
-            DB::commit();
+
+            foreach ($array_productos as $index => $producto) {
+                $id = is_numeric($array_unidad_medida[$index]) ? $array_unidad_medida[$index] : registrarUnidadMedida($array_unidad_medida[$index]);
+                $valor = $array_valor_unidatrio[$index];
+
+                $articulo_id = is_numeric($producto) ? $producto : registrarProducto($adquisicion->tipo_etapa, $producto, $valor, $array_iva_producto[$index])->id;
+
+                AdquisicionDetalle::updateOrCreate(
+                    ['adquisicion_id' => $adquisicion->id, 'articulo_id' => $articulo_id],
+                    [
+                        'cantidad_solicitada' => str_replace(',', '', $array_cantidad[$index]),
+                        'unidad_medida_id' => $id,
+                        'valor' => $valor,
+                        'iva' => $array_iva_producto[$index],
+                        'necesidad' => $array_necesidad[$index],
+                        'kilometraje' => $request->kilometraje ? $request->kilometraje[$index] : null,
+                    ]
+                );
+
+                if (is_numeric($producto)) {
+                    // registrar precio unitario del producto y el iva
+                    $articulo = Articulo::find($producto);
+                    $articulo->valor_unitario = $array_valor_unidatrio[$index];
+                    $articulo->iva = $array_iva_producto[$index];
+                    $articulo->save();
+                }
+                // Agregar palabras a la tabla de palabras
+                agregarPalabra($array_necesidad[$index]);
+            }
 
             $adquisicion->factura = $request->numero_factura;
-            // Actualizar el estado a completado 
             if ($estado) {
                 $adquisicion->estado = "Completado";
-
-                PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' completo la información de la aquisición operativa #' . $adquisicion->numero, route('pdf.recepcion', $adquisicion->id));
+                PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' completó la información de la adquisición operativa #' . $adquisicion->numero, route('pdf.recepcion', $adquisicion->id));
             }
             $adquisicion->save();
+            /// Eliminr los articulos que no estan en $array_productos
+            if (!empty($productos_eliminar)) {
+                AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)
+                    ->whereIn('articulo_id', $productos_eliminar)->delete();
+            }
+
+            DB::commit();
 
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
 
@@ -234,6 +240,7 @@ class AdministrativoController extends Controller
     private function actualizarAdquisicionAdministrativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
         try {
+
             if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->completado) {
                 return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
             }
@@ -442,6 +449,44 @@ class AdministrativoController extends Controller
             DB::rollBack();
             LogService::log('error', 'Error al crear orden de recepción', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
+    }
+
+    public function destroyPedido(Request $request, $adquisicionId)
+    {
+        if ($request->ajax()) {
+            // Buscar la adquisición por ID
+            $pedido = Adquisicion::find($adquisicionId);
+
+            if ($pedido) {
+                // Eliminar el registro de la base de datos
+                if ($pedido->delete()) {
+                    // Verificar si hay un archivo asociado
+                    if ($pedido->archivo && Storage::disk('digitalocean')->exists($pedido->archivo)) {
+                        // Eliminar el archivo
+                        Storage::disk('digitalocean')->delete($pedido->archivo);
+                    }
+
+                    // Registrar el log
+                    LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
+
+                    return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ocurrió un error al intentar eliminar el registro, por favor vuelva a intentar si el problema persiste comuníquese con el administrador del sistema.'
+                    ]);
+                }
+            } else {
+                return response()->json(['success' => false, 'message' => 'No se encontró el registro solicitado.']);
+            }
+        }
+    }
+
+    public function agergarProductoAdquisicion(Request $request, Adquisicion $adquisicion)
+    {
+        if ($request->ajax()) {
+            return $request->all();
         }
     }
 

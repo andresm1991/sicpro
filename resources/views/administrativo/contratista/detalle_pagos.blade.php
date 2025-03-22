@@ -42,7 +42,7 @@
                                         {{ $pagos->forma_pago }}
                                     </td>
                                     <td class="align-middle">
-                                        $ {{ number_format($pagos->valor,2) }}
+                                        $ {{ number_format($pagos->valor, 2) }}
                                     </td>
                                     <td class="align-middle">
                                         {{ $pagos->detalle }}
@@ -66,8 +66,8 @@
                                     </td>
                                 </tr>
                             @endforelse
-    
-    
+
+
                         </tbody>
                     </table>
                 </div>
@@ -75,7 +75,7 @@
             </div>
         </div>
     </section>
-   
+
 @endsection
 
 @section('scripts')
@@ -83,6 +83,5 @@
         var url =
             "{{ route('administrativo.contratista.detalle', $contratista->id) }}";
     </script>
-    <script src="{{ asset('js/administrativo_scripts.js') }}" type="text/javascript"></script>
+    <script src="{{ asset('js/administrativo_scripts.js') }}" type="module"></script>
 @endsection
-

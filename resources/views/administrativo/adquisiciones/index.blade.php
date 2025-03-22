@@ -25,13 +25,13 @@
                     </div>
                 </div><!--.tab-content-->
             </div> <!--.col-12-->
-            
+
         </div><!--.row-->
-        
+
     </section>
 @endsection
 
 @section('scripts')
-    
-    <script src="{{ asset('js/administrativo_scripts.js') }}"></script>
+
+    <script src="{{ asset('js/administrativo_scripts.js') }}" type="module"></script>
 @endsection

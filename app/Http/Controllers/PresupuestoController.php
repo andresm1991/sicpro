@@ -26,6 +26,7 @@ class PresupuestoController extends Controller
 
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
 
+
         $unidades_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
         $etapas_construccion = CatalogoDato::getChildrenCatalogo('etapas.construccion')->pluck('descripcion', 'id');
         $categorias_presupuesto = CategoriaPresupuesto::where('activo', 1)->pluck('nombre', 'id');
@@ -171,7 +172,7 @@ class PresupuestoController extends Controller
             $id = $request->rubro;
             try {
                 DB::beginTransaction();
-                PresupuestoProyecto::where('rubro_presupuesto_id', $id)->delete();
+                PresupuestoProyecto::find($id)->delete();
                 DB::commit();
                 return response()->json(['success' => true, 'mensaje' => 'Rubro eliminado correctamente']);
             } catch (\Exception $e) {
@@ -190,7 +191,7 @@ class PresupuestoController extends Controller
             try {
                 DB::beginTransaction();
                 $rubros = RubroPresupuesto::where('categoria_presupuesto_id', $categoria_id)->pluck('id');
-                PresupuestoProyecto::whereIn('rubro_presupuesto_id', $rubros)->where('proyecto_id', $proyecto)->delete();
+                PresupuestoProyecto::where('proyecto_id', $proyecto)->whereIn('rubro_presupuesto_id', $rubros)->delete();
                 DB::commit();
                 return response()->json(['success' => true, 'mensaje' => 'Categoría eliminada correctamente']);
             } catch (\Exception $e) {

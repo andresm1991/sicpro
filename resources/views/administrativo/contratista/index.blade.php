@@ -26,12 +26,12 @@
                 </div><!--.tab-content-->
             </div>
         </div>
-        
+
     </section>
 
 @endsection
 
 @section('scripts')
-    
-    <script type="text/javascript" src="{{ asset('js/administrativo_scripts.js') }}"></script>
+
+    <script type="text/javascript" src="{{ asset('js/administrativo_scripts.js') }}" type="module"></script>
 @endsection

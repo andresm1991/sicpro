@@ -69,7 +69,9 @@ class Proyecto extends Model
             ->with(['rubrosPresupuesto' => function ($query) use ($proyectoId) {
                 $query->whereHas('presupuestoProyectos', function ($q) use ($proyectoId) {
                     $q->where('proyecto_id', $proyectoId);
-                })->with('presupuestoProyectos');
+                })->with(['presupuestoProyectos' => function ($q) use ($proyectoId) {
+                    $q->where('proyecto_id', $proyectoId);
+                }]);
             }])
             ->get();
     }

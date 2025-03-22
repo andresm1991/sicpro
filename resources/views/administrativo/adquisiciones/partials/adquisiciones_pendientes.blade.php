@@ -46,31 +46,20 @@
                     <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion) }}</td>
 
                     <td class="align-middle align-middle text-right text-truncate">
-                        @if ($tipo == 'operativo')
-                            <button type="button" class="btn btn-outline-dark" data-container="body"
-                                data-toggle="popover" data-placement="left" data-trigger="focus"
-                                data-content ="
-                                        <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Detalle</a>
-                                        <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a>
-                                    ">
-                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                            </button>
-                        @else
-                            <button type="button" class="btn btn-outline-dark" data-container="body"
-                                data-toggle="popover" data-placement="left" data-trigger="focus"
-                                data-content ="
-                                <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar Pedido</a>
-                                <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a>
-                            ">
-                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                            </button>
-                        @endif
-
+                        <button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover"
+                            data-placement="left" data-trigger="focus"
+                            data-content ="
+                        <a href='{{ route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar</a>
+                        <a href='#' class='dropdown-item eliminar-adquisicion' id='{{ $adquisicion->id }}'>Eliminar</a>
+                        <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a>
+                    ">
+                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                        </button>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7" class="text-center text-danger">No se encontraron datos para
+                    <td colspan="6" class="text-center text-danger">No se encontraron datos para
                         mostrar....
                     </td>
                 </tr>

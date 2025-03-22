@@ -174,5 +174,5 @@
 
 
 @section('scripts')
-    <script src="{{ asset('js/administrativo_scripts.js') }}"></script>
+    <script src="{{ asset('js/administrativo_scripts.js') }}" type="module"></script>
 @endsection

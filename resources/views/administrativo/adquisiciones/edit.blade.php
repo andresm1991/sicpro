@@ -51,21 +51,14 @@
                     @include('administrativo.adquisiciones.partials.form_recepcion')
                     @include('administrativo.adquisiciones.partials.items')
 
-
-                    @if ($tipo == 'administrativo' && (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->completado))
-                        <div class="alert alert-success alert-dismissible fade show d-flex align-items-center"
-                            role="alert">
-                            <i class="fa-regular fa-triangle-exclamation fa-3x"></i>
-                            <small class="mx-4">La orden de recepción fue completada. Por motivos de seguridad, si desea
-                                actualizar la información, por favor solicite al administrador que habilite esta orden. Para
-                                hacerlo, haga clic en el siguiente enlace: <a href="#"
-                                    class="text-dark font-weight-bold"> Solicitar
-                                    edición de la orden.</a></small>
-                        </div>
-                    @endif
                 </div>
             </div>
             {{ Form::close() }}
         </div>
     </section>
+
+    @include('modals.agregar_productos_modal', ['adquisicion' => $adquisicion])
+@endsection
+@section('scripts')
+    <script src="{{ asset('js/administrativo_scripts.js') }}" type="module"></script>
 @endsection
