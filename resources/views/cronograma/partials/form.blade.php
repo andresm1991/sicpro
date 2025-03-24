@@ -16,27 +16,41 @@
             <tbody>
                 @php
                     $rubroActual = null; // Rastrea el rubro actual
+                    $rowspanCount = 0; // Contador para el rowspan
+                    $rowspanMap = []; // Mapa para almacenar los rowspan de cada rubro
+                @endphp
+
+                <!-- Calcular los rowspan para cada rubro -->
+                @foreach ($diasSemana as $dia)
+                    @php
+                        $rubrosDia = $rubrosPorDia[$dia] ?? ['rubros' => '', 'observaciones' => ''];
+                        $rubroNombre = $rubrosDia['rubros'];
+
+                        if (!isset($rowspanMap[$rubroNombre])) {
+                            $rowspanMap[$rubroNombre] = 0;
+                        }
+                        $rowspanMap[$rubroNombre]++;
+                    @endphp
+                @endforeach
+
+                @php
+                    $rubroActual = null; // Reiniciar el rubro actual para la iteración principal
                 @endphp
 
                 @foreach ($diasSemana as $dia)
                     @php
-                        $rubroDia = $rubrosPorDia[$dia] ?? null;
+                        $rubrosDia = $rubrosPorDia[$dia] ?? ['rubros' => '', 'observaciones' => ''];
+                        $rubroNombre = $rubrosDia['rubros'];
                         $esInicioRubro = false;
 
                         // Detectar el inicio de un nuevo rubro
-                        if ($rubroDia && $rubroDia['id'] !== ($rubroActual['id'] ?? null)) {
-                            $rubroActual = $rubroDia;
+                        if ($rubroNombre !== ($rubroActual ?? null)) {
+                            $rubroActual = $rubroNombre;
                             $esInicioRubro = true;
                         }
 
-                        // Contar cuántos días abarca este rubro para el rowspan
-                        $rowspan = 1;
-                        if ($esInicioRubro) {
-                            $rowspan = count($rubrosAgrupados[$rubroDia['id']]['dias']);
-                        }
-
                         // Obtener la observación del día (si existe)
-                        $observacion = $rubroDia['observacion'] ?? '';
+                        $observacion = $rubrosDia['observaciones'];
                     @endphp
 
                     <tr>
@@ -44,8 +58,8 @@
                         <td class="align-middle font-weight-bold">
                             <div class="form-check">
                                 <input name="dias[{{ $dia }}][checked]" class="form-check-input"
-                                    type="checkbox" value="{{ $rubroDia['id'] ?? '' }}" id="check_{{ $dia }}"
-                                    {{ isset($rubroDia) ? 'checked' : '' }} data-rubro-id="{{ $rubroDia['id'] ?? '' }}">
+                                    type="checkbox" value="{{ $rubroNombre ? 'checked' : '' }}"
+                                    id="check_{{ $dia }}" {{ $rubroNombre ? 'checked' : '' }}>
                                 <label class="form-check-label" for="check_{{ $dia }}">
                                     {{ ucfirst($dia) }}
                                 </label>
@@ -53,11 +67,12 @@
                         </td>
 
                         <!-- Rubro (solo en la primera fila del grupo) -->
-                        @if ($esInicioRubro)
-                            <td rowspan="{{ $rowspan }}" class="align-middle text-center font-weight-bold">
-                                {{ $rubroDia['nombre'] }}
+                        @if ($esInicioRubro && $rubroNombre)
+                            <td rowspan="{{ $rowspanMap[$rubroNombre] }}"
+                                class="align-middle text-center font-weight-bold">
+                                {{ $rubroNombre }}
                             </td>
-                        @elseif(!$rubroDia)
+                        @elseif(!$rubroNombre)
                             <td class="align-middle text-center font-weight-bold"></td>
                         @endif
 
@@ -70,7 +85,7 @@
                         </td>
                     </tr>
 
-                    {!! Form::hidden("dias[$dia][rubo]", $rubroDia['id'] ?? '') !!}
+                    {!! Form::hidden("dias[$dia][rubo]", $rubroNombre) !!}
                 @endforeach
             </tbody>
         </table>

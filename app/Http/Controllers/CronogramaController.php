@@ -183,30 +183,34 @@ class CronogramaController extends Controller
             ];
         });
 
-
         // Extraer todos los días únicos (lunes a domingo)
         $diasSemana = config('app.diasSemana', []);
 
         $rubrosPorDia = [];
         // Procesar actividades para mapear días y rubros
-        foreach ($actividades as $actividad) {
-            foreach ($actividad['dias'] as $dia => $observacion) {
+        foreach ($cronogramas as $cronograma) {
+            $dia = $cronograma->dia;
+            $rubroNombre = $cronograma->rubro_cronograma->descripcion;
+            $observacion = $cronograma->observacion;
+
+            if (!isset($rubrosPorDia[$dia])) {
                 $rubrosPorDia[$dia] = [
-                    'id' => $actividad['rubro_cronograma_id'],
-                    'nombre' => $actividad['rubro_cronograma_nombre'],
-                    'observacion' => $observacion
+                    'rubros' => [],
+                    'observaciones' => []
                 ];
             }
+
+            $rubrosPorDia[$dia]['rubros'][] = $rubroNombre;
+            $rubrosPorDia[$dia]['observaciones'][] = $observacion;
         }
 
-        // Agrupar rubros por ID para contar los rowspan
-        $rubrosAgrupados = [];
-        foreach ($rubrosPorDia as $dia => $rubro) {
-            $rubrosAgrupados[$rubro['id']]['nombre'] = $rubro['nombre'];
-            $rubrosAgrupados[$rubro['id']]['dias'][] = $dia;
+        // Concatenar los rubros y observaciones para cada día
+        foreach ($rubrosPorDia as $dia => $data) {
+            $rubrosPorDia[$dia]['rubros'] = implode(', ', $data['rubros']);
+            $rubrosPorDia[$dia]['observaciones'] = implode(', ', $data['observaciones']);
         }
 
-        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'actividades', 'rubrosPorDia', 'rubrosAgrupados', 'diasSemana'));
+        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'rubrosPorDia', 'diasSemana'));
     }
 
     public function updateActividadesDiaSemana(Request $request)
@@ -273,10 +277,10 @@ class CronogramaController extends Controller
                             [
                                 'proyecto_id' => $proyecto,
                                 'semana' => $semana,
-                                'dia' => $dia
+                                'dia' => $dia,
+                                'rubro_cronograma_id' => $rubro_cronograma
                             ],
                             [
-                                'rubro_cronograma_id' => $rubro_cronograma,
                                 'observacion' => $info['observacion'] ?? null
                             ]
                         );
