@@ -34,13 +34,13 @@ class Solicitud extends Model
 
     public static function getSolicitudesPorUsuario()
     {
-        $user_id = auth()->user()->id;
-        if ($user_id > 1) {
-            $solicitudes = Solicitud::where('usuario_id', $user_id)
-                ->orderBy('fecha_solicitud', 'desc')
+
+        if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial')) {
+            $solicitudes = Solicitud::orderBy('fecha_solicitud', 'desc')
                 ->paginate(15);
         } else {
-            $solicitudes = Solicitud::orderBy('fecha_solicitud', 'desc')
+            $solicitudes = Solicitud::where('usuario_id', auth()->user()->id)
+                ->orderBy('fecha_solicitud', 'desc')
                 ->paginate(15);
         }
         return  $solicitudes;
