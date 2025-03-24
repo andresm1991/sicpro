@@ -612,58 +612,19 @@ $(function () {
                     </td>
                 </tr>
         `;
+
         $('tbody').append(nuevaFila);
+
+
         inicializarPlugins();
         calcularTotalFilasYGeneral();
         clearInputs();
+        $('#tr-default').hide();
 
-        return;
-        $.ajax({
-            url: base_url + '/administrativo/adquisicion/agregar-producto/' + data.adquisicion_id,
-            headers: { 'X-CSRF-TOKEN': csrf },
-            type: 'PUT',
-            data: data,
-            beforeSend: function () {
-                $('#modal-overlay').show();
-            },
-            success: function (response) {
-                Swal.fire({
-                    icon: response.success ? "success" : "error",
-                    text: response.message,
-                    confirmButtonText: 'Aceptar',
-                }).then((result) => {
-                    if (response.success) {
-                        window.location.reload();
-                    }
-                });
-            },
-            complete: function () {
-                $('#modal-overlay').hide();
-            },
-            error: function (xhr, status, error) {
-                console.error("Error en la solicitud AJAX:", error);
-            }
-        }).fail(function (jqXHR, textStatus, errorThrown) {
-            switch (jqXHR.status) {
-                case 422: // ERROR INPUT VALIDATE
-
-                    break;
-
-                case 419: // ERROR EXPIRATE SESSION
-                    window.location = '/';
-                    break;
-
-                default:
-                    var errors = JSON.parse(jqXHR.responseText);
-                    Swal.fire(
-                        'Ups.!',
-                        'Algo salió mal, por favor vuelva a intentarlo.',
-                        'error'
-                    )
-                    console.log(errors)
-            }
+        Toast.fire({
+            icon: 'success',
+            title: 'Producto agregado correctamente.',
         });
-
     });
 
 

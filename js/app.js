@@ -359,7 +359,7 @@ $(function () {
     $('.input-double').inputmask({
         alias: 'decimal',  // Usar el alias "decimal"
         radixPoint: ".",   // Definir el punto decimal
-        groupSeparator: ",",  // Separador de miles (opcional)
+        groupSeparator: "",  // Separador de miles (opcional)
         digits: 4,         // Número de dígitos decimales
         autoGroup: true,   // Agrupar los miles
         rightAlign: false, // Alinear a la izquierda
@@ -689,8 +689,8 @@ function inicializarPlugins() {
     // Input mask
     $('.input-double').inputmask({
         alias: 'decimal',  // Usar el alias "decimal"
-        radixPoint: ".",   // Definir el punto decimal
-        groupSeparator: ",",  // Separador de miles (opcional)
+        radixPoint: ",",   // Definir el punto decimal
+        groupSeparator: ".",  // Separador de miles (opcional)
         digits: 4,         // Número de dígitos decimales
         autoGroup: true,   // Agrupar los miles
         rightAlign: false, // Alinear a la izquierda
