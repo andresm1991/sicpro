@@ -7,7 +7,7 @@
     <div class="form-group col-md-6">
         <label class="col-form-label">razón social {!! $slug != 'mano.obra' ? '<i class="fa-regular fa-asterisk fa-2xs"></i>' : '' !!}</label>
         {{ Form::text('razon_social', old('razon_social', $proveedor->razon_social), ['class' => 'form-control', 'placeholder' => 'Ingrese razón social']) }}
-        {!! $errors->first('documento', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
+        {!! $errors->first('razon_social', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
     </div>
 </div>
 
