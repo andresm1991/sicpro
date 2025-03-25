@@ -72,7 +72,9 @@ class ProveedorController extends Controller
             $parametros = [
                 'categoria_proveedor_id' => $menu_id,
                 'documento' => $request->get('documento'),
-                'razon_social' => $request->get('nombres'),
+                'razon_social' => $request->get('razon_social'),
+                'nombres' => $request->get('nombres'),
+                'apellidos' => $request->get('apellidos'),
                 'telefono' => $telefonos,
                 'correo' => $request->get('email'),
                 'direccion' => $request->get('direccion'),
@@ -146,7 +148,9 @@ class ProveedorController extends Controller
         DB::beginTransaction();
         try {
             $proveedor->documento = $request->get('documento');
-            $proveedor->razon_social = $request->get('nombres');
+            $proveedor->razon_social = $request->get('razon_social');
+            $proveedor->nombres = $request->get('nombres');
+            $proveedor->apellidos = $request->get('apellidos');
             $proveedor->correo = $request->get('email');
             $proveedor->direccion = $request->get('direccion');
             $proveedor->banco_id = $request->get('banco');

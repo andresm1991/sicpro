@@ -173,18 +173,27 @@ class CronogramaController extends Controller
             ->get();
 
         // Agrupar los datos por rubro_cronograma_id
+        // Agrupar los datos por rubro_cronograma_id
         $actividades = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
             return [
                 'rubro_cronograma_id' => $grupo->first()->rubro_cronograma->id,
                 'rubro_cronograma_nombre' => $grupo->first()->rubro_cronograma->descripcion,
                 'dias' => $grupo->mapWithKeys(function ($item) {
-                    return [$item->dia => $item->observacion];
+                    return [$item->dia => ['observacion' => $item->observacion, 'id' => $item->id]];
                 })->toArray(),
             ];
         });
 
         // Extraer todos los días únicos (lunes a domingo)
         $diasSemana = config('app.diasSemana', []);
+
+        // Estructurar los datos para la tabla
+        $tablaDatos = [];
+        foreach ($actividades as $actividad) {
+            foreach ($diasSemana as $dia) {
+                $tablaDatos[$actividad['rubro_cronograma_nombre']][$dia] = $actividad['dias'][$dia] ?? ['observacion' => '', 'id' => null];
+            }
+        }
 
         $rubrosPorDia = [];
         // Procesar actividades para mapear días y rubros
@@ -210,11 +219,12 @@ class CronogramaController extends Controller
             $rubrosPorDia[$dia]['observaciones'] = implode(', ', $data['observaciones']);
         }
 
-        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'rubrosPorDia', 'diasSemana'));
+        return view('cronograma.editar_actividades_semana', compact('title_page', 'breadcrumbs', 'proyecto', 'semana', 'rubrosPorDia', 'diasSemana', 'tablaDatos'));
     }
 
     public function updateActividadesDiaSemana(Request $request)
     {
+        return $request->all();
         try {
             DB::beginTransaction();
             $proyecto = $request->proyecto;

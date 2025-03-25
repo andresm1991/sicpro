@@ -128,6 +128,10 @@
             background-size: contain;
             background-repeat: no-repeat;
         }
+
+        .bg-success {
+            background-color: #28a745 !important;
+        }
     </style>
 </head>
 
@@ -166,67 +170,24 @@
         <table class="tabla-actividades">
             <thead class="thead-dark">
                 <tr>
-                    <th scope="col">Día</th>
                     <th scope="col">Rubro</th>
-                    <th scope="col">Observación</th>
+
+                    @foreach ($info_cronograma_dias['diasSemana'] as $dia)
+                        <th>{{ ucfirst($dia) }}</th>
+                    @endforeach
+                    <th scope="col">Observaciones</th>
                 </tr>
             </thead>
             <tbody>
-                @php
-                    $rubroActual = null; // Rastrea el rubro actual
-                    $rubrosPorDia = $info_cronograma_dias['rubrosPorDia'];
-                    $rubrosAgrupados = $info_cronograma_dias['rubrosAgrupados'];
-                    $diasSemana = $info_cronograma_dias['diasSemana'];
-                @endphp
-
-                @foreach ($diasSemana as $dia)
-                    @php
-
-                        $rubroDia = $rubrosPorDia[$dia] ?? null;
-                        $esInicioRubro = false;
-
-                        // Detectar el inicio de un nuevo rubro
-                        if ($rubroDia && $rubroDia['id'] !== ($rubroActual['id'] ?? null)) {
-                            $rubroActual = $rubroDia;
-                            $esInicioRubro = true;
-                        }
-
-                        // Contar cuántos días abarca este rubro para el rowspan
-                        $rowspan = 1;
-                        if ($esInicioRubro) {
-                            $rowspan = count($rubrosAgrupados[$rubroDia['id']]['dias']);
-                        }
-
-                        // Obtener la observación del día (si existe)
-                        $observacion = $rubroDia['observacion'] ?? '';
-                    @endphp
-
+                @foreach ($info_cronograma_dias['tablaDatos'] as $rubro => $dias)
                     <tr>
-                        <!-- Nombre del día con checkbox -->
-                        <td class="align-middle font-weight-bold">
-                            <div class="form-check">
-                                <input name="dias[{{ $dia }}][checked]" class="form-check-input"
-                                    type="checkbox" value="{{ $rubroDia['id'] ?? '' }}" id="check_{{ $dia }}"
-                                    {{ isset($rubroDia) ? 'checked' : '' }} data-rubro-id="{{ $rubroDia['id'] ?? '' }}">
-                                <label class="form-check-label" for="check_{{ $dia }}">
-                                    {{ ucfirst($dia) }}
-                                </label>
-                            </div>
-                        </td>
-
-                        <!-- Rubro (solo en la primera fila del grupo) -->
-                        @if ($esInicioRubro)
-                            <td rowspan="{{ $rowspan }}" class="align-middle text-center font-weight-bold">
-                                {{ $rubroDia['nombre'] }}
-                            </td>
-                        @elseif(!$rubroDia)
-                            <td class="align-middle text-center font-weight-bold"></td>
-                        @endif
-
-                        <!-- Observación -->
-                        <td class="align-middle">
-                            {!! $observacion !!}
-                        </td>
+                        <td>{{ $rubro }}</td>
+                        @foreach ($info_cronograma_dias['diasSemana'] as $dia)
+                            <td class="{{ $dias[$dia]['id'] ? 'bg-success' : '' }}"></td>
+                            {!! Form::hidden("dias[$dia]['id']", $dias[$dia]['id'] ?? 'null') !!}
+                        @endforeach
+                        <td class="aling-middle">
+                            {{ implode(', ', array_column($info_cronograma_dias['tablaDatos'], 'observacion')) }}</td>
                     </tr>
                 @endforeach
             </tbody>

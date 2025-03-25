@@ -35,7 +35,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">RUC-CI</th>
-                                    <th scope="col">Nombre</th>
+                                    <th scope="col">Razón social</th>
                                     @if ($slug != 'meteriales.herramientas')
                                         @switch($slug)
                                             @case('mano.obra')
@@ -54,9 +54,9 @@
                                             @break
 
                                             @default
-                                            <th scope="col">
-                                                Producto
-                                            </th>
+                                                <th scope="col">
+                                                    Producto
+                                                </th>
                                         @endswitch
                                     @endif
                                     <th scope="col">Teléfono 1</th>
@@ -70,13 +70,15 @@
                                 @forelse ($proveedores as $proveedor)
                                     <tr id="{{ $proveedor->id }}">
                                         <td class="align-middle">{{ $proveedor->documento }}</td>
-                                        <td class="align-middle text-capitalize">{{ $proveedor->razon_social }}</td>
+                                        <td class="align-middle text-capitalize">
+                                            {{ $proveedor->razon_social ?? $proveedor->nombres . ' ' . $proveedor->apellidos }}
+                                        </td>
                                         @if ($slug != 'meteriales.herramientas')
                                             <td class="align-middle text-capitalize">
                                                 @foreach ($proveedor->proveedor_articulos as $proveedor_articulo)
-                                                <span class="badge badge-secondary">
-                                                    {{ $proveedor_articulo->articulo->descripcion }}
-                                                </span>
+                                                    <span class="badge badge-secondary">
+                                                        {{ $proveedor_articulo->articulo->descripcion }}
+                                                    </span>
                                                 @endforeach
                                             </td>
                                             <td class="align-middle text-capitalize">

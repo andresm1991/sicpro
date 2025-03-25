@@ -38,9 +38,10 @@
                             </div>
                         </div>
 
-                        <div class="col-md-2 ">
+                        {{--  <div class="col-md-2 ">
                             <button class="btn btn-dark btn-options btn-block">Guardar</button>
                         </div>
+                        --}}
                     </div>
                 </li>
             </ul>

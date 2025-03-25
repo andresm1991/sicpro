@@ -143,9 +143,12 @@ class GenerarPdfController extends Controller
     public function planificacionManoObraPDF(ManoObra $mano_obra, $pago = false)
     {
         // Obtener todos los registros de mano de obra y agruparlos por proveedor y fechas
-        $detalles = DetalleManoObra::with(['proveedor', 'articulo'])
-            ->where('mano_obra_id', $mano_obra->id)
-            ->orderBy('fecha', 'asc')
+        $detalles = DetalleManoObra::select('detalle_mano_obra.*') // Selecciona todas las columnas de detalle_mano_obras
+            ->join('proveedores', 'detalle_mano_obra.proveedor_id', '=', 'proveedores.id') // Une con la tabla proveedores
+            ->where('mano_obra_id', $mano_obra->id) // Filtra por mano_obra_id
+            ->orderBy('proveedores.apellidos', 'asc') // Ordena por el nombre del proveedor
+            ->orderBy('detalle_mano_obra.fecha', 'asc') // También puedes ordenar por fecha
+            ->with(['proveedor', 'articulo']) // Carga las relaciones para acceso posterior
             ->get();
         $agrupados = $detalles->groupBy('proveedor_id');
 
@@ -191,7 +194,7 @@ class GenerarPdfController extends Controller
                         $articulo = $detalle->articulo;
                         $proveedor = $detalle->proveedor;
 
-                        $fila['nombre'] = strtoupper($proveedor->razon_social);
+                        $fila['nombre'] = strtoupper($proveedor->apellidos . ' ' . $proveedor->nombres);
                         // El cargo puede cambiar por artículo
                         $fila['cargo'] = $articulo->descripcion;
 
@@ -299,6 +302,7 @@ class GenerarPdfController extends Controller
         $categorias = $proyecto->presupuestoValorado($proyecto->id);
         $plazo_semanas = plazoSemanasProyecto($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
         $plazo_meses = calcularMesesEntreFechas($proyecto->fecha_inicio, $proyecto->fecha_finalizacion);
+
         $cronogramas = Cronograma::with('rubro_cronograma')
             ->where('proyecto_id', $proyecto->id)
             ->orderBy('id', 'asc')
@@ -392,37 +396,26 @@ class GenerarPdfController extends Controller
             ->get();
 
         // Agrupar los datos por rubro_cronograma_id
+        // Agrupar los datos por rubro_cronograma_id
         $actividades = $cronogramas->groupBy('rubro_cronograma_id')->map(function ($grupo) {
             return [
                 'rubro_cronograma_id' => $grupo->first()->rubro_cronograma->id,
                 'rubro_cronograma_nombre' => $grupo->first()->rubro_cronograma->descripcion,
                 'dias' => $grupo->mapWithKeys(function ($item) {
-                    return [$item->dia => $item->observacion];
+                    return [$item->dia => ['observacion' => $item->observacion, 'id' => $item->id]];
                 })->toArray(),
             ];
         });
 
-
         // Extraer todos los días únicos (lunes a domingo)
         $diasSemana = config('app.diasSemana', []);
 
-        $rubrosPorDia = [];
-        // Procesar actividades para mapear días y rubros
+        // Estructurar los datos para la tabla
+        $tablaDatos = [];
         foreach ($actividades as $actividad) {
-            foreach ($actividad['dias'] as $dia => $observacion) {
-                $rubrosPorDia[$dia] = [
-                    'id' => $actividad['rubro_cronograma_id'],
-                    'nombre' => $actividad['rubro_cronograma_nombre'],
-                    'observacion' => $observacion
-                ];
+            foreach ($diasSemana as $dia) {
+                $tablaDatos[$actividad['rubro_cronograma_nombre']][$dia] = $actividad['dias'][$dia] ?? ['observacion' => '', 'id' => null];
             }
-        }
-
-        // Agrupar rubros por ID para contar los rowspan
-        $rubrosAgrupados = [];
-        foreach ($rubrosPorDia as $dia => $rubro) {
-            $rubrosAgrupados[$rubro['id']]['nombre'] = $rubro['nombre'];
-            $rubrosAgrupados[$rubro['id']]['dias'][] = $dia;
         }
 
 
@@ -432,8 +425,7 @@ class GenerarPdfController extends Controller
             'proyecto' => $proyecto->nombre_proyecto,
             'semana' => $semana,
             'fecha_semana' => $fecha_semanas[$semana],
-            'rubrosPorDia' => $rubrosPorDia,
-            'rubrosAgrupados' => $rubrosAgrupados,
+            'tablaDatos' => $tablaDatos,
             'diasSemana' => $diasSemana,
         ];
 

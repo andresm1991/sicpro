@@ -13,6 +13,8 @@ class Proveedor extends Model
         'categoria_proveedor_id',
         'documento',
         'razon_social',
+        'nombres',
+        'apellidos',
         'telefono',
         'correo',
         'direccion',
