@@ -11,6 +11,7 @@ use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DetalleResumenPagoSemanal;
+use App\Models\Proveedor;
 use App\Models\Tarea;
 
 if (!function_exists('encrypted_route')) {
@@ -535,5 +536,16 @@ if (!function_exists('palabras')) {
         }
 
         return $necesidades;
+    }
+
+    function getProveedores($isSelected = false)
+    {
+        if ($isSelected) {
+            $proveedores = Proveedor::pluck('razon_social', 'id');
+            $proveedores->prepend('', '');
+        } else {
+            $proveedores = Proveedor::get();
+        }
+        return $proveedores;
     }
 }

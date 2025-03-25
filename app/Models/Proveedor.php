@@ -39,4 +39,9 @@ class Proveedor extends Model
     {
         return $this->hasMany(Prestamo::class);
     }
+
+    public function categoria_proveedor()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'categoria_proveedor_id');
+    }
 }

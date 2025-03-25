@@ -65,6 +65,21 @@
                         </div>
 
                         <div class="form-group col-sm-4">
+                            <label for="" class="col-form-label">Proveedores </label>
+                            {{ Form::select('proveedor', [], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione proveedor', 'data-allow-clear' => 'true']) }}
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label for="" class="col-form-label">Productos </label>
+                            {{ Form::select('producto', [], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione producto', 'data-allow-clear' => 'true']) }}
+                        </div>
+
+                        <div class="form-group col-sm-4">
+                            <label for="" class="col-form-label">Cargos </label>
+                            {{ Form::select('cargo', [], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione cargo', 'data-allow-clear' => 'true']) }}
+                        </div>
+
+                        <div class="form-group col-sm-4">
                             <label for="" class="col-form-label">Necesidad </label>
                             {{ Form::select('necesidad', $necesidades, '', ['class' => 'form-control', 'data-placeholder' => 'seleccione necesidad', 'data-allow-clear' => 'true']) }}
                         </div>
