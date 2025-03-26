@@ -13,7 +13,6 @@ $(function () {
 
         // Eliminar cualquier sufijo previo agregado al action
         formAction = formAction.split('/pdf')[0].split('/excel')[0];
-
         // Agregar el valor de tipo_reporte como parámetro en la URL
         $('#form-reporte-adquisiciones').attr('action', `${formAction}/${action}`);
 
