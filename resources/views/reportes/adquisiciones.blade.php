@@ -99,10 +99,41 @@
                             ) }}
                         </div>
                     </div>
-                </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">fecha</th>
+                                    <th scope="col">numero</th>
+                                    <th scope="col">proyecto</th>
+                                    <th scope="col">etapa</th>
+                                    <th scope="col">tipo</th>
+                                    <th scope="col">estado</th>
+                                    <th scope="col">tipo adquisicion</th>
+                                    <th scope="col">factura</th>
+                                    <th scope="col">total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                    <td class="aling-middle"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div> {{-- end div car body --}}
 
                 <div class="card-footer bg-transparent text-right">
-                    <button type="button" class="btn btn-dark generar-reporte" data-action="pdf">Generar pdf</button>
+                    <button type="button" class="btn btn-dark generar-reporte" data-action="view">Generar</button>
+                    <button type="button" class="btn btn-dark generar-reporte" data-action="pdf">Exportar a pdf</button>
                     <button type="button" class="btn btn-dark generar-reporte" data-action="excel">Exportar a
                         excel</button>
                 </div>

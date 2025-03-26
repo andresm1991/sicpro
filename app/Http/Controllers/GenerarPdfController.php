@@ -452,17 +452,15 @@ class GenerarPdfController extends Controller
         $costo = $request->input('costo'); // Ejemplo: null o valor de costo
         $tipo_reporte = $request->input('tipo_reporte'); // Ejemplo: null o "pdf/excel"
 
-        if ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaFin))->format('Y-m-d');
-        }
-
         $query = Adquisicion::query();
 
         // Filtrar por estado
         $query->when($estado, function ($q, $estado) {
-            $q->where('estado', $estado);
+            if ($estado == 'pendientes') {
+                $q->whereIn('estado', ['En Proceso', 'Finalizado']);
+            } else {
+                $q->where('estado', $estado);
+            }
         });
 
         // Filtrar por proyecto
@@ -480,14 +478,26 @@ class GenerarPdfController extends Controller
             $q->where('tipo_etapa_id', $tipo);
         });
 
-        // Filtrar por rango de fechas
-        $query->when(isset($fechaInicioFormatted) && isset($fechaFinFormatted), function ($q) use ($fechaInicioFormatted, $fechaFinFormatted) {
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
-        });
+        if ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaFin))->format('Y-m-d');
+
+            // Filtrar por rango de fechas
+            $query->when(isset($fechaInicioFormatted) && isset($fechaFinFormatted), function ($q) use ($fechaInicioFormatted, $fechaFinFormatted) {
+                $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+            });
+        }
 
         // Filtrar por costo (INDIRECTOS O DIRECTOS)
         $query->when($costo, function ($q, $costo) {
             $q->where('etapa_id', $costo);
+        });
+
+        $query->when($necesidad, function ($q, $necesidad) {
+            $q->whereHas('adquisiciones_detalle', function ($query) use ($necesidad) {
+                $query->where('necesidad', $necesidad);
+            });
         });
 
         // Ordenar por secuencial u otro criterio
