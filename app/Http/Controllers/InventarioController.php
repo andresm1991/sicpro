@@ -30,8 +30,9 @@ class InventarioController extends Controller
         return view('inventario.index', compact('list_inventario', 'productos', 'title_page', 'breadcrumbs'));
     }
 
-    public function detalle($producto){
-        
+    public function detalle($producto)
+    {
+
         $title_page = 'Detalle Producto';
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -43,7 +44,6 @@ class InventarioController extends Controller
         $detalle_inventario = Inventario::where('producto_id', $producto)->paginate(15);
 
         return view('inventario.detalle_producto', compact('detalle_inventario', 'title_page', 'breadcrumbs'));
-
     }
 
     public function store(Request $request)
@@ -74,8 +74,9 @@ class InventarioController extends Controller
         }
     }
 
-    public function darDeBajaProducto(Request $request){
-        if($request->ajax()){
+    public function darDeBajaProducto(Request $request)
+    {
+        if ($request->ajax()) {
             try {
                 DB::beginTransaction();
                 $id = $request->id;
@@ -83,11 +84,11 @@ class InventarioController extends Controller
 
                 $inventario = Inventario::find($id);
                 $existencias = $inventario->cantidad - $inventario->cantidad_debaja;
-                if($cantidad_baja > $existencias){
-                    throw new Exception('No es posible actualizar el inventario, verifique que la cantidad no sea mayor a las existencias disponibles.');    
+                if ($cantidad_baja > $existencias) {
+                    throw new Exception('No es posible actualizar el inventario, verifique que la cantidad no sea mayor a las existencias disponibles.');
                 }
                 $inventario->cantidad_debaja = $cantidad_baja;
-                if($inventario->save()){
+                if ($inventario->save()) {
                     DB::commit();
                     return response()->json(['success' => true, 'mensaje' => 'Producto dado de baja.']);
                 }
@@ -99,7 +100,8 @@ class InventarioController extends Controller
             }
         }
     }
-    public function destroy($id){
+    public function destroy($id)
+    {
         $delete = Inventario::find($id)->delete();
         if ($delete) {
             return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
@@ -108,7 +110,8 @@ class InventarioController extends Controller
         }
     }
 
-    public function destroyInventario ($idProdcuto) {
+    public function destroyInventario($idProdcuto)
+    {
         $delete = Inventario::where('producto_id', $idProdcuto)->delete();
         if ($delete) {
             return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
@@ -143,7 +146,7 @@ class InventarioController extends Controller
                                 ' . $inventario->estado . '/10
                             </div>
                         </div>';
-            $detalle = "<a href='". route('sistema.inventario.detalle', $inventario->producto_id) ."' class='dropdown-item'>Detalle</a>";
+            $detalle = "<a href='" . route('sistema.inventario.detalle', $inventario->producto_id) . "' class='dropdown-item'>Detalle</a>";
             $eliminar = "<a href='javascript:void(0);' class='dropdown-item eliminar-inventario' id='" . $inventario->id . "'>Eliminar</a>";
 
             $output .= ' <tr id="' . $index . '">' .

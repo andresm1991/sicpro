@@ -73,6 +73,7 @@
                         </tbody>
                     </table>
                 </div>
+                @include('partials.pagination', ['paginator' => $list_inventario, 'interval' => 5])
             </div>
         </div>
     </section>

@@ -27,7 +27,7 @@ class Inventario extends Model
         return self::select('producto_id', DB::raw("
         SUM(cantidad) as total_cantidad,
         SUM(cantidad_debaja) as total_cantidad_debaja,
-         ROUND(AVG(estado)) as estado
+        ROUND(AVG(estado)) as estado
     "))
             ->with(['producto']) // Asegurarse de cargar la relación con Producto
             ->when($filtro_busqueda, function ($query, $filtro_busqueda) {
@@ -38,7 +38,7 @@ class Inventario extends Model
             })
             ->groupBy('producto_id') // Agrupar solo por producto_id
             ->paginate(15)
-            ->map(function ($producto) {
+            ->through(function ($producto) {
                 // Calcular el stock basado en cantidad y cantidad_debaja
                 $producto->stock = $producto->total_cantidad - $producto->total_cantidad_debaja;
                 return $producto;
