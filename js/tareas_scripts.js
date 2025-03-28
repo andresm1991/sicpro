@@ -389,7 +389,7 @@ $(function () {
 
     });
 
-    $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal', function () {
+    $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal, #filtroExportarTareasModal', function () {
         $(this).find('.select2-basic-single').each(function () {
             let $select = $(this);
 
@@ -440,6 +440,16 @@ $(function () {
             $select.select2(newOptions);
         });
     });
+
+    $(document).on('click', '#exportar-tarea', function () {
+        var form = $("#form_filtro_tareas");
+        var data = getFormData(form);
+        const baseUrl = '/generar-pdf/exportar-tareas';
+        const params = new URLSearchParams(data).toString(); // Convertir el objeto de datos a una cadena de consulta
+        const url = `${baseUrl}?${params}`; // Construir la URL con los parámetros de consulta
+        window.open(url, '_blank');
+    });
+
 
     function getComentariosTarea() {
         $.ajax({

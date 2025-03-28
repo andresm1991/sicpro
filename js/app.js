@@ -784,4 +784,8 @@ function inicializarPlugins() {
         // Guardar la configuración original en `data()`
         $select.data('select2-config', config).select2(config);
     });
+
+    $("select").select2({
+        with: 'resolve',
+    });
 }

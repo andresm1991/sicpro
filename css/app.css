@@ -2082,6 +2082,14 @@ actividades-seleccionadas div {
     }
 }
 
+.font-size-10 {
+    font-size: 10px;
+}
+
+.font-size-11 {
+    font-size: 11px;
+}
+
 .font-size-12 {
     font-size: 12px;
 }
@@ -2115,6 +2123,35 @@ actividades-seleccionadas div {
 section {
     padding-bottom: 20px;
     margin: 20px 0 0 0;
+}
+
+.bd-callout-info {
+    border-left-color: #5bc0de !important;
+}
+
+.bd-callout-warning {
+    border-left-color: #f0ad4e !important;
+}
+
+.bd-callout-danger {
+    border-left-color: #d9534f !important;
+}
+
+.bd-callout-success {
+    border-left-color: #5cb85c !important;
+}
+
+.bd-callout-primary {
+    border-left-color: #337ab7 !important;
+}
+
+.bd-callout {
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #eee;
+    border-left-width: .25rem;
+    border-radius: .25rem
 }
 
 /*===========================================================*/
