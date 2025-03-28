@@ -548,4 +548,11 @@ if (!function_exists('palabras')) {
         }
         return $proveedores;
     }
+
+    function getEstadosTarea()
+    {
+        $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
+        $estados->prepend('', '');
+        return $estados;
+    }
 }

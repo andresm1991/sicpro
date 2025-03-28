@@ -227,6 +227,9 @@ class TareaController extends Controller
         }
     }
 
+    /**
+     * DELETE - Eliminar colaborador de tarea
+     */
     private function getTasksByState($stateSlug, $filtroAgenda = '', $filtroAgendaUser = '')
     {
         // Verificar si el usuario es administrador

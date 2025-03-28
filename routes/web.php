@@ -284,6 +284,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::delete('/eliminar-comentario/{comentario}', [TareaController::class, 'deleteComentario']);
         Route::delete('/eliminar-tarea/{tarea}', [TareaController::class, 'deleteTarea']);
         Route::put('/actualizar-estado-tarea/{tarea}', [TareaController::class, 'updateEstadoTarea']);
+        Route::get('/exportar-tareas', [TareaController::class, 'exportarTareas']);
     });
 
     //**  RUTAS REPORTES */
@@ -316,6 +317,7 @@ Route::group(['middleware' => ['auth']], function () {
 
         Route::get('/resumen-pago-semanal-pdf/{resumen}', [GenerarPdfController::class, 'pdfResumenPagoSemanal'])->name('resumen.pago.semanal');
         Route::post('/reporte/{tipo}', [GenerarPdfController::class, 'reportAdquisiciones'])->name('reporte.adquisiciones');
+        Route::get('/exportar-tareas', [GenerarPdfController::class, 'exportarTareas'])->name('export.tareas');
     });
     //** FIN RUTAS GENERAR PDF */
     Route::get('/bancos', [CatalogoDatoController::class, 'getBancos']);

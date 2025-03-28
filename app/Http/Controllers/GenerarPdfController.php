@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use PDF;
 use Carbon\Carbon;
+use App\Models\Tarea;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
@@ -451,9 +452,20 @@ class GenerarPdfController extends Controller
         $necesidad = $request->input('necesidad'); // Ejemplo: null o valor de necesidad
         $costo = $request->input('costo'); // Ejemplo: null o valor de costo
         $tipo_reporte = $request->input('tipo_reporte'); // Ejemplo: null o "pdf/excel"
+        $cargo = $request->input('cargo'); // Ejemplo: null o ID del cargo
+        $proveedor = $request->input('proveedor'); // Ejemplo: null o ID del proveedor
+        $producto = $request->input('producto'); // Ejemplo: null o ID del producto
 
-        $query = Adquisicion::query();
 
+        $tipoAdquisisicon = CatalogoDato::find($tipo);
+        if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
+            $query = Adquisicion::dataReporteAdquisiciones($request);
+        } elseif ($tipoAdquisisicon->slug == 'contratista') {
+            $query = Contratista::query();
+        } else {
+            $query = ManoObra::query();
+        }
+        return $query;
         // Filtrar por estado
         $query->when($estado, function ($q, $estado) {
             if ($estado == 'pendientes') {
@@ -500,6 +512,13 @@ class GenerarPdfController extends Controller
             });
         });
 
+        // Filtrar por producto
+        $query->when($producto, function ($q, $producto) {
+            $q->whereHas('adquisiciones_detalle', function ($query) use ($producto) {
+                $query->where('articulo_id', $producto);
+            });
+        });
+
         // Ordenar por secuencial u otro criterio
         switch ($ordenado) {
             case 'secuencial':
@@ -520,6 +539,15 @@ class GenerarPdfController extends Controller
         $resultados = $query->get();
 
         return $resultados;
+    }
+
+    public function exportarTareas(Request $request)
+    {
+        $infoTarea = Tarea::filtroTareas($request);
+        $infoTarea = $infoTarea->groupBy('estado.descripcion');
+
+        $pdf = PDF::loadView('pdf.tareas', compact('infoTarea'))->setPaper('a3', 'landscape');
+        return $pdf->stream('tareas.pdf');
     }
 
     private function logoBase64()

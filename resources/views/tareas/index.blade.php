@@ -26,11 +26,20 @@
                 </ul>
                 <div class="card-body ">
                     <div class="row">
-                        <div class="col-md-4 col-12">
+                        <div class="col-auto">
                             <div class="form-group">
                                 <a href="javascript:void(0);" class="btn btn-dark btn-sm" data-toggle="modal"
                                     data-backdrop="static" data-keyboard="false" data-target="#tareasModal">
                                     <i class="fa-light fa-user-plus"></i> Nueva Tarea
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-auto">
+                            <div class="form-group">
+                                <a href="javascript:void(0);" class="btn btn-secondary btn-sm" data-toggle="modal"
+                                    data-backdrop="static" data-keyboard="false" data-target="#filtroExportarTareasModal">
+                                    <i class="fa-solid fa-file-pdf"></i> Exportar Tareas
                                 </a>
                             </div>
                         </div>
@@ -150,6 +159,7 @@
 
     @include('modals.tareas')
     @include('modals.comentarios_tarea', ['estados' => $estados])
+    @include('modals.filtro_exportar_tareas_modal')
 @endsection
 
 @section('scripts')

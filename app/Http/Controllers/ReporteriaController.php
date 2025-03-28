@@ -34,7 +34,7 @@ class ReporteriaController extends Controller
         $proyectos = Proyecto::pluck('nombre_proyecto', 'id')->prepend('', '');
         $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id')->prepend('', '');
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->where('slug', '!=', 'profecionales')->pluck('descripcion', 'id')->prepend('', '');
-        $necesidades = DiccionarioPalabra::pluck('palabra', 'id')->prepend('', '');
+        $necesidades = DiccionarioPalabra::pluck('palabra', 'palabra')->prepend('', '');
 
         return view('reportes.adquisiciones', compact('title_page', 'breadcrumbs', 'proyectos', 'etapas', 'tipoAdquisiciones', 'necesidades'));
     }
