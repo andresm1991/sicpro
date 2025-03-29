@@ -456,7 +456,6 @@ class GenerarPdfController extends Controller
         $proveedor = $request->input('proveedor'); // Ejemplo: null o ID del proveedor
         $producto = $request->input('producto'); // Ejemplo: null o ID del producto
 
-
         $tipoAdquisisicon = CatalogoDato::find($tipo);
         if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
             $query = Adquisicion::dataReporteAdquisiciones($request);
@@ -466,6 +465,8 @@ class GenerarPdfController extends Controller
             $query = ManoObra::query();
         }
         return $query;
+
+
         // Filtrar por estado
         $query->when($estado, function ($q, $estado) {
             if ($estado == 'pendientes') {

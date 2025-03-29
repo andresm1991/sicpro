@@ -164,4 +164,79 @@ class ManoObra extends Model
 
         return $info_mano_obra;
     }
+
+    public static function filtroManoObra($request)
+    {
+        $ordenado = $request->input('ordenado');
+        $fechas = $request->input('fechas');
+        $estado = $request->input('estado');
+        $proyecto = $request->input('proyecto');
+        $etapa = $request->input('etapa');
+        $tipo = $request->input('tipo');
+        $proveedor = $request->input('proveedor');
+        $cargo = $request->input('cargo');
+
+        $query = self::with(['proyecto', 'etapa', 'actividad', 'usuario']);
+
+        $query->when($proveedor, function ($query) use ($proveedor) {
+            $query->where('proveedor_id', $proveedor);
+        });
+        $query->when($proyecto, function ($query) use ($proyecto) {
+            $query->where('proyecto_id', $proyecto);
+        });
+        $query->when($etapa, function ($query) use ($etapa) {
+            $query->where('etapa_id', $etapa);
+        });
+        $query->when($tipo, function ($query) use ($tipo) {
+            $query->where('tipo_etapa_id', $tipo);
+        });
+
+        $query->when($fechas, function ($q) use ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+        });
+
+        $query->when($cargo, function ($q, $cargo) {
+            $q->whereHas('detalle_mano_obra', function ($query) use ($cargo) {
+                $query->where('articulo_id', $cargo);
+            })->with(['detalle_mano_obra' => function ($query) use ($cargo) {
+                $query->where('articulo_id', $cargo); // Filtrar por el producto específico
+            }]);
+        });
+
+
+        // Ordenar por secuencial u otro criterio
+        switch ($ordenado) {
+            case 'secuencial':
+                $query->orderBy('id', 'asc');
+                break;
+            case 'fecha':
+                $query->orderBy('fecha', 'asc');
+                break;
+            case 'alfabetico':
+                $query->orderBy('proveedor.razon_social', 'asc');
+                break;
+            default:
+                # code...
+                break;
+        }
+
+        return $query->get()->map(function ($mano_obra) {
+            // Calcular el total para todos los detalles
+            $total = $mano_obra->detalle_mano_obra->sum(function ($detalle) use ($mano_obra) {
+                $valor = $detalle->valor ?? 0;
+                $adicional = $detalle->adicional ?? 0;
+                $descuento = $detalle->descuento ?? 0;
+
+                return $valor + $adicional - $descuento;
+            });
+
+            return [
+                'mano_obra' => $mano_obra,
+                'total' => '$ ' . number_format($total, 4),
+            ];
+        });
+    }
 }

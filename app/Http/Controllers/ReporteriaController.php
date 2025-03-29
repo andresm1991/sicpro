@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Articulo;
-use App\Models\CatalogoDato;
-use App\Models\DiccionarioPalabra;
-use App\Models\Proveedor;
+use App\Models\ManoObra;
 use App\Models\Proyecto;
+use App\Models\Proveedor;
+use App\Models\Adquisicion;
+use App\Models\Contratista;
+use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
+use App\Models\DiccionarioPalabra;
 
 class ReporteriaController extends Controller
 {
@@ -70,6 +73,36 @@ class ReporteriaController extends Controller
             return response()->json([
                 'success' => true,
                 'result' => $result,
+            ]);
+        }
+    }
+
+    /**
+     * Método para visualizar el reporte de adquisiciones
+     * @return \Illuminate\Http\Response
+     */
+    public function visualizarReporteAdquisiciones(Request $request)
+    {
+        try {
+            $tipo = $request->input('tipo');
+
+            $tipoAdquisisicon = CatalogoDato::find($tipo);
+            if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
+                $query = Adquisicion::dataReporteAdquisiciones($request);
+            } elseif ($tipoAdquisisicon->slug == 'contratista') {
+                $query = Contratista::filtroContratista($request);
+            } else {
+                $query = ManoObra::filtroManoObra($request);
+            }
+            return response()->json([
+                'success' => true,
+                'result' => $query,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
+                'error' => $th->getLine(),
             ]);
         }
     }

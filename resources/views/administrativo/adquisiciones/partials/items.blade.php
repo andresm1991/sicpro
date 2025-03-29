@@ -5,7 +5,7 @@
             <tr>
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
-                @if ($adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
+                @if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
                     <th scope="col">KM</th>
                 @endif
                 <th scope="col" class="text-center">Cantidad</th>
@@ -28,7 +28,7 @@
                         {{ $detalle->producto->descripcion }}
                         {{ Form::hidden('productos[' . $index . ']', $detalle->articulo_id) }}
                     </td>
-                    @if ($adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
+                    @if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
                         <td class="align-middle">
                             <span>{{ $detalle->kilometraje }}</span>
                         </td>
