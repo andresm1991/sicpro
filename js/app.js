@@ -789,3 +789,12 @@ function inicializarPlugins() {
         with: 'resolve',
     });
 }
+
+function formatearUSD(valor) {
+    return Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
+    }).format(valor)
+}

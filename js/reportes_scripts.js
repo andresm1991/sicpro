@@ -3,6 +3,15 @@ import { getFormData } from './helpers.js';
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     $('.generar-reporte').on('click', function () {
+        let tipo_reporte = $('select[name=tipo]').val();
+        if (tipo_reporte == '') {
+            Swal.fire(
+                'Ups.!',
+                'Por favor seleccione un tipo de reporte.',
+                'error'
+            )
+            return false;
+        }
         const action = $(this).data('action'); // Obtener el valor de data-action
 
         // Actualizar el campo oculto con el tipo de reporte
@@ -18,6 +27,229 @@ $(function () {
 
         // Enviar el formulario
         $('#form-reporte-adquisiciones').submit();
+    });
+
+    $('#visualizar-reporte').on('click', function () {
+        let tipo_reporte_text = $('select[name=tipo] option:selected').text();
+        let tipo_reporte = $('select[name=tipo]').val();
+        let producto = $('select[name=producto]').val();
+        let proveedor = $('select[name=proveedor]').val();
+        let cargo = $('select[name=cargo]').val();
+        let cargo_text = $('select[name=cargo] option:selected').text();
+
+        if (tipo_reporte == '') {
+            Swal.fire(
+                'Ups.!',
+                'Por favor seleccione un tipo para continuar.',
+                'error'
+            )
+            return false;
+        }
+        var form = $("#form-reporte-adquisiciones");
+        var data = getFormData(form);
+
+        $.ajax({
+            url: 'visulizar-reporte-adquisiciones',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: data,
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                const data = response.result;
+                let totalGeneral = 0;
+                $('#table-view-reporte').empty();
+
+                if (!response.success || data.length == 0) {
+                    Swal.fire(
+                        'Ups.!',
+                        'No se encontraron resultados.',
+                        'error'
+                    )
+                    return;
+                }
+                if (tipo_reporte_text.toLowerCase() == 'contratistas') {
+
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm" id="table-view-reporte">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">fecha</th>
+                                    <th scope="col">proyecto</th>
+                                    <th scope="col">porveedor</th>
+                                    <th scope="col">producto</th>
+                                    <th scope="col">plazo semanas</th>
+                                    <th scope="col">etapa</th>
+                                    <th scope="col">estado</th>
+                                    <th scope="col">total</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+                        let valor = item.total;
+                        // Paso 1: Eliminar el símbolo "$" y espacios
+                        valor = valor.replace('$', '').trim();
+                        // Paso 2: Eliminar las comas ","
+                        valor = valor.replace(/,/g, '');
+                        // Paso 3: Convertir a número
+                        valor = parseFloat(valor);
+
+                        totalGeneral += valor
+
+                        return `
+                                <tr>
+                                    <td>${item.contratista.fecha}</td>
+                                    <td>${item.contratista.proyecto.nombre_proyecto}</td>
+                                    <td>${item.contratista.proveedor.razon_social}</td>
+                                    <td>${item.contratista.articulo.descripcion}</td>
+                                    <td>${item.contratista.plazo_semanas}</td>
+                                    <td>${item.contratista.etapa.descripcion}</td>
+                                    <td>${item.contratista.estado.descripcion}</td>
+                                    <td>${item.total}</td>
+                                </tr>
+                            `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7" class="text-right"><strong>Total General:</strong></td>
+                                <td colspan="2" class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
+                            </tr>
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                } else if (tipo_reporte_text.toLowerCase() == 'mano de obra') {
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm" id="table-view-reporte">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">proyecto</th>
+                                    <th scope="col">semana</th>
+                                    <th scope="col">fecha inicio</th>
+                                    <th scope="col">fecha fin</th>
+                                    <th scope="col">etapa</th>
+                                    <th scope="col">actividad</th>
+                                    ${cargo != '' ? '<th scope="col">cargo</th>' : ''}
+                                    <th scope="col">total</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+                        let valor = item.total;
+                        // Paso 1: Eliminar el símbolo "$" y espacios
+                        valor = valor.replace('$', '').trim();
+                        // Paso 2: Eliminar las comas ","
+                        valor = valor.replace(/,/g, '');
+                        // Paso 3: Convertir a número
+                        valor = parseFloat(valor);
+
+                        totalGeneral += valor
+
+                        return `
+                                <tr>
+                                    <td>${item.mano_obra.proyecto.nombre_proyecto}</td>
+                                    <td>${item.mano_obra.semana}</td>
+                                    <td>${item.mano_obra.fecha_inicio}</td>
+                                    <td>${item.mano_obra.fecha_fin}</td>
+                                    <td>${item.mano_obra.etapa.descripcion}</td>
+                                    <td>${item.mano_obra.actividad ? item.mano_obra.actividad.descripcion : ''}</td>
+                                    ${cargo != '' ? `<td>${cargo_text}</td>` : ''}
+                                    <td>${item.total}</td>
+                                </tr>
+                            `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="${cargo != '' ? '6' : '5'}" class="text-right"><strong>Total General:</strong></td>
+                                <td colspan="2" class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
+                            </tr>
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                } else {
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm" id="table-view-reporte">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">fecha</th>
+                                    <th scope="col">numero</th>
+                                    <th scope="col">proyecto</th>
+                                    <th scope="col">etapa</th>
+                                    <th scope="col">estado</th>
+                                    <th scope="col">tipo adquisicion</th>
+                                    <th scope="col">factura</th>
+                                    ${producto != '' ? '<th scope="col">cantidad</th>' : ''}
+                                    <th scope="col">total</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+                        let valor = item.total;
+                        // Paso 1: Eliminar el símbolo "$" y espacios
+                        valor = valor.replace('$', '').trim();
+                        // Paso 2: Eliminar las comas ","
+                        valor = valor.replace(/,/g, '');
+                        // Paso 3: Convertir a número
+                        valor = parseFloat(valor);
+
+                        totalGeneral += valor
+                        return `
+                                <tr>
+                                    <td>${item.adquisicion.fecha}</td>
+                                    <td>${item.adquisicion.numero}</td>
+                                    <td>${item.adquisicion.proyecto.nombre_proyecto}</td>
+                                    <td>${item.adquisicion.etapa.descripcion}</td>
+                                    <td>${item.adquisicion.estado != 'Completado' ? 'Pendiente' : 'Completado'}</td>
+                                    <td>${item.adquisicion.tipo_adquisicion}</td>
+                                    <td>${item.adquisicion.factura ?? ''}</td>
+                                    ${producto != '' ? `<td>${item.cantidad}</td>` : ''}
+                                    <td>${item.total}</td>
+                                </tr>
+                            `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="${producto != '' ? '8' : '7'}" class="text-right"><strong>Total General:</strong></td>
+                                <td colspan="2" class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
+                            </tr>
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                }
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+
     });
 
     $('select[name=tipo]').on('change', function () {
@@ -37,7 +269,6 @@ $(function () {
 
                 },
                 success: function (response) {
-                    console.log(response);
                     $('select[name=proveedor]').append('<option value=""></option>');
                     $.each(response.result.proveedores, function (index, proveedor) {
                         $('select[name=proveedor]').append(
@@ -54,13 +285,14 @@ $(function () {
                     $.each(response.result.cargos, function (index, value) {
                         $('select[name=cargo]').append('<option value="' + value.id + '">' + value.descripcion + '</option>');
                     });
-                    //$("#categoria_tarea").val(response.categoria).trigger('change');
+
+                    habilitarCampos();
 
                     $('[data-toggle="tooltip"]').tooltip();
                     $('[data-toggle="popover"]').popover({ html: true });
                 },
                 complete: function () {
-                    $('#comentarioTareaModal #modal-overlay').hide();
+
                 }
             }).fail(function (jqXHR, textStatus, errorThrown) {
                 switch (jqXHR.status) {
@@ -84,4 +316,37 @@ $(function () {
             });
         }
     });
+
+
+    function habilitarCampos() {
+        let tipo = $('select[name=tipo] option:selected').text();
+        tipo = tipo.replace(/\s+/g, "_").toLowerCase();
+
+        if (tipo == 'materiales_y_herramientas' || tipo == 'servicios') {
+            $('select[name=proveedor]').attr('disabled', false);
+            $('select[name=producto]').attr('disabled', false);
+            $('select[name=cargo]').attr('disabled', true);
+            $('select[name=necesidad]').attr('disabled', false);
+            $('select[name=costo]').attr('disabled', false);
+            $('select[name=tipo_reporte]').attr('disabled', false);
+            $('select[name=estado]').attr('disabled', false);
+        } else if (tipo == 'contratistas') {
+            $('select[name=proveedor]').attr('disabled', false);
+            $('select[name=producto]').attr('disabled', true);
+            $('select[name=cargo]').attr('disabled', true);
+            $('select[name=necesidad]').attr('disabled', true);
+            $('select[name=costo]').attr('disabled', true);
+            $('select[name=tipo_reporte]').attr('disabled', true);
+            $('select[name=estado]').attr('disabled', true);
+        } else if (tipo == 'mano_de_obra') {
+            $('select[name=proveedor]').attr('disabled', true);
+            $('select[name=producto]').attr('disabled', true);
+            $('select[name=cargo]').attr('disabled', false);
+            $('select[name=necesidad]').attr('disabled', true);
+            $('select[name=costo]').attr('disabled', true);
+            $('select[name=tipo_reporte]').attr('disabled', true);
+            $('select[name=estado]').attr('disabled', true);
+        }
+
+    }
 });
