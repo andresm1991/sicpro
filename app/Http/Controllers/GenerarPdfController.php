@@ -459,87 +459,24 @@ class GenerarPdfController extends Controller
         $tipoAdquisisicon = CatalogoDato::find($tipo);
         if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
             $query = Adquisicion::dataReporteAdquisiciones($request);
+            $view = 'reporte_adquisiciones';
         } elseif ($tipoAdquisisicon->slug == 'contratista') {
-            $query = Contratista::query();
+            $query = Contratista::filtroContratista($request);
+            $view = 'reporte_contratista';
         } else {
-            $query = ManoObra::query();
-        }
-        return $query;
-
-
-        // Filtrar por estado
-        $query->when($estado, function ($q, $estado) {
-            if ($estado == 'pendientes') {
-                $q->whereIn('estado', ['En Proceso', 'Finalizado']);
-            } else {
-                $q->where('estado', $estado);
-            }
-        });
-
-        // Filtrar por proyecto
-        $query->when($proyecto, function ($q, $proyecto) {
-            $q->where('proyecto_id', $proyecto);
-        });
-
-        // Filtrar por etapa
-        $query->when($etapa, function ($q, $etapa) {
-            $q->where('etapa_id', $etapa);
-        });
-
-        // Filtrar por tipo_etapa
-        $query->when($tipo, function ($q, $tipo) {
-            $q->where('tipo_etapa_id', $tipo);
-        });
-
-        if ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('d/m/Y', trim($fechaFin))->format('Y-m-d');
-
-            // Filtrar por rango de fechas
-            $query->when(isset($fechaInicioFormatted) && isset($fechaFinFormatted), function ($q) use ($fechaInicioFormatted, $fechaFinFormatted) {
-                $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
-            });
+            $query = ManoObra::filtroManoObra($request);
+            $view = 'reporte_mano_obra';
         }
 
-        // Filtrar por costo (INDIRECTOS O DIRECTOS)
-        $query->when($costo, function ($q, $costo) {
-            $q->where('etapa_id', $costo);
-        });
+        $tipo = CatalogoDato::find($tipo);
 
-        $query->when($necesidad, function ($q, $necesidad) {
-            $q->whereHas('adquisiciones_detalle', function ($query) use ($necesidad) {
-                $query->where('necesidad', $necesidad);
-            });
-        });
+        $totalGeneral = $query->map(function ($item) {
+            // Eliminar "$" y "," del campo total
+            return floatval(str_replace(['$', ','], '', $item['total']));
+        })->sum() ?? 0;
 
-        // Filtrar por producto
-        $query->when($producto, function ($q, $producto) {
-            $q->whereHas('adquisiciones_detalle', function ($query) use ($producto) {
-                $query->where('articulo_id', $producto);
-            });
-        });
-
-        // Ordenar por secuencial u otro criterio
-        switch ($ordenado) {
-            case 'secuencial':
-                $query->orderBy('numero', 'asc');
-                break;
-            case 'fecha':
-                $query->orderBy('fecha', 'asc');
-                break;
-            case 'alfabetico':
-                $query->orderBy('tipo_adquisicion', 'asc');
-                break;
-            default:
-                # code...
-                break;
-        }
-
-        // Obtener los resultados
-        $resultados = $query->get();
-
-        return $resultados;
+        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'totalGeneral'))->setPaper('a3', 'landscape');
+        return $pdf->stream('reportes.pdf');
     }
 
     public function exportarTareas(Request $request)
@@ -547,7 +484,7 @@ class GenerarPdfController extends Controller
         $infoTarea = Tarea::filtroTareas($request);
         $infoTarea = $infoTarea->groupBy('estado.descripcion');
 
-        $pdf = PDF::loadView('pdf.tareas', compact('infoTarea'))->setPaper('a3', 'landscape');
+        $pdf = PDF::loadView('pdf.tareas', compact('infoTarea')); //->setPaper('a3', 'landscape');
         return $pdf->stream('tareas.pdf');
     }
 

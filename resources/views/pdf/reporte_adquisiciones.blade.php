@@ -108,9 +108,44 @@
             text-align: center !important;
         }
 
+        .text-right {
+            text-align: right !important;
+        }
+
         ul {
 
             padding: 0 10px 0 10px;
+        }
+
+
+        /* Tabla */
+        #table-resumen {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        #table-resumen th,
+        #table-resumen td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            background-color: #fefeff;
+        }
+
+        #table-resumen th {
+            background-color: #d6dce9;
+        }
+
+        /* Ajustar el ancho de la primera columna */
+        #table-resumen th:last-child,
+        #table-resumen td:last-child {
+            width: 100px;
+            /* Ancho fijo para la primera columna */
+            min-width: 100px;
+            /* Evita que se achique más allá de este valor */
+            max-width: 100px;
+            /* Evita que se expanda más allá de este valor */
         }
 
         /* Estilos para la marca de agua */
@@ -160,35 +195,43 @@
                         <img src="{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
                     </td>
                     <td class="text-center">
-                        <h2>AGENDA</h2>
+                        <h2>Reporte adquisiciones</h2>
                     </td>
                 </tr>
             </tbody>
         </table>
 
-        @foreach ($infoTarea as $estado => $tareas)
-            <div class="card mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h2>{{ $estado }}</h2>
-                </div>
-                <div class="card-body">
-                    @if ($tareas->isEmpty())
-                        <p>No hay tareas en este estado.</p>
-                    @else
-                        <ul class="list-group">
-                            @foreach ($tareas as $tarea)
-                                <li class="list-group-item">
-                                    <strong>{{ $tarea->titulo }}</strong> - {{ $tarea->descripcion }}
-                                    @if ($tarea->categoria)
-                                        <span class="badge bg-secondary">{{ $tarea->categoria->descripcion }}</span>
-                                    @endif
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
-            </div>
-        @endforeach
+        <table id="table-resumen">
+            <tr>
+                <th scope="col">fecha</th>
+                <th scope="col">numero</th>
+                <th scope="col">proyecto</th>
+                <th scope="col">etapa</th>
+                <th scope="col">estado</th>
+                <th scope="col">tipo adquisicion</th>
+                <th scope="col">factura</th>
+                {{ $producto != '' ? '<th scope="col">cantidad</th>' : '' }}}
+                <th scope="col">total</th>
+            </tr>
+            <tbody>
+                @forelse ($query as $items)
+                    <tr>
+                        <td>{{ $items['adquisicion']->fecha }}</td>
+                        <td>{{ $items['adquisicion']->numero }}</td>
+                        <td>{{ $items['adquisicion']->proyecto->nombre_proyecto }}</td>
+                        <td>{{ $items['adquisicion']->etapa->descripcion }}</td>
+                        <td>{{ $items['adquisicion']->estado != 'Completado' ? 'Pendiente' : 'Completado' }}</td>
+                        <td>{{ $items['adquisicion']->tipo_adquisicion }}</td>
+                        <td>{{ $items['adquisicion']->factura ?? '' }}</td>
+                        <td>{{ $items['total'] }}</td>
+                    </tr>
+                @empty
+                @endforelse
+            </tbody>
+        </table>
+
+        <h2 class="text-right">Total General: <strong>
+                ${{ number_format($totalGeneral, 4) }}</strong></h2>
 
     </div>
 </body>
