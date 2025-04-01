@@ -19,12 +19,14 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <div class="row">
-                            <h5 class="col-sm-8 card-title">reporte de adquisiciones</h5>
-                            <div class="col-sm-4">
-                                <button type="button" class="btn btn-dark" id="visualizar-reporte">Generar</button>
-                                <button type="button" class="btn btn-dark generar-reporte" data-action="pdf">Exportar a
+                            <h5 class="col card-title">reporte de adquisiciones</h5>
+                            <div class="col-auto ">
+                                <button type="button" class="btn btn-dark form-group" id="visualizar-reporte">Generar</button>
+                                <button type="button" class="btn btn-dark form-group generar-reporte"
+                                    data-action="pdf">Exportar a
                                     pdf</button>
-                                <button type="button" class="btn btn-dark generar-reporte" data-action="excel">Exportar a
+                                <button type="button" class="btn btn-dark form-group generar-reporte"
+                                    data-action="excel">Exportar a
                                     excel</button>
                             </div>
                         </div>

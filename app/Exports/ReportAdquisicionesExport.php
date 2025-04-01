@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\CatalogoDato;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 
@@ -17,8 +18,9 @@ class ReportAdquisicionesExport implements FromView
     protected $totalGeneral;
     protected $totalPagado;
     protected $totalSaldos;
+    protected $view;
 
-    public function __construct($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos)
+    public function __construct($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos, $view)
     {
         $this->query = $query;
         $this->tipo = $tipo;
@@ -29,11 +31,12 @@ class ReportAdquisicionesExport implements FromView
         $this->totalGeneral = $totalGeneral;
         $this->totalPagado = $totalPagado;
         $this->totalSaldos = $totalSaldos;
+        $this->view = $view;
     }
 
     public function view(): View
     {
-        return view('exports.reporte_adquisiciones', [
+        return view('exports.' . $this->view, [
             'query' => $this->query,
             'tipo' => $this->tipo,
             'producto' => $this->producto,

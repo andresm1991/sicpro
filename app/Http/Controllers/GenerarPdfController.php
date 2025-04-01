@@ -492,7 +492,7 @@ class GenerarPdfController extends Controller
         $cargo = $cargo != '' ? Articulo::find($cargo) : '';
 
         if ($tipo_reporte === 'excel') {
-            return Excel::download(new ReportAdquisicionesExport($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos), 'reporte_adquisiciones.xlsx');
+            return Excel::download(new ReportAdquisicionesExport($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos, $view), $view . '.xlsx');
         }
 
         $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos'))->setPaper('a3', 'landscape');
