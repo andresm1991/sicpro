@@ -60,8 +60,9 @@ $(function () {
             success: function (response) {
                 const data = response.result;
                 let totalGeneral = 0;
-                $('#table-view-reporte').empty();
 
+                $('#table-view-reporte').empty();
+                console.log(data);
                 if (!response.success || data.length == 0) {
                     Swal.fire(
                         'Ups.!',
@@ -71,7 +72,8 @@ $(function () {
                     return;
                 }
                 if (tipo_reporte_text.toLowerCase() == 'contratistas') {
-
+                    let totalPagado = 0;
+                    let totalSaldo = 0;
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
                             <thead class="thead-dark">
@@ -84,19 +86,16 @@ $(function () {
                                     <th scope="col">etapa</th>
                                     <th scope="col">estado</th>
                                     <th scope="col">total</th>
+                                    <th scope="col">abonado</th>
+                                    <th scope="col">sando</th>
                                 </tr>
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-                        let valor = item.total;
-                        // Paso 1: Eliminar el símbolo "$" y espacios
-                        valor = valor.replace('$', '').trim();
-                        // Paso 2: Eliminar las comas ","
-                        valor = valor.replace(/,/g, '');
-                        // Paso 3: Convertir a número
-                        valor = parseFloat(valor);
 
-                        totalGeneral += valor
+                        totalGeneral += totales(item.total);
+                        totalPagado += totales(item.total_pagado);
+                        totalSaldo += totales(item.saldo)
 
                         return `
                                 <tr>
@@ -108,14 +107,24 @@ $(function () {
                                     <td>${item.contratista.etapa.descripcion}</td>
                                     <td>${item.contratista.estado.descripcion}</td>
                                     <td>${item.total}</td>
+                                    <td>${item.total_pagado}</td>
+                                    <td>${item.saldo}</td>
                                 </tr>
                             `;
                     }).join('')}
                         </tbody>
                         <tfoot>
                             <tr>
-                                <td colspan="7" class="text-right"><strong>Total General:</strong></td>
-                                <td colspan="2" class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
+                                <td colspan="8" class="text-right"><strong>Total General:</strong></td>
+                                <td colspan="3" class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="8" class="text-right"><strong>Total Pagado:</strong></td>
+                                <td colspan="3" class="text-right"><strong> ${formatearUSD(totalPagado)}</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="8" class="text-right"><strong>Total Saldos:</strong></td>
+                                <td colspan="3" class="text-right"><strong> ${formatearUSD(totalSaldo)}</strong></td>
                             </tr>
                         </tfoot>
                         </table>
@@ -184,6 +193,7 @@ $(function () {
                                     <th scope="col">tipo adquisicion</th>
                                     <th scope="col">factura</th>
                                     ${producto != '' ? '<th scope="col">cantidad</th>' : ''}
+                                    <th scope="col">forma pago</th>
                                     <th scope="col">total</th>
                                 </tr>
                             </thead>
@@ -208,6 +218,7 @@ $(function () {
                                     <td>${item.adquisicion.tipo_adquisicion}</td>
                                     <td>${item.adquisicion.factura ?? ''}</td>
                                     ${producto != '' ? `<td>${item.cantidad}</td>` : ''}
+                                    <td>${item.adquisicion.orden_recepcion != null ? item.adquisicion.orden_recepcion.forma_pago.descripcion : ''}</td>
                                     <td>${item.total}</td>
                                 </tr>
                             `;
@@ -331,6 +342,7 @@ $(function () {
             $('select[name=costo]').attr('disabled', false);
             $('select[name=tipo_reporte]').attr('disabled', false);
             $('select[name=estado]').attr('disabled', false);
+            $('select[name=forma_pago]').attr('disabled', false);
         } else if (tipo == 'contratistas') {
             $('select[name=proveedor]').attr('disabled', false);
             $('select[name=producto]').attr('disabled', true);
@@ -338,7 +350,8 @@ $(function () {
             $('select[name=necesidad]').attr('disabled', true);
             $('select[name=costo]').attr('disabled', true);
             $('select[name=tipo_reporte]').attr('disabled', true);
-            $('select[name=estado]').attr('disabled', true);
+            $('select[name=estado]').attr('disabled', false);
+            $('select[name=forma_pago]').attr('disabled', true);
         } else if (tipo == 'mano_de_obra') {
             $('select[name=proveedor]').attr('disabled', true);
             $('select[name=producto]').attr('disabled', true);
@@ -347,7 +360,19 @@ $(function () {
             $('select[name=costo]').attr('disabled', true);
             $('select[name=tipo_reporte]').attr('disabled', true);
             $('select[name=estado]').attr('disabled', true);
+            $('select[name=forma_pago]').attr('disabled', true);
         }
 
+    }
+
+    function totales($valor) {
+        let total = $valor;
+        // Paso 1: Eliminar el símbolo "$" y espacios
+        total = total.replace('$', '').trim();
+        // Paso 2: Eliminar las comas ","
+        total = total.replace(/,/g, '');
+        // Paso 3: Convertir a número
+        total = parseFloat(total);
+        return total;
     }
 });
