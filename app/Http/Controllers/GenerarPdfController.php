@@ -5,19 +5,21 @@ namespace App\Http\Controllers;
 use PDF;
 use Carbon\Carbon;
 use App\Models\Tarea;
+use App\Models\Articulo;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
 use App\Models\Cronograma;
 use App\Models\Adquisicion;
-use App\Models\Articulo;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
 use App\Models\RubroCronograma;
 use App\Models\ResumenPagoSemanal;
+use App\Exports\ReportAdquisicionesExport;
 
 class GenerarPdfController extends Controller
 {
@@ -441,9 +443,8 @@ class GenerarPdfController extends Controller
         return $pdf->stream('resuemen_pago_semanal.pdf');
     }
 
-    public function reportAdquisiciones(Request $request)
+    public function reportAdquisiciones(Request $request, $tipo_reporte)
     {
-
         $ordenado = $request->input('ordenado'); // Ejemplo: "secuencial"
         $fechas = $request->input('fechas'); // Ejemplo: "03/12/2025 - 03/30/2025"
         $estado = $request->input('estado'); // Ejemplo: null o "Completado"
@@ -452,7 +453,6 @@ class GenerarPdfController extends Controller
         $tipo = $request->input('tipo'); // Ejemplo: null o tipo_etapa_id
         $necesidad = $request->input('necesidad'); // Ejemplo: null o valor de necesidad
         $costo = $request->input('costo'); // Ejemplo: null o valor de costo
-        $tipo_reporte = $request->input('tipo_reporte'); // Ejemplo: null o "pdf/excel"
         $cargo = $request->input('cargo'); // Ejemplo: null o ID del cargo
         $proveedor = $request->input('proveedor'); // Ejemplo: null o ID del proveedor
         $producto = $request->input('producto'); // Ejemplo: null o ID del producto
@@ -472,23 +472,28 @@ class GenerarPdfController extends Controller
         $tipo = CatalogoDato::find($tipo);
 
         $totalGeneral = $query->map(function ($item) {
-            // Eliminar "$" y "," del campo total
-            return floatval(str_replace(['$', ','], '', $item['total']));
+            // Verificar si 'total' existe antes de usarlo
+            $total = isset($item['total']) ? $item['total'] : 0;
+            return floatval(str_replace(['$', ','], '', $total));
         })->sum() ?? 0;
 
         $totalPagado = $query->map(function ($item) {
-            // Eliminar "$" y "," del campo total
-            return floatval(str_replace(['$', ','], '', $item['total_pagado']));
+            $totalPagado = isset($item['total_pagado']) ? $item['total_pagado'] : 0;
+            return floatval(str_replace(['$', ','], '', $totalPagado));
         })->sum() ?? 0;
 
         $totalSaldos = $query->map(function ($item) {
-            // Eliminar "$" y "," del campo total
-            return floatval(str_replace(['$', ','], '', $item['saldo']));
+            $saldo = isset($item['saldo']) ? $item['saldo'] : 0;
+            return floatval(str_replace(['$', ','], '', $saldo));
         })->sum() ?? 0;
 
         $producto = $producto != '' ? Articulo::find($producto) : '';
         $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';
         $cargo = $cargo != '' ? Articulo::find($cargo) : '';
+
+        if ($tipo_reporte === 'excel') {
+            return Excel::download(new ReportAdquisicionesExport($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos), 'reporte_adquisiciones.xlsx');
+        }
 
         $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos'))->setPaper('a3', 'landscape');
         return $pdf->stream('reportes.pdf');
