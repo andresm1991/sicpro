@@ -444,9 +444,10 @@ $(function () {
     $(document).on('click', '#exportar-tarea', function () {
         var form = $("#form_filtro_tareas");
         var data = getFormData(form);
-        const baseUrl = '/generar-pdf/exportar-tareas';
+        const baseUrl = 'generar-pdf/exportar-tareas';
         const params = new URLSearchParams(data).toString(); // Convertir el objeto de datos a una cadena de consulta
         const url = `${baseUrl}?${params}`; // Construir la URL con los parámetros de consulta
+        console.log(url)
         window.open(url, '_blank');
     });
 
