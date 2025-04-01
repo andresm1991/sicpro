@@ -235,6 +235,8 @@
                 <th scope="col">estapa</th>
                 <th scope="col">estado</th>
                 <th scope="col">total</th>
+                <th scope="col">abonado</th>
+                <th scope="col">saldo</th>
             </tr>
             <tbody>
                 @forelse ($query as $items)
@@ -248,6 +250,8 @@
                         <td>{{ $items['contratista']->etapa->descripcion }}</td>
                         <td>{{ $items['contratista']->estado->descripcion }}</td>
                         <td>{{ $items['total'] }}</td>
+                        <td>{{ $items['total_pagado'] }}</td>
+                        <td>{{ $items['saldo'] }}</td>
                     </tr>
                 @empty
                 @endforelse
@@ -256,6 +260,10 @@
 
         <h2 class="text-right">Total General: <strong>
                 ${{ number_format($totalGeneral, 4) }}</strong></h2>
+        <h2 class="text-right">Total Pagado: <strong>
+                ${{ number_format($totalPagado, 4) }}</strong></h2>
+        <h2 class="text-right">Total Saldo: <strong>
+                ${{ number_format($totalSaldos, 4) }}</strong></h2>
 
     </div>
 </body>

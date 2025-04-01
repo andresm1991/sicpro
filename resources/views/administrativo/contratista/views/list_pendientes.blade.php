@@ -4,7 +4,8 @@
             <div class="col-12 ">
                 <div class="form-group form-search form-icon col-md-6 col-12 p-0">
                     <i class="fal fa-search fa-lg form-control-icon"></i>
-                    <input type="text" name="orden_contratista_search" id="proceso" class="form-control form-control-round"
+                    <input type="text" name="orden_contratista_search" id="proceso"
+                        class="form-control form-control-round"
                         placeholder="Ingresa contratista o nro orden para buscar">
                 </div>
             </div>
@@ -24,7 +25,8 @@
                 </thead>
                 <tbody>
                     @forelse ($orden_trabajos_pendientes as $orden_trabajo)
-                        <tr id="{{ $orden_trabajo->id }}">
+                        <tr id="{{ $orden_trabajo->id }}"
+                            class="{{ $orden_trabajo->pagosOrdenTrabajoContratista->contains('pagado', false) ? 'table-warning' : 'clase-no-existe' }}">
                             <td class="align-middle">
                                 {{ numeroOrden($orden_trabajo, false) }}
                             </td>
@@ -44,9 +46,10 @@
                                 $
                                 {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 2) }}
                             </td>
-                            
+
                             <td class="align-middle text-right text-truncate">
-                                <a href="{{ route('administrativo.contratista.detalle', $orden_trabajo->id) }}" class="btn btn-outline-dark">Ver Detalle
+                                <a href="{{ route('administrativo.contratista.detalle', $orden_trabajo->id) }}"
+                                    class="btn btn-outline-dark">Ver Detalle
                                 </a>
                             </td>
                         </tr>

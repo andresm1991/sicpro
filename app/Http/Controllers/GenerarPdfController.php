@@ -149,7 +149,7 @@ class GenerarPdfController extends Controller
             ->join('proveedores', 'detalle_mano_obra.proveedor_id', '=', 'proveedores.id') // Une con la tabla proveedores
             ->where('mano_obra_id', $mano_obra->id) // Filtra por mano_obra_id
             ->orderBy('proveedores.apellidos', 'asc') // Ordena por el nombre del proveedor
-            ->orderBy('detalle_mano_obra.fecha', 'asc') // También puedes ordenar por fecha
+            ->orderBy('proveedores.nombres', 'asc') // También puedes ordenar por fecha
             ->with(['proveedor', 'articulo']) // Carga las relaciones para acceso posterior
             ->get();
         $agrupados = $detalles->groupBy('proveedor_id');
@@ -476,11 +476,21 @@ class GenerarPdfController extends Controller
             return floatval(str_replace(['$', ','], '', $item['total']));
         })->sum() ?? 0;
 
+        $totalPagado = $query->map(function ($item) {
+            // Eliminar "$" y "," del campo total
+            return floatval(str_replace(['$', ','], '', $item['total_pagado']));
+        })->sum() ?? 0;
+
+        $totalSaldos = $query->map(function ($item) {
+            // Eliminar "$" y "," del campo total
+            return floatval(str_replace(['$', ','], '', $item['saldo']));
+        })->sum() ?? 0;
+
         $producto = $producto != '' ? Articulo::find($producto) : '';
         $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';
         $cargo = $cargo != '' ? Articulo::find($cargo) : '';
 
-        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'totalGeneral', 'fechas', 'cargo'))->setPaper('a3', 'landscape');
+        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos'))->setPaper('a3', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 

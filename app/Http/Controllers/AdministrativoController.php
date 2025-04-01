@@ -626,11 +626,11 @@ class AdministrativoController extends Controller
 
         $mano_obra_pendientes = ManoObra::whereDoesntHave('pago_mano_obra', function ($query) {
             $query->whereNotNull('mano_obra_id'); // Validar que no exista un registro relacionado
-        })->orderBy('semana', 'asc')->paginate(15);
+        })->orderBy('fecha_inicio', 'desc')->paginate(15);
 
         $mano_obra_completos = ManoObra::whereHas('pago_mano_obra', function ($query) {
             $query->whereNotNull('mano_obra_id'); // Validar que exista un registro relacionado
-        })->orderBy('semana', 'asc')->paginate(15);
+        })->orderBy('fecha_inicio', 'desc')->paginate(15);
 
         $route_params = ['mano_obra_pendientes' => $mano_obra_pendientes, 'mano_obra_completos' => $mano_obra_completos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
         return view('administrativo.mano_obra.index', $route_params);

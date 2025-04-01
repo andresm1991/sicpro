@@ -98,7 +98,7 @@ class Contratista extends Model
         $producto = $request->input('producto');
         $tipo_reporte = $request->input('tipo_reporte');
 
-        $query = self::with(['proveedor', 'articulo', 'proyecto', 'etapa', 'tipo_etapa', 'usuario', 'estado']);
+        $query = self::with(['proveedor', 'articulo', 'proyecto', 'etapa', 'tipo_etapa', 'usuario', 'estado', 'pagosOrdenTrabajoContratista']);
         $query->when($proveedor, function ($query) use ($proveedor) {
             $query->where('proveedor_id', $proveedor);
         });
@@ -149,9 +149,16 @@ class Contratista extends Model
                 return $cantidad * $valor * $contratista->numero_casas;
             });
 
+            $total_pagado = $contratista->pagosOrdenTrabajoContratista->sum(function ($pago) {
+                return $pago->pagado ? $pago->valor : 0;
+            });
+            $saldo = $total - $total_pagado;
+
             return [
                 'contratista' => $contratista,
                 'total' => '$ ' . number_format($total, 4),
+                'total_pagado' => '$ ' . number_format($total_pagado, 4),
+                'saldo' => '$ ' . number_format($saldo, 4),
             ];
         });
     }

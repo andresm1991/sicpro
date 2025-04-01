@@ -10,7 +10,7 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <div class="row d-flex justify-content-center align-items-center">
-                            <div class="col-md-10">
+                            <div class="col-md-8">
                                 <h5>Semana: {{ $mano_obra->semana }}</h5>
                                 <h6>{{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}</h6>
                             </div>
@@ -40,6 +40,11 @@
                                     {{ Form::close() }}
                                 @else
                                 @endif
+                            </div>
+
+                            <div class="col-md-2 ">
+                                <a href="{{ route('pdf.planificacion.mano.obra', $mano_obra->id) }}"
+                                    class="btn btn-dark btn-options btn-block" target="__blak">exportar PDF</a>
                             </div>
                         </div>
                     </li>

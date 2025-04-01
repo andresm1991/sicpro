@@ -113,6 +113,17 @@
                                 ['class' => 'form-control', 'data-placeholder' => 'Seleccione tipo reporte', 'data-allow-clear' => 'true'],
                             ) }}
                         </div>
+
+                        <div class="form-group col-sm-4">
+                            <label for="" class="col-form-label">Forma Pago </label>
+                            <select name="forma_pago" id="forma-pago" class="form-control"
+                                data-placeholder="seleccione opcón" data-allow-clear='true'>
+                                <option value=""></option>
+                                @foreach (formasPagos() as $index => $nombre)
+                                    <option value="{{ $index }}">{{ $nombre }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div id="table-view-reporte"></div>
                 </div> {{-- end div car body --}}

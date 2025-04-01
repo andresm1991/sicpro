@@ -67,8 +67,9 @@ class Adquisicion extends Model
         $proveedor = $request->input('proveedor');
         $producto = $request->input('producto');
         $tipo_reporte = $request->input('tipo_reporte');
+        $forma_pago = $request->input('forma_pago');
 
-        $query = self::with(['proyecto', 'etapa', 'tipo_etapa']);
+        $query = self::with(['proyecto', 'etapa', 'tipo_etapa', 'orden_recepcion', 'orden_recepcion.forma_pago']);
 
         if ($request->filled('proyecto')) {
             $query->where('proyecto_id', $proyecto);
@@ -137,6 +138,13 @@ class Adquisicion extends Model
 
         $query->when($tipo_reporte, function ($q, $tipo_reporte) {
             $q->where('tipo_adquisicion', $tipo_reporte);
+        });
+
+        // Filtrar por la forma de pago
+        $query->when($forma_pago, function ($q, $forma_pago) {
+            $q->whereHas('orden_recepcion', function ($query) use ($forma_pago) {
+                $query->where('forma_pago_id', $forma_pago);
+            });
         });
 
         // Ordenar por secuencial u otro criterio

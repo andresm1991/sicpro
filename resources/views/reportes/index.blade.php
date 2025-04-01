@@ -15,13 +15,6 @@
                 </div>
 
                 <div class="max-auto">
-                    <a href="{{ route('administrativo.index.contratistas') }}" class="nodo">
-                        <img src="{{ asset('images/svg/ingresos.svg') }}" alt="">
-                        <span>Caja</span>
-                    </a>
-                </div>
-
-                <div class="max-auto">
                     <a href="{{ route('administrativo.index.mano.obra') }}" class="nodo">
                         <img src="{{ asset('images/svg/gasolina.svg') }}" alt="">
                         <span>Gasolina camioneta</span>

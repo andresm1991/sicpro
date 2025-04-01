@@ -237,6 +237,7 @@
                 @if ($producto != '')
                     <th scope="col">cantidad</th>
                 @endif
+                <th scope="col">forma pago</th>
                 <th scope="col">total</th>
             </tr>
             <tbody>
@@ -252,6 +253,11 @@
                         @if ($producto != '')
                             <td>{{ $items['cantidad'] }}</td>
                         @endif
+                        <td>
+                            @isset($items['adquisicion']->orden_recepcion)
+                                {{ $items['adquisicion']->orden_recepcion->forma_pago->descripcion }}
+                            @endisset
+                        </td>
                         <td>{{ $items['total'] }}</td>
                     </tr>
                 @empty
