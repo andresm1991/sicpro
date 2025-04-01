@@ -110,7 +110,7 @@
                                                 </div>
                                                 <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
                                                 <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
-                                                    class="btn btn-sm btn-danger">Eliminar</button>
+                                                    class="btn btn-sm btn-danger eliminar-tarea">Eliminar</button>
                                             </a>
 
                                         @empty
@@ -141,7 +141,7 @@
                                                 </div>
                                                 <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
                                                 <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
-                                                    class="btn btn-sm btn-danger">Eliminar</button>
+                                                    class="btn btn-sm btn-danger eliminar-tarea">Eliminar</button>
                                             </a>
                                         @empty
                                             <small class="text-center">no existen datos para mostrar.</small>
