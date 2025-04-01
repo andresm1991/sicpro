@@ -36,6 +36,7 @@ $(function () {
         let proveedor = $('select[name=proveedor]').val();
         let cargo = $('select[name=cargo]').val();
         let cargo_text = $('select[name=cargo] option:selected').text();
+        let proyecto = $('select[name=proyecto]').val();
 
         if (tipo_reporte == '') {
             Swal.fire(
@@ -100,7 +101,7 @@ $(function () {
                         return `
                                 <tr>
                                     <td>${item.contratista.fecha}</td>
-                                    <td>${item.contratista.proyecto.nombre_proyecto}</td>
+                                    <td>${proyecto != 0 ? item.contratista.proyecto.nombre_proyecto : 'GENERAL'}</td>
                                     <td>${item.contratista.proveedor.razon_social}</td>
                                     <td>${item.contratista.articulo.descripcion}</td>
                                     <td>${item.contratista.plazo_semanas}</td>
