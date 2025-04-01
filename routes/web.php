@@ -317,7 +317,7 @@ Route::group(['middleware' => ['auth']], function () {
         Route::get('/exportar-cronograma-actividades-dias-pdf/{proyecto}/{semana}', [GenerarPdfController::class, 'exportarActividadesDiasCronogramaToPDF'])->name('export.cronograma.actividades.dias');
 
         Route::get('/resumen-pago-semanal-pdf/{resumen}', [GenerarPdfController::class, 'pdfResumenPagoSemanal'])->name('resumen.pago.semanal');
-        Route::post('/reporte/{tipo}', [GenerarPdfController::class, 'reportAdquisiciones'])->name('reporte.adquisiciones');
+        Route::post('/reporte/{tipo_reporte}', [GenerarPdfController::class, 'reportAdquisiciones'])->name('reporte.adquisiciones');
         Route::get('/exportar-tareas', [GenerarPdfController::class, 'exportarTareas'])->name('export.tareas');
     });
     //** FIN RUTAS GENERAR PDF */
