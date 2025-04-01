@@ -70,16 +70,8 @@ class Adquisicion extends Model
 
         $query = self::with(['proyecto', 'etapa', 'tipo_etapa']);
 
-        if ($request->filled('proyecto_id')) {
-            $query->where('proyecto_id', $request->input('proyecto_id'));
-        }
-
-        if ($request->filled('etapa_id')) {
-            $query->where('etapa_id', $request->input('etapa_id'));
-        }
-
-        if ($request->filled('tipo_adquisicion')) {
-            $query->where('tipo_adquisicion', $request->input('tipo_adquisicion'));
+        if ($request->filled('proyecto')) {
+            $query->where('proyecto_id', $proyecto);
         }
 
         $query->when($estado, function ($q, $estado) {
@@ -91,9 +83,9 @@ class Adquisicion extends Model
         });
 
         // Filtrar por proyecto
-        $query->when($proyecto, function ($q, $proyecto) {
+        /*$query->when($proyecto, function ($q, $proyecto) {
             $q->where('proyecto_id', $proyecto);
-        });
+        });*/
 
         // Filtrar por etapa
         $query->when($etapa, function ($q, $etapa) {

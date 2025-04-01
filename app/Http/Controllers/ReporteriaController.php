@@ -34,7 +34,12 @@ class ReporteriaController extends Controller
             ['name' => 'Adquisiciones', 'url' => ''],
         ];
 
-        $proyectos = Proyecto::pluck('nombre_proyecto', 'id')->prepend('', '');
+        $proyectos = Proyecto::orderBy('nombre_proyecto', 'asc')->pluck('nombre_proyecto', 'id')->prepend('', '');
+        $proyectos = $proyectos->toArray(); // Convertir a array
+        $proyectos['0'] = 'GENERAL'; // Añadir el nuevo elemento al final
+        $proyectos = collect($proyectos); // Convertir nuevamente a colección si es necesario
+
+        //$proyectos = Proyecto::pluck('nombre_proyecto', 'id')->prepend('', '');
         $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id')->prepend('', '');
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->where('slug', '!=', 'profecionales')->pluck('descripcion', 'id')->prepend('', '');
         $necesidades = DiccionarioPalabra::pluck('palabra', 'palabra')->prepend('', '');

@@ -228,30 +228,25 @@
         <table id="table-resumen">
             <tr>
                 <th scope="col">fecha</th>
-                <th scope="col">numero</th>
                 <th scope="col">proyecto</th>
-                <th scope="col">etapa</th>
+                <th scope="col">proveedor</th>
+                <th scope="col">producto</th>
+                <th scope="col">plazo semanas</th>
+                <th scope="col">estapa</th>
                 <th scope="col">estado</th>
-                <th scope="col">tipo adquisicion</th>
-                <th scope="col">factura</th>
-                @if ($producto != '')
-                    <th scope="col">cantidad</th>
-                @endif
                 <th scope="col">total</th>
             </tr>
             <tbody>
                 @forelse ($query as $items)
                     <tr>
-                        <td>{{ $items['adquisicion']->fecha }}</td>
-                        <td>{{ $items['adquisicion']->numero }}</td>
-                        <td>{{ $items['adquisicion']->proyecto->nombre_proyecto }}</td>
-                        <td>{{ $items['adquisicion']->etapa->descripcion }}</td>
-                        <td>{{ $items['adquisicion']->estado != 'Completado' ? 'Pendiente' : 'Completado' }}</td>
-                        <td>{{ $items['adquisicion']->tipo_adquisicion }}</td>
-                        <td>{{ $items['adquisicion']->factura ?? '' }}</td>
-                        @if ($producto != '')
-                            <td>{{ $items['cantidad'] }}</td>
-                        @endif
+                        <td>{{ $items['contratista']->fecha }}</td>
+                        <td>{{ $items['contratista']->proyecto->nombre_proyecto }}</td>
+                        <td>{{ isset($items['contratista']->proveedor->razon_social) ? $items['contratista']->proveedor->razon_social : $items['contratista']->proveedor->apellidos . ' ' . $items['contratista']->proveedor->nombres }}
+                        </td>
+                        <td>{{ $items['contratista']->articulo->descripcion }}</td>
+                        <td>{{ $items['contratista']->plazo_semanas }}</td>
+                        <td>{{ $items['contratista']->etapa->descripcion }}</td>
+                        <td>{{ $items['contratista']->estado->descripcion }}</td>
                         <td>{{ $items['total'] }}</td>
                     </tr>
                 @empty

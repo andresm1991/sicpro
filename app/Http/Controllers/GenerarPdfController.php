@@ -10,6 +10,7 @@ use App\Models\Proyecto;
 use App\Models\Proveedor;
 use App\Models\Cronograma;
 use App\Models\Adquisicion;
+use App\Models\Articulo;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
@@ -475,7 +476,11 @@ class GenerarPdfController extends Controller
             return floatval(str_replace(['$', ','], '', $item['total']));
         })->sum() ?? 0;
 
-        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'totalGeneral'))->setPaper('a3', 'landscape');
+        $producto = $producto != '' ? Articulo::find($producto) : '';
+        $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';
+        $cargo = $cargo != '' ? Articulo::find($cargo) : '';
+
+        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'totalGeneral', 'fechas', 'cargo'))->setPaper('a3', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 

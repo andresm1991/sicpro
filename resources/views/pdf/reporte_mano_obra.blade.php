@@ -198,18 +198,10 @@
                         <h2>Reporte de adquisiciones</h2>
                     </td>
                 </tr>
-                @if ($proveedor != '')
+                @if ($cargo != '')
                     <tr>
                         <td colspan="2">
-                            <strong>proveedor:
-                                {{ isset($proveedor->razon_social) ? $proveedor->razon_social : $proveedor->apellidos . ' ' . $proveedor->nombres }}</strong>
-                        </td>
-                    </tr>
-                @endif
-                @if ($producto != '')
-                    <tr>
-                        <td colspan="2">
-                            <strong>Producto: {{ $producto->descripcion }}</strong>
+                            <strong>cargo: {{ $cargo->descripcion }}</strong>
                         </td>
                     </tr>
                 @endif
@@ -227,31 +219,24 @@
 
         <table id="table-resumen">
             <tr>
-                <th scope="col">fecha</th>
-                <th scope="col">numero</th>
                 <th scope="col">proyecto</th>
+                <th scope="col">semana</th>
+                <th scope="col">fecha inicio</th>
+                <th scope="col">fecha fin</th>
                 <th scope="col">etapa</th>
-                <th scope="col">estado</th>
-                <th scope="col">tipo adquisicion</th>
-                <th scope="col">factura</th>
-                @if ($producto != '')
-                    <th scope="col">cantidad</th>
-                @endif
+                <th scope="col">actividad</th>
                 <th scope="col">total</th>
             </tr>
             <tbody>
                 @forelse ($query as $items)
                     <tr>
-                        <td>{{ $items['adquisicion']->fecha }}</td>
-                        <td>{{ $items['adquisicion']->numero }}</td>
-                        <td>{{ $items['adquisicion']->proyecto->nombre_proyecto }}</td>
-                        <td>{{ $items['adquisicion']->etapa->descripcion }}</td>
-                        <td>{{ $items['adquisicion']->estado != 'Completado' ? 'Pendiente' : 'Completado' }}</td>
-                        <td>{{ $items['adquisicion']->tipo_adquisicion }}</td>
-                        <td>{{ $items['adquisicion']->factura ?? '' }}</td>
-                        @if ($producto != '')
-                            <td>{{ $items['cantidad'] }}</td>
-                        @endif
+                        <td>{{ $items['mano_obra']->proyecto->nombre_proyecto }}</td>
+                        <td>{{ $items['mano_obra']->semana }}</td>
+                        <td>{{ $items['mano_obra']->fecha_inicio }}</td>
+                        <td>{{ $items['mano_obra']->fecha_fin }}</td>
+                        <td>{{ $items['mano_obra']->etapa->descripcion }}</td>
+                        <td>{{ isset($items['mano_obra']->actividad) ? $items['mano_obra']->actividad->descripcion : '' }}
+                        </td>
                         <td>{{ $items['total'] }}</td>
                     </tr>
                 @empty

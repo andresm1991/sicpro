@@ -233,10 +233,35 @@ class ManoObra extends Model
                 return $valor + $adicional - $descuento;
             });
 
+            // Calcular el número de semanas del proyecto asociado
+            $semanas = self::obtenerSemanasPorProyecto($mano_obra->proyecto_id);
+
             return [
                 'mano_obra' => $mano_obra,
                 'total' => '$ ' . number_format($total, 4),
+                'semana' => $semanas,
             ];
         });
+    }
+
+    public static function obtenerSemanasPorProyecto($proyectoId)
+    {
+        // Obtener todas las entradas de ManoObra para el proyecto dado
+        $manosObra = self::where('proyecto_id', $proyectoId)->get();
+
+        $semanas = 0;
+
+        foreach ($manosObra as $manoObra) {
+            // Asegurarse de que ambas fechas estén definidas
+            if ($manoObra->fecha_inicio && $manoObra->fecha_fin) {
+                $fechaInicio = Carbon::parse($manoObra->fecha_inicio);
+                $fechaFin = Carbon::parse($manoObra->fecha_fin);
+
+                // Calcular la diferencia en semanas y acumular
+                $semanas += $fechaInicio->diffInWeeks($fechaFin) + 1; // +1 para incluir la semana actual
+            }
+        }
+
+        return $semanas;
     }
 }
