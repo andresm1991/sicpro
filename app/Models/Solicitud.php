@@ -68,7 +68,7 @@ class Solicitud extends Model
             })
             ->where('recuperable', true);
 
-        if (auth()->user()->id > 1) {
+        if (!auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
             $query->whereHas('usuario', function ($q) {
                 $q->where('id', auth()->user()->id);
             });
