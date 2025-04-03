@@ -18,7 +18,7 @@
                         <div class="col-md-4 col-12">
                             <div class="form-group">
                                 <a href="{{ route('solicitud.reposicion.create') }}" class="btn btn-dark btn-sm">
-                                    <i class="fa-light fa-plus"></i> Nueva Solicitud
+                                    <i class="fa-light fa-plus"></i> Nueva Reposición
                                 </a>
                             </div>
                         </div>
