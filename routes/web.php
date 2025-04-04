@@ -2,33 +2,34 @@
 
 use App\Models\CatalogoDato;
 use App\Models\AdquisicionDetalle;
+use App\Models\PresupuestoProyecto;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RubroController;
+use App\Http\Controllers\TareaController;
 use App\Http\Controllers\SistemaController;
 use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\ManoObraController;
 use App\Http\Controllers\PrestamoController;
 use App\Http\Controllers\ProyectoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\SolicitudController;
+use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\GenerarPdfController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\ReporteriaController;
 use App\Http\Controllers\AdquisicionController;
 use App\Http\Controllers\ContratistaController;
+use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\CatalogoDatoController;
+use App\Http\Controllers\NotificacionController;
 use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\AdministrativoController;
-use App\Http\Controllers\CronogramaController;
-use App\Http\Controllers\PresupuestoController;
 use App\Http\Controllers\PushNotificationController;
 use App\Http\Controllers\RecuperacionTiempoController;
-use App\Http\Controllers\ReporteriaController;
 use App\Http\Controllers\ResumenPagoSemanalController;
-use App\Http\Controllers\RubroController;
-use App\Http\Controllers\SolicitudController;
-use App\Http\Controllers\TareaController;
-use App\Models\PresupuestoProyecto;
 
 /*
 |--------------------------------------------------------------------------
@@ -336,6 +337,10 @@ Route::group(['middleware' => ['auth']], function () {
 
 
     //** RUTAS NOTIFICACION */
+    Route::group(['prefix' => 'notificaciones', 'as' => 'notificacion.'], function () {
+        Route::get('/', [NotificacionController::class, 'index'])->name('index');
+        Route::post('/leer-notificacion', [NotificacionController::class, 'leerNotificacion'])->name('leer');
+    });
     Route::get('/orde-pago-mano-obra/{mano_obra}/{pago}/view', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('pago.mano.obra');
     //** FIN RUTAS NOTIFICACIONES */
 

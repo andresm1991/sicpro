@@ -9,13 +9,15 @@ class PushNotificationUser extends Model
 {
     use HasFactory;
     protected $table = 'push_notification_users';
-    protected $fillable = ['user_id', 'message_id'];
+    protected $fillable = ['user_id', 'message_id', 'leido'];
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function message(){
+    public function message()
+    {
         return $this->belongsTo(PushNotificationMsg::class, 'message_id');
     }
 }

@@ -53,6 +53,16 @@ class User extends Authenticatable
         return $this->hasMany(UsuarioTarea::class, 'usuario_id');
     }
 
+    public function notifications()
+    {
+        return $this->hasMany(PushNotificationUser::class, 'user_id');
+    }
+
+    public function unreadNotifications()
+    {
+        return $this->notifications()->where('leido', false)->orderBy('id', 'desc');
+    }
+
     public function getAuthPassword()
     {
         return $this->clave;

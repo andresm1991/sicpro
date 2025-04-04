@@ -38,13 +38,43 @@ class PushNotificationService
                 'title' => $title,
                 'body' => $message,
                 'url' => $url,
-            ]);
+            ])->id;
 
-            $users = User::whereHas('roles', function ($q) {
-                $q->whereIn('name', ['Administrador', 'Gerencial', 'Administrativo']);
-            })->get();
+            if (auth()->user()->hasRole('Administrativo')) {
+                $users = User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['Gerencial']);
+                })->get();
+            } elseif (auth()->user()->hasRole('Gerencial')) {
+                $users = User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['Administrativo', 'Operativo']);
+                })->get();
+            } elseif (auth()->user()->hasRole('Operativo')) {
+                $users = User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['Administrativo', 'Gerencial']);
+                })->get();
+            } else {
+                $users = User::whereHas('roles', function ($q) {
+                    $q->whereIn('name', ['Administrador']);
+                })->get();
+            }
 
-            $notifications = PushNotification::whereHas('user', function ($query) {
+            foreach ($users as $user) {
+                $notification = PushNotificationUser::create([
+                    'user_id' => $user->id,
+                    'message_id' => $msg,
+                    'leido' => false,
+                ]);
+                if ($user->notifications()->exists()) {
+                    foreach ($user->notifications as $notification) {
+                        $webPush->sendOneNotification(
+                            Subscription::create($notification['subscriptions']),
+                            $payload,
+                            ['TTL' => 5000]
+                        );
+                    }
+                }
+            }
+            /*$notifications = PushNotification::whereHas('user', function ($query) {
                 $query->whereHas('roles', function ($roleQuery) {
                     $roleQuery->whereIn('name', ['Administrador', 'Gerencial', 'Administrativo']);
                 });
@@ -56,12 +86,7 @@ class PushNotificationService
                     $payload,
                     ['TTL' => 5000]
                 );
-
-                PushNotificationUser::create([
-                    'user_id' => $notification->user_id,
-                    'message_id' => $notification->id,
-                ]);
-            }
+            }*/
         } catch (Throwable $e) {
             LogService::log('ERROR', 'Error al enviar notificación push', ['error_message' => $e->getMessage()]);
             return $e->getMessage();
