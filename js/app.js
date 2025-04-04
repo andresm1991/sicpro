@@ -1,19 +1,41 @@
-
 let profile = document.querySelector('.profile');
-let menu = document.querySelector('.menu');
+let profileMenu = document.querySelector('.profile .menu');
 
-if (profile && menu) {
-    profile.onclick = function () {
-        menu.classList.toggle('active');
-    };
+let notificaciones = document.querySelector('.content-notificaciones');
+let notificacionesMenu = document.querySelector('.content-notificaciones .menu');
 
-    document.onclick = function (event) {
-        // Verifica si el clic fue fuera del profile y del menu
-        if (!profile.contains(event.target) && !menu.contains(event.target)) {
-            menu.classList.remove('active');
+if (profile && profileMenu) {
+    profile.onclick = function (event) {
+        notificacionesMenu.classList.remove('active');
+        // Verifica si el clic fue en un elemento con la clase 'user' o 'img-box
+
+        if (event.target.closest('.user') || event.target.closest('.img-box')) {
+            profileMenu.classList.toggle('active');
         }
     };
 }
+
+if (notificaciones && notificacionesMenu) {
+    notificaciones.onclick = function (event) {
+        profileMenu.classList.remove('active');
+        if (event.target.closest('.bell-icon')) {
+            notificacionesMenu.classList.toggle('active');
+        }
+    };
+}
+
+// Evento global para ocultar los menús al hacer clic fuera de ellos
+document.onclick = function (event) {
+    // Oculta el menú de perfil si el clic fue fuera de él
+    if (profile && profileMenu && !profile.contains(event.target) && !profileMenu.contains(event.target)) {
+        profileMenu.classList.remove('active');
+    }
+
+    // Oculta el menú de notificaciones si el clic fue fuera de él
+    if (notificaciones && notificacionesMenu && !notificaciones.contains(event.target) && !notificacionesMenu.contains(event.target)) {
+        notificacionesMenu.classList.remove('active');
+    }
+};
 
 
 // Funcion para cargar bancos dentro del select
