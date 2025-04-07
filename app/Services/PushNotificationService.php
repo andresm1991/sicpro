@@ -66,27 +66,20 @@ class PushNotificationService
                 ]);
                 if ($user->notifications()->exists()) {
                     foreach ($user->notifications as $notification) {
-                        $webPush->sendOneNotification(
-                            Subscription::create($notification['subscriptions']),
-                            $payload,
-                            ['TTL' => 5000]
-                        );
+                        // Verifica que 'subscriptions' no sea null
+                        if (!empty($notification['subscriptions'])) {
+                            $webPush->sendOneNotification(
+                                Subscription::create($notification['subscriptions']),
+                                $payload,
+                                ['TTL' => 5000]
+                            );
+                        } else {
+                            // Manejo de error o registro en el log si 'subscriptions' es null
+                            LogService::log('ERROR', 'Error al enviar notificación push', ['error_message' => "El usuario {$user->id} no tiene una suscripción válida."]);
+                        }
                     }
                 }
             }
-            /*$notifications = PushNotification::whereHas('user', function ($query) {
-                $query->whereHas('roles', function ($roleQuery) {
-                    $roleQuery->whereIn('name', ['Administrador', 'Gerencial', 'Administrativo']);
-                });
-            })->get();
-
-            foreach ($notifications as $notification) {
-                $webPush->sendOneNotification(
-                    Subscription::create($notification['subscriptions']),
-                    $payload,
-                    ['TTL' => 5000]
-                );
-            }*/
         } catch (Throwable $e) {
             LogService::log('ERROR', 'Error al enviar notificación push', ['error_message' => $e->getMessage()]);
             return $e->getMessage();
