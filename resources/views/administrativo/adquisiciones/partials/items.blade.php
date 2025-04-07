@@ -30,7 +30,12 @@
                     </td>
                     @if (isset($adquisicion->orden_recepcion) && $adquisicion->orden_recepcion->proveedor->razon_social == 'Combustible')
                         <td class="align-middle">
-                            <span>{{ $detalle->kilometraje }}</span>
+                            {{ Form::text('kilometraje[' . $index . ']', old('kilometraje.' . $index, $detalle->kilometraje), ['class' => 'form-control', 'placeholder' => '0', 'data-index' => $index]) }}
+
+                            {!! $errors->first(
+                                'kilometraje.' . $index,
+                                '<small class="help-block text-danger error_mensajes">:message</small>',
+                            ) !!}
                         </td>
                     @endif
                     <td class="align-middle text-center cantidad col-md-1 col-12" data-index="{{ $index }}">

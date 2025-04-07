@@ -59,7 +59,10 @@
                         <div class="menu-content">
                             <ul>
                                 @foreach (auth()->user()->unreadNotifications->sortByDesc('created_at')->take(10) as $item)
-                                    <li><a href="{{ $item->message->url }}">{{ $item->message->title }}</a></li>
+                                    <li><a href="javascript:void(0);" class="leer-notificacion"
+                                            data-id="{{ $item->id }}" data-url="{{ $item->message->url }}"
+                                            style="text-align: start; font-size: 12px; padding: 10px">{{ $item->message->title }}</a>
+                                    </li>
                                 @endforeach
                                 <!-- Enlace para ver todas las notificaciones -->
                                 @if (auth()->user()->unreadNotifications->count() > 10)

@@ -161,6 +161,10 @@ class AdquisicionController extends Controller
 
             if ($adquisicion) {
                 foreach ($productos as $index => $producto) {
+                    // Validar si el producto es 504 y si $km[$index] tiene un valor
+                    if ($producto == 504 && (is_null($km[$index]) || $km[$index] === '')) {
+                        return redirect()->back()->with('error', "El kilometraje es obligatorio.");
+                    }
                     $param_detalle_adquisicion = [
                         'adquisicion_id' => $adquisicion->id,
                         'articulo_id' => '',
