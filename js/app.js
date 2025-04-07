@@ -661,6 +661,30 @@ $(function () {
         return false;
     }
 
+    $('.leer-notificacion').on('click', function () {
+        var id = $(this).data('id');
+        var url = $(this).data('url');
+        // Redirigir a la URL de la notificación
+        $.ajax({
+            url: base_url + "/notificaciones/leer-notificacion",
+            type: "POST",
+            data: {
+                id: id,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                if (response.success) {
+                    // Abrir la URL en otra pestaña
+                    if (url != '/') {
+                        window.open(url,
+                            '_blank'); // '_blank' abre la URL en una nueva pestaña
+                    }
+                    location.reload();
+                }
+            }
+        });
+    });
+
 });
 
 function calcularTotalProducto($cantidad, $valor, $iva) {
