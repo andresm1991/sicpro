@@ -309,25 +309,17 @@ $(function () {
                         </thead>
                     <tbody>
                     ${data.map((item) => {
-                    let valor = item.total;
-                    // Paso 1: Eliminar el símbolo "$" y espacios
-                    valor = valor.replace('$', '').trim();
-                    // Paso 2: Eliminar las comas ","
-                    valor = valor.replace(/,/g, '');
-                    // Paso 3: Convertir a número
-                    valor = parseFloat(valor);
 
-                    totalGeneral += valor
                     return `
                             <tr>
-                                <td>${item.adquisicion.fecha}</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
+                                <td>${item.fecha}</td>
+                                <td>${item.dias}</td>
+                                <td>${item.km_carga}</td>
+                                <td>${item.valor}</td>
+                                <td>${item.galones}</td>
+                                <td>${item.km_anterior}</td>
+                                <td>${item.km_recorrido}</td>
+                                <td>${item.km_galon}</td>
                             </tr>
                         `;
                 }).join('')}
