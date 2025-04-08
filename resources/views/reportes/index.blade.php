@@ -15,14 +15,14 @@
                 </div>
 
                 <div class="max-auto">
-                    <a href="{{ route('administrativo.index.mano.obra') }}" class="nodo">
+                    <a href="{{ route('reporte.gasolina.camioneta') }}" class="nodo">
                         <img src="{{ asset('images/svg/gasolina.svg') }}" alt="">
                         <span>Gasolina camioneta</span>
                     </a>
                 </div>
 
                 <div class="max-auto">
-                    <a href="{{ route('administrativo.prestamos.index') }}" class="nodo">
+                    <a href="" class="nodo">
                         <img src="{{ asset('images/svg/reporte.svg') }}" alt="">
                         <span>Solicitudes & resposiciones</span>
                     </a>

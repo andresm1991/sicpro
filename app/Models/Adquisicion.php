@@ -54,7 +54,7 @@ class Adquisicion extends Model
     }
 
 
-    public static function dataReporteAdquisiciones($request)
+    public static function dataReporteAdquisiciones($request, $gasolina = false)
     {
         $ordenado = $request->input('ordenado');
         $fechas = $request->input('fechas');
@@ -147,6 +147,15 @@ class Adquisicion extends Model
             });
         });
 
+        // Filtrar por gasolina
+        if ($gasolina) {
+            $query->whereHas('adquisiciones_detalle', function ($q) {
+                $q->whereHas('producto', function ($query) {
+                    $query->where('descripcion', 'gasolina para camioneta');
+                })->where('kilometraje', '>', 0)->orderBy('kilometraje', 'asc'); // artículo de gasolina
+            });
+        }
+
         // Ordenar por secuencial u otro criterio
         switch ($ordenado) {
             case 'secuencial':
@@ -163,7 +172,7 @@ class Adquisicion extends Model
                 break;
         }
 
-        return $query->get()->map(function ($adquisicion) use ($producto) {
+        return $query->get()->map(function ($adquisicion) use ($producto, $gasolina) {
             // Si se filtra por producto, calcular el total solo para ese producto
             if ($producto) {
                 $detalle = $adquisicion->adquisiciones_detalle->firstWhere('articulo_id', $producto);
@@ -181,7 +190,7 @@ class Adquisicion extends Model
 
                     return calcularTotalProducto($cantidad, $valor, $iva);
                 });
-                $cantidad = 0; // No aplica cantidad específica si no se filtra por producto
+                $cantidad =  0; // No aplica cantidad específica si no se filtra por producto
             }
 
             return [

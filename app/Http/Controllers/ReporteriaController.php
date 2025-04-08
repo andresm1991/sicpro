@@ -7,6 +7,7 @@ use App\Models\ManoObra;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
 use App\Models\Adquisicion;
+use App\Models\AdquisicionDetalle;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
@@ -99,6 +100,55 @@ class ReporteriaController extends Controller
             } else {
                 $query = ManoObra::filtroManoObra($request);
             }
+            return response()->json([
+                'success' => true,
+                'result' => $query,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
+                'error' => $th->getLine(),
+            ]);
+        }
+    }
+
+    /**
+     * Método para visualizar el reporte de adquisiciones de gasolina camioneta
+     * @return \Illuminate\Http\Response
+     */
+    public function reporteGasolinaCamioneta()
+    {
+        $title_page = 'Reporte Gasolina Camioneta';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Reportes', 'url' => route('reporte.index')],
+            ['name' => 'Gasolina Camioneta', 'url' => ''],
+        ];
+
+        $proyectos = Proyecto::orderBy('nombre_proyecto', 'asc')->pluck('nombre_proyecto', 'id')->prepend('', '');
+        $proyectos = $proyectos->toArray(); // Convertir a array
+        $proyectos['0'] = 'GENERAL'; // Añadir el nuevo elemento al final
+        $proyectos = collect($proyectos); // Convertir nuevamente a colección si es necesario
+
+        $necesidades = DiccionarioPalabra::pluck('palabra', 'palabra')->prepend('', '');
+
+        return view('reportes.gasolina_camioneta', compact('title_page', 'breadcrumbs',  'proyectos', 'necesidades'));
+    }
+
+    public function visualizarReporteGasolinaCamioneta(Request $request)
+    {
+        try {
+
+            $query = Adquisicion::dataReporteAdquisiciones($request, true);
+            $result = new \Illuminate\Support\Collection();
+
+            foreach ($query as $item) {
+                print_r($item['adquisicion']->fecha);
+            }
+
+            return $result;
+
             return response()->json([
                 'success' => true,
                 'result' => $query,
