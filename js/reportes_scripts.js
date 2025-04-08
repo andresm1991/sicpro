@@ -29,6 +29,7 @@ $(function () {
         $('#form-reporte-adquisiciones').submit();
     });
 
+
     $('#visualizar-reporte').on('click', function () {
         let tipo_reporte_text = $('select[name=tipo] option:selected').text();
         let tipo_reporte = $('select[name=tipo]').val();
@@ -262,6 +263,108 @@ $(function () {
             }
         });
 
+    });
+
+    $('#visualizar-reporte-gasolina').on('click', function () {
+        var form = $("#form-reporte-adquisiciones");
+        var data = getFormData(form);
+
+        $.ajax({
+            url: 'visulizar-reporte-gasolina',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: data,
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                const data = response.result;
+                let totalGeneral = 0;
+
+                $('#table-view-reporte').empty();
+                console.log(data);
+                if (!response.success || data.length == 0) {
+                    Swal.fire(
+                        'Ups.!',
+                        'No se encontraron resultados.',
+                        'error'
+                    )
+                    return;
+                }
+
+
+                $('#table-view-reporte').append(`<div class="table-responsive">
+                    <table class="table table-bordered table-sm" id="table-view-reporte">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">fecha</th>
+                                <th scope="col">dias</th>
+                                <th scope="col">kilometraje carga</th>
+                                <th scope="col">valor de carga</th>
+                                <th scope="col">galones de carga</th>
+                                <th scope="col">kilometraje anterior</th>
+                                <th scope="col">kilometraje recorrido</th>
+                                <th scope="col">kilometraje/galon</th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                    ${data.map((item) => {
+                    let valor = item.total;
+                    // Paso 1: Eliminar el símbolo "$" y espacios
+                    valor = valor.replace('$', '').trim();
+                    // Paso 2: Eliminar las comas ","
+                    valor = valor.replace(/,/g, '');
+                    // Paso 3: Convertir a número
+                    valor = parseFloat(valor);
+
+                    totalGeneral += valor
+                    return `
+                            <tr>
+                                <td>${item.adquisicion.fecha}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            </tr>
+                        `;
+                }).join('')}
+                    </tbody>
+                    <tfoot>
+                       
+                    </tfoot>
+                    </table>
+                    </div>
+                    `);
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
     });
 
     $('select[name=tipo]').on('change', function () {
