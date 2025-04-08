@@ -168,7 +168,15 @@ class Adquisicion extends Model
                 $query->orderBy('tipo_adquisicion', 'asc');
                 break;
             default:
-                # code...
+                if ($gasolina) {
+                    $query->orderBy(
+                        AdquisicionDetalle::select('kilometraje')
+                            ->whereColumn('adquisicion_id', 'adquisiciones.id')
+                            ->orderBy('kilometraje', 'asc')
+                            ->limit(1),
+                        'asc'
+                    );
+                }
                 break;
         }
 

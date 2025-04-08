@@ -174,6 +174,22 @@ if (!function_exists('dateFormat')) {
         // Formatear el resultado como "H:m"
         return sprintf('%d:%02d', $horas, $minutos);
     }
+
+    /**
+     * Calcular los días entre dos fechas.
+     */
+    function diasEntreFechas($date1, $date2)
+    {
+        // Create DateTime objects from the date strings
+        $datetime1 = new DateTime($date1);
+        $datetime2 = new DateTime($date2);
+
+        // Calculate the difference
+        $interval = $datetime1->diff($datetime2);
+
+        // Get the number of days
+        return $interval->days;
+    }
 }
 
 if (!function_exists('generateProductCode')) {
