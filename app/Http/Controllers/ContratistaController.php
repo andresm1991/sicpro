@@ -327,9 +327,76 @@ class ContratistaController extends Controller
         }
     }
 
+    public function editarPagoOrdenTrabajo(Request $request)
+    {
+        $title_page = 'Editar Pago Contratista';
+        $route_params = $this->getRouteParameters($request);
+        $pago_orden_trabajo = PagoOrdenTrabajoContratista::find($request->pago_contratista);
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Pagos Contratista', 'url' => route('proyecto.adquisiciones.contratista.pagos.orden.trabajo', ['tipo' => $request->route('tipo'), 'tipo_id' => $request->route('tipo_id'), 'proyecto' => $request->route('proyecto'), 'tipo_adquisicion' => $request->route('tipo_adquisicion'), 'tipo_etapa' => $request->tipo_etapa, 'contratista' => $pago_orden_trabajo->contratista_id])],
+            ['name' => 'Editar Pago Contratistas', 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        $route_params = array_merge($route_params, [
+            'orden_trabajo' => $pago_orden_trabajo->contratista,
+            'pago_orden_trabajo' => $pago_orden_trabajo,
+            'title_page' => $title_page,
+            'breadcrumbs' => $breadcrumbs
+        ]);
+
+
+        return view('contratista.pagos.edit', $route_params);
+    }
+
+    public function actualizarPagoOrdenTrabajo(Request $request)
+    {
+        try {
+            $route_params = $this->getRouteParameters($request);
+            $route_params = array_merge($route_params, ['pago_contratista' => $request->pago_contratista]);
+
+            DB::beginTransaction();
+
+            $pago_orden_trabajo = PagoOrdenTrabajoContratista::find($request->pago_contratista);
+            if ($pago_orden_trabajo->pagado) {
+                return redirect()->back()->with('error', 'No es posible actualizar el pago, porque ya fue registrado como pagado en administrativo.');
+            }
+            $pago_orden_trabajo->fecha = $request->fecha;
+            $pago_orden_trabajo->tipo_pago = $request->tipo;
+            $pago_orden_trabajo->forma_pago = $request->forma_pago;
+            $pago_orden_trabajo->valor = str_replace(',', '', $request->valor);
+            $pago_orden_trabajo->detalle = $request->detalle;
+
+            if ($pago_orden_trabajo->save()) {
+                DB::commit();
+                LogService::log('success', 'Pago orden de trabajo contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
+
+                return redirect()->route('proyecto.adquisiciones.contratista.editar.pago.orden.trabajo', $route_params)->with('success', 'Pago actualizado con éxito.');
+            } else {
+                throw new Exception(MessagesConstant::DEFAUL_ERROR);
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('error', 'Error al actualizar orden de trabajo contratista', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+
+            return redirect()->back()->with('error', MessagesConstant::CATCH_ERROR);
+        }
+    }
+
     public function eliminarOrdenTrabajo($id)
     {
         $is_delete = Contratista::find($id)->delete();
+        if ($is_delete) {
+            return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
+        } else {
+            return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+        }
+    }
+
+    public function eliminarPagoOrdenTrabajo(Request $request)
+    {
+        $is_delete = PagoOrdenTrabajoContratista::find($request->id)->delete();
         if ($is_delete) {
             return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
         } else {

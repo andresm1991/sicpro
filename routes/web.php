@@ -98,8 +98,15 @@ Route::group(['middleware' => ['auth']], function () {
             /** RUTAS PAGOS */
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/pagos-orden-trabajo/{contratista}', [ContratistaController::class, 'pagosOrdenTrabajo'])->name('contratista.pagos.orden.trabajo');
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/nuevo-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'nuevoPagoOrdenTrabajo'])->name('contratista.nuevo.pago.orden.trabajo');
+
+            Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/editar-pago-orden-trabajo/{pago_contratista}', [ContratistaController::class, 'editarPagoOrdenTrabajo'])->name('contratista.editar.pago.orden.trabajo');
+
             Route::post('/{tipo_adquisicion}/contratista/{tipo_etapa}/guardar-pago-orden-trabajo/{contratista}', [ContratistaController::class, 'guardarPagoOrdenTrabajo'])->name('contratista.guardar.pago.orden.trabajo');
+
+            Route::put('/{tipo_adquisicion}/contratista/{tipo_etapa}/actualizar-pago-orden-trabajo/{pago_contratista}', [ContratistaController::class, 'actualizarPagoOrdenTrabajo'])->name('contratista.update.pago.orden.trabajo');
+
             Route::get('/{tipo_adquisicion}/contratista/{tipo_etapa}/orden-trabajo/buscar', [ContratistaController::class, 'buscarPagoOrdenTrabajo']);
+            Route::delete('/{tipo_adquisicion}/contratista/{tipo_etapa}/eliminar-pago-orden-trabajo/{id}', [ContratistaController::class, 'eliminarPagoOrdenTrabajo']);
         });
 
         //** RUTAS PRESUPUESTO */

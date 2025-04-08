@@ -2,20 +2,23 @@
     <div class="col-sm-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Pago Nro    ', ['class' => 'col-form-label ']) }}
-            <label for="" class="form-control text-uppercase label-disabled " >{{ numeroOrden($orden_trabajo->numero_pago_contratista) }}</label>
+            <label for=""
+                class="form-control text-uppercase label-disabled ">{{ numeroOrden($orden_trabajo->numero_pago_contratista) }}</label>
         </div>
     </div>
     <div class="col-sm-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Contratista', ['class' => 'col-form-label']) }}
-            <label for="" class="form-control text-uppercase label-disabled" >{{ $orden_trabajo->proveedor->razon_social }}</label>
+            <label for=""
+                class="form-control text-uppercase label-disabled">{{ $orden_trabajo->proveedor->razon_social }}</label>
         </div>
     </div>
 
     <div class="col-sm-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Categoría', ['class' => 'col-form-label']) }}
-            <label for="" class="form-control text-uppercase label-disabled" >{{ $orden_trabajo->articulo->descripcion }}</label>
+            <label for=""
+                class="form-control text-uppercase label-disabled">{{ $orden_trabajo->articulo->descripcion }}</label>
         </div>
     </div>
 </div>
@@ -24,23 +27,33 @@
     <div class="col-sm-4">
         <div class="form-group">
             {{ Form::label('', 'Tipo', ['class' => 'col-form-label']) }}
-            <select name="tipo" class="form-control select2-basic-single"
-                data-placeholder="Selecione opción">
+            <select name="tipo" class="form-control select2-basic-single" data-placeholder="Selecione opción">
                 <option></option>
-                <option value="AVANCE"> Avance</option>
-                <option value="LIQUIDACION"> Liquidación</option>
+                <option value="AVANCE"
+                    {{ isset($pago_orden_trabajo->tipo_pago) && $pago_orden_trabajo->tipo_pago == 'AVANCE' ? 'selected' : '' }}>
+                    Avance
+                </option>
+                <option value="LIQUIDACION"
+                    {{ isset($pago_orden_trabajo->tipo_pago) && $pago_orden_trabajo->tipo_pago == 'LIQUIDACION' ? 'selected' : '' }}>
+                    Liquidación</option>
             </select>
         </div>
     </div>
     <div class="col-sm-4">
         <div class="form-group">
             {{ Form::label('', 'Forma de pago', ['class' => 'col-form-label']) }}
-            <select name="forma_pago" class="form-control select2-basic-single"
-                data-placeholder="Selecione opción">
+            <select name="forma_pago" class="form-control select2-basic-single" data-placeholder="Selecione opción">
                 <option></option>
-                <option value="EFECTIVO"> Efectivo</option>
-                <option value="TRANSFERENCIA"> Transferencia</option>
-                <option value="CHEQUE"> Cheque</option>
+                <option value="EFECTIVO"
+                    {{ isset($pago_orden_trabajo->tipo_pago) && $pago_orden_trabajo->forma_pago == 'EFECTIVO' ? 'selected' : '' }}>
+                    Efectivo</option>
+                <option value="TRANSFERENCIA"
+                    {{ isset($pago_orden_trabajo->tipo_pago) && $pago_orden_trabajo->forma_pago == 'TRANSFERENCIA' ? 'selected' : '' }}>
+                    Transferencia</option>
+                <option value="CHEQUE"
+                    {{ isset($pago_orden_trabajo->tipo_pago) && $pago_orden_trabajo->forma_pago == 'CHEQUE' ? 'selected' : '' }}>
+                    Cheque
+                </option>
             </select>
         </div>
     </div>
@@ -48,14 +61,14 @@
     <div class="col-sm-2">
         <div class="form-group">
             {{ Form::label('', 'Valor', ['class' => 'col-form-label']) }}
-            {{ Form::text('valor', old('valor'), ['class' => 'form-control input-double', 'id' => 'valor' ,'placeholder' => '$ 0,00']) }}
+            {{ Form::text('valor', old('valor'), ['class' => 'form-control input-double', 'id' => 'valor', 'placeholder' => '$ 0,00']) }}
         </div>
     </div>
 
     <div class="col-sm-2">
         <div class="form-group">
             {{ Form::label('', 'Saldo', ['class' => 'col-form-label']) }}
-            {{ Form::text('saldo', number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas),2), ['class' => 'form-control input-double', 'id' => 'saldo', 'placeholder' => '$ 0,00', 'disabled']) }}
+            {{ Form::text('saldo', number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 4), ['class' => 'form-control input-double', 'id' => 'saldo', 'placeholder' => '$ 0,00', 'disabled']) }}
         </div>
     </div>
 

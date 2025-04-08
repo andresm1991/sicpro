@@ -16,7 +16,8 @@
                 <div class="row">
                     <div class="col-md-4 col-12">
                         <div class="form-group">
-                            <a href="{{ route('proyecto.adquisiciones.contratista.nuevo.pago.orden.trabajo',['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $contratista]) }}" class="btn btn-dark btn-sm">
+                            <a href="{{ route('proyecto.adquisiciones.contratista.nuevo.pago.orden.trabajo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'contratista' => $contratista]) }}"
+                                class="btn btn-dark btn-sm">
                                 <i class="fa-regular fa-plus"></i> Nueva pago
                             </a>
                         </div>
@@ -32,6 +33,7 @@
                                 <th scope="col">Pago</th>
                                 <th scope="col">Valor</th>
                                 <th scope="col">Detalle</th>
+                                <th scope="col"></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -50,10 +52,19 @@
                                         {{ $pagos->forma_pago }}
                                     </td>
                                     <td class="align-middle">
-                                        $ {{ number_format($pagos->valor,2) }}
+                                        $ {{ number_format($pagos->valor, 2) }}
                                     </td>
                                     <td class="align-middle">
                                         {{ $pagos->detalle }}
+                                    </td>
+                                    <td class="align-middle text-right">
+                                        <button type="button" class="btn btn-outline-dark" data-container="body"
+                                            data-toggle="popover" data-placement="left" data-trigger="focus"
+                                            data-content ="
+                                            <a href='{{ route('proyecto.adquisiciones.contratista.editar.pago.orden.trabajo', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id, 'pago_contratista' => $pagos->id]) }}' class='dropdown-item'>Editar</a>
+                                            <a href='#' class='dropdown-item eliminar-pago-orden-trabajo' id='{{ $pagos->id }}'>Eliminar</a> ">
+                                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                        </button>
                                     </td>
                                 </tr>
                             @empty
@@ -63,8 +74,8 @@
                                     </td>
                                 </tr>
                             @endforelse
-    
-    
+
+
                         </tbody>
                     </table>
                 </div>
@@ -72,7 +83,7 @@
             </div>
         </div>
     </section>
-   
+
 @endsection
 
 @section('scripts')
@@ -82,4 +93,3 @@
     </script>
     <script src="{{ asset('js/orden_trabajo_contratistas_scripts.js') }}" type="module"></script>
 @endsection
-
