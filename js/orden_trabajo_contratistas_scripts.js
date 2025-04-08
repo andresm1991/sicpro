@@ -250,6 +250,10 @@ $(function () {
         $('#total-general').val(`$ ${totalGeneral.toFixed(4)}`);
     });
 
+    /**
+     * Eliminar orden de trabajo
+     * @param String id
+     */
     $(document).on('click', '.eliminar-orden-trabajo', function () {
         var $this = $(this);
         var id = $(this).attr('id');
@@ -304,6 +308,67 @@ $(function () {
             }
         });
     });
+
+    /**
+     * Eliminar pago orden de trabajo
+     * @param String id
+     */
+    $(document).on('click', '.eliminar-pago-orden-trabajo', function () {
+        console.log('eliminar pago orden de trabajo')
+        var $this = $(this);
+        var id = $(this).attr('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: url + '/eliminar-pago-orden-trabajo/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "7" class="text-center text-danger">No se encontraron datos para mostrar.</td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+
 
     /**
      * Buscar
