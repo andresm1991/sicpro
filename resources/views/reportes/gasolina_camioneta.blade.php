@@ -7,7 +7,7 @@
     <section>
         <div class="container-fluid">
             {!! Form::open([
-                'route' => ['pdf.reporte.adquisiciones', ''],
+                'route' => ['pdf.reporte.gasolina.camnoneta', ''],
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',
                 'enctype' => 'multipart/form-data',
