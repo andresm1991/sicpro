@@ -51,7 +51,7 @@ class ReportGasolinaCamionetaExport implements FromView, WithStyles
         ]);
 
         // Estilo del título en A1:H1 (ajustar según tus columnas)
-        $sheet->mergeCells('A1:I1');
+        $sheet->mergeCells('A1:H1');
         $sheet->setCellValue('A1', 'CONTROL GASOLINA CAMIONETA');
         $sheet->getStyle('A1')->applyFromArray([
             'font' => [
@@ -65,7 +65,7 @@ class ReportGasolinaCamionetaExport implements FromView, WithStyles
         ]);
 
         // Estilo para cabeceras en A2:I2
-        $sheet->getStyle('A2:I2')->applyFromArray([
+        $sheet->getStyle('A2:H2')->applyFromArray([
             'font' => ['bold' => true],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
@@ -82,7 +82,7 @@ class ReportGasolinaCamionetaExport implements FromView, WithStyles
         $sheet->getRowDimension(2)->setRowHeight(25);
 
         // Ancho de columnas sugerido (ajustar según necesidad)
-        foreach (range('A', 'I') as $col) {
+        foreach (range('A', 'H') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

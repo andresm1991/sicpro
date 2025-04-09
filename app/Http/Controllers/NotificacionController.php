@@ -34,4 +34,14 @@ class NotificacionController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function leerTodasNotificacion(Request $request)
+    {
+        // Marcar todas las notificaciones como leídas
+        PushNotificationUser::where('user_id', auth()->user()->id)
+            ->where('leido', false)
+            ->update(['leido' => true]);
+
+        return response()->json(['success' => true]);
+    }
 }

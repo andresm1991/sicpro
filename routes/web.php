@@ -93,6 +93,7 @@ Route::group(['middleware' => ['auth']], function () {
     Route::group(['prefix' => 'notificaciones', 'as' => 'notificacion.'], function () {
         Route::get('/', [NotificacionController::class, 'index'])->name('index');
         Route::post('/leer-notificacion', [NotificacionController::class, 'leerNotificacion'])->name('leer');
+        Route::post('/marcar-todos-leido', [NotificacionController::class, 'leerTodasNotificacion']);
     });
     Route::get('/orde-pago-mano-obra/{mano_obra}/{pago}/view', [GenerarPdfController::class, 'planificacionManoObraPDF'])->name('pago.mano.obra');
     //** FIN RUTAS NOTIFICACIONES */

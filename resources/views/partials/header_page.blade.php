@@ -75,9 +75,17 @@
                             </ul>
                         </div>
                     @else
-                        <span class="text-dark"
-                            style="position: absolute;text-align: left !important;right: 0px;left: 10px;top: 10px; color:gray !important">No
-                            tienes notificaciones pendientes.</span>
+                        <ul>
+                            <li>
+                                <a href="javascript:void(0);" class="text-dark"
+                                    style="text-align: start; font-size: 12px; padding: 10px">No
+                                    tienes notificaciones pendientes.</a>
+                            </li>
+                            <li class="view-all" style="text-align: center;position: absolute;top: 40px;left: 65px;">
+                                <a href="{{ route('notificacion.index') }}" class="text-center">Ver
+                                    todo</a>
+                            </li>
+                        </ul>
                     @endif
 
                 </div>

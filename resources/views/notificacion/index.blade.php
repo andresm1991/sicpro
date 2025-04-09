@@ -16,7 +16,7 @@
                     <div class="list-group">
                         @forelse ($notificaciones as $notificacion)
                             <a href="javascript:void(0);"
-                                class="list-group-item list-group-item-action {{ !$notificacion->leido ? 'list-group-item-dark leer-notificacion' : '' }} "
+                                class="list-group-item list-group-item-action leer-notificacion {{ !$notificacion->leido ? 'list-group-item-dark' : '' }} "
                                 data-id="{{ $notificacion->id }}" data-url="{{ $notificacion->message->url }}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">{{ $notificacion->message->title }}</h5>
