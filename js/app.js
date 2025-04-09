@@ -679,8 +679,27 @@ $(function () {
                         window.open(url,
                             '_blank'); // '_blank' abre la URL en una nueva pestaña
                     }
-                    location.reload();
+                    // Actualizar el contador de notificaciones
+                    var cantidad = parseInt($('.notification-amount').text());
+                    if (cantidad > 0) {
+                        var cantidad = parseInt($('.notification-amount').text()) - 1;
+                        $('.notification-amount').text(cantidad);
+                    }
+
+                    // Cambiar el color de la notificación a gris
+                    $('.leer-notificacion[data-id="' + id + '"]').removeClass('list-group-item-dark');
                 }
+            }
+        });
+    });
+
+    $('.content-notificaciones').on('click', function () {
+        $.ajax({
+            url: base_url + "/notificaciones/marcar-todos-leido",
+            type: "POST",
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function (response) {
+                $('.notification-amount').text('0');
             }
         });
     });
