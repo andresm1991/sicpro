@@ -269,24 +269,27 @@ $(function () {
         scrollbar: true,
         useSelect: true,
         change: function (time) {
-            // Obtener el campo de entrada
-            var element = $(this);
+            const element = $(this);
 
-            // Si `time` es un objeto Date, formatearlo manualmente
-            let formattedTime;
+            // Evita loops infinitos
+            if (element.data('changing')) return;
+            element.data('changing', true);
+
+            let formattedTime = '';
+
             if (time instanceof Date) {
-                let hours = String(time.getHours()).padStart(2, '0');
-                let minutes = String(time.getMinutes()).padStart(2, '0');
+                const hours = String(time.getHours()).padStart(2, '0');
+                const minutes = String(time.getMinutes()).padStart(2, '0');
                 formattedTime = `${hours}:${minutes}`;
             } else {
-                formattedTime = time; // Ya debería estar en formato 'HH:mm'
+                formattedTime = time;
             }
 
-            // Actualizar el valor del campo de entrada
+            // Establecer el nuevo valor y disparar el evento `change`
             element.val(formattedTime);
-            // Disparar el evento `change` del campo de entrada
             element.trigger('change');
 
+            element.data('changing', false); // Reset
         }
     });
 

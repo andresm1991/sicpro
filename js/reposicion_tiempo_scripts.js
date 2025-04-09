@@ -2,6 +2,7 @@ $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     var btnGuardar = $("#btn-guardar");
 
+
     $('select[name=user]').on('change', function () {
         let $selectedOption = $(this).find('option:selected').val();
         $.ajax({
@@ -14,8 +15,9 @@ $(function () {
                 $('#loading').addClass('show');
             },
             success: function (response) {
-                console.log(response.tiempo_total);
                 $('#tiempo_pendiente').val(response.tiempo_total);
+                calcularYMostrarTiempoLaboral()
+
             },
             complete: function () {
                 // Ocultar el loading cuando termine la petición
@@ -30,6 +32,10 @@ $(function () {
             )
         });
     });
+
+    if ($('select[name=user]').val()) {
+        $('select[name=user]').trigger('change');
+    }
 
     /**
      * Buscar solcitud
@@ -57,9 +63,21 @@ $(function () {
     });
 
     $('#hora_inicio, #hora_fin').on('change', function () {
-        console.log('entro ' + $(this).val())
+        console.log($(this).val());
         calcularYMostrarTiempoLaboral();
+    });
 
+    // Forzar la actualización del timepicker para valores predefinidos
+    $('.timepicker').each(function (index) {
+        var initialValue = $(this).val(); // Obtener el valor predefinido del campo
+        if (initialValue) {
+            if (index == 0) {
+                $('#hora_inicio').timepicker('setTime', initialValue); // Establecer el valor en el timepicker
+            } else {
+                $('#hora_fin').timepicker('setTime', initialValue); // Establecer el valor en el timepicker
+            }
+
+        }
     });
     // Validar los campos en tiempo real
     function calcularYMostrarTiempoLaboral() {
@@ -124,7 +142,9 @@ $(function () {
         // Convertir ambos tiempos a minutos
         let minutosPendiente = tiempoPendiente.horas * 60 + tiempoPendiente.minutos;
         let minutosReposicion = tiempoReposicion.horas * 60 + tiempoReposicion.minutos;
-
+        console.log(tiempoPendienteValue)
+        console.log('miutos pendientes: ' + minutosPendiente)
+        console.log('minutos reposicion' + minutosReposicion)
         // Validar que el tiempo de reposición no sea mayor al tiempo pendiente
         if (minutosReposicion > minutosPendiente) {
             mensaje.text("El tiempo de reposición no puede ser mayor al tiempo pendiente de reposición.");
