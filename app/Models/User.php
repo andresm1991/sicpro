@@ -72,7 +72,7 @@ class User extends Authenticatable
     public static function getUsusarios()
     {
         $user_id = auth()->user()->id;
-        if ($user_id > 1) {
+        if (!auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
             $users =  User::where('activo', true)
                 ->where('id', $user_id)->get();
         } else {

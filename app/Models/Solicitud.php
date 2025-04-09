@@ -111,6 +111,7 @@ class Solicitud extends Model
     {
         // Consulta para obtener la suma de total_tiempo en segundos
         $segundosTotales = Solicitud::where('usuario_id', $usuarioId)
+            ->where('recuperable', true)
             ->whereHas('estado_solicitud', function ($query) {
                 $query->where('slug', 'estados.solicitud.aprobado');
             })

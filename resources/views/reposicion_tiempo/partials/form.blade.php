@@ -3,10 +3,11 @@
         <div class="form-group">
             <label class="col-form-label">Colaborador <i class="fa-regular fa-asterisk fa-2xs"></i></label>
             @if (isset($users))
-                <select name="user" id="" class="select2-basic-single" data-placeholder="Selecione colaborador">
+                <select name="user" id="usuarios" class="select2-basic-single" data-placeholder="Selecione colaborador">
                     <option value=""></option>
                     @foreach ($users as $index => $nombre)
-                        <option value="{{ $index }}">{{ $nombre }}</option>
+                        <option value="{{ $index }}" {{ $reposicion->usuario_id == $index ? 'selected' : '' }}>
+                            {{ $nombre }}</option>
                     @endforeach
                 </select>
                 {!! $errors->first('user', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
@@ -16,13 +17,17 @@
         </div>
         <div class="form-group row">
             <label class="col-sm-auto">Tiempo pendiente de reposición: </label>
-            <div class="col-sm-auto p-0">
+            <div class="col-sm-4 p-0">
                 <input type="text" readonly class="form-control-plaintext text-uppercase p-0" id="tiempo_pendiente"
                     value="0 horas y 0 minutos">
             </div>
         </div>
-    </div>
 
+        <div class="form-group col-sm-4 p-0">
+            <label class="col-form-label">Estado <i class="fa-regular fa-asterisk fa-2xs"></i></label>
+            {{ Form::select('estado', getEstadosSolicitudes(), old('estado', $reposicion->estado_id), ['class' => 'form-control', 'data-placeholder' => 'seleccione estado']) }}
+        </div>
+    </div>
 
     <div class="col-sm-6 col-12">
         <div class="row">
@@ -52,14 +57,23 @@
 
             <div class="col-12">
                 <div class="form-group row">
-                    <p>Tiempo de reposición: <span class="text-uppercase" id="tiempo_reposicion">
-                            0 horas y 0 minutos
-                        </span>
-                    </p>
+                    <label class="col-sm-auto">Tiempo de reposición: </label>
+
+                    <span class="text-uppercase" id="tiempo_reposicion">
+                        0 horas y 0 minutos
+                    </span>
 
                     <small class="text-danger col-12" id="mensaje"></small>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="form-group">
+            <label for="" class="col-form-label">Detalle</label>
+            {{ Form::textarea('detalle', old('detalle', $reposicion->detalle), ['class' => 'form-control text-uppercase', 'rows' => '5', 'placeholder' => 'Ingrese el motivo de la solicitud']) }}
+            {!! $errors->first('detalle', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
         </div>
     </div>
 </div>

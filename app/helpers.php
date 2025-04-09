@@ -571,4 +571,11 @@ if (!function_exists('palabras')) {
         $estados->prepend('', '');
         return $estados;
     }
+
+    function getEstadosSolicitudes()
+    {
+        $estados = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
+        $estados->prepend('', '');
+        return $estados;
+    }
 }

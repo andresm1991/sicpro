@@ -20,9 +20,10 @@ Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function () {
     Route::group(['prefix' => 'reposicion', 'as' => 'reposicion.'], function () {
         Route::get('/', [RecuperacionTiempoController::class, 'index'])->name('index');
         Route::get('/nueva-solicitud', [RecuperacionTiempoController::class, 'create'])->name('create');
+        Route::get('/detalle-solicitudes-reposicion/{usuario}', [RecuperacionTiempoController::class, 'detalleSolicitudesReposicion'])->name('detalle');
         Route::post('/guardar-solicitud', [RecuperacionTiempoController::class, 'store'])->name('store');
         Route::get('/{solicitud}/detalle', [RecuperacionTiempoController::class, 'show'])->name('show');
-        Route::get('/{solicitud}/editar', [RecuperacionTiempoController::class, 'edit'])->name('edit');
+        Route::get('/{solicitud}/editar', [RecuperacionTiempoController::class, 'editSolicitud'])->name('edit');
         Route::put('/{solicitud}', [RecuperacionTiempoController::class, 'update'])->name('update');
         Route::delete('/eliminar-solicitud/{solicitud}', [RecuperacionTiempoController::class, 'destroy']);
         Route::get('/buscar', [RecuperacionTiempoController::class, 'buscar']);

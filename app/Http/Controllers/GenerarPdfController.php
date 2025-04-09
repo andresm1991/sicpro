@@ -513,7 +513,12 @@ class GenerarPdfController extends Controller
             $km_carga = $item['adquisicion']->adquisiciones_detalle->first()->kilometraje;
             $km_recorrido = $km_anterior > 0 ? $km_carga - $km_anterior : 0;
             $km_galon = $km_recorrido / $galones;
-            $valor = ($item['adquisicion']->adquisiciones_detalle->first()->valor ?? 0) * $galones;
+            $valor = $item['adquisicion']->adquisiciones_detalle->first()->valor ?? 0;
+
+            if ($valor > 0) {
+                $iva = $item['adquisicion']->adquisiciones_detalle->first()->iva ?? 0;
+                $valor = calcularTotalProducto($galones, $valor, $iva);
+            }
 
             $result->add([
                 'fecha' => Carbon::createFromFormat('Y-m-d', $item['adquisicion']->fecha)->format('d-m-Y'),

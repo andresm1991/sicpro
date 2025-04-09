@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\MessagesConstant;
+use App\Http\Requests\ReposicionTiempoUpdateRequest;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Solicitud;
@@ -73,6 +74,8 @@ class RecuperacionTiempoController extends Controller
                 'hora_desde' => $hora_desde,
                 'hora_hasta' => $hora_hasta,
                 'total' => $total_resposicion,
+                'detalle' => $request->detalle,
+                'estado_id' => $request->estado,
             ]);
 
             DB::commit();
@@ -85,27 +88,73 @@ class RecuperacionTiempoController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Mostrar las solicitudes de reposiciones realizadas por el usuario
+     * @param User $usuario
      */
-    public function show(string $id)
+    public function detalleSolicitudesReposicion(User $usuario)
     {
-        //
+        $title_page = 'Solicitudes Reposición de tiempo';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Reposicones', 'url' => route('solicitud.reposicion.index')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+
+        $solicitudesReposicion = ReposicionTiempo::where('usuario_id', $usuario->id)->orderBy('fecha', 'desc')->paginate(15);
+
+
+        return view('reposicion_tiempo.list_solicitudes', compact('title_page', 'breadcrumbs', 'solicitudesReposicion', 'usuario'));
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Editar la solicitud de reposicion de tiempo
+     * @param ReposicionTiempo $solicitud
      */
-    public function edit(string $id)
+    public function editSolicitud(ReposicionTiempo $solicitud)
     {
-        //
+        $title_page = 'Editar Solicitud';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Reposicones', 'url' => route('solicitud.reposicion.detalle', $solicitud->usuario_id)],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+
+        $reposicion = $solicitud;
+
+        $users = User::getUsusarios()->pluck('nombre', 'id');
+
+
+        return view('reposicion_tiempo.edit', compact('title_page', 'breadcrumbs', 'reposicion', 'users'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(ReposicionTiempoUpdateRequest $request, ReposicionTiempo $solicitud)
     {
-        //
+
+        try {
+            DB::beginTransaction();
+            $solicitud->usuario_id = $request->user;
+            $solicitud->fecha = Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d');
+            $solicitud->hora_desde = $request->hora_inicio;
+            $solicitud->hora_hasta = $request->hora_fin;
+            $solicitud->total = calcularTiempoTotal($solicitud->fecha, $solicitud->hora_desde, $solicitud->fecha, $solicitud->hora_hasta);
+            $solicitud->detalle = $request->detalle;
+
+            $solicitud->save();
+
+            DB::commit();
+
+            return redirect()->route('solicitud.reposicion.edit', $solicitud->usuario_id)->with('success', MessagesConstant::UPDATE);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', MessagesConstant::DEFAUL_ERROR);
+        }
     }
 
     /**
