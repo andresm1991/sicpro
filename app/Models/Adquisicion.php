@@ -69,7 +69,7 @@ class Adquisicion extends Model
         $tipo_reporte = $request->input('tipo_reporte');
         $forma_pago = $request->input('forma_pago');
 
-        $query = self::with(['proyecto', 'etapa', 'tipo_etapa', 'orden_recepcion', 'orden_recepcion.forma_pago']);
+        $query = self::with(['proyecto', 'etapa', 'tipo_etapa', 'orden_recepcion', 'orden_recepcion.forma_pago', 'orden_recepcion.proveedor']);
 
         if ($request->filled('proyecto')) {
             $query->where('proyecto_id', $proyecto);

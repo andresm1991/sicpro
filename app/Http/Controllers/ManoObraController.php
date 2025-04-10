@@ -137,7 +137,7 @@ class ManoObraController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Guardar o actualizar los trabajadores de la planificacion de mano de obra
      */
     public function store(Request $request)
     {
@@ -203,7 +203,6 @@ class ManoObraController extends Controller
             return redirect()->back()->with('error', 'Ocurrió un error inesperado.');
         } catch (Throwable $e) {
             DB::rollBack();
-            return $e->getMessage();
 
             LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');

@@ -124,16 +124,17 @@ class AdministrativoController extends Controller
      */
     private function actualizarAdquisicionOperativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
-        if ($adquisicion->estado == 'Completado') {
-            if (is_null($adquisicion->factura) && !empty($request->numero_factura)) {
-                $adquisicion->factura = $request->numero_factura;
-                $adquisicion->save();
-                LogService::log('info', 'Actualizacion factura de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
-                return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la factura con éxito.');
+        if (!auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
+            if ($adquisicion->estado == 'Completado') {
+                if (is_null($adquisicion->factura) && !empty($request->numero_factura)) {
+                    $adquisicion->factura = $request->numero_factura;
+                    $adquisicion->save();
+                    LogService::log('info', 'Actualizacion factura de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
+                    return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la factura con éxito.');
+                }
+                return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible actualizar la información de una adquisición que está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
             }
-            return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible actualizar la información de una adquisición que está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
         }
-
         // Limpia el símbolo de dólar de cada elemento en el arreglo 'valor'
         $valoresLimpios = array_map(fn($value) => preg_replace('/[^0-9.]/', '', $value), $request->input('valor', []));
         // Reemplaza los valores en el request con los valores limpios
