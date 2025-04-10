@@ -62,6 +62,32 @@ $(function () {
         });
     });
 
+    /**
+     * Buscar solcitud resposicion
+     * @param String
+     * return JSON
+    */
+    $('input:text[name=solicitud_reposicion_search]').on('keyup', function () {
+        var usuario_id = $(this).data('usuario-id');
+        var $value = $(this).val();
+        $.ajax({
+            url: base_url + '/solicitudes/reposicion/buscar-solicitud/' + usuario_id,
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'text': $value },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                $('tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
+
     $('#hora_inicio, #hora_fin').on('change', function () {
         console.log($(this).val());
         calcularYMostrarTiempoLaboral();
@@ -78,6 +104,63 @@ $(function () {
             }
 
         }
+    });
+
+
+    // Eliminar solicitud de reposición
+    $(document).on('click', '.eliminar-solicitid-reposicion', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'eliminar-solicitud-reposicion/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "7" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        })
     });
     // Validar los campos en tiempo real
     function calcularYMostrarTiempoLaboral() {
