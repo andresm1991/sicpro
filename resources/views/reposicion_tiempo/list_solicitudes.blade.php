@@ -26,7 +26,8 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="reposicion_search" class="form-control form-control-round"
+                                <input type="text" name="solicitud_reposicion_search"
+                                    data-usuario-id="{{ $usuario->id }}" class="form-control form-control-round"
                                     placeholder="Buscar colaborador....">
                             </div>
                         </div>
@@ -46,7 +47,7 @@
                             </thead>
                             <tbody>
                                 @forelse ($solicitudesReposicion as $index => $recuperacion)
-                                    <tr id="{{ $index }}">
+                                    <tr id="{{ $recuperacion->id }}">
                                         <td class="align-middle">{{ $index + 1 }}</td>
                                         <td class="align-middle">{{ $recuperacion->fecha }}</td>
                                         <td class="align-middle">{{ $recuperacion->hora_desde }}</td>

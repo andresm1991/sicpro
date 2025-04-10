@@ -46,8 +46,8 @@
                                     <tr id="{{ $index }}">
                                         <td class="align-middle">{{ $index + 1 }}</td>
                                         <td class="align-middle text-capitalize">{{ $recuperacion->usuario->nombre }}</td>
-                                        <td class="align-middle">{{ $recuperacion->tiempo_formateado }}</td>
-                                        <td class="align-middle">{{ $recuperacion->suma_reposiciones_formateada }}</td>
+                                        <td class="align-middle">{{ $recuperacion->tiempo_acumulado_formateado }}</td>
+                                        <td class="align-middle">{{ $recuperacion->timpo_recuperado_formateada }}</td>
                                         <td class="align-middle text-right text-truncate">
                                             <a href="{{ route('solicitud.reposicion.detalle', $recuperacion->usuario_id) }}"
                                                 class="btn btn-outline-dark">Ver Detalle

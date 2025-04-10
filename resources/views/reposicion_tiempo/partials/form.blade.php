@@ -23,10 +23,13 @@
             </div>
         </div>
 
-        <div class="form-group col-sm-4 p-0">
-            <label class="col-form-label">Estado <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            {{ Form::select('estado', getEstadosSolicitudes(), old('estado', $reposicion->estado_id), ['class' => 'form-control', 'data-placeholder' => 'seleccione estado']) }}
-        </div>
+        @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+            <div class="form-group col-sm-4 p-0">
+                <label class="col-form-label">Estado <i class="fa-regular fa-asterisk fa-2xs"></i></label>
+                {{ Form::select('estado', getEstadosSolicitudes(), old('estado', $reposicion->estado_id), ['class' => 'form-control', 'data-placeholder' => 'seleccione estado']) }}
+            </div>
+        @endif
+
     </div>
 
     <div class="col-sm-6 col-12">
@@ -73,7 +76,7 @@
         <div class="form-group">
             <label for="" class="col-form-label">Detalle</label>
             {{ Form::textarea('detalle', old('detalle', $reposicion->detalle), ['class' => 'form-control text-uppercase', 'rows' => '5', 'placeholder' => 'Ingrese el motivo de la solicitud']) }}
-            {!! $errors->first('detalle', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
+            {!! $errors->first('detalle', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
         </div>
     </div>
 </div>

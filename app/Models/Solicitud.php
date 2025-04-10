@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Solicitud extends Model
 {
@@ -46,6 +47,44 @@ class Solicitud extends Model
         return  $solicitudes;
     }
 
+    public static function getSumaTotalSolicitudesYReposiciones()
+    {
+        // Suma total del campo 'total_tiempo' de las solicitudes agrupadas por usuario
+        $solicitudes = self::selectRaw('usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos')
+            ->where('recuperable', true)
+            ->whereHas('estado_solicitud', function ($query) {
+                $query->where('slug', 'estados.solicitud.aprobado');
+            })
+            ->groupBy('usuario_id') // Agrupar por usuario
+            ->get();
+
+        // Suma total del campo 'total' de las reposiciones agrupadas por usuario
+        $reposiciones = ReposicionTiempo::selectRaw('usuario_id, SUM(TIME_TO_SEC(total)) as total_segundos')
+            ->whereHas('estado', function ($query) {
+                $query->where('slug', 'estados.solicitud.aprobado');
+            })
+            ->groupBy('usuario_id') // Agrupar por usuario
+            ->get();
+
+        // Combinar los resultados de solicitudes y reposiciones
+        $resultados = $solicitudes->map(function ($solicitud) use ($reposiciones) {
+            $reposicion = $reposiciones->firstWhere('usuario_id', $solicitud->usuario_id);
+
+            $horasSolicitudes = intdiv($solicitud->total_segundos, 3600);
+            $minutosSolicitudes = intdiv($solicitud->total_segundos % 3600, 60);
+
+            $horasReposiciones = $reposicion ? intdiv($reposicion->total_segundos, 3600) : 0;
+            $minutosReposiciones = $reposicion ? intdiv($reposicion->total_segundos % 3600, 60) : 0;
+
+            return [
+                'usuario_id' => $solicitud->usuario_id,
+                'suma_total_solicitudes' => sprintf('%d horas y %d minutos', $horasSolicitudes, $minutosSolicitudes),
+                'suma_total_reposiciones' => sprintf('%d horas y %d minutos', $horasReposiciones, $minutosReposiciones),
+            ];
+        });
+
+        return $resultados;
+    }
 
     /**
      * Obtener las solicitudes agrupadas por usuario, con datos de ReposicionTiempo y paginados.
@@ -58,7 +97,9 @@ class Solicitud extends Model
         $query = self::selectRaw('usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos')
             ->with(['reposiciones' => function ($query) {
                 // Filtrar o seleccionar campos específicos de ReposicionTiempo si es necesario
-                $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total');
+                $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total')->whereHas('estado', function ($query) {
+                    $query->where('slug', 'estados.solicitud.aprobado');
+                });
             }])
             ->whereHas('estado_solicitud', function ($query) {
                 $query->where('slug', 'estados.solicitud.aprobado');
@@ -88,7 +129,7 @@ class Solicitud extends Model
         $resultados->getCollection()->transform(function ($item) {
             $horas = floor($item->total_segundos / 3600);
             $minutos = floor(($item->total_segundos % 3600) / 60);
-            $item->tiempo_formateado = sprintf('%d horas y %d minutos', $horas, $minutos);
+            $item->tiempo_acumulado_formateado = sprintf('%d horas y %d minutos', $horas, $minutos);
 
             // Calcular la suma del campo 'total' de las reposiciones
             $sumaTotalReposiciones = 0;
@@ -99,7 +140,7 @@ class Solicitud extends Model
             // Formatear la suma total de reposiciones
             $horasReposicion = floor($sumaTotalReposiciones / 3600);
             $minutosReposicion = floor(($sumaTotalReposiciones % 3600) / 60);
-            $item->suma_reposiciones_formateada = sprintf('%d horas y %d minutos', $horasReposicion, $minutosReposicion);
+            $item->timpo_recuperado_formateada = sprintf('%d horas y %d minutos', $horasReposicion, $minutosReposicion);
 
             return $item;
         });

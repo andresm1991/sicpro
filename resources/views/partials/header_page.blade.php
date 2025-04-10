@@ -65,13 +65,11 @@
                                     </li>
                                 @endforeach
                                 <!-- Enlace para ver todas las notificaciones -->
-                                @if (auth()->user()->unreadNotifications->count() > 10)
-                                    <li class="view-all">
-                                        <a href="{{ route('notificacion.index') }}"
-                                            style="text-align: center;position: absolute;right: 65px;">Ver
-                                            todo</a>
-                                    </li>
-                                @endif
+                                <li class="view-all">
+                                    <a href="{{ route('notificacion.index') }}"
+                                        style="text-align: center;position: absolute;right: 65px;">Ver
+                                        todo</a>
+                                </li>
                             </ul>
                         </div>
                     @else

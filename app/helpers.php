@@ -140,7 +140,7 @@ if (!function_exists('dateFormat')) {
 
         // Definir el horario laboral
         $horaInicioLaboral = '08:00';
-        $horaFinLaboral = '16:00';
+        $horaFinLaboral = '18:00';
 
         // Inicializar el total de minutos laborales
         $totalMinutosLaborales = 0;

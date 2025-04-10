@@ -25,8 +25,9 @@ Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function () {
         Route::get('/{solicitud}/detalle', [RecuperacionTiempoController::class, 'show'])->name('show');
         Route::get('/{solicitud}/editar', [RecuperacionTiempoController::class, 'editSolicitud'])->name('edit');
         Route::put('/{solicitud}', [RecuperacionTiempoController::class, 'update'])->name('update');
-        Route::delete('/eliminar-solicitud/{solicitud}', [RecuperacionTiempoController::class, 'destroy']);
+        Route::delete('/{usuario}/eliminar-solicitud-reposicion/{solicitud}', [RecuperacionTiempoController::class, 'destroy']);
         Route::get('/buscar', [RecuperacionTiempoController::class, 'buscar']);
+        Route::get('/buscar-solicitud/{usuario}', [RecuperacionTiempoController::class, 'buscarSolicitud']);
     });
 
     //** RUTAS AUTORIZACIONES DE SOLICITUD EDICIONES ADQUISICIONES, ETC */
