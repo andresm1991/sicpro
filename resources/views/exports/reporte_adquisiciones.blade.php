@@ -4,6 +4,7 @@
         <tr>
             <th>fecha</th>
             <th>numero</th>
+            <th>proveedor</th>
             <th>proyecto</th>
             <th>etapa</th>
             <th>estado</th>
@@ -21,6 +22,11 @@
             <tr>
                 <td>{{ $item['adquisicion']->fecha }}</td>
                 <td>{{ $item['adquisicion']->numero }}</td>
+                <td>
+                    @isset($item['adquisicion']->orden_recepcion)
+                        {{ $item['adquisicion']->orden_recepcion->proveedor->razon_social }}
+                    @endisset
+                </td>
                 <td>{{ $item['adquisicion']->proyecto->nombre_proyecto }}</td>
                 <td>{{ $item['adquisicion']->etapa->descripcion }}</td>
                 <td>{{ $item['adquisicion']->estado != 'Completado' ? 'Pendiente' : 'Completado' }}</td>
