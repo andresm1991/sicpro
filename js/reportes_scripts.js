@@ -188,6 +188,7 @@ $(function () {
                                 <tr>
                                     <th scope="col">fecha</th>
                                     <th scope="col">numero</th>
+                                    <th scope="col">proveedor</th>
                                     <th scope="col">proyecto</th>
                                     <th scope="col">etapa</th>
                                     <th scope="col">estado</th>
@@ -213,6 +214,7 @@ $(function () {
                                 <tr>
                                     <td>${item.adquisicion.fecha}</td>
                                     <td>${item.adquisicion.numero}</td>
+                                    <td>${item.adquisicion.orden_recepcion != null ? item.adquisicion.orden_recepcion.proveedor.razon_social : ''}</td>
                                     <td>${item.adquisicion.proyecto.nombre_proyecto}</td>
                                     <td>${item.adquisicion.etapa.descripcion}</td>
                                     <td>${item.adquisicion.estado != 'Completado' ? 'Pendiente' : 'Completado'}</td>
