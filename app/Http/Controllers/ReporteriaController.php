@@ -12,6 +12,9 @@ use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
 use App\Models\DiccionarioPalabra;
+use App\Models\ReposicionTiempo;
+use App\Models\Solicitud;
+use App\Models\User;
 use Carbon\Carbon;
 
 class ReporteriaController extends Controller
@@ -175,6 +178,50 @@ class ReporteriaController extends Controller
             return response()->json([
                 'success' => true,
                 'result' => $result,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
+                'error' => $th->getLine(),
+            ]);
+        }
+    }
+
+
+    public function reporteAusenciasReposiciones()
+    {
+        $title_page = 'Reporte Solicitudes';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Reportes', 'url' => route('reporte.index')],
+            ['name' => 'solicitudes', 'url' => ''],
+        ];
+
+        $tipo_solicitudes = CatalogoDato::getChildrenCatalogo('tipo.solicitudes')->pluck('descripcion', 'id')->prepend('', '');
+        $tipo_solicitudes = $tipo_solicitudes->toArray(); // Convertir a array
+        $tipo_solicitudes['0'] = 'reposiciones'; // Añadir el nuevo elemento al final
+        $tipo_solicitudes = collect($tipo_solicitudes); // Convertir nuevamente a colección si es necesario
+        $estados = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id')->prepend('', '');
+
+        return view('reportes.eventaulidad_reposicion', compact('title_page', 'breadcrumbs', 'tipo_solicitudes',  'estados'));
+    }
+
+    public function visualizarSolicitudes(Request $request)
+    {
+        try {
+
+            $tipo_solicitud = $request->input('tipo_solicitud');
+
+            if ($tipo_solicitud > 0) {
+                $query = Solicitud::dataReporteSolicitudes($request);
+            } else {
+                $query = ReposicionTiempo::getTotalReposiciones($request);
+            }
+            // return $result;
+            return response()->json([
+                'success' => true,
+                'result' => $query,
             ]);
         } catch (\Throwable $th) {
             return response()->json([

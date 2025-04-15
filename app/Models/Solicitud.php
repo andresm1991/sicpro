@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -168,5 +169,65 @@ class Solicitud extends Model
 
         // Formatear el resultado como "H horas y M minutos"
         return sprintf('%d horas y %d minutos', $horas, $minutos);
+    }
+
+    public static function dataReporteSolicitudes($request)
+    {
+        $usuario = $request->input('usuario');
+        $fechas = $request->input('fechas');
+        $estado = $request->input('estado');
+        $recuperable = $request->input('recuperable');
+        $tipo_solicitud = $request->input('tipo_solicitud');
+        $ordernar = $request->input('ordenado');
+
+        $query = self::select('solicitudes.*')
+            ->join('usuarios as usuario', 'solicitudes.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
+            ->with(['usuario', 'tipo_solicitud', 'estado_solicitud']); // Cargar relaciones necesarias
+
+        // Filtrar por usuario
+        $query->when($usuario, function ($q, $usuario) {
+            $q->where('usuario_id', $usuario);
+        });
+
+        // Filtrar por rango de fechas
+        $query->when($fechas, function ($q) use ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+        });
+
+        // Filtrar por estado
+        $query->when($estado, function ($q, $estado) {
+            $q->where('estado_id', $estado);
+        });
+
+        // Filtrar por tipo de solicitud
+        $query->when($tipo_solicitud, function ($q, $tipo_solicitud) {
+            $q->where('tipo_id', $tipo_solicitud);
+        });
+
+        // Filtrar por recuperable
+        $query->when($recuperable, function ($q, $recuperable) {
+            $recuperable = $recuperable === 'si' ? true : false;
+            $q->where('recuperable', $recuperable);
+        });
+
+        // Ordenar los resultados
+        switch ($ordernar) {
+            case 'secuencial':
+                $query->orderBy('solicitudes.id', 'asc');
+                break;
+            case 'fecha':
+                $query->orderBy('solicitudes.fecha_solicitud', 'asc');
+                break;
+            case 'alfabetico':
+                $query->orderBy('usuario.nombre', 'asc'); // Ordenar por nombre del usuario
+                break;
+            default:
+                $query->orderBy('solicitudes.id', 'asc'); // Valor por defecto
+                break;
+        }
+        return $query->get();
     }
 }

@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use App\Http\Requests\ValidarFechasPlanificacionRequest;
+use App\Models\PagoManoObra;
 
 class ManoObraController extends Controller
 {
@@ -154,6 +155,30 @@ class ManoObraController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Validar si mano de obra ya esta pagada por administrativo
+            $manoObraPagado = PagoManoObra::where('mano_obra_id', $request->mano_obra)->exists();
+            if ($manoObraPagado) {
+                return redirect()->back()->with('error', "No es posible guardar la planificación porque esta  ya se encuentra pagada.");
+            }
+
+            // Validar si el personal ya está asignado a otra planificación en la misma fecha
+            foreach ($personal as $index => $proveedor_id) {
+                $conflicto = DetalleManoObra::where('proveedor_id', $proveedor_id)
+                    ->where('fecha', $fecha)
+                    ->where('mano_obra_id', '!=', $request->mano_obra)
+                    ->first();
+
+                if ($conflicto) {
+                    if (strtoupper($conflicto->jornada) === strtoupper('Completa')) {
+                        return redirect()->back()->with('error', "No es posible guardar la planificación porque el trabajador {$conflicto->proveedor->razon_social} ya está asignado a otra planificación con la jornada completa en la mima fecha.");
+                    }
+
+                    if (strtoupper($conflicto->jornada) === strtoupper('Medio tiempo') && strtoupper($jornada[$index]) === strtoupper('Completa')) {
+                        return redirect()->back()->with('error', "No es posible guardar la planificación porque el trabajador {$conflicto->proveedor->razon_social} ya tiene una planificación de medio tiempo y está intentando asignar una jornada completa en la misma fecha..");
+                    }
+                }
+            }
 
             $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
                 ->where('fecha', $fecha)->pluck('proveedor_id')->toArray();

@@ -488,11 +488,15 @@ if (!function_exists('palabras')) {
         return floatval(preg_replace('/[^0-9.-]/', '', $valor)); // Elimina "$", ",", etc.
     }
 
-    function usuariosPluck()
+    function usuariosPluck($viewAll = false)
     {
         $has_role = auth()->user()->hasRole('Administrador');
         if ($has_role) {
             $usuarios = User::where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
+        } elseif ($viewAll) {
+            $usuarios = User::whereHas('roles', function ($query) {
+                $query->where('name', '!=', 'Administrador');
+            })->orderBy('nombre', 'asc')->pluck('nombre', 'id');
         } else {
             $usuarios = User::where('id', '!=', auth()->user()->id)->whereHas('roles', function ($query) {
                 $query->where('name', '!=', 'Administrador');

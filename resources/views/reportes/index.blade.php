@@ -22,7 +22,7 @@
                 </div>
 
                 <div class="max-auto">
-                    <a href="" class="nodo">
+                    <a href="{{ route('reporte.eventualidades') }}" class="nodo">
                         <img src="{{ asset('images/svg/reporte.svg') }}" alt="">
                         <span>Solicitudes & resposiciones</span>
                     </a>
