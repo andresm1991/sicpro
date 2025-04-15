@@ -14,7 +14,22 @@
                             <div class="form-group row">
                                 <label class="col-sm-2 col-form-label">Filtrar agenda por</label>
                                 <div class="col-sm-4">
-                                    {{ Form::select('filtrar_agenda', categoriasAgenda(true), old('filtrar_agenda'), ['class' => 'form-control', 'id' => 'filtro-agenda', 'data-placeholder' => 'Seleccionar opción para filtrar...']) }}
+                                    <select name="filtrar_agenda" id="filtro-agenda" class="form-control"
+                                        data-placeholder = "Seleccionar opción para filtrar...">
+                                        <option value=""></option>
+                                        <option value="todos">todos</option>
+                                        <optgroup label="categoria">
+                                            @foreach (agendaCategoria() as $index => $nombre)
+                                                <option value="{{ $index }}">{{ $nombre }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                        <optgroup label="colaborador">
+                                            @foreach (usuariosPluck(true, false) as $index => $nombre)
+                                                <option value="{{ $index }}">{{ $nombre }}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    </select>
+
                                 </div>
 
                                 <div class="col-sm-4">
@@ -140,7 +155,8 @@
                                                     <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                                 </div>
                                                 <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
-                                                <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
+                                                <button type="button" href="javascripts:void(0);"
+                                                    id="{{ $task->id }}"
                                                     class="btn btn-sm btn-danger eliminar-tarea">Eliminar</button>
                                             </a>
                                         @empty

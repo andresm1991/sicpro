@@ -488,7 +488,7 @@ if (!function_exists('palabras')) {
         return floatval(preg_replace('/[^0-9.-]/', '', $valor)); // Elimina "$", ",", etc.
     }
 
-    function usuariosPluck($viewAll = false)
+    function usuariosPluck($viewAll = false, $prepend = true)
     {
         $has_role = auth()->user()->hasRole('Administrador');
         if ($has_role) {
@@ -503,9 +503,12 @@ if (!function_exists('palabras')) {
             })->pluck('nombre', 'id');
         }
         // Add an empty option at the beginning
-        $usuarios->prepend('', '');
+        if ($prepend) {
+            $usuarios->prepend('', '');
+        }
         return $usuarios;
     }
+
 
     function pluckDescripcionesResumenPagosSemanales()
     {
@@ -521,10 +524,16 @@ if (!function_exists('palabras')) {
         return $titulos;
     }
 
+    function agendaCategoria()
+    {
+        $categorias = CatalogoDato::getChildrenCatalogo('categorias.agenda')->pluck('descripcion', 'id');
+        return $categorias;
+    }
+
     function categoriasAgenda($filtre = false)
     {
         $categorias = CatalogoDato::getChildrenCatalogo('categorias.agenda')->pluck('descripcion', 'id');
-        $users = User::where('id', '!=', auth()->user()->id)->where('id', '!=', 1)->pluck('nombre', 'id');
+        $users = User::where('id', '!=', 1)->pluck('nombre', 'id');
 
         if ($filtre) {
             $categorias->prepend('todos', 'todos');

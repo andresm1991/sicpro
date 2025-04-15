@@ -81,7 +81,6 @@ class TareaController extends Controller
      */
     public function storeComentario(Request $request)
     {
-
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();
@@ -111,10 +110,14 @@ class TareaController extends Controller
                 }
 
                 $tarea = Tarea::find($request->tarea_id);
+                $tarea->titulo = $request->titulo;
+                $tarea->descripcion = $request->descripcion;
+
                 if ($tarea->categoria_id != $request->categoria_tarea) {
                     $tarea->categoria_id = is_numeric($request->categoria_tarea) ? $request->categoria_tarea : newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda');
-                    $tarea->save();
                 }
+
+                $tarea->save();
 
                 DB::commit();
 

@@ -13,7 +13,9 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-sm-8 p-0">
-                            <h5 class="modal-title font-weight-bold text-dark" id="titleComentarioModal"></h5>
+                            <input type="text" name="titulo"
+                                class="modal-title font-weight-bold text-dark form-control form-control-plaintext text-uppercase"
+                                id="titleComentarioModal">
                         </div>
 
                         <div class="col-sm-auto">
@@ -42,7 +44,7 @@
                     {{ Form::hidden('tarea_id') }}
                     <div class="row">
                         <div class="col-12 form-group">
-                            <label id="descripcion">Desacripción</label>
+                            <textarea name="descripcion" id="descripcion" class="form-control text-uppercase form-control-plaintext"></textarea>
                         </div>
 
                         <div class="col-12 form-group">
