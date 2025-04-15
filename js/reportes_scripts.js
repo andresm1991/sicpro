@@ -426,7 +426,181 @@ $(function () {
         }
     });
 
+    /**
+     * Evento para habilitar y deshabilitar el campo de recuperable dependiendo del tipo de solicitud
+     * seleccionado en el formulario de REPORTE DE SOLICITUDES
+     */
 
+    $('select[name=tipo_solicitud]').on('change', function () {
+        let tipoText = $('select[name=tipo_solicitud] option:selected').text();
+        if (tipoText != '') {
+            tipoText = tipoText.replace(/\s+/g, "_").toLowerCase();
+            if (tipoText == 'ausencia') {
+                $('select[name=recuperable]').attr('disabled', false);
+                $('select[name=recuperable]').val('');
+                $('select[name=recuperable]').trigger('change');
+            } else {
+                $('select[name=recuperable]').attr('disabled', true);
+                $('select[name=recuperable]').val('');
+                $('select[name=recuperable]').trigger('change');
+            }
+        } else {
+            $('select[name=recuperable]').attr('disabled', false);
+            $('select[name=recuperable]').val('');
+            $('select[name=recuperable]').trigger('change');
+        }
+    });
+
+    /**
+     * Evento para visualizar el reporte de SOLICITUDES
+     * Se envia el formulario y se recibe la respuesta en formato JSON
+     */
+    $('#visualizar-reporte-solicitudes').on('click', function () {
+        var form = $("#form-reporte-solicitudes");
+        var data = getFormData(form);
+        let tipoSolicitudText = $('select[name=tipo_solicitud] option:selected').text();
+
+        if (tipoSolicitudText == '') {
+            Swal.fire(
+                'Ups.!',
+                'Por favor seleccione el tipo solicitud para continuar.',
+                'error'
+            )
+            return false;
+        }
+
+        tipoSolicitudText = tipoSolicitudText.replace(/\s+/g, "_").toLowerCase();
+
+        $.ajax({
+            url: 'visulizar-reporte-solicitudes',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: data,
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                const data = response.result;
+                let totalGeneral = 0;
+
+                $('#table-view-reporte').empty();
+
+                if (!response.success || data.length == 0) {
+                    Swal.fire(
+                        'Ups.!',
+                        'No se encontraron resultados.',
+                        'error'
+                    )
+                    return;
+                }
+                console.log(tipoSolicitudText)
+                console.log(data);
+                /// Mostrar el reporte de solicitudes de ausencia
+                if (tipoSolicitudText == 'ausencia') {
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Colaborador</th>
+                                    <th scope="col">fecha solicitud</th>
+                                    <th scope="col">fecha solicitada</th>
+                                    <th scope="col">Tiempo total</th>
+                                    <th scope="col">Tipo</th>
+                                    <th scope="col">Recuperable</th>
+                                    <th scope="col">estado</th>
+                                    <th scope="col">Detalle</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+
+                        return `
+                                <tr>
+                                    <td>${item.usuario.nombre}</td>
+                                    <td>${item.fecha_solicitud}</td>
+                                    <td>${item.fecha_desde} hasta ${item.fecha_hasta}</td>
+                                    <td>${item.total_tiempo}</td>
+                                    <td>${item.tipo_solicitud.descripcion}</td>
+                                    <td>${item.recuperable > 0 ? 'SI' : 'NO'}</td>
+                                    <td>${item.estado_solicitud.descripcion}</td>
+                                    <td>${item.detalle}</td>
+                                </tr>
+                            `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                           
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                } else if (tipoSolicitudText == 'eventualidad') {
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Colaborador</th>
+                                    <th scope="col">fecha</th>
+                                    <th scope="col">Tipo</th>
+                                    <th scope="col">estado</th>
+                                    <th scope="col">Detalle</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+
+                        return `
+                                <tr>
+                                    <td class="align-middle">${item.usuario.nombre}</td>
+                                    <td class="align-middle col-sm-1">${item.fecha_solicitud}</td>
+                                    <td class="align-middle">${item.tipo_solicitud.descripcion}</td>
+                                    <td class="align-middle">${item.estado_solicitud.descripcion}</td>
+                                    <td class="align-middle">${item.detalle}</td>
+                                </tr>
+                            `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                           
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                }
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+    });
+
+    /**
+     * Seccion e funciones para habilitar y deshabilitar los campos del formulario
+     * dependiendo del tipo de adquisicion seleccionado
+     */
     function habilitarCampos() {
         let tipo = $('select[name=tipo] option:selected').text();
         tipo = tipo.replace(/\s+/g, "_").toLowerCase();
