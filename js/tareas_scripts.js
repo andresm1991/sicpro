@@ -59,6 +59,9 @@ $(function () {
 
     $('#guardar-comentario').on('click', function () {
         var form = $("#form_comentario_tarea");
+        form.append('<input type="hidden" name="titulo" value="' + $('input[name=titulo]').val() + '">');
+        form.append('<input type="hidden" name="descripcion" value="' + $('#descripcion').val() + '">');
+
         var data = getFormData(form);
 
         $.ajax({
@@ -116,8 +119,8 @@ $(function () {
         let tarea = $(this).attr('id');
         estadoActual = $(this).data('estado');
 
-        $('#titleComentarioModal').text(titulo);
-        $('#descripcion').text(descripcion);
+        $('#titleComentarioModal').val(titulo);
+        $('#descripcion').val(descripcion);
         $('input:hidden[name=tarea_id]').val(tarea)
         $('select[name=estado]').val(estadoActual).trigger('change');
 
@@ -367,26 +370,26 @@ $(function () {
 
     });
 
-    $('#filtro-agenda').on('change', function () {
-
-        // Redirigir a la misma página con el parámetro de filtro
-    });
-
     $('#aplicar-filtro').on('click', function () {
-        // Obtener el valor seleccionado del filtro
+        // Obtener la opción seleccionada
         const filtroValor = $('#filtro-agenda').val();
-        const filtroTexto = $('#filtro-agenda option:selected').text().toLowerCase();
+        const selectedOption = $('#filtro-agenda').find('option:selected');
+        // Obtener el grupo (<optgroup>) al que pertenece la opción seleccionada
+        const group = selectedOption.parent().attr('label');
 
-        if (filtroTexto !== 'todos' && filtroTexto !== 'laboral' && filtroTexto !== 'personal') {
-            // Redirigir a la misma página con el parámetro de filtro
-            window.location.href = `?filtrar_agenda=&user=${encodeURIComponent(filtroValor)}`;
+        if (group != undefined) {
+            if (group == 'colaborador') {
+                window.location.href = `?filtrar_agenda=&user=${encodeURIComponent(filtroValor)}`;
+            } else if (group == 'categoria') {
+                window.location.href = `?filtrar_agenda=${encodeURIComponent(filtroValor)}`;
+            }
         } else {
-            // Redirigir a la misma página con el parámetro de filtro
             window.location.href = `?filtrar_agenda=${encodeURIComponent(filtroValor)}`;
         }
+    });
 
-
-
+    $(document).on('hidden.bs.modal', '#comentarioTareaModal', function () {
+        location.reload();
     });
 
     $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal, #filtroExportarTareasModal', function () {
