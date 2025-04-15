@@ -276,6 +276,8 @@ class AdquisicionController extends Controller
      */
     public function updateAdquisicion(Request $request)
     {
+
+        $tipo_etapa = CatalogoDato::find($request->tipo_etapa);
         $route_params = $this->getRouteParameters($request);
         $orden_completa = isset($request->orden_completa) ? true : false;
 
@@ -295,17 +297,24 @@ class AdquisicionController extends Controller
             $precio = $request->precio;
             $inventario = $request->inventario;
             // Combinar arrays en uno solo
-            $result = array_map(function ($producto, $cantidad, $necesidad, $km, $unidad, $precio) {
-                return [
-                    'articulo_id' => $producto,
+            $result = array_map(function ($producto, $cantidad, $necesidad, $km, $unidad, $precio) use ($tipo_etapa) {
+                $paramt = [
+                    'articulo_id' => '',
                     'cantidad_solicitada' => str_replace(',', '', $cantidad),
                     'necesidad' => $necesidad,
                     'kilometraje' => $km,
                     'unidad' => $unidad,
                     'precio' => $precio,
                 ];
-            }, $request->productos, $request->cantidad, $request->necesidad, $request->km, $unidad_medida, $precio);
 
+                if (is_numeric($producto)) {
+                    $paramt['articulo_id'] = $producto;
+                } else {
+                    $nuevo_producto = $this->registrarNuevoProducto($tipo_etapa, $producto);
+                    $paramt['articulo_id'] = $nuevo_producto->id;
+                }
+                return $paramt;
+            }, $request->productos, $request->cantidad, $request->necesidad, $request->km, $unidad_medida, $precio);
 
             $pedido->estado = $orden_completa ? 'Finalizado' : 'En Proceso';
             if (!$pedido->save()) {
