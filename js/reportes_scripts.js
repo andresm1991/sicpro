@@ -439,15 +439,35 @@ $(function () {
                 $('select[name=recuperable]').attr('disabled', false);
                 $('select[name=recuperable]').val('');
                 $('select[name=recuperable]').trigger('change');
+
+                $('select[name=estado]').attr('disabled', false);
+                $('select[name=estado]').val('');
+                $('select[name=estado]').trigger('change');
+            } else if (tipoText == 'reposiciones_global') {
+                $('select[name=recuperable]').attr('disabled', true);
+                $('select[name=recuperable]').val('');
+                $('select[name=recuperable]').trigger('change');
+
+                $('select[name=estado]').attr('disabled', true);
+                $('select[name=estado]').val('');
+                $('select[name=estado]').trigger('change');
             } else {
                 $('select[name=recuperable]').attr('disabled', true);
                 $('select[name=recuperable]').val('');
                 $('select[name=recuperable]').trigger('change');
+
+                $('select[name=estado]').attr('disabled', false);
+                $('select[name=estado]').val('');
+                $('select[name=estado]').trigger('change');
             }
         } else {
             $('select[name=recuperable]').attr('disabled', false);
             $('select[name=recuperable]').val('');
             $('select[name=recuperable]').trigger('change');
+
+            $('select[name=estado]').attr('disabled', false);
+            $('select[name=estado]').val('');
+            $('select[name=estado]').trigger('change');
         }
     });
 
@@ -493,8 +513,7 @@ $(function () {
                     )
                     return;
                 }
-                console.log(tipoSolicitudText)
-                console.log(data);
+
                 /// Mostrar el reporte de solicitudes de ausencia
                 if (tipoSolicitudText == 'ausencia') {
                     $('#table-view-reporte').append(`<div class="table-responsive">
@@ -558,6 +577,72 @@ $(function () {
                                     <td class="align-middle">${item.detalle}</td>
                                 </tr>
                             `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                           
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                } else if (tipoSolicitudText == 'reposiciones_global') {
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Colaborador</th>
+                                    <th scope="col">Tiempo solicitado</th>
+                                    <th scope="col">Tiempo recuperado</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+
+                        return `
+                                <tr>
+                                    <td class="align-middle">${item.usuario.nombre}</td>
+                                    <td class="align-middle">${item.tiempo_acumulado_formateado}</td>
+                                    <td class="align-middle">${item.tiempo_recuperado_formateado}</td>
+                                </tr>
+                            `;
+                    }).join('')}
+                        </tbody>
+                        <tfoot>
+                           
+                        </tfoot>
+                        </table>
+                        </div>
+                        `);
+                } else if (tipoSolicitudText == 'reposiciones_detallado') {
+                    $('#table-view-reporte').append(`<div class="table-responsive">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th scope="col">Colaborador</th>
+                                    <th scope="col">fecha</th>
+                                    <th scope="col">Hora desde</th>
+                                    <th scope="col">Hora fin</th>
+                                    <th scope="col">tiempo total</th>
+                                    <th scope="col">estado</th>
+                                    <th scope="col">Motivo</th>
+                                </tr>
+                            </thead>
+                        <tbody>
+                        ${data.map((item) => {
+
+                        return item.reposiciones.map((reposicion) => {
+                            return `
+                                <tr>
+                                    <td class="align-middle">${reposicion.usuario.nombre}</td>
+                                    <td class="align-middle">${reposicion.fecha}</td>
+                                    <td class="align-middle">${reposicion.hora_desde}</td>
+                                    <td class="align-middle">${reposicion.hora_hasta}</td>
+                                    <td class="align-middle">${reposicion.total}</td>
+                                    <td class="align-middle">${reposicion.estado.descripcion}</td>
+                                    <td class="align-middle">${reposicion.detalle ?? ''}</td>
+                                </tr>
+                            `;
+                        }).join('');
                     }).join('')}
                         </tbody>
                         <tfoot>
