@@ -165,7 +165,7 @@ class RecuperacionTiempoController extends Controller
         try {
             DB::beginTransaction();
             $solicitud = ReposicionTiempo::find($request->solicitud);
-            if ($solicitud->estado->slug == 'estados.solicitud.aprobado' || !auth()->user()->hasRole(['Gerencial', 'Administrativo'])) {
+            if ($solicitud->estado->slug == 'estados.solicitud.aprobado' && !auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
                 return response()->json(['success' => false, 'message' => 'No se puede eliminar la solicitud aprobada.']);
             }
             $solicitud->delete();

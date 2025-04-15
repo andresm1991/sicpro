@@ -200,7 +200,8 @@ class ReporteriaController extends Controller
 
         $tipo_solicitudes = CatalogoDato::getChildrenCatalogo('tipo.solicitudes')->pluck('descripcion', 'id')->prepend('', '');
         $tipo_solicitudes = $tipo_solicitudes->toArray(); // Convertir a array
-        $tipo_solicitudes['0'] = 'reposiciones'; // Añadir el nuevo elemento al final
+        $tipo_solicitudes['reposiciones_global'] = 'reposiciones global';
+        $tipo_solicitudes['reposiciones_detallado'] = 'reposiciones detallado';
         $tipo_solicitudes = collect($tipo_solicitudes); // Convertir nuevamente a colección si es necesario
         $estados = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id')->prepend('', '');
 
@@ -213,7 +214,7 @@ class ReporteriaController extends Controller
 
             $tipo_solicitud = $request->input('tipo_solicitud');
 
-            if ($tipo_solicitud > 0) {
+            if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado') {
                 $query = Solicitud::dataReporteSolicitudes($request);
             } else {
                 $query = ReposicionTiempo::getTotalReposiciones($request);

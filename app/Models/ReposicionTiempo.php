@@ -39,10 +39,10 @@ class ReposicionTiempo extends Model
         $ordernar = $request->input('ordenado');
 
         // Consulta principal: Agrupar por usuario_id y calcular el tiempo total
-        $query = Solicitud::selectRaw('usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos')
+        $query = Solicitud::selectRaw('solicitudes.usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos, MAX(fecha_solicitud) as max_fecha')
+            ->join('usuarios as usuario', 'solicitudes.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
             ->with(['reposiciones' => function ($query) {
-                // Filtrar o seleccionar campos específicos de ReposicionTiempo si es necesario
-                $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id')->with('estado');
+                $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id', 'detalle')->with('estado', 'usuario');
             }, 'usuario'])
             ->whereHas('estado_solicitud', function ($q) {
                 $q->where('slug', 'estados.solicitud.aprobado');
@@ -52,21 +52,61 @@ class ReposicionTiempo extends Model
             })
             ->where('recuperable', true);
 
+        $query->when($usuario, function ($q, $usuario) {
+            $q->where('solicitudes.usuario_id', $usuario);
+        });
+
+        // Filtrar por rango de fechas
+        $query->when($fechas, function ($q) use ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            $q->whereBetween('fecha_solicitud', [$fechaInicioFormatted, $fechaFinFormatted]);
+        });
+
+        // Filtrar por estado
+        $query->when($estado, function ($q, $estado) {
+            $q->whereHas('reposiciones', function ($query) use ($estado) {
+                return $query->where('estado_id', $estado);
+            });
+        });
+
+        // Ordenar los resultados
+        switch ($ordernar) {
+            case 'secuencial':
+                $query->orderBy('solicitudes.usuario_id', 'asc'); // Ordenar por usuario_id
+                break;
+            case 'fecha':
+                $query->orderBy('max_fecha', 'asc'); // Usar el alias max_fecha
+                break;
+            case 'alfabetico':
+                $query->orderBy('usuario.nombre', 'asc'); // Ordenar por nombre del usuario
+                break;
+            default:
+                $query->orderBy('solicitudes.usuario_id', 'asc'); // Valor por defecto
+                break;
+        }
 
         // Agrupar por usuario_id
-        $resultados = $query->groupBy('usuario_id')->get();
+        $resultados = $query->groupBy('solicitudes.usuario_id')->get();
 
         // Transformar los datos
         return $resultados->map(function ($item) {
+            $minutos = 0;
+            $horas = 0;
+            $sumaTotalReposiciones = 0;
+
             $horas = floor($item->total_segundos / 3600);
             $minutos = floor(($item->total_segundos % 3600) / 60);
-            $item->tiempo_acumulado_formateado = sprintf('%d horas y %d minutos', $horas, $minutos);
 
-            // Calcular la suma del campo 'total' de las reposiciones
-            $sumaTotalReposiciones = 0;
+            // Calcular la suma del campo 'total' de las reposiciones solo si el estado es 'aprobado'
             foreach ($item->reposiciones as $reposicion) {
-                $sumaTotalReposiciones += strtotime($reposicion->total) - strtotime('00:00:00');
+                if ($reposicion->estado && $reposicion->estado->slug === 'estados.solicitud.aprobado') {
+                    $sumaTotalReposiciones += strtotime($reposicion->total) - strtotime('00:00:00');
+                }
             }
+
+            $item->tiempo_acumulado_formateado = sprintf('%d horas y %d minutos', $horas, $minutos);
 
             // Formatear la suma total de reposiciones
             $horasReposicion = floor($sumaTotalReposiciones / 3600);
