@@ -181,6 +181,7 @@ class Adquisicion extends Model
         }
 
         return $query->get()->map(function ($adquisicion) use ($producto, $gasolina) {
+            $necesidad = '';
             // Si se filtra por producto, calcular el total solo para ese producto
             if ($producto) {
                 $detalle = $adquisicion->adquisiciones_detalle->firstWhere('articulo_id', $producto);
@@ -189,22 +190,26 @@ class Adquisicion extends Model
                 $iva = $detalle->iva ?? 0;
 
                 $total = calcularTotalProducto($cantidad, $valor, $iva);
+                $necesidad .= $detalle->necesidad ?? '';
             } else {
                 // Si no se filtra por producto, calcular el total para todos los detalles
-                $total = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
+                $total = $adquisicion->adquisiciones_detalle->sum(function ($detalle) use ($necesidad) {
                     $cantidad = $detalle->cantidad_solicitada ?? 0;
                     $valor = $detalle->valor ?? 0;
                     $iva = $detalle->iva ?? 0;
-
                     return calcularTotalProducto($cantidad, $valor, $iva);
                 });
                 $cantidad =  0; // No aplica cantidad específica si no se filtra por producto
+
+
+                $necesidad = implode(', ', $adquisicion->adquisiciones_detalle()->pluck('necesidad')->toArray());
             }
 
             return [
                 'adquisicion' => $adquisicion,
                 'cantidad' => $cantidad,
                 'total' => '$ ' . number_format($total, 4),
+                'necesidad' => $necesidad,
             ];
         });
     }

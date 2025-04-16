@@ -21,6 +21,9 @@ use App\Models\RubroCronograma;
 use App\Models\ResumenPagoSemanal;
 use App\Exports\ReportAdquisicionesExport;
 use App\Exports\ReportGasolinaCamionetaExport;
+use App\Exports\ReportSolicitudesExport;
+use App\Models\ReposicionTiempo;
+use App\Models\Solicitud;
 
 class GenerarPdfController extends Controller
 {
@@ -540,6 +543,25 @@ class GenerarPdfController extends Controller
         }
 
         $pdf = PDF::loadView('pdf.reporte_gasolina', compact('result', 'fechas'))->setPaper('a4', 'landscape');
+        return $pdf->stream('reportes.pdf');
+    }
+
+    public function reportSolicitudes(Request $request, $tipo_reporte)
+    {
+        $fechas = $request->input('fechas');
+        $tipo_solicitud = $request->input('tipo_solicitud');
+
+        if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado') {
+            $query = Solicitud::dataReporteSolicitudes($request);
+            $tipo_solicitud = CatalogoDato::find($tipo_solicitud)->descripcion;
+        } else {
+            $query = ReposicionTiempo::getTotalReposiciones($request);
+        }
+
+        if ($tipo_reporte === 'excel') {
+            return Excel::download(new ReportSolicitudesExport($query, $fechas, $tipo_solicitud), 'reporte_solicitudes.xlsx');
+        }
+        $pdf = PDF::loadView('pdf.reporte_solicitudes', compact('query', 'fechas', 'tipo_solicitud'))->setPaper('a4', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 

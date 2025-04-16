@@ -16,4 +16,6 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
     Route::post('/reporte/{tipo_reporte}', [GenerarPdfController::class, 'reportAdquisiciones'])->name('reporte.adquisiciones');
     Route::post('/reporte-gasolina/{tipo_reporte}', [GenerarPdfController::class, 'reportGaolinaCamioneta'])->name('reporte.gasolina.camnoneta');
     Route::get('/exportar-tareas', [GenerarPdfController::class, 'exportarTareas'])->name('export.tareas');
+
+    Route::post('/reporte-solicitudes/{tipo_reporte}', [GenerarPdfController::class, 'reportSolicitudes'])->name('reporte.solicitudes');
 });

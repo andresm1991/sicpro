@@ -11,7 +11,7 @@
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',
                 'enctype' => 'multipart/form-data',
-                'id' => 'form-reporte-adquisiciones',
+                'id' => 'form-reporte',
                 'target' => '_blank',
             ]) !!}
 

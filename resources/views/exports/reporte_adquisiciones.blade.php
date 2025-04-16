@@ -15,6 +15,7 @@
             @endif
             <th>forma pago</th>
             <th>total</th>
+            <th>necesidad</th>
         </tr>
     </thead>
     <tbody>
@@ -41,6 +42,7 @@
                     @endisset
                 </td>
                 <td>{{ $item['total'] }}</td>
+                <td>{{ $item['necesidad'] }}</td>
             </tr>
         @endforeach
     </tbody>

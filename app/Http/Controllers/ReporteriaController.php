@@ -211,9 +211,7 @@ class ReporteriaController extends Controller
     public function visualizarSolicitudes(Request $request)
     {
         try {
-
             $tipo_solicitud = $request->input('tipo_solicitud');
-
             if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado') {
                 $query = Solicitud::dataReporteSolicitudes($request);
             } else {

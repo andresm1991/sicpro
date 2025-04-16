@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de adquisiciones</title>
+    <title>Reporte de solicitudes</title>
     <style>
         /* Configuración general */
         body {
@@ -148,33 +148,12 @@
             /* Evita que se expanda más allá de este valor */
         }
 
-        /* Ajustar el ancho de las demás columnas */
-        #table-resumen th:nth-child(2),
-        #table-resumen td:nth-child(2) {
-            width: 80px;
-        }
-
-        /* Ajustar el ancho de las demás columnas */
-        #table-resumen th:nth-child(3),
-        #table-resumen td:nth-child(3) {
-            width: 150px;
-        }
-
-        #table-resumen th:nth-child(4),
-        #table-resumen td:nth-child(4) {
-            width: 150px;
-        }
-
-        /* Ajustar el ancho de las demás columnas */
-        #table-resumen th:nth-child(8),
-        #table-resumen td:nth-child(8) {
-            width: 1px;
-        }
-
-        #table-resumen th:nth-child(10),
-        #table-resumen td:nth-child(10) {
-            width: 80px;
-        }
+        @if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado')
+            #table-resumen th:nth-child(2),
+            #table-resumen td:nth-child(2) {
+                width: 50px;
+            }
+        @endif
 
         /* Estilos para la marca de agua */
         .watermark {
@@ -223,24 +202,10 @@
                         <img src="{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
                     </td>
                     <td class="text-center">
-                        <h2>Reporte de adquisiciones</h2>
+                        <h2>Reporte de Solicitudes</h2>
+                        <h4>{{ str_replace('_', ' ', $tipo_solicitud) }}</h4>
                     </td>
                 </tr>
-                @if ($proveedor != '')
-                    <tr>
-                        <td colspan="2">
-                            <strong>proveedor:
-                                {{ isset($proveedor->razon_social) ? $proveedor->razon_social : $proveedor->apellidos . ' ' . $proveedor->nombres }}</strong>
-                        </td>
-                    </tr>
-                @endif
-                @if ($producto != '')
-                    <tr>
-                        <td colspan="2">
-                            <strong>Producto: {{ $producto->descripcion }}</strong>
-                        </td>
-                    </tr>
-                @endif
 
                 @if ($fechas != '')
                     <tr>
@@ -255,55 +220,83 @@
 
         <table id="table-resumen">
             <tr>
-                <th scope="col">fecha</th>
-                <th scope="col">numero</th>
-                <th scope="col">proveedor</th>
-                <th scope="col">proyecto</th>
-                <th scope="col">etapa</th>
-                <th scope="col">estado</th>
-                <th scope="col">tipo adquisicion</th>
-                <th scope="col">factura</th>
-                @if ($producto != '')
-                    <th scope="col">cantidad</th>
+                <th>colaborador</th>
+                @if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado')
+                    <th>fecha solicitud</th>
+                    @if (strtoupper($tipo_solicitud) == 'AUSENCIA')
+                        <th>fecha solicitada</th>
+                        <th>tiempo total</th>
+                        <th>tipo</th>
+                        <th>recuperable</th>
+                    @endif
+                    <th>estado</th>
+                    <th>detalle</th>
+                @elseif($tipo_solicitud === 'reposiciones_global')
+                    <th>Tiempo solicitado</th>
+                    <th>Tiempo recuperado</th>
+                @else
+                    <th>fecha</th>
+                    <th>hora desde</th>
+                    <th>hora fin</th>
+                    <th>tiempo total</th>
+                    <th>estado</th>
+                    <th>motivo</th>
                 @endif
-                <th scope="col">forma pago</th>
-                <th scope="col">total</th>
-                <th scope="col">necesidades</th>
             </tr>
             <tbody>
                 @forelse ($query as $items)
-                    <tr>
-                        <td>{{ $items['adquisicion']->fecha }}</td>
-                        <td>{{ $items['adquisicion']->numero }}</td>
-                        <td>
-                            @isset($items['adquisicion']->orden_recepcion)
-                                {{ $items['adquisicion']->orden_recepcion->proveedor->razon_social }}
-                            @endisset
-                        </td>
-                        <td>{{ $items['adquisicion']->proyecto->nombre_proyecto }}</td>
-                        <td>{{ $items['adquisicion']->etapa->descripcion }}</td>
-                        <td>{{ $items['adquisicion']->estado != 'Completado' ? 'Pendiente' : 'Completado' }}</td>
-                        <td>{{ $items['adquisicion']->tipo_adquisicion }}</td>
-                        <td>{{ $items['adquisicion']->factura ?? '' }}</td>
-                        @if ($producto != '')
-                            <td>{{ $items['cantidad'] }}</td>
-                        @endif
-                        <td>
-                            @isset($items['adquisicion']->orden_recepcion)
-                                {{ $items['adquisicion']->orden_recepcion->forma_pago->descripcion }}
-                            @endisset
-                        </td>
-                        <td>{{ $items['total'] }}</td>
-                        <td>{{ $items['necesidad'] }}</td>
-                    </tr>
+                    @if ($tipo_solicitud == 'reposiciones_detallado')
+                        @foreach ($items->reposiciones as $reposiciones)
+                            <tr>
+                                <td>{{ $reposiciones->usuario->nombre }}</td>
+                                <td>{{ $reposiciones->fecha }}</td>
+                                <td>{{ $reposiciones->hora_desde }}</td>
+                                <td>{{ $reposiciones->hora_hasta }}</td>
+                                <td>{{ $reposiciones->total }}</td>
+                                <td>{{ $reposiciones->estado->descripcion }}</td>
+                                <td>{{ $reposiciones->detalle }}</td>
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td>
+                                {{ $items->usuario->nombre }}
+                            </td>
+                            @if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado')
+                                <td>
+                                    {{ $items->fecha_solicitud }}
+                                </td>
+                                @if (strtoupper($tipo_solicitud) == 'AUSENCIA')
+                                    <td>
+                                        {{ $items->fecha_desde }} hasta {{ $items->fecha_hasta }}
+                                    </td>
+                                    <td>
+                                        {{ $items->total_tiempo }}
+                                    </td>
+                                    <td>
+                                        {{ $items->tipo_solicitud->descripcion }}
+                                    </td>
+
+                                    <td class="text-center">
+                                        {{ $items->recuperable ? 'SI' : 'NO' }}
+                                    </td>
+                                @endif
+                                <td>
+                                    {{ $items->estado_solicitud->descripcion }}
+                                </td>
+                                <td>
+                                    {{ $items->detalle }}
+                                </td>
+                            @elseif($tipo_solicitud == 'reposiciones_global')
+                                <td>{{ $items->tiempo_acumulado_formateado }}</td>
+                                <td>{{ $items->tiempo_recuperado_formateado }}</td>
+                            @endif
+                        </tr>
+                    @endif
                 @empty
                 @endforelse
             </tbody>
         </table>
-
-        <h2 class="text-right">Total General: <strong>
-                ${{ number_format($totalGeneral, 4) }}</strong></h2>
-
     </div>
 </body>
 

@@ -7,11 +7,11 @@
     <section>
         <div class="container-fluid">
             {!! Form::open([
-                'route' => ['pdf.reporte.gasolina.camnoneta', ''],
+                'route' => ['pdf.reporte.solicitudes', ''],
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',
                 'enctype' => 'multipart/form-data',
-                'id' => 'form-reporte-solicitudes',
+                'id' => 'form-reporte',
                 'target' => '_blank',
             ]) !!}
 
