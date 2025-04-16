@@ -20,6 +20,7 @@ use App\Models\AdquisicionDetalle;
 use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
@@ -296,24 +297,22 @@ class AdquisicionController extends Controller
             $unidad_medida = isset($request->unidad_medida) ? $request->unidad_medida : [];
             $precio = $request->precio;
             $inventario = $request->inventario;
+
+            // obtener producots existentes del pedido
+            $productos_existente = AdquisicionDetalle::where('adquisicion_id', $pedido_id)->pluck('articulo_id')->toArray();
+            // Encontrar los IDs que están en la base de datos pero no en el request
+            $productos_eliminar = array_diff($productos_existente, $request->productos);
+
             // Combinar arrays en uno solo
             $result = array_map(function ($producto, $cantidad, $necesidad, $km, $unidad, $precio) use ($tipo_etapa) {
-                $paramt = [
-                    'articulo_id' => '',
+                return [
+                    'articulo_id' => $producto,
                     'cantidad_solicitada' => str_replace(',', '', $cantidad),
                     'necesidad' => $necesidad,
                     'kilometraje' => $km,
                     'unidad' => $unidad,
                     'precio' => $precio,
                 ];
-
-                if (is_numeric($producto)) {
-                    $paramt['articulo_id'] = $producto;
-                } else {
-                    $nuevo_producto = $this->registrarNuevoProducto($tipo_etapa, $producto);
-                    $paramt['articulo_id'] = $nuevo_producto->id;
-                }
-                return $paramt;
             }, $request->productos, $request->cantidad, $request->necesidad, $request->km, $unidad_medida, $precio);
 
             $pedido->estado = $orden_completa ? 'Finalizado' : 'En Proceso';
@@ -321,9 +320,13 @@ class AdquisicionController extends Controller
                 throw new Exception('Error al intentar actualizar el estado de la adquisición.');
             }
             foreach ($result as $index => $data) {
-                AdquisicionDetalle::updateOrCreate(
+                $articulo_id = is_numeric($data['articulo_id'])
+                    ? $data['articulo_id']
+                    : $this->registrarNuevoProducto($tipo_etapa, $data['articulo_id'])->id;
+
+                $detalle = AdquisicionDetalle::updateOrCreate(
                     [
-                        'articulo_id' => $data['articulo_id'],
+                        'articulo_id' => $articulo_id,
                         'adquisicion_id' => $pedido_id
                     ],
                     [
@@ -334,6 +337,10 @@ class AdquisicionController extends Controller
                         'valor' => $data['precio']
                     ]
                 );
+
+                if (!$detalle) {
+                    throw new Exception('Error al guardar el detalle de adquisición.');
+                }
 
                 agregarPalabra($data['necesidad']);
 
@@ -350,10 +357,6 @@ class AdquisicionController extends Controller
                     }
                 }
             }
-            // obtener producots existentes del pedido
-            $productos_existente = AdquisicionDetalle::where('adquisicion_id', $pedido_id)->pluck('articulo_id')->toArray();
-            // Encontrar los IDs que están en la base de datos pero no en el request            
-            $productos_eliminar = array_diff($productos_existente, $request->productos);
 
             // Eliminar los registros que no están en el formulario
             if (!empty($productos_eliminar)) {
