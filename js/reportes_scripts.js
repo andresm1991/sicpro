@@ -2,7 +2,10 @@ import { getFormData } from './helpers.js';
 
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
+
     $('.generar-reporte').on('click', function () {
+        const $form = $('#form-reporte');
+
         let tipo_reporte = $('select[name=tipo]').val();
         if (tipo_reporte == '') {
             Swal.fire(
@@ -18,15 +21,14 @@ $(function () {
         $('#tipo_reporte').val(action);
 
         // Obtener la acción base del formulario (sin modificaciones previas)
-        let formAction = $('#form-reporte-adquisiciones').attr('action');
-
+        let formAction = $form.attr('action');
         // Eliminar cualquier sufijo previo agregado al action
         formAction = formAction.split('/pdf')[0].split('/excel')[0];
         // Agregar el valor de tipo_reporte como parámetro en la URL
-        $('#form-reporte-adquisiciones').attr('action', `${formAction}/${action}`);
+        $form.attr('action', `${formAction}/${action}`);
 
         // Enviar el formulario
-        $('#form-reporte-adquisiciones').submit();
+        $form.submit();
     });
 
 
@@ -47,7 +49,7 @@ $(function () {
             )
             return false;
         }
-        var form = $("#form-reporte-adquisiciones");
+        var form = $("#form-reporte");
         var data = getFormData(form);
 
         $.ajax({
@@ -197,6 +199,7 @@ $(function () {
                                     ${producto != '' ? '<th scope="col">cantidad</th>' : ''}
                                     <th scope="col">forma pago</th>
                                     <th scope="col">total</th>
+                                    <th scope="col">necesidades</th>
                                 </tr>
                             </thead>
                         <tbody>
@@ -223,6 +226,7 @@ $(function () {
                                     ${producto != '' ? `<td>${item.cantidad}</td>` : ''}
                                     <td>${item.adquisicion.orden_recepcion != null ? item.adquisicion.orden_recepcion.forma_pago.descripcion : ''}</td>
                                     <td>${item.total}</td>
+                                    <td>${item.necesidad}</td>
                                 </tr>
                             `;
                     }).join('')}
@@ -268,7 +272,7 @@ $(function () {
     });
 
     $('#visualizar-reporte-gasolina').on('click', function () {
-        var form = $("#form-reporte-adquisiciones");
+        var form = $("#form-reporte");
         var data = getFormData(form);
 
         $.ajax({
@@ -476,7 +480,7 @@ $(function () {
      * Se envia el formulario y se recibe la respuesta en formato JSON
      */
     $('#visualizar-reporte-solicitudes').on('click', function () {
-        var form = $("#form-reporte-solicitudes");
+        var form = $("#form-reporte");
         var data = getFormData(form);
         let tipoSolicitudText = $('select[name=tipo_solicitud] option:selected').text();
 
