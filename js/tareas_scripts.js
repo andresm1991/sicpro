@@ -119,20 +119,24 @@ $(function () {
         let tarea = $(this).attr('id');
         estadoActual = $(this).data('estado');
 
+        const $textarea = $('#descripcion');
+
+        // Establecer el contenido del textarea antes de ajustar la altura
+        $textarea.val(descripcion);
+        // Ajustar la altura dinámicamente al escribir
+
+
+        // Asignar valores a otros campos del modal
         $('#titleComentarioModal').val(titulo);
-        $('#descripcion').val(descripcion);
-        $('input:hidden[name=tarea_id]').val(tarea)
+        $('input:hidden[name=tarea_id]').val(tarea);
         $('select[name=estado]').val(estadoActual).trigger('change');
 
-        getComentariosTarea();
-
-
+        // Mostrar el modal
         $('#comentarioTareaModal').modal({
             backdrop: 'static', // No permite cerrar el modal al hacer clic fuera
             keyboard: false     // No permite cerrar el modal usando la tecla ESC
         }).modal('show');
     });
-
     // Manejar el evento de clic en "Editar"
     $(document).on('click', '.list-comentarios .editar', function (e) {
         e.preventDefault();
@@ -442,6 +446,9 @@ $(function () {
             // Inicializar Select2 con la configuración fusionada
             $select.select2(newOptions);
         });
+
+        // Ajustar la altura inicial del textarea al abrir el modal
+        adjustTextareaHeight($('#descripcion'));
     });
 
     $(document).on('click', '#exportar-tarea', function () {
@@ -513,6 +520,13 @@ $(function () {
             }
         });
     }
+    $('#descripcion').off('input').on('input', function () {
+        adjustTextareaHeight($(this));
+    });
 
-
+    // Función para ajustar la altura del textarea
+    function adjustTextareaHeight($textarea) {
+        $textarea.css('height', 'auto'); // Restablece la altura
+        $textarea.css('height', $textarea[0].scrollHeight + 'px'); // Ajusta la altura al contenido
+    }
 });

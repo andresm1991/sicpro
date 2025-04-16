@@ -2265,6 +2265,18 @@ section {
 
 /**/
 
+
+#descripcion {
+    box-sizing: border-box;
+    /* Incluye padding y border en el cálculo de altura */
+    min-height: 30px;
+    /* Altura mínima para evitar colapsos */
+    overflow: hidden;
+    /* Oculta el scroll vertical innecesario */
+    resize: none;
+    /* Desactiva el redimensionamiento manual */
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
