@@ -4,8 +4,8 @@
             <div class="col-12 ">
                 <div class="form-group form-search form-icon col-md-6 col-12 p-0">
                     <i class="fal fa-search fa-lg form-control-icon"></i>
-                    <input type="text" name="orden_contratista_search" id="pagado" class="form-control form-control-round"
-                        placeholder="Buscar....">
+                    <input type="text" name="orden_contratista_search" id="pagado"
+                        class="form-control form-control-round" placeholder="Buscar....">
                 </div>
             </div>
         </div>
@@ -14,6 +14,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Orden Nro.</th>
+                        <th scope="col">proyecto</th>
                         <th scope="col">Contratista</th>
                         <th scope="col">Categoria</th>
                         <th scope="col">Valor Contrato</th>
@@ -27,6 +28,9 @@
                         <tr id="{{ $orden_trabajo->id }}">
                             <td class="align-middle">
                                 {{ numeroOrden($orden_trabajo, false) }}
+                            </td>
+                            <td class="align-middle text-uppercase">
+                                {{ $orden_trabajo->proyecto->nombre_proyecto }}
                             </td>
                             <td class="align-middle text-uppercase">
                                 {{ $orden_trabajo->proveedor->razon_social }}
@@ -44,7 +48,7 @@
                                 $
                                 {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 2) }}
                             </td>
-                            
+
                             <td class="align-middle text-right text-truncate">
                                 <button type="button" class="btn btn-outline-dark" data-container="body"
                                     data-toggle="popover" data-placement="left" data-trigger="focus"

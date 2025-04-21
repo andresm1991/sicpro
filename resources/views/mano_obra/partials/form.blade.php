@@ -137,7 +137,9 @@
             </tr>
         </thead>
         <tbody>
-            @foreach ($mano_obra->detalle_mano_obra->where('fecha', $fecha_anterior) as $detalle_mano_obra)
+            @foreach ($mano_obra->detalle_mano_obra->where('fecha', $fecha_anterior)->sortBy(function ($detalle) {
+        return strtolower($detalle->proveedor->nombres . ' ' . $detalle->proveedor->apellidos);
+    }) as $detalle_mano_obra)
                 <tr class="elementos-agregados">
                     <td>
                         <select name="personal[]" class="form-control select2-basic-single"
@@ -149,7 +151,6 @@
                                     {{ $nombre }}
                                 </option>
                             @endforeach
-
                         </select>
                     </td>
                     <td>
@@ -206,7 +207,8 @@
                     </td>
                 </tr>
             @endforeach
-            <tr id="tr-default" style="display:{{ $mano_obra->detalle_mano_obra->isEmpty() ? '' : 'none' }}">
+            <tr id="tr-default"
+                style="display:{{ $mano_obra->detalle_mano_obra->where('fecha', $fecha_anterior)->isEmpty() ? '' : 'none' }}">
                 <td colspan="10" class="text-center">No existen elementos en la lista...</td>
             </tr>
         </tbody>

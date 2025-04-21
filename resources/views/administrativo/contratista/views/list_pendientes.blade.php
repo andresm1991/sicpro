@@ -15,6 +15,7 @@
                 <thead>
                     <tr>
                         <th scope="col">Orden Nro.</th>
+                        <th scope="col">proyecto</th>
                         <th scope="col">Contratista</th>
                         <th scope="col">Categoria</th>
                         <th scope="col">Valor Contrato</th>
@@ -29,6 +30,9 @@
                             class="{{ $orden_trabajo->pagosOrdenTrabajoContratista->contains('pagado', false) ? 'table-warning' : 'clase-no-existe' }}">
                             <td class="align-middle">
                                 {{ numeroOrden($orden_trabajo, false) }}
+                            </td>
+                            <td class="align-middle text-uppercase">
+                                {{ $orden_trabajo->proyecto->nombre_proyecto }}
                             </td>
                             <td class="align-middle text-uppercase">
                                 {{ $orden_trabajo->proveedor->razon_social }}
