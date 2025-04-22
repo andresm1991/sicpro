@@ -7,18 +7,21 @@
                 @else
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb custom-breadcrumb text-uppercase">
-                            @foreach ($breadcrumbs as $breadcrumb)
-                                @if (!$loop->last)
-                                    <!-- Si no es el último, es un enlace -->
-                                    <li class="breadcrumb-item header-text">
-                                        <a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['name'] }}</a>
-                                    </li>
-                                @else
-                                    <!-- Si es el último, es el actual -->
-                                    <li class="breadcrumb-item header-text active" aria-current="page">
-                                        {{ $breadcrumb['name'] }}</li>
-                                @endif
-                            @endforeach
+                            @isset($breadcrumbs)
+                                @foreach ($breadcrumbs as $breadcrumb)
+                                    @if (!$loop->last)
+                                        <!-- Si no es el último, es un enlace -->
+                                        <li class="breadcrumb-item header-text">
+                                            <a href="{{ $breadcrumb['url'] }}">{{ $breadcrumb['name'] }}</a>
+                                        </li>
+                                    @else
+                                        <!-- Si es el último, es el actual -->
+                                        <li class="breadcrumb-item header-text active" aria-current="page">
+                                            {{ $breadcrumb['name'] }}</li>
+                                    @endif
+                                @endforeach
+                            @endisset
+
 
                         </ol>
                     </nav>

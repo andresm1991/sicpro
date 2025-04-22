@@ -10,20 +10,22 @@
                 <div class="col-sm-6">
                     <div class="card image-card" style="width: 18rem;">
                         <a href="{{ route('administrativo.menu.construccion') }}">
-                            <img class="card-img-top uniform-image" src="{{ asset('images/logo_empresa.jpg') }}" alt="Card image cap">
+                            <img class="card-img-top uniform-image" src="{{ asset('images/logo_empresa.jpg') }}"
+                                alt="Card image cap">
                         </a>
                     </div>
                 </div>
-            
+
                 <div class="col-sm-6">
                     <div class="card image-card" style="width: 18rem;">
-                        <a href="java:void(0);">
-                            <img class="card-img-top uniform-image" src="{{ asset('images/logo_limpieza.jpeg') }}" alt="Card image cap">
+                        <a href="{{ route('jp.limpieza.index') }}">
+                            <img class="card-img-top uniform-image" src="{{ asset('images/logo_limpieza.jpeg') }}"
+                                alt="Card image cap">
                         </a>
                     </div>
                 </div>
             </div>
-            
+
         </div>
     </section>
 @endsection

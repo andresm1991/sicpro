@@ -56,6 +56,7 @@ Route::group(['middleware' => ['auth']], function () {
     require base_path('routes/modules/reporteria.php');
     require base_path('routes/modules/solicitudes.php');
     require base_path('routes/modules/agenda.php');
+    require base_path('routes/modules/jp_limpieza.php');
 
     // Perfil Usuario
     Route::group(['prefix' => 'mi-perfil', 'as' => 'perfil.'], function () {

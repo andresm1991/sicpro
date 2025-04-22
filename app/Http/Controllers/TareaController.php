@@ -66,8 +66,6 @@ class TareaController extends Controller
                 }
                 DB::commit();
 
-                PushNotificationService::sendNotification(auth()->user(), 'Tarea creada', "El usuario " . auth()->user()->nombre . " creo una nueva tarea en agenda", route('tarea.index'));
-
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -121,7 +119,7 @@ class TareaController extends Controller
 
                 DB::commit();
 
-                PushNotificationService::sendNotification(auth()->user(), 'Comentario creado', "El usuario " . auth()->user()->nombre . " comento en una tarea en agenda", route('tarea.index'));
+                PushNotificationService::sendNotification(auth()->user(), 'Comentario creado', "El usuario " . auth()->user()->nombre . " comento la tarea " . $tarea->titulo, route('tarea.index'));
 
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {
