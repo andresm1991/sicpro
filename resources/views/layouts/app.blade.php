@@ -34,6 +34,9 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css?v=' . config('app.version', '')) }}" rel="stylesheet">
+    <!-- Dropify-->
+    {!! Html::style('plugins/dropify/css/dropify.min.css') !!}
+
     @yield('styles')
 </head>
 
@@ -76,7 +79,8 @@
 {!! Html::script('plugins/daterangepicker/daterangepicker.js') !!}
 <!-- SweetAlert2 -->
 <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
-
+<!-- Dropify -->
+{!! Html::script('plugins/dropify/js/dropify.min.js') !!}
 <script src="{{ asset('js/app.js?v=' . config('app.version', '')) }}"></script>
 <script src="{{ asset('plugins/dataTables/datatables.min.js') }}"></script>
 {{-- <script src=" asset('js/datatables.js') "></script> "></script> --}}
