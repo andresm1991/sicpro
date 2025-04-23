@@ -2277,6 +2277,10 @@ section {
     /* Desactiva el redimensionamiento manual */
 }
 
+.dropify-wrapper .dropify-message span.file-icon p {
+    font-size: 12px !important;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */

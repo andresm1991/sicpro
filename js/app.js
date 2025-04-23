@@ -447,7 +447,7 @@ $(function () {
 
     }).mask(".dateTime");
 
-    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false });
+    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 4 });
 
     /// Solo numeros
     $(document).on('input', ".solo-numeros", function (evt) {
@@ -465,6 +465,26 @@ $(function () {
         }
 
         $(this).val(value); // Establece el valor validado
+    });
+
+    /*=========== Files Input style Dropify ========*/
+    var drEvent = $('.dropify').dropify({
+        tpl: {
+            wrap: '<div class="dropify-wrapper"></div>',
+            loader: '<div class="dropify-loader"></div>',
+            message: '<div class="dropify-message"><span class="file-icon" /> <p>{{ default }}</p></div>',
+            preview: '<div class="dropify-preview"><span class="dropify-render"></span><div class="dropify-infos"><div class="dropify-infos-inner"><p class="dropify-infos-message">{{ replace }}</p></div></div></div>',
+            filename: '',
+            clearButton: '<button type="button" class="dropify-clear">{{ remove }}</button>',
+            errorLine: '<p class="dropify-error">{{ error }}</p>',
+            errorsContainer: '<div class="dropify-errors-container"><ul></ul></div>'
+        },
+        messages: {
+            default: 'arrastre y suelte un archivo aquí o haga click',
+            replace: 'arrastrar y soltar o hacer clic para reemplazar',
+            remove: 'BORRAR',
+            error: 'Lo sentimos, el archivo es demasiado grande',
+        }
     });
 
     //** Permite el ingreso del numero con el formato 1234-1//
