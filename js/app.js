@@ -771,7 +771,20 @@ function calcularTotalFilasYGeneral() {
 }
 
 
+// Calcular el total de cada fila
+function calcularTotal($element) {
+    let subtotal = 0;
 
+    // Iterar por cada fila del tbody
+    $($element).each(function () {
+        let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
+        let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+        // Sumar al subtotal
+        subtotal += total;
+    });
+    // Actualizar el total general
+    return subtotal.toFixed(4);
+}
 
 function inicializarPlugins() {
     // Input mask

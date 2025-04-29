@@ -9,6 +9,7 @@
     /* Para Firefox: scroll delgado */
     scrollbar-color: #888 #f1f1f1;
     /* Color del scroll y del fondo */
+    text-transform: uppercase !important;
 }
 
 /* Estilo global para el scroll */
@@ -2279,6 +2280,15 @@ section {
 
 .dropify-wrapper .dropify-message span.file-icon p {
     font-size: 12px !important;
+}
+
+
+input.no-border {
+    border: none;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 5px;
 }
 
 /*===========================================================*/
