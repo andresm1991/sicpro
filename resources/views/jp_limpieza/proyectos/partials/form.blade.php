@@ -69,7 +69,7 @@
                 <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha de inicio <i
                             class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('fecha_inicio', old('fecha_inicio', dateFormat('Y-m-d', 'd-m-Y', $proyecto->fecha_inicio)), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese la fecha de inicio']) }}
+                    {{ Form::text('fecha_inicio', old('fecha_inicio', \Carbon\Carbon::parse($proyecto->fecha_inicio)->format('d-m-Y')), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese la fecha de inicio']) }}
                     {!! $errors->first('fecha_inicio', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
                 </div>
             </div>
@@ -77,7 +77,7 @@
                 <div class="form-group">
                     <label class="col-form-label font-weight-bold">Fecha de finalización <i
                             class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('fecha_fin', old('fecha_fin', dateFormat('Y-m-d', 'd-m-Y', $proyecto->fecha_finalizacion)), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese la decha de finalización']) }}
+                    {{ Form::text('fecha_fin', old('fecha_fin', \Carbon\Carbon::parse($proyecto->fecha_finalizacion)->format('d-m-Y')), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese la decha de finalización', 'readonly' => true]) }}
                     {!! $errors->first('fecha_fin', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
                 </div>
             </div>
@@ -101,7 +101,7 @@
                         <h5 class="col-form-label">Portada del Proyecto</h5>
                     </div>
                     <div class="col-lg-12 file-input-wrapper">
-                        <img src="{{ $proyecto->portada ? doTemporaryUrl($proyecto->portada) : asset('images/no-fotos.png') }}"
+                        <img src="{{ $proyecto->archivo_portada ? doTemporaryUrl($proyecto->archivo_portada) : asset('images/no-fotos.png') }}"
                             class="card-img-top" id="preview-portada" alt="portada">
                         <label for="singleFileInput" class="file-input-label">Elige otro
                             archivo...</label>
@@ -115,18 +115,28 @@
         </div>
         <div class="row">
             <div class="form-group col-sm-6">
-                <label class="col-form-label">Orden de compra</label>
+                <label class="col-form-label">Orden de compra
+                    @isset($proyecto->archivo_orden_compra)
+                        <a href="{{ doTemporaryUrl($proyecto->archivo_orden_compra) }}" target="_blank"
+                            class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i></a>
+                    @endisset
+                </label>
                 <div id="load_img">
-                    {{ Form::file('file_orden_compra', ['class' => 'dropify', 'data-default-file' => old('logo'), 'data-file' => '', 'data-tipo' => 'portada', 'data-height' => '100']) }}
+                    {{ Form::file('file_orden_compra', ['class' => 'dropify', 'data-default-file' => old('file_orden_compra', isset($proyecto->archivo_orden_compra) ? $proyecto->archivo_orden_compra : ''), 'data-id' => $proyecto->id, 'data-tipo' => 'archivo_orden_compra', 'data-height' => '100']) }}
                 </div>
 
                 {!! $errors->first('file_orden_compra', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
             </div>
 
             <div class="form-group col-sm-6">
-                <label class="col-form-label">Acta final</label>
+                <label class="col-form-label">Acta final
+                    @isset($proyecto->archivo_acta_final)
+                        <a href="{{ doTemporaryUrl($proyecto->archivo_acta_final) }}" target="_blank"
+                            class="btn btn-sm btn-dark"><i class="fa-solid fa-eye"></i></a>
+                    @endisset
+                </label>
                 <div id="load_img">
-                    {{ Form::file('file_acta_final', ['class' => 'dropify', 'data-default-file' => old('logo'), 'data-file' => '', 'data-tipo' => 'portada', 'data-height' => '100']) }}
+                    {{ Form::file('file_acta_final', ['class' => 'dropify', 'data-default-file' => old('file_acta_final', isset($proyecto->archivo_acta_final) ? $proyecto->archivo_acta_final : ''), 'data-id' => $proyecto->id, 'data-tipo' => 'archivo_acta_final', 'data-height' => '100']) }}
                 </div>
 
                 {!! $errors->first('file_acta_final', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
@@ -135,6 +145,10 @@
 
     </div>
 </div>
+
+@section('scripts')
+    <script src="{{ asset('js/jp_limpieza.js') }}"></script>
+@endsection
 
 
 {{-- 

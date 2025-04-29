@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class CatalogoDato extends Model
 {
     use HasFactory;
+    protected $connection = 'mysql';
     protected $table = 'catalogo_datos';
 
     protected $fillable = ['descripcion', 'detalle', 'slug', 'padre_id', 'activo'];

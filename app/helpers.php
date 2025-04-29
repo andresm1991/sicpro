@@ -11,6 +11,8 @@ use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DetalleResumenPagoSemanal;
+use App\Models\JPLimpieza\DetalleAdquisicion;
+use App\Models\JPLimpieza\Producto;
 use App\Models\Proveedor;
 use App\Models\Tarea;
 
@@ -382,6 +384,13 @@ if (!function_exists('numeroOrden')) {
 
         return $numero_orden;
     }
+
+    function numeroPedido($registro)
+    {
+        $ultimo_id = $registro ? $registro->id + 1 : 1;
+        $numero_pedido = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+        return $numero_pedido;
+    }
 }
 /**
  * Calcula la fecha final por semanas de plazo
@@ -466,6 +475,13 @@ if (!function_exists('palabras')) {
         if (!$existe) {
             DiccionarioPalabra::create(['palabra' => $palabra]);
         }
+    }
+
+    function getJPLimpiezaNecesidades()
+    {
+        $jp_limpieza = DetalleAdquisicion::groupBy('necesidad')->pluck('necesidad', 'necesidad');
+        $jp_limpieza->prepend('', '');
+        return $jp_limpieza;
     }
 
     function logoBase64()
@@ -590,5 +606,43 @@ if (!function_exists('palabras')) {
         $estados = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
         $estados->prepend('', '');
         return $estados;
+    }
+
+    function getProdutosJPLimpieza()
+    {
+        $productos = Producto::where('activo', true)->pluck('nombre', 'id');
+        $productos->prepend('', '');
+        return $productos;
+    }
+
+    /**
+     * Agregar un nuevo producto a la base de datos
+     * @param string $nombre
+     */
+    function agregarProducto($nombre, $valor = null, $iva = null, $unidad_medida = null)
+    {
+        // Verificar si el producto ya existe
+        $productoExistente = Producto::where('nombre', $nombre)->first();
+        if ($productoExistente) {
+            return $productoExistente->id;
+        }
+
+        // Registrar la unidad de medida si no existe
+        if ($unidad_medida) {
+            $unidad_medida_id = registrarUnidadMedida($unidad_medida);
+        } else {
+            $unidad_medida_id = null;
+        }
+
+        // Crear el nuevo producto
+        $nuevoProducto = Producto::create([
+            'nombre' => $nombre,
+            'precio_unitario' => $valor,
+            'iva' => $iva,
+            'unidad_medida_id' => $unidad_medida_id,
+            'activo' => true,
+        ]);
+
+        return $nuevoProducto->id;
     }
 }

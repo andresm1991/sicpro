@@ -33,7 +33,8 @@
                                     <span class="font-weight-normal">{{ $proyecto->fecha_finalizacion }}</span>
                                 </h6>
                                 <div class="col-12 text-center">
-                                    <a href="" class="btn btn-secondary">Más información</a>
+                                    <a href="{{ route('jp.limpieza.proyectos.show', $proyecto->id) }}"
+                                        class="btn btn-secondary">Más información</a>
                                 </div>
 
                             </div>

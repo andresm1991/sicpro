@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Proveedor extends Model
 {
     use HasFactory;
+    protected $connection = 'mysql';
     protected $table = 'proveedores';
     protected $fillable = [
         'categoria_proveedor_id',

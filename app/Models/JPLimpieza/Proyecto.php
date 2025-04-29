@@ -26,7 +26,7 @@ class Proyecto extends Model
     ];
 
     protected $casts = [
-        'fecha_inicio' => 'datetime',
-        'fecha_finalizacion' => 'datetime',
+        'fecha_inicio' => 'date',
+        'fecha_finalizacion' => 'date',
     ];
 }
