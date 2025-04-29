@@ -34,6 +34,9 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::post('/{proyecto}/{tipo_adquisicion}/guardar', [AdquisicionController::class, 'store'])->name('store');
         Route::get('/{proyecto}/{tipo_adquisicion}/editar/{adquisicion}', [AdquisicionController::class, 'edit'])->name('edit');
         Route::put('/{proyecto}/{tipo_adquisicion}/editar/{adquisicion}', [AdquisicionController::class, 'update'])->name('update');
-        Route::delete('/{proyecto}/{tipo_adquisicion}/eliminar/{adquisicion}', [AdquisicionController::class, 'destroy'])->name('destroy');
+        Route::delete('/{proyecto}/eliminar/{adquisicion}', [AdquisicionController::class, 'destroy'])->name('destroy');
+        Route::get('/{proyecto}/{tipo_adquisicion}/buscar', [AdquisicionController::class, 'buscar']);
     });
+
+    Route::group(['prefix' => 'contratistas', 'as' => 'contratista.'], function () {});
 });

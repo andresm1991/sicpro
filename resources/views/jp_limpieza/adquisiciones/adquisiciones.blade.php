@@ -21,8 +21,8 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="adquisicion_search" class="form-control form-control-round"
-                                    placeholder="Buscar....">
+                                <input type="text" name="buscar-adquisicion" id="buscar-adquisicion"
+                                    class="form-control form-control-round" placeholder="Buscar....">
                             </div>
                         </div>
                     </div>
@@ -53,12 +53,12 @@
                                             @endif
 
                                         </td>
-                                        <td class="align-middle align-middle text-right text-truncate">
+                                        <td class="align-middle text-right text-truncate">
                                             <button type="button" class="btn btn-outline-dark" data-container="body"
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
                                                 <a href='{{ route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar</a>
-                                                <a href='#' class='dropdown-item eliminar-adquisicion' data-id='{{ $adquisicion->id }}'>Eliminar</a>
+                                                <a href='#' class='dropdown-item eliminar-adquisicion' id='{{ $adquisicion->id }}'>Eliminar</a>
                                                 <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a> ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>
@@ -84,5 +84,9 @@
 @endsection
 
 @section('scripts')
-
+    <script>
+        var url =
+            "{{ route('jp.limpieza.adquisiciones.tipo.adquisicion', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug]) }}";
+    </script>
+    <script src="{{ asset('js/jp_limpieza/adquisiciones.js') }}"></script>
 @endsection

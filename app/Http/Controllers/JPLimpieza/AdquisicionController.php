@@ -16,6 +16,7 @@ use App\Models\JPLimpieza\Inventario;
 use App\Models\JPLimpieza\Adquisicion;
 use Illuminate\Support\Facades\Storage;
 use App\Models\JPLimpieza\DetalleAdquisicion;
+use App\Models\Proveedor;
 
 class AdquisicionController extends Controller
 {
@@ -119,7 +120,7 @@ class AdquisicionController extends Controller
                     'necesidad' => $necesidad,
                     'inventario' => $inventario,
                 ];
-            }, $request->producto, $request->cantidad, $request->precio, $request->iva, $request->unidad_medida, $request->necesidad, $request->inventario);
+            }, $request->producto, $request->cantidad, $request->precio, $request->iva, $request->unidad_medida, $request->necesidad, $request->input('inventario', []));
 
             $adquisicion = Adquisicion::create([
                 'fecha' => $fecha,
@@ -148,6 +149,25 @@ class AdquisicionController extends Controller
                         'iva' => $item['iva'],
                         'necesidad' => $item['necesidad'],
                     ]);
+
+                    if (is_numeric($item['producto'])) {
+                        // registrar precio unitario del producto y el iva
+                        $articulo = Producto::find($item['producto']);
+                        $articulo->precio_unitario = str_replace(',', '', $item['valor']);
+                        $articulo->iva = $item['iva'];
+                        $articulo->save();
+                    }
+
+                    if ($item['inventario'] && $completado) {
+                        Inventario::create([
+                            'adquisicion_id' => $adquisicion->id,
+                            'producto_id' => $item['producto'],
+                            'cantidad' => str_replace(',', '', $item['cantidad']),
+                            'fecha_ingreso' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado' => 10,
+                        ]);
+                    }
                 }
 
                 DB::commit();
@@ -212,7 +232,7 @@ class AdquisicionController extends Controller
                     'necesidad' => $necesidad,
                     'inventario' => $inventario,
                 ];
-            }, $request->producto, $request->cantidad, $request->precio, $request->iva, $request->unidad_medida, $request->necesidad, $request->inventario);
+            }, $request->producto, $request->cantidad, $request->precio, $request->iva, $request->unidad_medida, $request->necesidad, $request->input('inventario', []));
 
             if ($archivo) {
                 Storage::disk('digitalocean')->delete($adquisicion->archivo);
@@ -220,7 +240,6 @@ class AdquisicionController extends Controller
             }
 
             $adquisicion->save();
-
 
             foreach ($items as $index => $producto) {
                 if (empty($producto['producto']) || empty($producto['cantidad']) || empty($producto['valor'])) {
@@ -292,6 +311,65 @@ class AdquisicionController extends Controller
             DB::rollBack();
             LogService::log('error', 'Adquisición JPLimpieza eliminada', ['message' => $e->getMessage(), 'action' => 'destroy', 'user_id' => auth()->id()]);
             return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+        }
+    }
+
+    public function buscar(Request $request)
+    {
+        $buscar = $request->input('text');
+        $proyecto = $request->route('proyecto');
+        $tipoAdquisicion = CatalogoDato::where('slug', $request->tipo_adquisicion)->first();
+        $output = '';
+
+        // Paso 1: Obtener los IDs de los proveedores en la conexión 'mysql'
+        $proveedorIds = Proveedor::where('razon_social', 'LIKE', "%$buscar%")
+            ->pluck('id');
+        // Obeter lps IDs de formas de pago
+        $formaPagoIds = CatalogoDato::where('descripcion', 'LIKE', "%$buscar%")->pluck('id');
+
+        // Paso 2: Filtrar las adquisiciones en la conexión 'mysql_jp_limpieza'
+        $adquisiciones = Adquisicion::where('tipo_id', $tipoAdquisicion->id)
+            ->where('proyecto_id', $proyecto)
+            ->where(function ($q) use ($buscar, $proveedorIds, $formaPagoIds) {
+                $q->where('numero', 'LIKE', "%$buscar%")
+                    ->orWhereIn('proveedor_id', $proveedorIds)
+                    ->orWhereIn('forma_pago_id', $formaPagoIds);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        if ($adquisiciones) {
+            foreach ($adquisiciones as $adquisicion) {
+                $editar = "<a href='" . route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
+                $eliminar = "<a href='#' class='dropdown-item eliminar-adquisicion' id='" . $adquisicion->id . "'>Eliminar</a>";
+                $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
+
+                if (preg_match('/\b(completado|finalizado)\b/i', $adquisicion->estado)) {
+                    $estado = '<span class="badge badge-success ">Finalizado</span>';
+                } else {
+                    $estado = '<span class="badge badge-warning ">' . $adquisicion->estado . '</span>';
+                }
+
+                $output .= '<tr id="' . $adquisicion->id . '">';
+                $output .= '<td class="align-middle">' . $adquisicion->numero . '</td>';
+                $output .= '<td class="align-middle">' . date('d-m-Y', strtotime($adquisicion->fecha)) . '</td>';
+                $output .= '<td class="align-middle">' . $adquisicion->formaPago->descripcion . '</td>';
+                $output .= '<td class="align-middle">' . $adquisicion->proveedor->razon_social . '</td>';
+                $output .= '<td class="align-middle">' . $estado . '</td>';
+                $output .= '<td class="align-middle text-right text-truncate">';
+                $output .= '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar . $eliminar . $pdf . '"> <i class="fas fa-caret-left font-weight-normal"></i> Opciones </button>';
+                $output .= '</td>';
+                $output .= '</tr>';
+            }
+
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="6" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
         }
     }
 }
