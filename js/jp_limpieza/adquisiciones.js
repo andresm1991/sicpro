@@ -9,7 +9,10 @@ $(function () {
         let iva = $('#iva').val();
         let unidadMedida = $('#unidad_medida').val();
         let necesidad = $('#necesidad').val();
+        let tipoAdquisicion = $('#tipo_adquisicion').val();
         var valid = true;
+        var inventario = '';
+
 
         $('#producto, #cantidad, #valor_unitario, #iva, #unidad_medida, #necesidad').removeClass('error-border');
         $('.select2-tag').removeClass('error-border');  // Remover borde rojo en select2
@@ -60,6 +63,18 @@ $(function () {
 
         numeroFila = $('.elementos-agregados').length + 1;
 
+        if (tipoAdquisicion == 'meteriales.herramientas') {
+            inventario = `<td class="align-middle">
+                    <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
+                    <input type="hidden" name="inventario[${numeroFila - 1}]" value="0">
+
+                    <input class="tgl tgl-skewed inventario" name="inventario[${numeroFila - 1}]" id="cb3-${numeroFila - 1}" type="checkbox" value="0"/>
+                        <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="cb3-${numeroFila - 1}"></label>
+                        
+                    </div>
+                </td>`;
+        }
+
         // Crear una nueva fila con los datos
         var nuevaFila = `
             <tr class="elementos-agregados">
@@ -91,15 +106,7 @@ $(function () {
                     <span>${necesidad}</span>
                     <input type="hidden" name="necesidad[]" value="${necesidad}">
                 </td>
-                <td class="align-middle">
-                    <div class="checkbox-wrapper-8 d-flex justify-content-center align-items-center">
-                    <input type="hidden" name="inventario[${numeroFila - 1}]" value="0">
-
-                    <input class="tgl tgl-skewed inventario" name="inventario[${numeroFila - 1}]" id="cb3-${numeroFila - 1}" type="checkbox" value="0"/>
-                        <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="cb3-${numeroFila - 1}"></label>
-                        
-                    </div>
-                </td>
+                ${inventario}
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
                         <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto" id=""><i class="fa-solid fa-trash-can"></i></a>
@@ -206,7 +213,8 @@ $(function () {
      * @param id
      */
     $(document).on('click', '.eliminar-adquisicion', function () {
-        let adquisicionId = $(this).data('id');
+        let adquisicionId = $(this).attr('id');
+
         Swal.fire({
             title: '¿Esta Seguro?',
             text: "Una vez se elimina el registro no podrá recuperarlo.",
@@ -220,7 +228,7 @@ $(function () {
             if (result.value) {
                 $.ajax({
                     url: 'eliminar/' + adquisicionId,
-                    headers: { 'X-CSRF-TOKEN': csrf },
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
                     type: 'DELETE',
                     dataType: 'json',
                 })
@@ -231,7 +239,7 @@ $(function () {
                                 title: data.message,
                             });
 
-                            $("#table-list-pedidos #" + id).remove();
+                            $("#table-list-pedidos #" + adquisicionId).remove();
 
                             if ($('#table-list-pedidos tbody').children().length == 0) {
                                 $('#table-list-pedidos tbody').html('<tr>' +
@@ -257,6 +265,26 @@ $(function () {
             }
         });
     });
+
+    /**
+     * Buscar adquisicion
+     * @param buscar
+     */
+    $(document).on('keyup', '#buscar-adquisicion', function () {
+        let buscar = $(this).val();
+        $.ajax({
+            url: url + '/buscar',
+            type: 'GET',
+            data: { text: buscar },
+            headers: { 'X-CSRF-TOKEN': csrfToken },
+            success: function (response) {
+                $('#table-list-pedidos tbody').html(response);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            }
+        });
+    }
+    );
 
     function clearInputs() {
         $('#producto').val(null).trigger('change');
