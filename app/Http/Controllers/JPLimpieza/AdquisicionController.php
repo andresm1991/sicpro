@@ -45,7 +45,19 @@ class AdquisicionController extends Controller
 
         $menu_adquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->reject(function ($item) {
             return $item->slug === 'profecionales'; // Reemplaza 123 con el ID del registro que deseas excluir
-        });
+        })
+            ->map(function ($item) use ($proyecto) {
+                $routeName = match ($item->slug) {
+                    'contratista' => route('jp.limpieza.contratistas.index', $proyecto),
+                    'mano.obra' => route('jp.limpieza.adquisiciones.index', ['proyecto' => $proyecto, 'tipo_adquisicion' => $item->slug]),
+                    default => route('jp.limpieza.adquisiciones.tipo.adquisicion', ['proyecto' => $proyecto, 'tipo_adquisicion' => $item->slug]),
+                };
+
+                // Agregar la ruta al objeto
+                $item->route = $routeName;
+
+                return $item;
+            });
 
         return view('jp_limpieza.adquisiciones.opciones', compact('breadcrumbs', 'menu_adquisiciones', 'proyecto'));
     }

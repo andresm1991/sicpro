@@ -1,9 +1,10 @@
 <?php
 
-use App\Http\Controllers\JPLimpieza\AdquisicionController;
-use App\Http\Controllers\JPLimpieza\ProyectoController;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\JPLimpieza\ProyectoController;
+use App\Http\Controllers\JPLimpieza\AdquisicionController;
+use App\Http\Controllers\JPLimpieza\ContratistaController;
 
 Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::get('/', function () {
@@ -38,5 +39,9 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/{proyecto}/{tipo_adquisicion}/buscar', [AdquisicionController::class, 'buscar']);
     });
 
-    Route::group(['prefix' => 'contratistas', 'as' => 'contratista.'], function () {});
+    Route::group(['prefix' => 'contratistas/{proyecto}', 'as' => 'contratistas.'], function () {
+        Route::get('/', [ContratistaController::class, 'index'])->name('index');
+        Route::get('/nuevo', [ContratistaController::class, 'create'])->name('create');
+        Route::post('/guardar', [ContratistaController::class, 'store'])->name('store');
+    });
 });

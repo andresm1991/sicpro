@@ -18,7 +18,7 @@
 
                 <div class="col-sm-6">
                     <div class="card image-card" style="width: 18rem;">
-                        <a href="{{ route('jp.limpieza.index') }}">
+                        <a href="{{-- route('jp.limpieza.index') --}}">
                             <img class="card-img-top uniform-image" src="{{ asset('images/logo_limpieza.jpeg') }}"
                                 alt="Card image cap">
                         </a>

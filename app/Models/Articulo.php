@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Articulo extends Model
 {
     use HasFactory;
+    protected $connection = 'mysql';
     protected $table = 'articulos';
 
     protected $fillable = [
@@ -34,7 +35,8 @@ class Articulo extends Model
         return $this->hasMany(DetalleManoObra::class);
     }
 
-    public function contratistas() {
+    public function contratistas()
+    {
         return $this->hasMany(Contratista::class);
     }
 }
