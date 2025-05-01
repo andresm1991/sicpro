@@ -149,7 +149,6 @@ $(function () {
 
     // Capturar el clic en "Registrar Pago"
     $(document).on('click', '.registrar-pago', function () {
-
         let estadoPago = $(this).data('estado');
         let montoProgramado = $(this).data('monto-programado');
         let pago_id = $(this).data('pago');
@@ -164,7 +163,7 @@ $(function () {
         $('input:text[name=monto_programado]').val(montoProgramado);
         $('input:hidden[name=pago_id]').val(pago_id);
         $.ajax({
-            url: '/forma-pago-prestamo',
+            url: base_url + '/forma-pago-prestamo',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             beforeSend: function () {
@@ -183,11 +182,12 @@ $(function () {
 
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
+            console.log(errors)
             // Habilitar el botón y ocultar el spinner
             $button.prop('disabled', false);
             $spinner.addClass('d-none');
             var errors = JSON.parse(jqXHR.responseText);
-            console.log(errors)
+
         });
 
         $('#modalPago').modal({
@@ -215,7 +215,7 @@ $(function () {
         }).then((result) => {
             if (result.value) {
                 $.ajax({
-                    url: '/administrativo/prestamos/posponer-pago',
+                    url: base_url + '/administrativo/prestamos/posponer-pago',
                     headers: { 'X-CSRF-TOKEN': csrf },
                     type: 'POST',
                     data: { 'pago': id },
@@ -266,7 +266,7 @@ $(function () {
         if (!valid) return;
 
         $.ajax({
-            url: '/administrativo/prestamos/pago/' + data.pago_id,
+            url: base_url + '/administrativo/prestamos/pago/' + data.pago_id,
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'PUT',
             data: data,
@@ -339,7 +339,7 @@ $(function () {
         }).then((result) => {
             if (result.value) {
                 $.ajax({
-                    url: '/administrativo/prestamos/recalcular_pagos',
+                    url: base_url + '/administrativo/prestamos/recalcular_pagos',
                     headers: { 'X-CSRF-TOKEN': csrf },
                     type: 'POST',
                     data: { 'prestamo': id },
@@ -373,7 +373,7 @@ $(function () {
         var $value = $(this).val();
 
         $.ajax({
-            url: '/administrativo/prestamos/buscar-prestamo',
+            url: base_url + '/administrativo/prestamos/buscar-prestamo',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'text': $value },
