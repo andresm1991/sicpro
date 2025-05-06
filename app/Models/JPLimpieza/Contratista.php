@@ -13,12 +13,12 @@ class Contratista extends Model
     protected $table = 'contratistas';
 
     protected $fillable = [
+        'numero',
         'proyecto_id',
         'proveedor_id',
         'categoria_id',
         'fecha',
         'plazo',
-        'precio_total',
         'estado_id',
     ];
 
@@ -47,9 +47,16 @@ class Contratista extends Model
         return $this->hasMany(DetalleContratista::class, 'contratista_id');
     }
 
-    public function getPrecioTotalFormattedAttribute()
+    public function getTotalContratadoAttribute()
     {
-        return number_format($this->precio_total, 4);
+        return $this->detalles->sum(function ($detalle) {
+            return $detalle->total_formatted;
+        });
+    }
+
+    public function getTotalContratadoFormattedAttribute()
+    {
+        return number_format($this->total_contratado, 4);
     }
 
     public function getFechaFormateadaAttribute()

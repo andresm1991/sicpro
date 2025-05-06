@@ -37,6 +37,11 @@ class DetalleContratista extends Model
     {
         return $this->belongsTo(CatalogoDato::class, 'unidad_medida_id');
     }
+
+    public function getTotalFormattedAttribute()
+    {
+        return number_format($this->total, 4);
+    }
     public function getPrecioUnitarioFormattedAttribute()
     {
         return number_format($this->precio_unitario, 4);

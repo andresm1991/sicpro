@@ -38,6 +38,7 @@
                 <div class="card-body">
                     @include('partials.alerts')
                     @include('jp_limpieza.contratistas.partials.form')
+                    @include('jp_limpieza.contratistas.partials.items')
                 </div>
             </div>
             {!! Form::close() !!}
