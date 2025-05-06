@@ -899,3 +899,51 @@ function formatearUSD(valor) {
         maximumFractionDigits: 4
     }).format(valor)
 }
+
+
+/**
+ * Validar campos de un formulario
+ * @param {Array} campos - Array de objetos con los selectores y mensajes de error
+ * @returns {boolean} - Retorna true si todos los campos son válidos, false si no
+ */
+function validarCampos(campos) {
+    let isValid = true;
+
+    // Limpiar errores previos
+    $('.error-border').removeClass('error-border');
+    $('.error-message').remove();
+
+    campos.forEach(campo => {
+        const elemento = $(campo.selector);
+        const valor = elemento.val();
+
+        if (campo.selector != '#iva' && (valor === null || valor.trim() === '' || valor === '0')) {
+            isValid = false;
+            // Agregar borde rojo y mensaje de error
+            if (elemento.prop('tagName').toLowerCase() === 'select') {
+                elemento.next('.select2-container').find('.select2-selection').addClass('error-border');
+            } else {
+                elemento.addClass('error-border');
+            }
+
+            elemento.parent().append(`<span class="error-message">${campo.mensaje}</span>`);
+        }
+    });
+
+    return isValid;
+}
+
+/**
+ * Limpiar los campos de un formulario
+ * @param {Array} campos - Array de selectores de los campos a limpiar
+ */
+function limpiarCampos(campos) {
+    campos.forEach(campo => {
+        const elemento = $(campo.selector);
+        if (elemento.prop('tagName').toLowerCase() === 'select') {
+            elemento.val(null).trigger('change');
+        } else {
+            elemento.val('');
+        }
+    });
+}
