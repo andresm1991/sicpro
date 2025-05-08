@@ -286,6 +286,24 @@ if (!function_exists('registrarProducto')) {
         return $forma_pagos;
     }
 
+    function getTipoPagos($isSelected = false)
+    {
+        $tipo_pagos = CatalogoDato::getChildrenCatalogo('metodos.pagos')->pluck('descripcion', 'id');
+        if ($isSelected) {
+            $tipo_pagos->prepend('', '');
+        }
+        return $tipo_pagos;
+    }
+
+    function getEstadosPagos($isSelected = false)
+    {
+        $estados_pagos = CatalogoDato::getChildrenCatalogo('estados.pagos.prestamos')->pluck('descripcion', 'id');
+        if ($isSelected) {
+            $estados_pagos->prepend('', '');
+        }
+        return $estados_pagos;
+    }
+
     function getUnidadMedidas($isSelected = false)
     {
         $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida');

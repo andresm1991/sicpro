@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\JPLimpieza\ProyectoController;
 use App\Http\Controllers\JPLimpieza\AdquisicionController;
 use App\Http\Controllers\JPLimpieza\ContratistaController;
+use App\Http\Controllers\JPLimpieza\PagoContratistaController;
 
 Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::get('/', function () {
@@ -43,5 +44,16 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/', [ContratistaController::class, 'index'])->name('index');
         Route::get('/nuevo', [ContratistaController::class, 'create'])->name('create');
         Route::post('/guardar', [ContratistaController::class, 'store'])->name('store');
+        Route::get('/{contratista}/editar', [ContratistaController::class, 'edit'])->name('edit');
+        Route::put('/{contratista}', [ContratistaController::class, 'update'])->name('update');
+        Route::delete('/{id}', [ContratistaController::class, 'destroy']);
+        Route::get('/buscar', [ContratistaController::class, 'buscar']);
+
+        Route::get('/pagos/{contratista}', [PagoContratistaController::class, 'pagos'])->name('pagos');
+        Route::get('/pagos/{contratista}/nuevo-pago', [PagoContratistaController::class, 'crear'])->name('pagos.create');
+        Route::post('/pagos/{contratista}/guardar-pago', [PagoContratistaController::class, 'store'])->name('pagos.store');
+        Route::get('/pagos/{contratista}/editar-pago/{pago}', [PagoContratistaController::class, 'edit'])->name('pagos.edit');
+        Route::put('/pagos/{contratista}/editar-pago/{pago}', [PagoContratistaController::class, 'update'])->name('pagos.update');
+        Route::delete('/pagos/{contratista}/eliminar-pago/{pago}', [PagoContratistaController::class, 'destroy'])->name('pagos.destroy');
     });
 });

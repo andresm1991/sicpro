@@ -47,6 +47,11 @@ class Contratista extends Model
         return $this->hasMany(DetalleContratista::class, 'contratista_id');
     }
 
+    public function pagosContratista()
+    {
+        return $this->hasMany(PagoContratista::class, 'contratista_id');
+    }
+
     public function getTotalContratadoAttribute()
     {
         return $this->detalles->sum(function ($detalle) {
@@ -54,9 +59,34 @@ class Contratista extends Model
         });
     }
 
+    public function getTotalPagadoAttribute()
+    {
+        $estado = CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado');
+        return $this->pagosContratista->where('estado_id', $estado)->sum(function ($pago) {
+            return $pago->monto;
+        });
+    }
+
+    public function getTotalPendienteAttribute()
+    {
+
+        return $this->total_contratado - $this->total_pagado;
+    }
+
     public function getTotalContratadoFormattedAttribute()
     {
         return number_format($this->total_contratado, 4);
+    }
+
+    public function getTotalPagadoFormattedAttribute()
+    {
+        return number_format($this->total_pagado, 4);
+    }
+
+
+    public function getTotalPendienteFormattedAttribute()
+    {
+        return number_format($this->total_pendiente, 4);
     }
 
     public function getFechaFormateadaAttribute()

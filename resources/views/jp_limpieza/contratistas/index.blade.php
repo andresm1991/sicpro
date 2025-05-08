@@ -56,6 +56,7 @@
                                             <button type="button" class="btn btn-outline-dark" data-container="body"
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
+                                                <a href='{{ route('jp.limpieza.contratistas.pagos', [$proyecto, $contratista->id]) }}' class='dropdown-item'>Pagos</a>
                                                 <a href='' class='dropdown-item'>Editar</a>
                                                 <a href='#' class='dropdown-item eliminar' id='{{ $contratista->id }}'>Eliminar</a>
                                                 <a href='' class='dropdown-item' target='_blank'>Generar PDF</a> ">
