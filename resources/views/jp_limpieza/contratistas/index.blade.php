@@ -21,7 +21,7 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="buscar-adquisicion" id="buscar-adquisicion"
+                                <input type="text" name="buscar-contratista" id="buscar-contratista"
                                     class="form-control form-control-round" placeholder="Buscar....">
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                                 @forelse ($contratistas as $contratista)
                                     <tr id="{{ $contratista->id }}">
                                         <td class="align-middle">{{ $contratista->numero }}</td>
-                                        <td class="align-middle">{{ date('d-m-Y', strtotime($contratista->fecha)) }}</td>
+                                        <td class="align-middle">{{ $contratista->fecha_formateada }}</td>
                                         <td class="align-middle">{{ $contratista->proveedor->razon_social }}</td>
                                         <td class="align-middle">{{ $contratista->categoria->descripcion }}</td>
                                         <td class="align-middle">{{ $contratista->plazo }}</td>
@@ -57,9 +57,8 @@
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
                                                 <a href='{{ route('jp.limpieza.contratistas.pagos', [$proyecto, $contratista->id]) }}' class='dropdown-item'>Pagos</a>
-                                                <a href='' class='dropdown-item'>Editar</a>
-                                                <a href='#' class='dropdown-item eliminar' id='{{ $contratista->id }}'>Eliminar</a>
-                                                <a href='' class='dropdown-item' target='_blank'>Generar PDF</a> ">
+                                                <a href='{{ route('jp.limpieza.contratistas.edit', [$proyecto, $contratista->id]) }}' class='dropdown-item'>Editar</a>
+                                                <a href='#' class='dropdown-item eliminar-contratista' id='{{ $contratista->id }}'>Eliminar</a> ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>
                                         </td>
@@ -84,5 +83,8 @@
 @endsection
 
 @section('scripts')
-
+    <script>
+        var contratistaUrl = "{{ route('jp.limpieza.contratistas.index', $proyecto) }}";
+    </script>
+    <script src="{{ asset('js/jp_limpieza/contratistas.js') }}"></script>
 @endsection

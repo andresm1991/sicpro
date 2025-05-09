@@ -67,6 +67,13 @@ class Contratista extends Model
         });
     }
 
+    public function getTotalPagosRegistradosAttribute()
+    {
+        return $this->pagosContratista->sum(function ($pago) {
+            return $pago->monto;
+        });
+    }
+
     public function getTotalPendienteAttribute()
     {
 
@@ -87,6 +94,11 @@ class Contratista extends Model
     public function getTotalPendienteFormattedAttribute()
     {
         return number_format($this->total_pendiente, 4);
+    }
+
+    public function getTotalPagosRegistradosFormattedAttribute()
+    {
+        return number_format($this->total_pagos_registrados, 4);
     }
 
     public function getFechaFormateadaAttribute()

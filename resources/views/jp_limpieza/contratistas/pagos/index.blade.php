@@ -53,7 +53,8 @@
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
                                                 data-content ="
                                                 <a href='{{ route('jp.limpieza.contratistas.pagos.edit', [$proyecto, $contratista, $pago->id]) }}' class='dropdown-item'>Editar</a>
-                                                <a href='#' class='dropdown-item eliminar' id=''>Eliminar</a> ">
+                                                <a href='javascript:void(0);' class='dropdown-item eliminar-pago' role='button'
+                                                id='{{ $pago->id }}'>Eliminar</a> ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>
                                         </td>
@@ -78,5 +79,8 @@
 @endsection
 
 @section('scripts')
-
+    <script>
+        var contratistaUrl = "{{ route('jp.limpieza.contratistas.pagos', [$proyecto, $contratista]) }}";
+    </script>
+    <script src="{{ asset('js/jp_limpieza/contratistas.js') }}"></script>
 @endsection

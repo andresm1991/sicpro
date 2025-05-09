@@ -58,10 +58,12 @@ class PagoContratistaController extends Controller
         try {
             $infoContratista = Contratista::findOrFail($contratista);
             $monto = str_replace(',', '', $request->monto);
-            $totalPendiente = $infoContratista->total_pendiente;
+            $totalPendiente = $infoContratista->total_pagos_registrados;
 
             if ($monto > $totalPendiente) {
-                return redirect()->back()->with('error', 'El monto del pago no puede ser mayor al saldo pendiente.');
+                return redirect()->back()->with('error', 'El monto del pago no puede ser mayor al total de los pagos registrados.');
+            } elseif ($monto == $totalPendiente && strtolower($request->tipo_pago) == 'avance') {
+                return redirect()->back()->withInput()->with('error', 'El monto del pago es igual al total de pagos registratos, por lo que no se puede registrar como avance.');
             }
 
             DB::beginTransaction();
@@ -75,6 +77,11 @@ class PagoContratistaController extends Controller
                 'observaciones' => $request->detalle,
                 'usuario_id' => auth()->user()->id,
             ]);
+
+            if ($monto == $totalPendiente) {
+                $infoContratista->update(['estado_id' => CatalogoDato::getIdCatalogo('estados.contratistas.completado')]);
+                $infoContratista->save();
+            }
 
             DB::commit();
             return redirect()->route('jp.limpieza.contratistas.pagos', [$proyecto, $contratista])->with('success', 'Pago registrado exitosamente.');
@@ -103,19 +110,19 @@ class PagoContratistaController extends Controller
         return view('jp_limpieza.contratistas.pagos.edit', compact('pago', 'proyecto', 'contratista', 'formaPagos', 'estados', 'breadcrumbs'));
     }
 
-    public function update(PagoContratistaStoreRequest $request, $proyecto, $contratista, PagoContratista $pago)
+    public function update(PagoContratistaStoreRequest $request, $proyecto, Contratista $contratista, PagoContratista $pago)
     {
         try {
             DB::beginTransaction();
             $monto = str_replace(',', '', $request->monto);
-            $totalPendiente = Contratista::findOrFail($contratista)->total_pendiente;
+            $totalPendiente = $contratista->total_pendiente;
 
             // Verificar si el monto del pago es mayor al saldo pendiente
             if ($monto > $totalPendiente) {
                 return redirect()->back()->with('error', 'El monto del pago no puede ser mayor al saldo pendiente.');
             }
 
-            if ($pago->estado_id == CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado')) {
+            if ($pago->estado_id == CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado') && !auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
                 return redirect()->back()->with('error', 'El pago ya fue registrado y no es posible modificarlo.');
             }
 
@@ -128,11 +135,79 @@ class PagoContratistaController extends Controller
                 'observaciones' => $request->detalle,
             ]);
 
+            if ($monto == $totalPendiente) {
+                $contratista->update(['estado_id' => CatalogoDato::getIdCatalogo('estados.contratistas.completado')]);
+                $contratista->save();
+            }
+
             DB::commit();
             return redirect()->route('jp.limpieza.contratistas.pagos', [$proyecto, $contratista])->with('success', 'Pago actualizado exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error al actualizar el pago: ' . $e->getMessage());
+        }
+    }
+
+    public function destroy(Request $request)
+    {
+        try {
+            $pago = PagoContratista::findOrFail($request->pago);
+            DB::beginTransaction();
+            if ($pago->estado_id == CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado')) {
+                return response()->json(['success' => false, 'message' =>  'El pago ya fue registrado y no es posible eliminarlo.']);
+            }
+            $pago->delete();
+            DB::commit();
+            return response()->json(['success' => true, 'message' => 'Pago eliminado exitosamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'Error al eliminar el pago: ' . $e->getMessage()]);
+        }
+    }
+
+    public function buscar(Request $request)
+    {
+        $output = '';
+        $buscar = $request->input('buscar');
+        $formaPagoIds = CatalogoDato::where('descripcion', 'LIKE', "%$buscar%")->pluck('id');
+        $estadosIds = CatalogoDato::where('descripcion', 'LIKE', "%$buscar%")->pluck('id');
+
+        $pagos = PagoContratista::where('contratista_id', $request->contratista)->where(function ($q) use ($buscar, $estadosIds, $formaPagoIds) {
+            $q->where('monto', 'LIKE', "%$buscar%")
+                ->orWhere('fecha', 'LIKE', "%$buscar%")
+                ->orWhere('tipo_pago', 'LIKE', "%$buscar%")
+                ->orWhereIn('estado_id', $estadosIds)
+                ->orWhereIn('forma_pago_id', $formaPagoIds)
+                // Añadir la condición para buscar en el número generado
+                ->orWhereRaw("CONCAT(DATE_FORMAT(fecha, '%Y%m%d'), '-', LPAD(id, 3, '0')) LIKE ?", ["%$buscar%"]);
+        })->get();
+
+        if ($pagos) {
+            foreach ($pagos as $pago) {
+                $editar = " <a href='" . route('jp.limpieza.contratistas.pagos.edit', [$request->proyecto, $request->contratista, $pago->id]) . "' class='dropdown-item'>Editar</a>";
+                $eliminar = "<a href='javascript:void(0);' class='dropdown-item eliminar-pago' role='button' id='" . $pago->id . "'>Eliminar</a>";
+
+                $output .= '<tr id="' . $pago->id . '">';
+                $output .= '<td class="align-middle">' . $pago->numero_formatted . '</td>';
+                $output .= '<td class="align-middle">' . $pago->fecha_formatted . '</td>';
+                $output .= '<td class="align-middle">' . $pago->monto . '</td>';
+                $output .= '<td class="align-middle">' . $pago->tipo_pago . '</td>';
+                $output .= '<td class="align-middle">' . $pago->formaPago->descripcion . '</td>';
+                $output .= '<td class="align-middle">' . $pago->estado->descripcion . '</td>';
+                $output .= '<td class="align-middle text-right text-truncate">';
+                $output .= '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar . $eliminar . '"> <i class="fas fa-caret-left font-weight-normal"></i> Opciones </button>';
+                $output .= '</td>';
+                $output .= '</tr>';
+            }
+
+            if (empty($output)) {
+                $output .= '<tr>' .
+                    '<td colspan="7" class="text-center">' .
+                    '<span class="text-danger">No existen datos para mostrar.</span>' .
+                    '</td>' .
+                    '</tr>';
+            }
+            return Response($output);
         }
     }
 }

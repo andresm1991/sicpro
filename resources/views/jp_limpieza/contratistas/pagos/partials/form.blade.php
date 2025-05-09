@@ -50,7 +50,7 @@
     <div class="col-sm-2">
         <div class="form-group">
             {{ Form::label('', 'Saldo', ['class' => 'col-form-label']) }}
-            {{ Form::text('saldo', $contratista->total_pendiente_formatted, ['class' => 'form-control money', 'id' => 'saldo', 'placeholder' => '$ 0.0000', 'disabled']) }}
+            {{ Form::text('saldo', $contratista->total_pagos_registrados_formatted, ['class' => 'form-control money', 'id' => 'saldo', 'placeholder' => '$ 0.0000', 'disabled']) }}
         </div>
     </div>
 

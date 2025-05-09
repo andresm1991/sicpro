@@ -60,46 +60,39 @@
         <tbody>
             @foreach ($contratista->detalles as $index => $detalle)
                 <tr class="elementos-agregados">
-                    <td>{{ $index + 1 }}</td>
-                    <td>
-                        {{ $detalle->articulo->descripcion }}
-                        <input type="hidden" name="productos[]" value="{{ $detalle->articulo->id }}">
+                    <td class="aling-middle">{{ $index + 1 }}</td>
+                    <td class="aling-middle">
+                        {{ $detalle->producto->nombre }}
                     </td>
-                    <td class="edit-item">
-                        <span>{{ $detalle->cantidad }}</span>
-                        <div class="d-flex align-items-center hidden">
-                            <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
-                                value="{{ $detalle->cantidad }}">
-                            <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                    class="fa-solid fa-check"></i></button>
-                            <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                    class="fa-solid fa-xmark"></i></button>
-                        </div>
+                    <td class="aling-middle">
+                        {{ $detalle->cantidad }}
                     </td>
-                    <td>
-                        <span>{{ $detalle->unidad_medida->descripcion }}</span>
-                        {{ Form::hidden('unidad_medida[]', $detalle->unidad_medida_id) }}
+                    <td class="aling-middle">
+                        {{ $detalle->unidadMedida->descripcion }}
                     </td>
-                    <td class="edit-item">
-                        <span>$ {{ number_format($detalle->valor_unitario, 4) }}</span>
-                        <div class="d-flex align-items-center hidden">
-                            <input type="text" class="form-control mr-2 input-double" name="precio_unitario[]"
-                                value="{{ $detalle->valor_unitario }}">
-                            <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                    class="fa-solid fa-check"></i></button>
-                            <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                    class="fa-solid fa-xmark"></i></button>
-                        </div>
+                    <td class="aling-middle">
+                        $ {{ $detalle->precio_unitario_formatted }}
                     </td>
-                    <td class="total_unitario"><span
-                            class="total">{{ number_format($detalle->valor_unitario * $detalle->cantidad, 4) }}</span>
+                    <td class="aling-middle">
+                        {{ $detalle->iva }}
+                    </td>
+                    <td class="aling-middle total_unitario">
+                        $ {{ $detalle->total_formatted }}
                     </td>
                     <td class="align-middle table-actions">
                         <div class="action-buttons">
                             <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
-                                id=""><i class="fa-solid fa-trash-can"></i></a>
+                                id="">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
                         </div>
                     </td>
+
+                    {{ Form::hidden('producto[' . $index . ']', $detalle->producto_id) }}
+                    {{ Form::hidden('cantidad[' . $index . ']', $detalle->cantidad) }}
+                    {{ Form::hidden('unidad_medida[' . $index . ']', $detalle->unidad_medida_id) }}
+                    {{ Form::hidden('precio[' . $index . ']', $detalle->precio_unitario) }}
+                    {{ Form::hidden('iva[' . $index . ']', $detalle->iva) }}
                 </tr>
             @endforeach
             <tr id="tr-default" style="display:{{ $contratista->detalles->isEmpty() ? '' : 'none' }}">
@@ -117,10 +110,9 @@
     </div>
     <div class="col-1 d-flex justify-content-start">
         <span class="col-form-label" id="total-general"> $
-            {{ $contratista->total_general_formatted ? $contratista->total_general_formatted : '0.0000' }}</span>
+            {{ $contratista->total_contratado_formatted ? $contratista->total_contratado_formatted : '0.0000' }}</span>
     </div>
 </div>
-
 
 @section('scripts')
     <script src="{{ asset('js/jp_limpieza/contratistas.js') }}"></script>
