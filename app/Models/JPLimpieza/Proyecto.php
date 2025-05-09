@@ -29,4 +29,9 @@ class Proyecto extends Model
         'fecha_inicio' => 'date',
         'fecha_finalizacion' => 'date',
     ];
+
+    public function presupuesto()
+    {
+        return $this->hasMany(PresupuestoProyecto::class, 'proyecto_id');
+    }
 }

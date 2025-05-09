@@ -2,10 +2,12 @@
 
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
+use App\Models\JPLimpieza\PresupuestoProyecto;
 use App\Http\Controllers\JPLimpieza\ProyectoController;
 use App\Http\Controllers\JPLimpieza\AdquisicionController;
 use App\Http\Controllers\JPLimpieza\ContratistaController;
 use App\Http\Controllers\JPLimpieza\PagoContratistaController;
+use App\Http\Controllers\JPLimpieza\PresupuestoProyectoController;
 
 Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::get('/', function () {
@@ -56,5 +58,10 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::put('/pagos/{contratista}/editar-pago/{pago}', [PagoContratistaController::class, 'update'])->name('pagos.update');
         Route::delete('/pagos/{contratista}/eliminar-pago/{pago}', [PagoContratistaController::class, 'destroy']);
         Route::get('/pagos/{contratista}/buscar', [PagoContratistaController::class, 'buscar']);
+    });
+
+    /// PRESUPUESTO
+    Route::group(['prefix' => 'presupuesto/{proyecto}', 'as' => 'presupuesto.'], function () {
+        Route::get('/', [PresupuestoProyectoController::class, 'index'])->name('index');
     });
 });

@@ -325,7 +325,8 @@
                                 @endphp
                             @endif
 
-                            <td>{{ $detalle['cargo'] }}</td>
+                            <td>{{ $detalle['cargo'] }}
+                            </td>
                             @foreach ($detalle['dias'] as $dia)
                                 <td>$ {{ number_format($dia, 2) }}</td>
                             @endforeach
@@ -348,7 +349,8 @@
                             @endif
 
                             @if ($isFirstRowForName)
-                                <td rowspan="{{ $rowspan }}">$ {{ number_format($liquidoRecibirTotal, 2) }}</td>
+                                <td rowspan="{{ $rowspan }}">$
+                                    {{ number_format($liquidoRecibirTotal - $pago_prestamo, 2) }}</td>
                             @endif
                             <td>
                                 {{ implode(',', $detalle['observacion']) }}
