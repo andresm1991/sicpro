@@ -23,7 +23,7 @@
                                     </a>
 
 
-                                    <a href="{{ route('pdf.export.presupuesto', $proyecto->id) }}"
+                                    <a href="{{ route('pdf.export.presupuesto', $proyecto['id']) }}"
                                         class="btn btn-secondary btn-sm mr-2" target="_blank">
                                         <i class="fa-light fa-file-export"></i> Exportar a PDF
                                     </a>
@@ -34,7 +34,7 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right  p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto->id }}"
+                                <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto['id'] }}"
                                     class="form-control form-control-round" placeholder="Buscar por categoría o rubro...">
                             </div>
                         </div>
@@ -50,6 +50,7 @@
                                     <th scope="col">Valor unit.</th>
                                     <th scope="col">Sub. Total</th>
                                     <th scope="col">meses</th>
+                                    <th scope="col">total</th>
                                     <th class="table-actions"></th>
                                 </tr>
                             </thead>
@@ -57,66 +58,63 @@
                                 @php
                                     $index = 1;
                                 @endphp
-                                @forelse ($categorias as $categoria)
+                                @forelse ($proyecto['presupuesto_agrupado'] as $presupuesto)
                                     @php
                                         $total_categoria = 0;
                                     @endphp
-                                    <tr id="categoria-{{ $categoria->id }}" data-categoria-id="{{ $categoria->id }}"
-                                        class="fila-categoria" style="background-color: #b6bcdf;">
-                                        <td colspan="6" class="align-middle font-weight-bold filtrable">
-                                            {{ $categoria->nombre }}
+                                    <tr id="categoria-{{ $presupuesto['categoria_id'] }}"
+                                        data-categoria-id="{{ $presupuesto['categoria_id'] }}" class="fila-categoria"
+                                        style="background-color: #b6bcdf;">
+                                        <td colspan="7" class="align-middle font-weight-bold filtrable">
+                                            {{ $presupuesto['categoria_nombre'] }}
                                         </td>
                                         <td class="align-middle">
                                             <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-categoria"
-                                                data-id="{{ $categoria->id }}" data-proyecto_id="{{ $proyecto->id }}">
+                                                data-id="{{ $presupuesto['categoria_id'] }}"
+                                                data-proyecto_id="{{ $proyecto['id'] }}">
                                                 <i class="fa-solid fa-trash-can-xmark"></i>
                                             </a>
                                         </td>
                                     </tr>
-                                    @forelse ($categoria->rubrosPresupuesto as $rubro)
-                                        @php
-                                            $total_categoria += $rubro->presupuestoProyectos->sum(function ($item) {
-                                                return $item->cantidad * $item->valor_unitario;
-                                            });
-                                        @endphp
-
-                                        <tr data-categoria-id="{{ $categoria->id }}" class="fila-rubro">
+                                    @forelse ($presupuesto['rubros'] as $rubro)
+                                        <tr data-categoria-id="{{ $presupuesto['categoria_id'] }}" class="fila-rubro">
                                             <td class="align-middle font-weight-bold">{{ $index }}</td>
-                                            <td class="align-middle filtrable"> {{ $rubro->nombre }}
+                                            <td class="align-middle filtrable"> {{ $rubro['rubro'] }}</td>
+                                            <td class="align-middle">
+                                                {{ $rubro['detalles']['cantidad'] }}
                                             </td>
-                                            <td class="align-middle text-uppercase">
-                                                {{ $rubro->unidad_medida->descripcion }}
+                                            <td class="align-middle">$
+                                                {{ number_format($rubro['detalles']['precio_unitario'], 4) }}</td>
+                                            <td class="align-middle">
+                                                $
+                                                {{ number_format($rubro['detalles']['subtotal'], 4) }}
                                             </td>
-                                            @foreach ($rubro->presupuestoProyectos as $presupuestoProyecto)
-                                                <td class="align-middle">
-                                                    {{ $presupuestoProyecto->cantidad }}
-                                                </td>
-                                                <td class="align-middle">$ {{ $presupuestoProyecto->valor_unitario }}</td>
-                                                <td class="align-middle">
-                                                    $
-                                                    {{ number_format($presupuestoProyecto->cantidad * $presupuestoProyecto->valor_unitario, 2) }}
-                                                </td>
+                                            <td class="align-middle">
+                                                {{ $rubro['detalles']['meses'] }}
+                                            </td>
+
+                                            <td class="align-middle">
+                                                $
+                                                {{ number_format($rubro['detalles']['total_sin_iva'], 4) }}
+                                            </td>
 
 
-                                                <td class="align-middle table-actions">
-                                                    <a href="javascript:void(0);"
-                                                        class="btn btn-sm btn-secondary editar-rubro" data-toggle="modal"
-                                                        data-backdrop="static" data-keyboard="false"
-                                                        data-target="#modalRubrosPresupuesto"
-                                                        id="{{ $presupuestoProyecto->id }}"
-                                                        data-categoria_id="{{ $categoria->id }}"
-                                                        data-unidad_medida_id = "{{ $rubro->unidad_medida_id }}"
-                                                        data-etapa_id="{{ $rubro->etapa_id }}"
-                                                        data-cantidad = "{{ $presupuestoProyecto->cantidad }}"
-                                                        data-valor_unitario = "{{ $presupuestoProyecto->valor_unitario }}">
-                                                        <i class="fa-regular fa-pen-to-square"></i>
-                                                    </a>
-                                                    <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
-                                                        data-id="{{ $presupuestoProyecto->id }}">
-                                                        <i class="fa-regular fa-xmark"></i>
-                                                    </a>
-                                                </td>
-                                            @endforeach
+                                            <td class="align-middle table-actions">
+                                                <a href="javascript:void(0);" class="btn btn-sm btn-secondary editar-rubro"
+                                                    data-toggle="modal" data-backdrop="static" data-keyboard="false"
+                                                    data-target="#modalRubrosPresupuesto"
+                                                    id="{{ $rubro['detalles']['id'] }}"
+                                                    data-categoria_id="{{ $presupuesto['categoria_id'] }}"
+                                                    data-cantidad = "{{ $rubro['detalles']['cantidad'] }}"
+                                                    data-valor_unitario = "{{ $rubro['detalles']['precio_unitario'] }}"
+                                                    data-meses = "{{ $rubro['detalles']['meses'] }}">
+                                                    <i class="fa-regular fa-pen-to-square"></i>
+                                                </a>
+                                                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
+                                                    data-id="{{ $rubro['detalles']['id'] }}">
+                                                    <i class="fa-regular fa-xmark"></i>
+                                                </a>
+                                            </td>
                                         </tr>
                                         @php
                                             $index += 1;
@@ -124,23 +122,24 @@
                                     @empty
                                     @endforelse
                                     <tr style="background-color: #d7ecdc;" class="fila-total">
-                                        <td colspan="5" class="font-weight-bold">
+                                        <td colspan="6" class="font-weight-bold">
                                             Total General
                                         </td>
                                         <td colspan="2" class="font-weight-bold">
-                                            $ {{ number_format($total_categoria, 2) }}</td>
+                                            $ {{ number_format($proyecto['totales']['subtotal'], 4) }}</td>
                                     </tr>
                                     <tr>
-                                        <td colspan="7"></td>
+                                        <td colspan="8"></td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center text-danger">
+                                        <td colspan="8" class="text-center text-danger">
                                             No se encontraron datos para mostrar....
                                         </td>
                                     </tr>
                                 @endforelse
                             </tbody>
+                            {{-- 
                             <tfoot>
                                 @php
                                     $costos_directos = $categorias->sum(function ($item) {
@@ -206,33 +205,20 @@
                                     </td>
                                 </tr>
                             </tfoot>
+                             --}}
                         </table>
                     </div>
-
-                    <ul class="list-group list-group-flush mt-0 border-0">
-                        <li class="list-group-item p-1 border-0">
-                            <small>Para cambiar el % del <strong>COSTO INDIRECTO</strong> haz click sobre la fila y te
-                                mostrar una pantalla donde debes ingresar el nuevo valor. </small>
-                        </li>
-                        <li class="list-group-item p-1 border-0">
-                            <small>El valor del <strong class="text-uppercase">saldo</strong> es el calculo entre <strong
-                                    class="text-uppercase">costos directos</strong> menos el total de los
-                                <b class="text-uppercase">gastos</b> </small>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>
     </section>
 
-    @include('modals.rubros_presupuesto_modal', [
-        'unidades_medidas' => $unidades_medidas,
-        'categorias_presupuesto' => $categorias_presupuesto,
-        'etapas_construccion' => $etapas_construccion,
-    ])
-
+    @include('jp_limpieza.presupuesto.agregar_rubro_modal')
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/presupuesto_scripts.js') }}" type="module"></script>
+    <script>
+        var presupuestoUrl = "{{ route('jp.limpieza.presupuesto.index', $proyecto['id']) }}";
+    </script>
+    <script src="{{ asset('js/jp_limpieza/presupuesto.js') }}" type="module"></script>
 @endsection

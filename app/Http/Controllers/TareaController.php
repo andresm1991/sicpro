@@ -111,7 +111,7 @@ class TareaController extends Controller
                 $tarea->titulo = $request->titulo;
                 $tarea->descripcion = $request->descripcion;
 
-                if ($tarea->categoria_id != $request->categoria_tarea) {
+                if (isset($request->categoria_tarea) && $tarea->categoria_id != $request->categoria_tarea) {
                     $tarea->categoria_id = is_numeric($request->categoria_tarea) ? $request->categoria_tarea : newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda');
                 }
 

@@ -11,6 +11,7 @@ use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DetalleResumenPagoSemanal;
+use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\DetalleAdquisicion;
 use App\Models\JPLimpieza\Producto;
 use App\Models\Proveedor;
@@ -662,5 +663,12 @@ if (!function_exists('palabras')) {
         ]);
 
         return $nuevoProducto->id;
+    }
+
+    function getCategoriasPresupuesto()
+    {
+        $categorias = CategoriaPresupuesto::where('activo', true)->pluck('nombre', 'id');
+        $categorias->prepend('', '');
+        return $categorias;
     }
 }
