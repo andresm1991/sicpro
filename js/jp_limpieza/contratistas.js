@@ -173,5 +173,160 @@ $(function () {
         }
     });
 
+    // Evento eliminar contratista
+    $(document).on('click', '.eliminar-contratista', function () {
+        let id = $(this).attr('id');
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: contratistaUrl + '/eliminar-contratista/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("table #" + id).remove();
+
+                            if ($('table tbody').children().length == 0) {
+                                $('table tbody').html('<tr>' +
+                                    '<td colspan = "9" class="text-center text-danger">No se encontraron datos para mostrar.</td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+
+
+
+    // Evento eliminar pago
+    $(document).on('click', '.eliminar-pago', function () {
+        let pagoId = $(this).attr('id');
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: contratistaUrl + '/eliminar-pago/' + pagoId,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("table #" + pagoId).remove();
+
+                            if ($('table tbody').children().length == 0) {
+                                $('table tbody').html('<tr>' +
+                                    '<td colspan = "7" class="text-center text-danger">No se encontraron datos para mostrar.</td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+
+    // Evento buscar contratista
+    $('#buscar-contratista').on('keyup', function () {
+        var $value = $(this).val();
+
+        $.ajax({
+            url: contratistaUrl + '/buscar',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'buscar': $value },
+            success: function (data) {
+                $('tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error en la solicitud AJAX:", error);
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
+
+    // Evento buscar pago
+    $('#buscar-pagos').on('keyup', function () {
+        var $value = $(this).val();
+
+        $.ajax({
+            url: contratistaUrl + '/buscar',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'buscar': $value },
+            success: function (data) {
+                $('tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            error: function (xhr, status, error) {
+                console.error("Error en la solicitud AJAX:", error);
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
 
 });
