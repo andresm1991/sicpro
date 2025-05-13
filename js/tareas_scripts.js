@@ -117,6 +117,7 @@ $(function () {
         let titulo = $(this).data('titulo');
         let descripcion = $(this).data('descripcion');
         let tarea = $(this).attr('id');
+        let colaboradores = $(this).data('colaboradores');
         estadoActual = $(this).data('estado');
 
         const $textarea = $('#descripcion');
@@ -130,6 +131,7 @@ $(function () {
         $('#titleComentarioModal').val(titulo);
         $('input:hidden[name=tarea_id]').val(tarea);
         $('select[name=estado]').val(estadoActual).trigger('change');
+        $('#list_usuarios').val(colaboradores).trigger('change');
 
         // Mostrar el modal
         $('#comentarioTareaModal').modal({

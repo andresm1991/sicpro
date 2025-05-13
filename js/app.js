@@ -398,9 +398,7 @@ $(function () {
         allowMinus: false,      // No permitir números negativos
         digits: 0,              // No permitir decimales
         min: 0,                 // Valor mínimo (0 o positivo)
-        max: undefined,         // Puedes establecer un valor máximo si lo deseas
-        integerDigits: undefined, // Número máximo de dígitos permitidos en el entero (opcional)
-        placeholder: "",         // Dejar vacío el placeholder si lo deseas
+        placeholder: $('.input-double').data('placeholder'),         // Dejar vacío el placeholder si lo deseas
         autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
     });
 

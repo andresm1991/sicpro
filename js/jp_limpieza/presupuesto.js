@@ -4,6 +4,11 @@ $(function () {
 
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
+    // Función para formatear el precio (ejemplo: "1,500.50" → 1500.50)
+    function parsePrecio(texto) {
+        return parseFloat(texto.replace(/[^\d.-]/g, '')) || 0;
+    }
+
     $('.select2-basic-single').select2({
         width: '100%',
         dropdownParent: $('#modalRubrosPresupuesto'),
@@ -40,6 +45,10 @@ $(function () {
         });
     });
 
+    $('#modalRubrosPresupuesto').on('hidden.bs.modal', function (e) {
+        location.reload();
+    });
+
     //** Cargar la categoria del rubro selecionado */
     $('#categoria').on('change', function (e) {
         // Remueve la clase 'error-border' del contenedor generado por select2
@@ -56,6 +65,11 @@ $(function () {
             $('input[name=valor]').val(0);
             return;
         }
+        // 1. Obtener el option seleccionado
+        const selectedOption = $(this).find('option:selected');
+        // 2. Acceder a data-detalle
+        const detalle = selectedOption.data('detalle'); // o .attr('data-detalle')
+        $('#detalle').val(detalle);
 
         $.ajax({
             url: presupuestoUrl + '/rubros-presupuesto',
@@ -68,9 +82,7 @@ $(function () {
                 console.log(response)
                 // Itera sobre los artículos y crea nuevas opciones
                 $.each(response.rubros, function (index, rubro) {
-                    let option = new Option(rubro.nombre, rubro.id, false, false);
-                    $(option).attr({ 'data-precio': rubro.precio_unitario });
-
+                    let option = new Option(rubro.descripcion, rubro.id, false, false);
                     $select.append(option); // Añade la opción al select
 
                 });
@@ -104,13 +116,26 @@ $(function () {
         $('#total').text(total.toFixed(4)); // Formatea a 2 decimales
     });
 
+    // Evento para inputs de cantidad, precio_unitario y meses
+    $('body').on('keyup', '.cantidad, .precio_unitario, .meses', function () {
+        let id = $(this).data('id'); // ID del hijo (ejemplo: 2 para "Auxiliares")
+        let cantidad = parseFloat($('.cantidad[data-id="' + id + '"]').val()) || 0;
+        let precioTexto = $('.precio_unitario[data-id="' + id + '"]').val();
+        let precio = parsePrecio(precioTexto);
+        let meses = parseFloat($('.meses[data-id="' + id + '"]').val()) || 0;
+        let subtotal = cantidad * precio;
+        let total = cantidad * precio * meses;
+
+        // Actualizar el campo "subtotal" de la fila correspondiente
+        $('.subtotal[data-id="' + id + '"]').text('$' + subtotal.toFixed(4));
+        // Actualizar el campo "total" de la fila correspondiente
+        $('.total[data-id="' + id + '"]').text('$' + total.toFixed(4));
+    });
+
     /// Agregar rubro
     $('#agergar-rubro').on('click', function () {
         var form = $("#form_rubros_presupuesto");
         var data = getFormData(form);
-        var endPoint = 'guardar-rubro';
-        var type = 'POST';
-        var edit = $('input[name=rubro_presupuesto_id]').val();
 
         const camposAValidar = [
             { selector: '#categoria', mensaje: 'Seleccione el categoria.' },
@@ -125,15 +150,10 @@ $(function () {
             return; // Detener si hay errores
         }
 
-        if (edit != '') {
-            endPoint = 'actualizar-rubro/' + edit;
-            type = 'PUT';
-        }
-
         $.ajax({
             headers: { 'X-CSRF-TOKEN': csrf },
-            url: presupuestoUrl + '/' + endPoint,  // URL a donde se envía la petición
-            type: type,                   // Método HTTP (GET, POST, PUT, DELETE, etc.)
+            url: presupuestoUrl + '/guardar-rubro',
+            type: 'POST',
             data: data,
             beforeSend: function () {       // Función que se ejecuta antes de enviar (opcional)
                 $('#modal-overlay').show();
@@ -144,9 +164,7 @@ $(function () {
                     '<h5><i class="icon fas fa-' + (response.success ? 'check' : 'ban') + '"></i> ' + response.mensaje + '</h5>' +
                     '</div>');
 
-                if (edit != '') {
-                    limpiarFormulario(form);
-                }
+                limpiarFormulario(form);
                 $('[data-toggle="tooltip"]').tooltip();
                 $('[data-toggle="popover"]').popover({ html: true });
             },
