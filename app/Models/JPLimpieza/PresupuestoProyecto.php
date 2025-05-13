@@ -11,7 +11,7 @@ class PresupuestoProyecto extends Model
 
     protected $fillable = [
         'proyecto_id',
-        'rubro_presupuesto_id',
+        'plantilla_id',
         'cantidad',
         'precio_unitario',
         'iva',
@@ -27,8 +27,9 @@ class PresupuestoProyecto extends Model
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
     }
-    public function rubroPresupuesto()
+
+    public function plantilla()
     {
-        return $this->belongsTo(RubroPresupuesto::class, 'rubro_presupuesto_id');
+        return $this->belongsTo(PlantillaPresupuesto::class, 'plantilla_id');
     }
 }

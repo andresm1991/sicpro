@@ -6,10 +6,16 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="">
+            @include('partials.alerts')
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <h4 class="mt-2 font-weight-bold">Presupuesto</h4>
+                        <div class="row d-flex justify-content-center align-items-center">
+                            <h4 class="col ">PRESUPUESTO</h4>
+                            <div class="col text-right">
+                                <button class="btn btn-dark btn-options" form="form_presupuesto">Guardar</button>
+                            </div>
+                        </div>
                     </li>
                 </ul>
                 <div class="card-body ">
@@ -23,8 +29,7 @@
                                     </a>
 
 
-                                    <a href="{{ route('pdf.export.presupuesto', $proyecto['id']) }}"
-                                        class="btn btn-secondary btn-sm mr-2" target="_blank">
+                                    <a href="" class="btn btn-secondary btn-sm mr-2" target="_blank">
                                         <i class="fa-light fa-file-export"></i> Exportar a PDF
                                     </a>
                                 </div>
@@ -34,13 +39,20 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right  p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="rubros_search" data-proyecto_id="{{ $proyecto['id'] }}"
+                                <input type="text" name="rubros_search" data-proyecto_id=""
                                     class="form-control form-control-round" placeholder="Buscar por categoría o rubro...">
                             </div>
                         </div>
                     </div>
 
-                    <div class="table-responsive">
+                    {{ Form::open([
+                        'route' => ['jp.limpieza.presupuesto.store', $proyecto->id],
+                        'class' => 'form-horizontal',
+                        'autocomplete' => 'off',
+                        'enctype' => 'multipart/form-data',
+                        'id' => 'form_presupuesto',
+                    ]) }}
+                    <div class="table-responsive fixed-header">
                         <table class="table table-bordered table-hover" id="table-rubros-presupuesto">
                             <thead>
                                 <tr>
@@ -51,69 +63,48 @@
                                     <th scope="col">Sub. Total</th>
                                     <th scope="col">meses</th>
                                     <th scope="col">total</th>
-                                    <th class="table-actions"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @php
                                     $index = 1;
                                 @endphp
-                                @forelse ($proyecto['presupuesto_agrupado'] as $presupuesto)
-                                    @php
-                                        $total_categoria = 0;
-                                    @endphp
-                                    <tr id="categoria-{{ $presupuesto['categoria_id'] }}"
-                                        data-categoria-id="{{ $presupuesto['categoria_id'] }}" class="fila-categoria"
+                                @forelse ($categorias as $categoria)
+                                    <tr class="categoria-padre" data-id="{{ $categoria->id }}"
                                         style="background-color: #b6bcdf;">
                                         <td colspan="7" class="align-middle font-weight-bold filtrable">
-                                            {{ $presupuesto['categoria_nombre'] }}
-                                        </td>
-                                        <td class="align-middle">
-                                            <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-categoria"
-                                                data-id="{{ $presupuesto['categoria_id'] }}"
-                                                data-proyecto_id="{{ $proyecto['id'] }}">
-                                                <i class="fa-solid fa-trash-can-xmark"></i>
-                                            </a>
+                                            {{ $categoria->descripcion . ' ' . $categoria->detalle }}
                                         </td>
                                     </tr>
-                                    @forelse ($presupuesto['rubros'] as $rubro)
-                                        <tr data-categoria-id="{{ $presupuesto['categoria_id'] }}" class="fila-rubro">
+                                    @forelse ($categoria->hijos as $hijo)
+                                        <tr class="categoria-hijo" data-id="{{ $hijo->id }}"
+                                            data-padre-id="{{ $categoria->id }}">
                                             <td class="align-middle font-weight-bold">{{ $index }}</td>
-                                            <td class="align-middle filtrable"> {{ $rubro['rubro'] }}</td>
+                                            <td class="align-middle filtrable"> {{ $hijo->descripcion }}</td>
                                             <td class="align-middle">
-                                                {{ $rubro['detalles']['cantidad'] }}
+                                                {{ Form::text('presupuesto[' . $hijo->id . '][cantidad]', old('cantidad', $hijo->presupuestoProyecto->cantidad ?? 0), ['class' => 'form-control form-control-sm col-auto input-double cantidad', 'data-id' => $hijo->id]) }}
+
                                             </td>
-                                            <td class="align-middle">$
-                                                {{ number_format($rubro['detalles']['precio_unitario'], 4) }}</td>
                                             <td class="align-middle">
+                                                {{ Form::text('presupuesto[' . $hijo->id . '][precio_unitario]', old('precio_unitario', $hijo->presupuestoProyecto->precio_unitario ?? 0), ['class' => 'form-control form-control-sm col-auto money precio_unitario', 'data-id' => $hijo->id]) }}
+                                            </td>
+                                            <td class="align-middle subtotal" data-id="{{ $hijo->id }}">
                                                 $
-                                                {{ number_format($rubro['detalles']['subtotal'], 4) }}
+                                                {{ number_format(
+                                                    ($hijo->presupuestoProyecto->cantidad ?? 1) * ($hijo->presupuestoProyecto->precio_unitario ?? 0),
+                                                    4,
+                                                ) }}
                                             </td>
                                             <td class="align-middle">
-                                                {{ $rubro['detalles']['meses'] }}
+                                                {{ Form::text('presupuesto[' . $hijo->id . '][meses]', old('meses', $hijo->presupuestoProyecto->meses ?? 0), ['class' => 'form-control form-control-sm col-auto input-enteros meses', 'data-id' => $hijo->id]) }}
                                             </td>
-
-                                            <td class="align-middle">
-                                                $
-                                                {{ number_format($rubro['detalles']['total_sin_iva'], 4) }}
-                                            </td>
-
-
-                                            <td class="align-middle table-actions">
-                                                <a href="javascript:void(0);" class="btn btn-sm btn-secondary editar-rubro"
-                                                    data-toggle="modal" data-backdrop="static" data-keyboard="false"
-                                                    data-target="#modalRubrosPresupuesto"
-                                                    id="{{ $rubro['detalles']['id'] }}"
-                                                    data-categoria_id="{{ $presupuesto['categoria_id'] }}"
-                                                    data-cantidad = "{{ $rubro['detalles']['cantidad'] }}"
-                                                    data-valor_unitario = "{{ $rubro['detalles']['precio_unitario'] }}"
-                                                    data-meses = "{{ $rubro['detalles']['meses'] }}">
-                                                    <i class="fa-regular fa-pen-to-square"></i>
-                                                </a>
-                                                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-rubro"
-                                                    data-id="{{ $rubro['detalles']['id'] }}">
-                                                    <i class="fa-regular fa-xmark"></i>
-                                                </a>
+                                            <td class="align-middle total" data-id="{{ $hijo->id }}">
+                                                ${{ number_format(
+                                                    ($hijo->presupuestoProyecto->cantidad ?? 0) *
+                                                        ($hijo->presupuestoProyecto->precio_unitario ?? 0) *
+                                                        ($hijo->presupuestoProyecto->meses ?? 0),
+                                                    4,
+                                                ) }}
                                             </td>
                                         </tr>
                                         @php
@@ -126,7 +117,8 @@
                                             Total General
                                         </td>
                                         <td colspan="2" class="font-weight-bold">
-                                            $ {{ number_format($proyecto['totales']['subtotal'], 4) }}</td>
+                                            {{ $categoria->total_categoria_formatted }}
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td colspan="8"></td>
@@ -208,6 +200,7 @@
                              --}}
                         </table>
                     </div>
+                    {{ Form::close() }}
                 </div>
             </div>
         </div>
@@ -218,7 +211,7 @@
 
 @section('scripts')
     <script>
-        var presupuestoUrl = "{{ route('jp.limpieza.presupuesto.index', $proyecto['id']) }}";
+        var presupuestoUrl = "{{ route('jp.limpieza.presupuesto.index', $proyecto->id) }}";
     </script>
     <script src="{{ asset('js/jp_limpieza/presupuesto.js') }}" type="module"></script>
 @endsection

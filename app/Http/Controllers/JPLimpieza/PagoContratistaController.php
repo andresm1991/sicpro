@@ -58,12 +58,12 @@ class PagoContratistaController extends Controller
         try {
             $infoContratista = Contratista::findOrFail($contratista);
             $monto = str_replace(',', '', $request->monto);
-            $totalPendiente = $infoContratista->total_pagos_registrados;
+            $totalPendiente = $infoContratista->total_pagos;
 
             if ($monto > $totalPendiente) {
                 return redirect()->back()->with('error', 'El monto del pago no puede ser mayor al total de los pagos registrados.');
             } elseif ($monto == $totalPendiente && strtolower($request->tipo_pago) == 'avance') {
-                return redirect()->back()->withInput()->with('error', 'El monto del pago es igual al total de pagos registratos, por lo que no se puede registrar como avance.');
+                return redirect()->back()->withInput()->with('error', 'El monto del pago es igual al total del saldo pendiente, por lo que no se puede registrar como avance.');
             }
 
             DB::beginTransaction();
@@ -115,11 +115,13 @@ class PagoContratistaController extends Controller
         try {
             DB::beginTransaction();
             $monto = str_replace(',', '', $request->monto);
-            $totalPendiente = $contratista->total_pendiente;
+            $totalPendiente = $contratista->total_pagos;
 
             // Verificar si el monto del pago es mayor al saldo pendiente
             if ($monto > $totalPendiente) {
                 return redirect()->back()->with('error', 'El monto del pago no puede ser mayor al saldo pendiente.');
+            } elseif ($monto == $totalPendiente && strtolower($request->tipo_pago) == 'avance') {
+                return redirect()->back()->withInput()->with('error', 'El monto del pago es igual al total del saldo pendiente, por lo que no se puede registrar como avance.');
             }
 
             if ($pago->estado_id == CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado') && !auth()->user()->hasRole(['Administrador', 'Gerencial'])) {

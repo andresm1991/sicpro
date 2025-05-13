@@ -49,7 +49,7 @@
 
                         <div class="col-12 form-group">
                             {{ Form::label('', 'Colaboradores', ['class' => 'col-form-label']) }}
-                            {{ Form::select('list_usuarios[]', usuariosPluck(), 0, ['class' => 'select2-basic-single form-control', 'id' => 'list_usuarios', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE USUARIOS']) }}
+                            {{ Form::select('list_usuarios[]', usuariosPluck(true), 0, ['class' => 'select2-basic-single form-control', 'id' => 'list_usuarios', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE USUARIOS']) }}
                         </div>
 
                         @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial'))

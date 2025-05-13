@@ -65,5 +65,6 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/', [PresupuestoProyectoController::class, 'index'])->name('index');
         Route::get('/rubros-presupuesto', [PresupuestoProyectoController::class, 'ajaxRubros']);
         Route::post('/guardar-rubro', [PresupuestoProyectoController::class, 'AjaxStoreRubro']);
+        Route::post('/guadar-presupuesto', [PresupuestoProyectoController::class, 'store'])->name('store');
     });
 });

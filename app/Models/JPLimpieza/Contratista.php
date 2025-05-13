@@ -74,6 +74,15 @@ class Contratista extends Model
         });
     }
 
+    /** Function que obtiene el total de los pagos registrados calculando el 
+     * getTotalContratadoAttribute() - getTotalPagosRegistradosAttribute()
+     */
+
+    public function getTotalPagosAttribute()
+    {
+        return $this->total_contratado - $this->total_pagos_registrados;
+    }
+
     public function getTotalPendienteAttribute()
     {
 
@@ -98,7 +107,7 @@ class Contratista extends Model
 
     public function getTotalPagosRegistradosFormattedAttribute()
     {
-        return number_format($this->total_pagos_registrados, 4);
+        return number_format($this->total_pagos, 4);
     }
 
     public function getFechaFormateadaAttribute()

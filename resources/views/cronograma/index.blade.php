@@ -92,6 +92,7 @@
                                         <th class="text-center">etapa ESTRUCTURAl</th>
                                         <th class="text-center">Etapa OBRA GRIS</th>
                                         <th class="text-center">ETAPA DE ACABADOS</th>
+                                        <th class="text-center">TOTALES</th>
                                     </tr>
 
                                     <tr>
@@ -104,6 +105,10 @@
                                         </td>
                                         <td class="text-center">
                                             $ {{ number_format($total_acabados, 4) }}
+                                        </td>
+                                        <td class="text-center">
+                                            $
+                                            {{ number_format($total, 4) }}
                                         </td>
                                     </tr>
                                     {{-- totales adquisisicones, mano de obra, contratista --}}
@@ -118,10 +123,16 @@
                                         <td class="aling-middle text-center">
                                             $ {{ number_format($totales_acabados['total_general'], 4) }}
                                         </td>
+                                        <td class="aling-middle text-center">
+                                            $
+                                            {{ number_format($totales_acabados['total_general'] + $totales_obra_gris['total_general'] + $totales_estructural['total_general'], 4) }}
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="4" class="text-center">
-                                            $ {{ number_format($total, 4) }}
+                                        <th>PENDIENTE DE ejeCUCIÓN</th>
+                                        <td colspan="5" class="text-center">
+                                            $
+                                            {{ number_format($total - ($totales_acabados['total_general'] + $totales_obra_gris['total_general'] + $totales_estructural['total_general']), 4) }}
                                         </td>
                                     </tr>
 

@@ -96,6 +96,8 @@ class TareaController extends Controller
                 $usuarios_a_eliminar = array_diff($usuarios_tarea_actuales, $usuarioIds);
                 $usuarios_a_agregar = array_diff($usuarioIds, $usuarios_tarea_actuales);
 
+                //return ['usuarios_tarea_actuales' => $usuarios_tarea_actuales, 'usuarios_a_eliminar' => $usuarios_a_eliminar, 'usuarios_a_agregar' => $usuarios_a_agregar];
+
                 foreach ($usuarios_a_eliminar as $usuario) {
                     UsuarioTarea::where('tarea_id', $request->tarea_id)->where('usuario_id', $usuario)->delete();
                 }

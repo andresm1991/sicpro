@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::connection('mysql_jp_limpieza')->create('presupuesto_proyecto', function (Blueprint $table) {
             $table->id();
             $table->foreignId('proyecto_id')->constrained('proyectos')->onDelete('cascade');
-            $table->foreignId('rubro_presupuesto_id')->constrained('rubros_presupuesto')->onDelete('cascade');
+            $table->foreignId('plantilla_id')->constrained('plantilla_presupuesto')->onDelete('cascade');
             $table->double('cantidad');
             $table->decimal('precio_unitario', 14, 4)->nullable();
             $table->smallInteger('iva')->nullable();

@@ -84,14 +84,18 @@
                                                     class="text-decoration-none text-dark agregar-comentario"
                                                     id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
                                                     data-descripcion="{{ $task->descripcion }}"
-                                                    data-estado = "{{ $task->estado_id }}">
+                                                    data-estado = "{{ $task->estado_id }}"
+                                                    data-colaboradores="{{ $task->usuario_tareas->pluck('id') }}">
                                                     <div class="d-flex w-100 justify-content-between">
                                                         <h5 class="mb-1">{{ $task->titulo }}</h5>
-                                                        <small class="text-muted">{{ $task->created_at_formateado }}</small>
+                                                        <small
+                                                            class="text-muted">{{ $task->created_at_formateado }}</small>
                                                     </div>
                                                     <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
 
                                                 </a>
+                                                <p class="card-text"><small class="text-primary">Creado por:
+                                                        {{ $task->usuario->nombre }} </small></p>
                                                 <button type="button" class="btn btn-sm btn-danger eliminar-tarea"
                                                     id="{{ $task->id }}">Eliminar</button>
                                             </div>
@@ -118,12 +122,15 @@
                                                 class="list-group-item list-group-item-action agregar-comentario"
                                                 id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
                                                 data-descripcion="{{ $task->descripcion }}"
-                                                data-estado = "{{ $task->estado_id }}">
+                                                data-estado = "{{ $task->estado_id }}"
+                                                data-colaboradores="{{ $task->usuario_tareas->pluck('id') }}">
                                                 <div class="d-flex w-100 justify-content-between">
                                                     <h5 class="mb-1">{{ $task->titulo }}</h5>
                                                     <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                                 </div>
                                                 <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                                <p class="card-text"><small class="text-primary">Creado por:
+                                                        {{ $task->usuario->nombre }} </small></p>
                                                 <button type="button" href="javascripts:void(0);" id="{{ $task->id }}"
                                                     class="btn btn-sm btn-danger eliminar-tarea">Eliminar</button>
                                             </a>
@@ -149,12 +156,15 @@
                                                 class="list-group-item list-group-item-action agregar-comentario"
                                                 id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
                                                 data-descripcion="{{ $task->descripcion }}"
-                                                data-estado = "{{ $task->estado_id }}">
+                                                data-estado = "{{ $task->estado_id }}"
+                                                data-colaboradores="{{ $task->usuario_tareas->pluck('id') }}">
                                                 <div class="d-flex w-100 justify-content-between">
                                                     <h5 class="mb-1">{{ $task->titulo }}</h5>
                                                     <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                                 </div>
                                                 <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                                <p class="card-text"><small class="text-primary">Creado por:
+                                                        {{ $task->usuario->nombre }} </small></p>
                                                 <button type="button" href="javascripts:void(0);"
                                                     id="{{ $task->id }}"
                                                     class="btn btn-sm btn-danger eliminar-tarea">Eliminar</button>

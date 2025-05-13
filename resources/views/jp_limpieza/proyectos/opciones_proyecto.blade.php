@@ -21,7 +21,7 @@
                     </a>
                 </div>
                 <div class="col-sm-3 col-12">
-                    <a href="" class="nodo">
+                    <a href="{{ route('jp.limpieza.presupuesto.index', $proyecto->id) }}" class="nodo">
                         <img src="{{ asset('images/icons/presupuesto.png') }}" alt="">
                         <span>Presupuesto</span>
                     </a>

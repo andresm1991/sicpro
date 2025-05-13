@@ -18,15 +18,29 @@
             </div>
             <div class="modal-body">
                 <form autocomplete = "off" enctype = "multipart/form-data" id = "form_rubros_presupuesto">
-                    {{ Form::hidden('rubro_presupuesto_id') }}
                     <div class="row">
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Categoría', ['class' => 'col-form-label']) }}
-                                {{ Form::select('categoria', getCategoriasPresupuesto(), '', ['class' => 'form-control select2-tag', 'id' => 'categoria', 'data-placeholder' => 'seleccione opción']) }}
+                                <select name="categoria" class="form-control select2-tag" id="categoria"
+                                    data-placeholder="seleccione opción">
+                                    <option value=""></option>
+                                    @foreach (getCategoriasPresupuesto() as $item)
+                                        <option value="{{ $item->id }}" data-detalle="{{ $item->detalle }}">
+                                            {{ $item->descripcion }}</option>
+                                    @endforeach
+                                </select>
 
                             </div>
                         </div>
+
+                        <div class="col-md-6 col-12">
+                            <div class="form-group">
+                                {{ Form::label('', 'detalle', ['class' => 'col-form-label']) }}
+                                {{ Form::text('detalle', '', ['class' => 'form-control', 'id' => 'detalle', 'placeholder' => 'detalle']) }}
+                            </div>
+                        </div>
+
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'Rubro', ['class' => 'col-form-label']) }}

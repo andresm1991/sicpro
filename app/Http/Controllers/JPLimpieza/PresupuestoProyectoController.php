@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\JPLimpieza;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\JPLimpieza\Proyecto;
@@ -9,27 +10,81 @@ use App\Http\Controllers\Controller;
 use App\Models\JPLimpieza\RubroPresupuesto;
 use App\Models\JPLimpieza\PresupuestoProyecto;
 use App\Models\JPLimpieza\CategoriaPresupuesto;
+use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Http\Resources\JPLimpieza\PresupuestoResource;
 
 class PresupuestoProyectoController extends Controller
 {
     public function index(Request $request)
     {
-        $proyectoInfo = Proyecto::findOrFail($request->proyecto);
+        $proyecto = Proyecto::findOrFail($request->proyecto);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => 'Limpieza y mantenimiento', 'url' => route('jp.limpieza.index')],
-            ['name' => $proyectoInfo->nombre_proyecto, 'url' => route('jp.limpieza.proyectos.show', $proyectoInfo->id)],
+            ['name' => $proyecto->nombre_proyecto, 'url' => route('jp.limpieza.proyectos.show', $proyecto->id)],
             ['name' => 'Presupuesto', 'url' => ''],
         ];
 
+        /* Seccion de codigo que obtiene los datos de adentro hacia afuera
         $proyecto = Proyecto::with([
             'presupuesto.rubroPresupuesto.categoriaPresupuesto'
         ])->findOrFail($request->proyecto);
 
-        $proyectoResource  = (new PresupuestoResource($proyecto))->toArray(request());
-        return view('jp_limpieza.presupuesto.index', ['proyecto' => $proyectoResource, 'breadcrumbs' => $breadcrumbs]);
+        $proyectoResource  = (new PresupuestoResource($proyecto))->toArray(request());*/
+
+        // Obtener todas las plantillas padres (donde padre_id es NULL)
+        $categorias = PlantillaPresupuesto::with(['hijos', 'hijos.presupuestoProyecto'])
+            ->whereNull('padre_id')
+            ->where('activo', true)
+            ->get();
+
+        return view('jp_limpieza.presupuesto.index', compact('categorias', 'proyecto', 'breadcrumbs'));
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            foreach ($request->presupuesto as $key => $presupuesto) {
+                $plantilla_id = $key;
+                if (!is_numeric($plantilla_id)) {
+                    $plantilla_id = PlantillaPresupuesto::firstOrCreate(
+                        [
+                            'id' => $key
+                        ],
+                        [
+                            'descripcion' => '',
+                            'detalle' => '',
+                            'slug' => $key,
+                            'padre_id' => null,
+                            'activo' => true,
+                        ]
+                    )->id;
+                }
+
+                // Verificar que los datos no sean todos cero (opcional)
+                if ($presupuesto['cantidad'] == 0 && $presupuesto['precio_unitario'] == 0 && $presupuesto['meses'] == 0) {
+                    continue; // Saltar registros con valores cero
+                }
+
+                PresupuestoProyecto::updateOrCreate(
+                    [
+                        'proyecto_id' => $request->proyecto,
+                        'plantilla_id' => $plantilla_id,
+                    ],
+                    [
+                        'cantidad' => $presupuesto['cantidad'],
+                        'precio_unitario' => $presupuesto['precio_unitario'],
+                        'meses' => $presupuesto['meses'],
+                    ]
+                );
+            }
+            DB::commit();
+            return redirect()->route('jp.limpieza.presupuesto.index', $request->proyecto)->with('success', 'Presupuesto registrado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error al guardar el presupuesto: ' . $e->getMessage());
+        }
     }
 
 
@@ -37,7 +92,7 @@ class PresupuestoProyectoController extends Controller
     {
         if ($request->ajax()) {
             $categoria_id = $request->categoria;
-            $rubros = RubroPresupuesto::where('categoria_presupuesto_id', $categoria_id)->where('activo', 1)->get();
+            $rubros = PlantillaPresupuesto::where('padre_id', $categoria_id)->where('activo', 1)->get();
             return response()->json(['rubros' => $rubros]);
         }
     }
@@ -53,31 +108,37 @@ class PresupuestoProyectoController extends Controller
                 $cantidad = str_replace(',', '', $request->cantidad);
                 $meses = $request->meses;
 
-                if (!is_numeric($request->categoria)) {
-                    $categoria = CategoriaPresupuesto::create([
-                        'nombre' => $request->categoria,
+                if (!is_numeric($request->categoria) && !is_numeric($request->rubro)) {
+                    $categoria = PlantillaPresupuesto::create([
+                        'descripcion' => $request->categoria,
+                        'detalle' => $request->detalle,
+                        'slug' => Str::slug($request->categoria),
+                        'padre_id' => null,
                         'activo' => true,
                     ])->id;
-                }
 
-
-                if (!is_numeric($request->rubro)) {
-                    $rubro = RubroPresupuesto::create([
-                        'categoria_presupuesto_id' => $categoria,
-                        'nombre' => $request->rubro,
-                        'precio_unitario' => $precioUnitario,
+                    PlantillaPresupuesto::create([
+                        'descripcion' => $request->rubro,
+                        'detalle' => '',
+                        'slug' => Str::slug($request->categoria) . '.' . Str::slug($request->rubro),
+                        'padre_id' => $categoria,
+                        'activo' => true,
+                    ])->id;
+                } elseif (is_numeric($request->categoria) && !is_numeric($request->rubro)) {
+                    $rubro = PlantillaPresupuesto::create([
+                        'descripcion' => $request->rubro,
+                        'detalle' => '',
+                        'slug' => Str::slug($request->categoria) . '.' . Str::slug($request->rubro),
+                        'padre_id' => $request->categoria,
                         'activo' => true,
                     ])->id;
                 } else {
-                    RubroPresupuesto::findOrFail($rubro)->update([
-                        'categoria_presupuesto_id' => $categoria,
-                        'precio_unitario' => $precioUnitario,
-                    ]);
+                    throw new \Exception("Los datos ingresados ya existen");
                 }
 
                 PresupuestoProyecto::create([
                     'proyecto_id' => $request->proyecto,
-                    'rubro_presupuesto_id' => $rubro,
+                    'plantilla_id' => $rubro,
                     'cantidad' => $cantidad,
                     'precio_unitario' => $precioUnitario,
                     'iva' => 0,

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\DetalleResumenPagoSemanal;
 use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\DetalleAdquisicion;
+use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\Producto;
 use App\Models\Proveedor;
 use App\Models\Tarea;
@@ -667,8 +668,10 @@ if (!function_exists('palabras')) {
 
     function getCategoriasPresupuesto()
     {
-        $categorias = CategoriaPresupuesto::where('activo', true)->pluck('nombre', 'id');
-        $categorias->prepend('', '');
+        $categorias = PlantillaPresupuesto::whereNull('padre_id')
+            ->where('activo', true)
+            ->get();
+
         return $categorias;
     }
 }
