@@ -79,7 +79,6 @@ $(function () {
             beforeSend: function () {
             },
             success: function (response) {
-                console.log(response)
                 // Itera sobre los artículos y crea nuevas opciones
                 $.each(response.rubros, function (index, rubro) {
                     let option = new Option(rubro.descripcion, rubro.id, false, false);
@@ -201,6 +200,240 @@ $(function () {
         $('#meses').val(meses);
 
 
+    });
+
+
+    //** Filtrar rubros por nombre o categorias */
+    $('input:text[name=rubros_search]').on('keyup', function () {
+        let filtro = $(this).val().toLowerCase().trim();
+        let mostrarTodo = filtro === '';
+
+        // Iterar sobre todas las filas de la tabla
+        $('#table-rubros-presupuesto tbody tr').each(function () {
+            let $fila = $(this);
+            let esCategoriaPadre = $fila.hasClass('fila-categoria');
+            let esRubroHijo = $fila.hasClass('fila-rubro');
+            let contenidoFila = $fila.find('.filtrable').text().toLowerCase();
+            let categoriaId = $fila.data('categoria-id');
+            let padreId = $fila.data('padre-id');
+
+            if (mostrarTodo) {
+                $fila.show();
+                return;
+            }
+
+            // Si es una categoría padre
+            if (esCategoriaPadre) {
+                if (contenidoFila.includes(filtro)) {
+                    $fila.show();
+                    // Mostrar todos los rubros hijos de esta categoría
+                    $(`tr[data-padre-id="${categoriaId}"].fila-rubro`).show();
+                } else {
+                    // Verificar si algún hijo coincide con el filtro
+                    let hijosCoinciden = false;
+                    $(`tr[data-padre-id="${categoriaId}"].fila-rubro`).each(function () {
+                        if ($(this).find('.filtrable').text().toLowerCase().includes(filtro)) {
+                            hijosCoinciden = true;
+                            return false; // Salir del each
+                        }
+                    });
+
+                    if (hijosCoinciden) {
+                        $fila.show(); // Mostrar categoría aunque no coincida
+                    } else {
+                        $fila.hide(); // Ocultar categoría y sus hijos
+                        $(`tr[data-padre-id="${categoriaId}"].fila-rubro`).hide();
+                    }
+                }
+            }
+
+            // Si es un rubro hijo
+            if (esRubroHijo) {
+                if (contenidoFila.includes(filtro)) {
+                    $fila.show();
+                    // Mostrar la categoría padre
+                    $(`tr[data-id="${padreId}"].fila-categoria`).show();
+                } else {
+                    // Ocultar solo si la categoría padre no coincide
+                    let padreCoincide = $(`tr[data-id="${padreId}"].fila-categoria .filtrable`)
+                        .text().toLowerCase().includes(filtro);
+
+                    if (!padreCoincide) {
+                        $fila.hide();
+                    }
+                }
+            }
+        });
+
+        // Manejar filas de totales y separadores
+        $('#table-rubros-presupuesto tbody tr').each(function () {
+            let $fila = $(this);
+            if ($fila.hasClass('fila-total') || $fila.hasClass('separador')) {
+                let categoriaId = $fila.prevAll('.fila-categoria:first').data('id');
+                let categoriaVisible = $(`tr[data-id="${categoriaId}"].fila-categoria`).is(':visible');
+                let algunHijoVisible = $(`tr[data-padre-id="${categoriaId}"].fila-rubro`).is(':visible');
+
+                if (categoriaVisible || algunHijoVisible) {
+                    $fila.show();
+                } else {
+                    $fila.hide();
+                }
+            }
+        });
+    });
+
+
+    $(document).on('click', '.editar-categoria', function () {
+        let fila = $(this).closest('tr');
+        fila.find('.texto-categoria-descripcion').hide();
+        fila.find('.texto-categoria-detalle').hide();
+        fila.find('.edicion-categoria').show();
+    });
+
+    // Cancelar edición categoría
+    $(document).on('click', '.btn-cancelar-categoria', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // 1. Encontrar la fila padre
+        const $fila = $(this).closest('tr.fila-categoria');
+        if ($fila.length === 0) {
+            console.error('No se encontró la fila de categoría');
+            return;
+        }
+
+        // 2. Encontrar los elementos específicos
+        const $contenedorEdicion = $fila.find('.edicion-categoria');
+        const $textoOriginalDescripcion = $fila.find('.texto-categoria-descripcion');
+        const $textoOriginalDetalle = $fila.find('.texto-categoria-detalle');
+
+        // 3. Verificar que existen
+        if ($contenedorEdicion.length === 0 || $textoOriginalDescripcion.length === 0 || $textoOriginalDetalle.length === 0) {
+            console.error('No se encontraron los elementos de edición/texto');
+            return;
+        }
+
+        // 4. Mostrar/ocultar con animación para mejor feedback
+        $contenedorEdicion.fadeOut(300, function () {
+            $textoOriginalDescripcion.fadeIn(300);
+            $textoOriginalDetalle.fadeIn(300)
+        });
+
+        $fila.find('.input-categoria').val($textoOriginalDescripcion.text());
+        $fila.find('.input-detalle').val($textoOriginalDetalle.text());
+    });
+
+    // Guardar categoría
+    $(document).on('click', '.btn-guardar-categoria', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        let fila = $(this).closest('tr');
+        let id = $(this).data('id');
+        let nuevoTextoDescripcion = fila.find('.input-categoria').val();
+        let nuevoTextoDetalle = fila.find('.input-detalle').val();
+
+        Swal.fire({
+            title: '¿Guardar cambios?',
+            text: "¿Estás seguro de actualizar esta categoría?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    url: presupuestoUrl + '/actualizar-categoria/' + id,
+                    method: 'PUT',
+                    data: {
+                        descripcion: nuevoTextoDescripcion,
+                        detalle: nuevoTextoDetalle
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            fila.find('.texto-categoria-descripcion').text(nuevoTextoDescripcion + ' ' + nuevoTextoDetalle).show();
+                            fila.find('.edicion-categoria').hide();
+                            Swal.fire('Guardado!', 'La categoría ha sido actualizada.', 'success');
+                        } else {
+                            fila.find('.texto-categoria-descripcion').show();
+                            fila.find('.edicion-categoria').hide();
+                            Swal.fire('Error!', 'La categoría no ha sido actualizada.', 'error');
+                        }
+
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error!', 'Ocurrió un error al actualizar.', 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Editar rubro
+    $(document).on('click', '.editar-rubro', function () {
+        let fila = $(this).closest('tr');
+        fila.find('.texto-rubro').hide();
+        fila.find('.edicion-rubro').show();
+    });
+
+    // Cancelar edición rubro
+    $(document).on('click', '.btn-cancelar-rubro', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        let fila = $(this).closest('tr');
+        fila.find('.edicion-rubro').hide();
+        fila.find('.texto-rubro').show();
+        fila.find('.input-rubro').val(fila.find('.texto-rubro').text())
+    });
+
+    // Guardar rubro
+    $(document).on('click', '.btn-guardar-rubro', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        let fila = $(this).closest('tr');
+        let id = $(this).data('id');
+        let nuevoTexto = fila.find('.input-rubro').val();
+
+        Swal.fire({
+            title: '¿Guardar cambios?',
+            text: "¿Estás seguro de actualizar este rubro?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    url: presupuestoUrl + '/actualizar-rubro/' + id,
+                    method: 'PUT',
+                    data: {
+                        descripcion: nuevoTexto
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            fila.find('.texto-rubro').text(nuevoTexto).show();
+                            fila.find('.edicion-rubro').hide();
+                            Swal.fire('Guardado!', 'El rubro ha sido actualizado.', 'success');
+                        } else {
+                            fila.find('.texto-rubro').show();
+                            fila.find('.edicion-rubro').hide();
+                            Swal.fire('Error!', 'El rubro no ha sido actualizado.', 'error');
+                        }
+
+                    },
+                    error: function (xhr) {
+                        Swal.fire('Error!', 'Ocurrió un error al actualizar.', 'error');
+                    }
+                });
+            }
+        });
     });
 
 });
