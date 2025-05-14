@@ -70,17 +70,54 @@
                                     $index = 1;
                                 @endphp
                                 @forelse ($categorias as $categoria)
-                                    <tr class="categoria-padre" data-id="{{ $categoria->id }}"
-                                        style="background-color: #b6bcdf;">
-                                        <td colspan="7" class="align-middle font-weight-bold filtrable">
-                                            {{ $categoria->descripcion . ' ' . $categoria->detalle }}
+                                    <tr class="categoria-padre fila-categoria" data-id="{{ $categoria->id }}"
+                                        data-categoria-id="{{ $categoria->id }}" style="background-color: #b6bcdf;">
+                                        <td colspan="7" class="align-middle font-weight-bold filtrable editar-categoria"
+                                            style="cursor: pointer;">
+                                            <span class="texto-categoria-descripcion">{{ $categoria->descripcion }}
+                                            </span>
+                                            <span class="texto-categoria-detalle">{{ $categoria->detalle }}
+                                            </span>
+
+                                            <div class="input-group edicion-categoria" style="display: none;">
+                                                <input type="text" class="form-control input-categoria"
+                                                    value="{{ $categoria->descripcion }}">
+                                                <input type="text" class="form-control input-detalle"
+                                                    value="{{ $categoria->detalle }}"
+                                                    placeholder="ingrese detalle (opcional)">
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-success btn-sm btn-guardar-categoria"
+                                                        data-id="{{ $categoria->id }}">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm btn-cancelar-categoria">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                     @forelse ($categoria->hijos as $hijo)
-                                        <tr class="categoria-hijo" data-id="{{ $hijo->id }}"
-                                            data-padre-id="{{ $categoria->id }}">
+                                        <tr class="categoria-hijo fila-rubro" data-id="{{ $hijo->id }}"
+                                            data-categoria-id="{{ $categoria->id }}" data-padre-id="{{ $categoria->id }}">
                                             <td class="align-middle font-weight-bold">{{ $index }}</td>
-                                            <td class="align-middle filtrable"> {{ $hijo->descripcion }}</td>
+                                            <td class="align-middle filtrable editar-rubro" style="cursor: pointer;">
+                                                <span class="texto-rubro">{{ $hijo->descripcion }}</span>
+                                                <div class="input-group edicion-rubro" style="display: none;">
+                                                    <input type="text" class="form-control input-rubro"
+                                                        value="{{ $hijo->descripcion }}">
+                                                    <div class="input-group-append">
+                                                        <button class="btn btn-success btn-sm btn-guardar-rubro"
+                                                            data-id="{{ $hijo->id }}">
+                                                            <i class="fas fa-check"></i>
+                                                        </button>
+                                                        <button class="btn btn-danger btn-sm btn-cancelar-rubro">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </td>
                                             <td class="align-middle">
                                                 {{ Form::text('presupuesto[' . $hijo->id . '][cantidad]', old('cantidad', $hijo->presupuestoProyecto->cantidad ?? 0), ['class' => 'form-control form-control-sm col-auto input-double cantidad', 'data-id' => $hijo->id]) }}
 
@@ -131,74 +168,36 @@
                                     </tr>
                                 @endforelse
                             </tbody>
-                            {{-- 
-                            <tfoot>
-                                @php
-                                    $costos_directos = $categorias->sum(function ($item) {
-                                        return $item->rubrosPresupuesto->sum(function ($item) {
-                                            return $item->presupuestoProyectos->sum(function ($item) {
-                                                return $item->cantidad * $item->valor_unitario;
-                                            });
-                                        });
-                                    });
-
-                                    $costos_indirectos = ($costos_directos * $proyecto->costo_indirecto) / 100;
-
-                                    $saldo = $costos_directos - $total_gatos;
-                                @endphp
-
-                                <tr>
-                                    <td colspan="5" class="font-weight-bold">
-                                        <h4>COSTOS DIRECTOS</h4>
-                                    </td>
-                                    <td colspan="2" class="font-weight-bold">
-                                        $
-                                        {{ number_format($costos_directos, 2) }}
-                                    </td>
-                                </tr>
-                                <tr style="background-color: #b6e5c1;">
-                                    <td colspan="5" class="font-weight-bold editar-costo-indirecto"
-                                        style="cursor: pointer;" data-id="{{ $proyecto->id }}"
-                                        data-porcentaje="{{ $proyecto->costo_indirecto }}">
-                                        <h4>COSTOS INDIRECTOS {{ $proyecto->costo_indirecto }}% </h4>
-                                    </td>
-                                    <td colspan="2" class="font-weight-bold">
-                                        $
-                                        {{ number_format($costos_indirectos, 2) }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td colspan="5" class="font-weight-bold">
-                                        <h4>TOTAL</h4>
-                                    </td>
-                                    <td colspan="2" class="font-weight-bold">
-                                        $
-                                        {{ number_format($costos_directos + $costos_indirectos, 2) }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="5" class="font-weight-bold">
-                                        <h4>gastos</h4>
-                                    </td>
-                                    <td colspan="2" class="font-weight-bold">
-                                        $
-                                        {{ number_format($total_gatos, 2) }}
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="5" class="font-weight-bold">
-                                        <h4>SALDO</h4>
-                                    </td>
-                                    <td colspan="2" class="font-weight-bold">
-                                        $
-                                        {{ number_format($saldo, 2) }}
-                                    </td>
-                                </tr>
-                            </tfoot>
-                             --}}
                         </table>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-10 d-flex justify-content-end">
+                            <label class="col-form-label">total contratado: </label>
+                        </div>
+                        <div class="col-2 d-flex justify-content-end">
+                            <span class="col-form-label" id="total-estimado">
+                                $ {{ $proyecto->total_contratado_formatted }}
+                            </span>
+                        </div>
+
+                        <div class="col-10 d-flex justify-content-end">
+                            <label class="col-form-label">total estimado: </label>
+                        </div>
+                        <div class="col-2 d-flex justify-content-end">
+                            <span class="col-form-label" id="total-estimado">
+                                $ {{ number_format($categorias->sum('total_categoria'), 4) }}
+                            </span>
+                        </div>
+
+                        <div class="col-10 d-flex justify-content-end">
+                            <label class="col-form-label">utilidad estimada: </label>
+                        </div>
+                        <div class="col-2 d-flex justify-content-end">
+                            <span class="col-form-label" id="total-utilidad">
+                                $ {{ number_format($proyecto->total_contratado - $categorias->sum('total_categoria'), 4) }}
+                            </span>
+                        </div>
                     </div>
                     {{ Form::close() }}
                 </div>
@@ -213,5 +212,5 @@
     <script>
         var presupuestoUrl = "{{ route('jp.limpieza.presupuesto.index', $proyecto->id) }}";
     </script>
-    <script src="{{ asset('js/jp_limpieza/presupuesto.js') }}" type="module"></script>
+    <script src="{{ asset('js/jp_limpieza/presupuesto.js?v=' . config('app.version', '')) }}" type="module"></script>
 @endsection

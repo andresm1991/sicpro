@@ -34,4 +34,18 @@ class Proyecto extends Model
     {
         return $this->hasMany(PresupuestoProyecto::class, 'proyecto_id');
     }
+
+    public function getValorContratadoMensualAttribute()
+    {
+        return $this->precio_por_metro * $this->metros_contratado;
+    }
+    public function getTotalContratadoAttribute()
+    {
+        return $this->valor_contratado_mensual * $this->tiempo_contratado;
+    }
+
+    public function getTotalContratadoFormattedAttribute()
+    {
+        return number_format($this->total_contratado, 4);
+    }
 }

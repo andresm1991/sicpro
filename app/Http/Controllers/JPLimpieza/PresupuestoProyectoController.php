@@ -154,4 +154,28 @@ class PresupuestoProyectoController extends Controller
             }
         }
     }
+
+    public function updateRubroDescripcion(Request $request, $proyecto,  PlantillaPresupuesto $rubro)
+    {
+        if ($request->ajax()) {
+            $rubro->descripcion = $request->descripcion;
+            if ($rubro->save()) {
+                return response()->json(['success' => true, 'mensaje' => 'Descripción actualizada correctamente']);
+            } else {
+                return response()->json(['success' => false, 'mensaje' => 'Error al actualizar la descripción']);
+            }
+        }
+    }
+    public function updateCategoriaDescripcion(Request $request, $proyecto,  PlantillaPresupuesto $categoria)
+    {
+        if ($request->ajax()) {
+            $categoria->descripcion = $request->descripcion;
+            $categoria->detalle = $request->detalle;
+            if ($categoria->save()) {
+                return response()->json(['success' => true, 'mensaje' => 'Descripción actualizada correctamente']);
+            } else {
+                return response()->json(['success' => false, 'mensaje' => 'Error al actualizar la descripción']);
+            }
+        }
+    }
 }

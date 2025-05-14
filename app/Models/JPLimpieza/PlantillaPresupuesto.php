@@ -49,6 +49,27 @@ class PlantillaPresupuesto extends Model
         });
     }
 
+    public function getTotalGeneralAttribute()
+    {
+        return $this->sum(function ($h) {
+            // Si es una categoría padre (tiene hijos)
+            if ($h->hijos->isNotEmpty()) {
+                return $h->hijos->sum(function ($hijo) {
+                    return optional($hijo->presupuestoProyecto)->cantidad *
+                        optional($hijo->presupuestoProyecto)->precio_unitario *
+                        optional($hijo->presupuestoProyecto)->meses ??
+                        0;
+                });
+            }
+
+            // Si es una categoría hija (sin hijos)
+            return optional($h->presupuestoProyecto)->cantidad *
+                optional($h->presupuestoProyecto)->precio_unitario *
+                optional($h->presupuestoProyecto)->meses ??
+                0;
+        });
+    }
+
     public function getTotalCategoriaFormattedAttribute()
     {
         return number_format($this->total_categoria, 4);
