@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use App\Models\JPLimpieza\PresupuestoProyecto;
+use App\Http\Controllers\JPLimpieza\ManoObraController;
 use App\Http\Controllers\JPLimpieza\ProyectoController;
 use App\Http\Controllers\JPLimpieza\AdquisicionController;
 use App\Http\Controllers\JPLimpieza\ContratistaController;
@@ -68,5 +69,15 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::post('/guadar-presupuesto', [PresupuestoProyectoController::class, 'store'])->name('store');
         Route::put('/actualizar-rubro/{rubro}', [PresupuestoProyectoController::class, 'updateRubroDescripcion']);
         Route::put('/actualizar-categoria/{categoria}', [PresupuestoProyectoController::class, 'updateCategoriaDescripcion']);
+    });
+
+    //**  MANO DE OBRA */
+    Route::group(['prefix' => 'mano-obra/{proyecto}', 'as' => 'mano.obra.'], function () {
+        Route::get('/', [ManoObraController::class, 'index'])->name('index');
+        Route::get('/nueva-planificacion', [ManoObraController::class, 'create'])->name('create');
+        Route::post('/guardar-planificacion', [ManoObraController::class, 'store'])->name('store');
+        Route::get('/editar-planificacion/{mano_obra}', [ManoObraController::class, 'edit'])->name('edit');
+        Route::put('/actualizar-planificacion/{mano_obra}', [ManoObraController::class, 'update'])->name('update');
+        Route::delete('/eliminar-mano-obra/{mano_obra}', [ManoObraController::class, 'destroy']);
     });
 });

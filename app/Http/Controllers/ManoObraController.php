@@ -222,10 +222,6 @@ class ManoObraController extends Controller
             DB::commit();
             LogService::log('info', 'Se creo planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
             return redirect()->back()->with('success', 'Se creo planificación de mano de obra');
-
-            DB::rollBack();
-            LogService::log('error', 'Error al crear planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create', 'message' => 'no se creo planificacion']);
-            return redirect()->back()->with('error', 'Ocurrió un error inesperado.');
         } catch (Throwable $e) {
             DB::rollBack();
 

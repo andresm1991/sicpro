@@ -32,4 +32,9 @@ class PresupuestoProyecto extends Model
     {
         return $this->belongsTo(PlantillaPresupuesto::class, 'plantilla_id');
     }
+
+    public function getPrecioUnitarioFormattedAttribute()
+    {
+        return number_format($this->precio_unitario, 4);
+    }
 }

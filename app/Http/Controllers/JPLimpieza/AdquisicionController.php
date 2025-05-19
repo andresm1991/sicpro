@@ -49,7 +49,7 @@ class AdquisicionController extends Controller
             ->map(function ($item) use ($proyecto) {
                 $routeName = match ($item->slug) {
                     'contratista' => route('jp.limpieza.contratistas.index', $proyecto),
-                    'mano.obra' => route('jp.limpieza.adquisiciones.index', ['proyecto' => $proyecto, 'tipo_adquisicion' => $item->slug]),
+                    'mano.obra' => route('jp.limpieza.mano.obra.index', $proyecto),
                     default => route('jp.limpieza.adquisiciones.tipo.adquisicion', ['proyecto' => $proyecto, 'tipo_adquisicion' => $item->slug]),
                 };
 

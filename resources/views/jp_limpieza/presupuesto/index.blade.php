@@ -29,7 +29,8 @@
                                     </a>
 
 
-                                    <a href="" class="btn btn-secondary btn-sm mr-2" target="_blank">
+                                    <a href="{{ route('pdf.jp.limpieza.presupuesto', $proyecto->id) }}"
+                                        class="btn btn-secondary btn-sm mr-2" target="_blank">
                                         <i class="fa-light fa-file-export"></i> Exportar a PDF
                                     </a>
                                 </div>

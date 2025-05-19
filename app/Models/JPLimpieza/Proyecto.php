@@ -44,6 +44,10 @@ class Proyecto extends Model
         return $this->valor_contratado_mensual * $this->tiempo_contratado;
     }
 
+    public function getValorContratadoMensualFormattedAttribute()
+    {
+        return number_format($this->valor_contratado_mensual, 4);
+    }
     public function getTotalContratadoFormattedAttribute()
     {
         return number_format($this->total_contratado, 4);

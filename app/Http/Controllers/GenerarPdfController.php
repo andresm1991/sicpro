@@ -9,21 +9,24 @@ use App\Models\Articulo;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
 use App\Models\Proveedor;
+use App\Models\Solicitud;
 use App\Models\Cronograma;
 use App\Models\Adquisicion;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
 use App\Models\RubroCronograma;
+use App\Models\ReposicionTiempo;
 use App\Models\ResumenPagoSemanal;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ReportSolicitudesExport;
 use App\Exports\ReportAdquisicionesExport;
 use App\Exports\ReportGasolinaCamionetaExport;
-use App\Exports\ReportSolicitudesExport;
-use App\Models\ReposicionTiempo;
-use App\Models\Solicitud;
+use App\Models\JPLimpieza\PlantillaPresupuesto;
+use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
+use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
 
 class GenerarPdfController extends Controller
 {
@@ -572,6 +575,25 @@ class GenerarPdfController extends Controller
 
         $pdf = PDF::loadView('pdf.tareas', compact('infoTarea')); //->setPaper('a3', 'landscape');
         return $pdf->stream('tareas.pdf');
+    }
+
+    //** Presupuesto JPLimpieza */
+    public function presupuestoJPLimpiezaPDF(JPLimpiezaProyecto $proyecto)
+    {
+        $categorias = PlantillaPresupuesto::with(['hijos', 'hijos.presupuestoProyecto'])
+            ->whereNull('padre_id')
+            ->where('activo', true)
+            ->get();
+
+        $pdf = PDF::loadView('pdf.presupuesto_jplimpieza', compact('proyecto', 'categorias'))->setPaper('a4', 'landscape');
+        return $pdf->stream('tareas.pdf');
+    }
+
+    //** Mano obra JPLimpieza */
+    public function manoObraJPLimpiezaPDF(JPLimpiezaManoObra $mano_obra)
+    {
+        $pdf = PDF::loadView('pdf.mano_obra_jplimpieza', compact('mano_obra'))->setPaper('a3', 'landscape');
+        return $pdf->stream('mano_obra.pdf');
     }
 
     private function logoBase64()

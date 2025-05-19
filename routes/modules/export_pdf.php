@@ -18,4 +18,8 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
     Route::get('/exportar-tareas', [GenerarPdfController::class, 'exportarTareas'])->name('export.tareas');
 
     Route::post('/reporte-solicitudes/{tipo_reporte}', [GenerarPdfController::class, 'reportSolicitudes'])->name('reporte.solicitudes');
+
+    //** JPLIMPIEZA */
+    Route::get('/presupuesto-jplimpieza/{proyecto}', [GenerarPdfController::class, 'presupuestoJPLimpiezaPDF'])->name('jp.limpieza.presupuesto');
+    Route::get('/jp-limpieza/mano-obra/{mano_obra}', [GenerarPdfController::class, 'manoObraJPLimpiezaPDF'])->name('jp.limpieza.mano.obra');
 });

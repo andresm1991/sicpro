@@ -603,10 +603,14 @@ if (!function_exists('palabras')) {
         return $necesidades;
     }
 
-    function getProveedores($isSelected = false)
+    function getProveedores($isSelected = false, $categoria_proveedor = null)
     {
         if ($isSelected) {
-            $proveedores = Proveedor::pluck('razon_social', 'id');
+            if ($categoria_proveedor) {
+                $proveedores = Proveedor::where('categoria_proveedor_id', CatalogoDato::getIdCatalogo($categoria_proveedor))->pluck('razon_social', 'id');
+            } else {
+                $proveedores = Proveedor::pluck('razon_social', 'id');
+            }
             $proveedores->prepend('', '');
         } else {
             $proveedores = Proveedor::get();
