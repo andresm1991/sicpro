@@ -2295,6 +2295,16 @@ a[href="javascript:void(0);"] {
     cursor: pointer;
 }
 
+/* Estilo para todos los enlaces dentro de popovers */
+.popover-body a {
+    cursor: pointer;
+}
+
+/* O específicamente para los que tienen javascript:void(0) */
+.popover-body a[href="javascript:void(0);"] {
+    cursor: pointer;
+}
+
 
 
 /*===========================================================*/

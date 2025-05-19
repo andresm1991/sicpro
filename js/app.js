@@ -945,3 +945,8 @@ function limpiarCampos(campos) {
         }
     });
 }
+
+// Función para formatear el precio (ejemplo: "1,500.50" → 1500.50)
+function parsePrecio(texto) {
+    return parseFloat(texto.replace(/[^\d.-]/g, '')) || 0;
+}
