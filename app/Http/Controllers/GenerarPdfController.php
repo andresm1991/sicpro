@@ -175,6 +175,7 @@ class GenerarPdfController extends Controller
 
         if ($pago) {
             $pago_nro = $mano_obra->pago_mano_obra()->first();
+
             $formateada = Carbon::parse($pago_nro->created_at)->format('Ymd');
             $numero_orden = $formateada . '-' . str_pad($pago_nro->id, 3, '0', STR_PAD_LEFT);
 
