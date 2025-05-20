@@ -39,8 +39,8 @@ class NotificacionController extends Controller
     {
         // Marcar todas las notificaciones como leídas
         PushNotificationUser::where('user_id', auth()->user()->id)
-            ->where('leido', false)
-            ->update(['leido' => true]);
+            ->where('is_new', true)
+            ->update(['is_new' => false]);
 
         return response()->json(['success' => true]);
     }

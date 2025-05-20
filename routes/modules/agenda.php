@@ -13,4 +13,6 @@ Route::group(['prefix' => 'agenda', 'as' => 'tarea.'], function () {
     Route::delete('/eliminar-tarea/{tarea}', [TareaController::class, 'deleteTarea']);
     Route::put('/actualizar-estado-tarea/{tarea}', [TareaController::class, 'updateEstadoTarea']);
     Route::get('/exportar-tareas', [TareaController::class, 'exportarTareas']);
+
+    Route::get('/visualizar/{tarea}', [TareaController::class, 'visualizarTarea'])->name('visualizar');
 });

@@ -50,11 +50,7 @@
                         </g>
                     </svg>
                     <div class="notification-amount">
-                        @if (auth()->user()->unreadNotifications()->count() > 0)
-                            <span>{{ auth()->user()->unreadNotifications()->count() < 99 ? auth()->user()->unreadNotifications()->count() : '+99' }}</span>
-                        @else
-                            <span>0</span>
-                        @endif
+                        <span>{{ auth()->user()->isNewNotifications()->count() < 99 ? auth()->user()->isNewNotifications()->count() : '+99' }}</span>
                     </div>
                 </div>
                 <div class="menu" style="width: 250px">

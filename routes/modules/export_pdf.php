@@ -12,6 +12,8 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
     Route::get('/exportar-cronograma-pdf/{proyecto}', [GenerarPdfController::class, 'exportarCronogramaToPDF'])->name('export.cronograma');
     Route::get('/exportar-cronograma-actividades-dias-pdf/{proyecto}/{semana}', [GenerarPdfController::class, 'exportarActividadesDiasCronogramaToPDF'])->name('export.cronograma.actividades.dias');
 
+    Route::get('/pago-orden-trabajo-pdf/{pago}', [GenerarPdfController::class, 'pagoOrdenTrabajoPDF'])->name('pago.orden.trabajo');
+
     Route::get('/resumen-pago-semanal-pdf/{resumen}', [GenerarPdfController::class, 'pdfResumenPagoSemanal'])->name('resumen.pago.semanal');
     Route::post('/reporte/{tipo_reporte}', [GenerarPdfController::class, 'reportAdquisiciones'])->name('reporte.adquisiciones');
     Route::post('/reporte-gasolina/{tipo_reporte}', [GenerarPdfController::class, 'reportGaolinaCamioneta'])->name('reporte.gasolina.camnoneta');

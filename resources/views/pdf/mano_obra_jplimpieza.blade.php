@@ -286,7 +286,6 @@
                             </td>
                             <td class="edit-item" style="cursor: pointer;">
                                 <span>$ {{ $personal->total_descuentos_formatted }}</span>
-                                value="{{ $personal->total_descuentos }}">
                             </td>
                             <td class="edit-item" style="cursor: pointer;">
                                 <span>$ {{ $personal->total_recibir_formatted }}</span>
@@ -303,6 +302,19 @@
                         <td style="text-align: right; font-weight: bold">totales</td>
                         <td>$ {{ $mano_obra->total_sueldos_formatted }}</td>
                         <td>$ {{ $mano_obra->total_horas_hextras_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_ganado_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_fondos_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_decimo_tercero_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_decimo_cuarto_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_ingreso_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_iess_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_atrasos_faltas_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_anticipos_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_prestamo_iess_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_quincena_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_prestamos_jp_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_descuentos_formatted }}</td>
+                        <td>$ {{ $mano_obra->total_recibir_formatted }}</td>
                     </tr>
 
                 </tfoot>

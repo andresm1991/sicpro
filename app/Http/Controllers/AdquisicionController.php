@@ -20,6 +20,7 @@ use App\Models\AdquisicionDetalle;
 use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
+use App\Enums\PushNotificationsEnum;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -227,7 +228,8 @@ class AdquisicionController extends Controller
 
                 DB::commit();
 
-                PushNotificationService::sendNotification(Auth::user(), 'Adquisicion nro. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision', route('pdf.recepcion', $adquisicion->id));
+                PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Adquisicion Operativa NRO. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision', route('pdf.recepcion', $adquisicion->id));
+
                 LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('success', 'Orden de pedido generada con éxito.');
             } else {

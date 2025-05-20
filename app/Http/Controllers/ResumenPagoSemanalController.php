@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PushNotificationsEnum;
 use App\Models\CatalogoDato;
 use App\Models\DetalleResumenPagoSemanal;
 use Illuminate\Http\Request;
@@ -83,7 +84,7 @@ class ResumenPagoSemanalController extends Controller
 
             DB::commit();
 
-            PushNotificationService::sendNotification(auth()->user(), 'Resumen de pagos semanales', 'Se ha generado el resumenen de pagos', route('pdf.resumen.pago.semanal', $resumen->id));
+            PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Resumen de pagos semanales', 'Se ha generado el resumenen de pagos', route('pdf.resumen.pago.semanal', $resumen->id));
 
             return response()->json([
                 'success' => true,

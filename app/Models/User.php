@@ -61,7 +61,12 @@ class User extends Authenticatable
 
     public function unreadNotifications()
     {
-        return $this->notifications()->where('leido', false)->orderBy('id', 'desc');
+        return $this->notifications()->where('leido', true)->orderBy('id', 'desc');
+    }
+
+    public function isNewNotifications()
+    {
+        return $this->notifications()->where('is_new', true)->orderBy('id', 'desc');
     }
 
     public function getAuthPassword()

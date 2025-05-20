@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\PushNotificationsEnum;
 use Exception;
 use Throwable;
 use App\Models\Articulo;
@@ -217,7 +218,7 @@ class AdministrativoController extends Controller
             $adquisicion->factura = $request->numero_factura;
             if ($estado) {
                 $adquisicion->estado = "Completado";
-                PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' completó la información de la adquisición operativa #' . $adquisicion->numero, route('pdf.recepcion', $adquisicion->id));
+                PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Administrativo. Actualización de Adquisición', 'El usuario ' . Auth::user()->nombre . ' completó la información de la adquisición operativa #' . $adquisicion->numero, route('pdf.recepcion', $adquisicion->id));
             }
             $adquisicion->save();
             /// Eliminr los articulos que no estan en $array_productos
@@ -555,7 +556,7 @@ class AdministrativoController extends Controller
                     }
                     DB::commit();
                     LogService::log('info', 'Pago de contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
-                    PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' genero pago a contratista ' . $contratista->proveedor->razon_social);
+                    PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Pago orden de trabajo', 'El usuario ' . Auth::user()->nombre . ' genero pago a contratista ' . $contratista->proveedor->razon_social, route('pdf.pago.orden.trabajo', $pago->id));
                     return response()->json(['success' => true, 'message' => 'Pago registrado con éxito.']);
                 } else {
                     DB::rollBack();
@@ -677,7 +678,7 @@ class AdministrativoController extends Controller
             }
 
             DB::commit();
-            PushNotificationService::sendNotification(Auth::user(), 'Administrativo', 'El usuario ' . Auth::user()->nombre . ' genero pago para la mano de obra.', route('pago.mano.obra', ['mano_obra' => $mano_obra_id, 'pago' => true]));
+            PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Pago Mano de obra', 'El usuario ' . Auth::user()->nombre . ' genero pago para la mano de obra.', route('pago.mano.obra', ['mano_obra' => $mano_obra_id, 'pago' => true]));
             return redirect()->route('administrativo.index.mano.obra')->with('success', 'Pago de mano obra generada con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();

@@ -11,8 +11,13 @@ class PagoOrdenTrabajoContratista extends Model
     protected $table = 'pagos_orden_trabajo_contratista';
     protected $fillable = ['fecha', 'contratista_id', 'tipo_pago', 'forma_pago', 'valor', 'detalle', 'pagado'];
 
-    public function contratista() {
+    public function contratista()
+    {
         return $this->belongsTo(Contratista::class, 'contratista_id');
     }
 
+    public function getNumeroOrdenPagoAttribute()
+    {
+        return date('Ymd', strtotime($this->fecha)) . '-' . str_pad($this->id, 3, '0', STR_PAD_LEFT);
+    }
 }

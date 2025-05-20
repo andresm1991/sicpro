@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use App\Models\ComentarioTarea;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
+use App\Enums\PushNotificationsEnum;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PushNotificationService;
 
@@ -37,7 +39,40 @@ class TareaController extends Controller
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
 
-        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados'));
+        $tarea_id = $request->tarea;
+
+        if (!empty($tarea_id)) {
+            $tarea = Tarea::find($tarea_id);
+            $modalToShow = ['activeModal' => true, 'tarea' => $tarea];
+        } else {
+            $modalToShow = ['activeModal' => false];
+        }
+
+        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados', 'modalToShow'));
+    }
+
+    public function visualizarTarea(Tarea $tarea)
+    {
+        $title_page = 'Agenda';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Agenda', 'url' => '']
+        ];
+
+        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', '', '');
+        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', '', '');
+        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', '', '');
+
+
+        $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
+
+        if (!empty($tarea)) {
+            $modalToShow = ['activeModal' => true, 'tarea' => $tarea];
+        } else {
+            $modalToShow = ['activeModal' => false];
+        }
+
+        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados', 'modalToShow'));
     }
 
     /**
@@ -66,6 +101,7 @@ class TareaController extends Controller
                 }
                 DB::commit();
 
+                PushNotificationService::sendNotification(PushNotificationsEnum::TAREAS, 'Nueva tarea', "El usuario " . auth()->user()->nombre . " creao una nueva tarea " . $tarea->titulo, route('tarea.visualizar', $tarea->id), $usuarios);
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -121,7 +157,9 @@ class TareaController extends Controller
 
                 DB::commit();
 
-                PushNotificationService::sendNotification(auth()->user(), 'Comentario creado', "El usuario " . auth()->user()->nombre . " comento la tarea " . $tarea->titulo, route('tarea.index'));
+                $usuarios_notificacion = UsuarioTarea::where('tarea_id', $request->tarea_id)->pluck('usuario_id')->toArray();
+
+                PushNotificationService::sendNotification(PushNotificationsEnum::TAREAS, 'Comentario creado', "El usuario " . auth()->user()->nombre . " comento la tarea " . $tarea->titulo, route('tarea.visualizar', $tarea->id), $usuarios_notificacion);
 
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {

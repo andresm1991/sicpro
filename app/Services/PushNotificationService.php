@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\PushNotificationsEnum;
 use Throwable;
 use App\Models\User;
 use Minishlink\WebPush\WebPush;
@@ -13,7 +14,7 @@ use Minishlink\WebPush\Subscription;
 
 class PushNotificationService
 {
-    public static function sendNotification(User $user, $title, $message, $url = '/')
+    public static function sendNotification($tipoNotificacion, $title, $message, $url = '/', $usersNotified = null)
     {
         try {
             $auth = [
@@ -34,28 +35,30 @@ class PushNotificationService
                 'url' => $url,
             ]);
 
+            // Registrar Mensaje y obtener el id
             $msg = PushNotificationMsg::create([
                 'title' => $title,
                 'body' => $message,
                 'url' => $url,
             ])->id;
 
-            if (auth()->user()->hasRole('Administrativo')) {
-                $users = User::whereHas('roles', function ($q) {
-                    $q->whereIn('name', ['Gerencial']);
-                })->get();
-            } elseif (auth()->user()->hasRole('Gerencial')) {
-                $users = User::whereHas('roles', function ($q) {
-                    $q->whereIn('name', ['Administrativo', 'Operativo']);
-                })->get();
-            } elseif (auth()->user()->hasRole('Operativo')) {
-                $users = User::whereHas('roles', function ($q) {
-                    $q->whereIn('name', ['Administrativo', 'Gerencial']);
-                })->get();
-            } else {
-                $users = User::whereHas('roles', function ($q) {
-                    $q->whereIn('name', ['Administrador']);
-                })->get();
+
+            switch ($tipoNotificacion) {
+                case PushNotificationsEnum::OPERATIVO:
+                    $users = User::whereHas('roles', function ($q) {
+                        $q->whereIn('name', ['Administrativo', 'Gerencial']);
+                    })->get();
+                    break;
+                case PushNotificationsEnum::ADMINISTRATIVO:
+                    $users = User::whereHas('roles', function ($q) {
+                        $q->whereIn('name', ['Gerencial']);
+                    })->get();
+                    break;
+                case PushNotificationsEnum::TAREAS:
+                    $users = User::whereIn('id', $usersNotified)->get();
+                    break;
+
+                default:
             }
 
             foreach ($users as $user) {

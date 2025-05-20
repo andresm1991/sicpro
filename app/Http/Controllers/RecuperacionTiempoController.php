@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Constants\MessagesConstant;
+use App\Enums\PushNotificationsEnum;
 use App\Http\Requests\ReposicionTiempoUpdateRequest;
 use App\Models\CatalogoDato;
 use Carbon\Carbon;
@@ -80,7 +81,7 @@ class RecuperacionTiempoController extends Controller
             ])->id;
 
             DB::commit();
-            PushNotificationService::sendNotification(Auth::user(), 'Reposición de tiempo', "Se registro reposición de tiempo para el colaborador " . Auth::user()->nombre, route('solicitud.reposicion.edit', $solicitud_id));
+            PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Reposición de tiempo', "Se registro reposición de tiempo para el colaborador " . Auth::user()->nombre, route('solicitud.reposicion.edit', $solicitud_id));
             return redirect()->back()->with('success', MessagesConstant::INSERT . ' Pendiente de aprobación');
         } catch (\Throwable $th) {
             DB::rollBack();

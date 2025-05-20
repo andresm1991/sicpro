@@ -190,4 +190,21 @@
 
 @section('scripts')
     <script src="{{ asset('js/tareas_scripts.js') }}" type="module"></script>
+
+    <script>
+        var url = "{{ route('tarea.index') }}";
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (isset($modalToShow) && !empty($modalToShow['activeModal']) && isset($modalToShow['tarea']) && $modalToShow['tarea'])
+                setTimeout(() => {
+                    const taskId = {{ $modalToShow['tarea']->id ?? 'null' }};
+                    if (taskId) {
+                        const element = $(`#${taskId}.agregar-comentario`);
+                        if (element.length) {
+                            element.trigger('click');
+                        }
+                    }
+                }, 100);
+            @endif
+        });
+    </script>
 @endsection

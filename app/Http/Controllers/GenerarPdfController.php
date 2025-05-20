@@ -23,6 +23,7 @@ use App\Models\ResumenPagoSemanal;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ReportSolicitudesExport;
 use App\Exports\ReportAdquisicionesExport;
+use App\Models\PagoOrdenTrabajoContratista;
 use App\Exports\ReportGasolinaCamionetaExport;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
@@ -576,6 +577,12 @@ class GenerarPdfController extends Controller
 
         $pdf = PDF::loadView('pdf.tareas', compact('infoTarea')); //->setPaper('a3', 'landscape');
         return $pdf->stream('tareas.pdf');
+    }
+
+    public function pagoOrdenTrabajoPDF(PagoOrdenTrabajoContratista $pago)
+    {
+        $pdf = PDF::loadView('pdf.orden_pago_contratista', compact('pago'));
+        return $pdf->stream('orden_pago_contratista.pdf');
     }
 
     //** Presupuesto JPLimpieza */
