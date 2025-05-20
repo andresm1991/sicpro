@@ -138,6 +138,8 @@ $(function () {
             backdrop: 'static', // No permite cerrar el modal al hacer clic fuera
             keyboard: false     // No permite cerrar el modal usando la tecla ESC
         }).modal('show');
+
+        getComentariosTarea();
     });
     // Manejar el evento de clic en "Editar"
     $(document).on('click', '.list-comentarios .editar', function (e) {
@@ -395,7 +397,8 @@ $(function () {
     });
 
     $(document).on('hidden.bs.modal', '#comentarioTareaModal', function () {
-        location.reload();
+        window.location.href = url;
+
     });
 
     $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal, #filtroExportarTareasModal', function () {
@@ -466,7 +469,7 @@ $(function () {
 
     function getComentariosTarea() {
         $.ajax({
-            url: 'agenda/comentarios-tarea',
+            url: url + '/comentarios-tarea',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { tarea_id: $('input:hidden[name=tarea_id]').val() },
@@ -475,7 +478,6 @@ $(function () {
                 $("#comentarios").html('');
             },
             success: function (response) {
-                console.log(response);
                 $.each(response.comentarios, function (index, tarea) {
                     $("#comentarios").append(`<div class="list-group list-comentarios">
                                         <div class="list-group-item list-group-item-action tarea-item" data-id="${tarea.id}">
@@ -530,5 +532,11 @@ $(function () {
     function adjustTextareaHeight($textarea) {
         $textarea.css('height', 'auto'); // Restablece la altura
         $textarea.css('height', $textarea[0].scrollHeight + 'px'); // Ajusta la altura al contenido
+    }
+
+    // Función para verificar si la URL tiene un número al final
+    function hasIdInUrl() {
+        const path = window.location.pathname;
+        return /\d+$/.test(path); // Verifica si termina con números
     }
 });
