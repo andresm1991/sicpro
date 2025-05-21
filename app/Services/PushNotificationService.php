@@ -66,6 +66,7 @@ class PushNotificationService
                     'user_id' => $user->id,
                     'message_id' => $msg,
                     'leido' => false,
+                    'is_new' => true,
                 ]);
                 if ($user->notifications()->exists()) {
                     foreach ($user->notifications as $notification) {
