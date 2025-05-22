@@ -4,11 +4,6 @@ $(function () {
 
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
-    // Función para formatear el precio (ejemplo: "1,500.50" → 1500.50)
-    function parsePrecio(texto) {
-        return parseFloat(texto.replace(/[^\d.-]/g, '')) || 0;
-    }
-
     $('.select2-basic-single').select2({
         width: '100%',
         dropdownParent: $('#modalRubrosPresupuesto'),

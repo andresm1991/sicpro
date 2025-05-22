@@ -2,14 +2,55 @@ $(function () {
 
     var csrf = $('meta[name="csrf-token"]').attr('content');
 
+    $('#fondos').attr('readonly', true);
+    $('#decimo_tercero').attr('readonly', true);
+    $('#decimo_cuarto').attr('readonly', true);
+    $('#iess').attr('readonly', true);
+
+    var pFondos = 0.0833;
+    var pIESS = 0.0945;
+    var dTerceroYCuarto = 12;
+    var basico = 470;
+
+
+
+    $('#tipo_plantilla').on('change', function () {
+        let tipoPlantilla = $(this).val();
+
+        if (tipoPlantilla == 'ASOCIACION') {
+            $('#fondos').attr('readonly', false);
+            $('#decimo_tercero').attr('readonly', false);
+            $('#decimo_cuarto').attr('readonly', false);
+        } else {
+            $('#fondos').attr('readonly', true);
+            $('#decimo_tercero').attr('readonly', true);
+            $('#decimo_cuarto').attr('readonly', true);
+        }
+    });
     /// Evento de ingreso total ganado
     $('#sueldo, #horas_extras').on('keyup', function () {
         let sueldo = parsePrecio($('#sueldo').val());
         let horasExtras = parsePrecio($('#horas_extras').val());
         let totalGanado = sueldo + horasExtras;
+        let iess = totalGanado * pIESS;
+        let totalIngresos = totalGanado;
 
-        $("#total_ganado").text("$ " + totalGanado.toFixed(4));
-        $("#total_ingresos").text("$ " + totalGanado.toFixed(4));
+
+        if ($('#tipo_plantilla').val() == 'JPLIMPIEZA') {
+            let fondos = sueldo * pFondos;
+            let decimoTercero = totalGanado / dTerceroYCuarto;
+            let decimoCuarto = basico / dTerceroYCuarto;
+
+            totalIngresos += fondos + decimoTercero + decimoCuarto;
+
+            $("#fondos").val(fondos.toFixed(2));
+            $("#decimo_tercero").val(decimoTercero.toFixed(2));
+            $("#decimo_cuarto").val(decimoCuarto.toFixed(2));
+        }
+
+        $("#iess").val(iess.toFixed(2));
+        $("#total_ganado").text("$ " + totalGanado.toFixed(2));
+        $("#total_ingresos").text("$ " + totalIngresos.toFixed(2));
         cacularTotalRecibir();
     });
 
@@ -21,7 +62,7 @@ $(function () {
         let decimoCuarto = parsePrecio($('#decimo_cuarto').val());
         let totalIngresos = totalGanado + fondos + decimoTercero + decimoCuarto;
 
-        $("#total_ingresos").text("$ " + totalIngresos.toFixed(4));
+        $("#total_ingresos").text("$ " + totalIngresos.toFixed(2));
         cacularTotalRecibir();
     });
 
@@ -36,7 +77,7 @@ $(function () {
         let atrasosFaltas = parsePrecio($('#atrasos_faltas').val());
         let totalDescuentos = iess + antcipos + prestamoIess + quincena + prestamoJp + atrasosFaltas;
 
-        $("#total_descuentos").text("$ " + totalDescuentos.toFixed(4));
+        $("#total_descuentos").text("$ " + totalDescuentos.toFixed(2));
         cacularTotalRecibir();
     });
 
@@ -81,63 +122,63 @@ $(function () {
                 <input type="hidden" name="proveedor[]" value="${proveedorId}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${sueldo.toFixed(4)}</span>
+                <span>$ ${sueldo.toFixed(2)}</span>
                 <input type="hidden" name="sueldo[]" value="${sueldo}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${horasExtras.toFixed(4)}</span>
+                <span>$ ${horasExtras.toFixed(2)}</span>
                 <input type="hidden" name="h_extras[]" value="${horasExtras}">
             </td>
-            <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${totalGanado.toFixed(4)}</span>
+            <td>
+                <span>$ ${totalGanado.toFixed(2)}</span>
                 <input type="hidden" name="total_ganado[]" value="${totalGanado}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${fondos.toFixed(4)}</span>
+                <span>$ ${fondos.toFixed(2)}</span>
                 <input type="hidden" name="fondos[]" value="${fondos}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${decimoTercero.toFixed(4)}</span>
+                <span>$ ${decimoTercero.toFixed(2)}</span>
                 <input type="hidden" name="decimo_tercero[]" value="${decimoTercero}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${decimoCuarto.toFixed(4)}</span>
+                <span>$ ${decimoCuarto.toFixed(2)}</span>
                 <input type="hidden" name="decimo_cuarto[]" value="${decimoCuarto}">
             </td>
-            <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${totalIngresos.toFixed(4)}</span>
+            <td>
+                <span>$ ${totalIngresos.toFixed(2)}</span>
                 <input type="hidden" name="total_ingresos[]" value="${totalIngresos}">
             </td>
-            <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${iess.toFixed(4)}</span>
+            <td style="cursor: pointer;">
+                <span>$ ${iess.toFixed(2)}</span>
                 <input type="hidden" name="iess[]" value="${iess}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${atrasosFaltas.toFixed(4)}</span>
+                <span>$ ${atrasosFaltas.toFixed(2)}</span>
                 <input type="hidden" name="atrasos_faltas[]" value="${atrasosFaltas}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${antcipos.toFixed(4)}</span>
+                <span>$ ${antcipos.toFixed(2)}</span>
                 <input type="hidden" name="anticipos[]" value="${antcipos}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${prestamoIess.toFixed(4)}</span>
+                <span>$ ${prestamoIess.toFixed(2)}</span>
                 <input type="hidden" name="prestamo_iess[]" value="${prestamoIess}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${quincena.toFixed(4)}</span>
+                <span>$ ${quincena.toFixed(2)}</span>
                 <input type="hidden" name="quincena[]" value="${quincena}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${prestamoJp.toFixed(4)}</span>
+                <span>$ ${prestamoJp.toFixed(2)}</span>
                 <input type="hidden" name="prestamo_jp[]" value="${prestamoJp}">
             </td>
-            <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${totalDescuentos.toFixed(4)}</span>
+            <td>
+                <span>$ ${totalDescuentos.toFixed(2)}</span>
                 <input type="hidden" name="total_descuentos[]" value="${totalDescuentos}">
             </td>
-            <td class="edit-item" style="cursor: pointer;">
-                <span>$ ${totalRecibir.toFixed(4)}</span>
+            <td>
+                <span>$ ${totalRecibir.toFixed(2)}</span>
                 <input type="hidden" name="total_recibir[]" value="${totalRecibir}">
             </td>
             <td>
@@ -163,7 +204,15 @@ $(function () {
         var $td = $(this);
         var $span = $td.find('span');
         var $input = $td.find('input');
-        var valorActual = $input.val();
+        var valorActual = parsePrecio($input.val());
+        var $tr = $td.closest('tr'); // Obtener la fila actual
+        var colName = $input.attr('name').replace('[]', ''); // Obtener el nombre del campo
+
+        var tipoPlantilla = $("#tipo_plantilla").val();
+
+        if (tipoPlantilla == 'JPLIMPIEZA' && (colName == 'fondos' || colName == 'decimo_tercero' || colName == 'decimo_cuarto')) {
+            return;
+        }
 
         Swal.fire({
             title: 'Editar valor',
@@ -172,26 +221,128 @@ $(function () {
             showCancelButton: true,
             confirmButtonText: 'Aceptar',
             cancelButtonText: 'Cancelar',
-            inputValidator: (value) => {
-                if (!value) {
-                    return 'El valor no puede estar vacío';
-                }
-            },
             didOpen: () => {
                 const input = Swal.getInput();
                 input.classList.add('money');
                 input.placeholder = 'Ingrese el nuevo valor';
-                // Inicializa maskMoney en el input de SweetAlert
-                $(input).maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 4 });
-                $(input).maskMoney('mask'); // Opcional: para aplicar el formato inicial
+                $(input).maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 2 });
+                $(input).maskMoney('mask');
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                $span.text('$ ' + result.value);
-                $input.val(result.value);
+                var value = parsePrecio(result.value) || '0.00'
+                // Actualizar el valor en el campo
+                $span.text('$ ' + value);
+                $input.val(value);
+
+                // Recalcular valores dependientes
+                recalculateDependentValues($tr, colName);
             }
         });
     });
+
+    /**
+     * Funcion que recalcula los valores de las filas de la tabla
+     * cuando cambia un valor
+     */
+    function recalculateDependentValues($tr, changedField) {
+        var tipoPlantilla = $("#tipo_plantilla").val();
+
+        // Obtener todos los valores necesarios de la fila
+        let sueldo = parseFloat($tr.find('input[name="sueldo[]"]').val()) || 0;
+        let horasExtras = parseFloat($tr.find('input[name="h_extras[]"]').val()) || 0;
+        let totalGanado = 0;
+        let fondos = 0;
+        let decimoTercero = 0;
+        let decimoCuarto = 0;
+        let totalIngresos = 0;
+        let iess = 0;
+        let atrasosFaltas = 0;
+        let anticipos = 0;
+        let prestamoIess = 0;
+        let quincena = 0;
+        let prestamoJP = 0;
+        let totalDescuentos = 0;
+        let totalRecibir = 0;
+
+
+        // Calcular total ganado (sueldo + horas extras)
+        if (changedField === 'sueldo' || changedField === 'h_extras') {
+            totalGanado = sueldo + horasExtras;
+            totalIngresos = totalGanado;
+
+
+            $tr.find('input[name="total_ganado[]"]').val(totalGanado.toFixed(2));
+            $tr.find('span').eq(2).text('$ ' + totalGanado.toFixed(2));
+
+            iess = totalGanado * pIESS;
+            $tr.find('input[name="iess[]"]').val(iess.toFixed(2));
+            $tr.find('span').eq(7).text('$ ' + iess.toFixed(2));
+
+            if ($("#tipo_plantilla").val() == 1) {
+                // Calcular fondos (8.33% del sueldo) cuando cambia el sueldo
+                fondos = sueldo * pFondos;
+                decimoTercero = totalGanado / dTerceroYCuarto;
+                decimoCuarto = basico / dTerceroYCuarto;
+
+                $tr.find('input[name="fondos[]"]').val(fondos.toFixed(2));
+                $tr.find('span').eq(3).text('$ ' + fondos.toFixed(2));
+                $tr.find('input[name="decimo_tercero[]"]').val(decimoTercero.toFixed(2));
+                $tr.find('span').eq(4).text('$ ' + decimoTercero.toFixed(2));
+                $tr.find('input[name="decimo_cuarto[]"]').val(decimoCuarto.toFixed(2));
+                $tr.find('span').eq(5).text('$ ' + decimoCuarto.toFixed(2));
+
+                totalIngresos += fondos + decimoTercero + decimoCuarto;
+            } else {
+                fondos = parseFloat($tr.find('input[name="fondos[]"]').val()) || 0;
+                decimoTercero = parseFloat($tr.find('input[name="decimo_tercero[]"]').val()) || 0;
+                decimoCuarto = parseFloat($tr.find('input[name="decimo_cuarto[]"]').val()) || 0;
+                totalGanado = parseFloat($tr.find('input[name="total_ganado[]"]').val()) || 0;
+
+                totalIngresos = totalGanado + fondos + decimoTercero + decimoCuarto;
+            }
+
+            $tr.find('input[name="total_ingresos[]"]').val(totalIngresos.toFixed(2));
+            $tr.find('span').eq(6).text('$ ' + totalIngresos.toFixed(2)); // Índice 6 para total_ingresos
+        }
+
+        // Calcular total ingresos (total_ganado + fondos + décimos)
+        if (tipoPlantilla == 'ASOCIACION' && (changedField === 'fondos' || changedField === 'decimo_tercero' || changedField === 'decimo_cuarto')) {
+            fondos = parseFloat($tr.find('input[name="fondos[]"]').val()) || 0;
+            decimoTercero = parseFloat($tr.find('input[name="decimo_tercero[]"]').val()) || 0;
+            decimoCuarto = parseFloat($tr.find('input[name="decimo_cuarto[]"]').val()) || 0;
+            totalGanado = parseFloat($tr.find('input[name="total_ganado[]"]').val()) || 0;
+
+            totalIngresos = totalGanado + fondos + decimoTercero + decimoCuarto;
+
+            console.log("changedField: " + changedField);
+            console.log(fondos);
+            console.log(totalIngresos);
+
+            $tr.find('input[name="total_ingresos[]"]').val(totalIngresos.toFixed(2));
+            $tr.find('span').eq(6).text('$ ' + totalIngresos.toFixed(2)); // Índice 6 para total_ingresos
+        }
+
+        // Obtener valores de descuentos
+        iess = parseFloat($tr.find('input[name="iess[]"]').val()) || 0;
+        atrasosFaltas = parseFloat($tr.find('input[name="atrasos_faltas[]"]').val()) || 0;
+        anticipos = parseFloat($tr.find('input[name="anticipos[]"]').val()) || 0;
+        prestamoIess = parseFloat($tr.find('input[name="prestamo_iess[]"]').val()) || 0;
+        quincena = parseFloat($tr.find('input[name="quincena[]"]').val()) || 0;
+        prestamoJp = parseFloat($tr.find('input[name="prestamo_jp[]"]').val()) || 0;
+
+        totalDescuentos = iess + atrasosFaltas + anticipos + prestamoIess + quincena + prestamoJp;
+        $tr.find('input[name="total_descuentos[]"]').val(totalDescuentos.toFixed(2));
+        $tr.find('span').eq(13).text('$ ' + totalDescuentos.toFixed(2));
+
+        // Calcular total a recibir (total_ingresos - total_descuentos)
+        totalIngresos = parseFloat($tr.find('input[name="total_ingresos[]"]').val()) || 0;
+        totalDescuentos = parseFloat($tr.find('input[name="total_descuentos[]"]').val()) || 0;
+        totalRecibir = totalIngresos - totalDescuentos;
+
+        $tr.find('input[name="total_recibir[]"]').val(totalRecibir.toFixed(2));
+        $tr.find('span').eq(14).text('$ ' + totalRecibir.toFixed(2)); // Índice 14 para total_recibir
+    }
 
     $(document).on('click', '.eliminar-mano-obra', function () {
         var $this = $(this);
@@ -252,7 +403,7 @@ $(function () {
         let totalIngresos = parsePrecio($("#total_ingresos").text()) || 0;
         let totalDescuentos = parsePrecio($("#total_descuentos").text()) || 0;
         let totalRecibir = totalIngresos - totalDescuentos;
-        $("#total_recibir").text("$ " + totalRecibir.toFixed(4));
+        $("#total_recibir").text("$ " + totalRecibir.toFixed(2));
     }
 
 });

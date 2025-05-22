@@ -446,6 +446,7 @@ $(function () {
     }).mask(".dateTime");
 
     $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 4 });
+    $('.moneyDosDecimales').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 2 });
 
     /// Solo numeros
     $(document).on('input', ".solo-numeros", function (evt) {
