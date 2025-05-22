@@ -55,4 +55,6 @@ Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function
         Route::delete('/eliminar/{id}', [ResumenPagoSemanalController::class, 'destroy']);
         Route::get('/buscar-resumen-pagos', [ResumenPagoSemanalController::class, 'buscar']);
     });
+
+    require base_path('routes/modules/caja.php');
 });

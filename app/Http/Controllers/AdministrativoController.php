@@ -649,6 +649,8 @@ class AdministrativoController extends Controller
         ];
 
         $detalle_mano_obra =  $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id, $estado);
+
+
         $route_params = ['mano_obra' => $mano_obra, 'detalle_mano_obra' => $detalle_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page, 'tipo' => $estado];
 
         return view('administrativo.mano_obra.detalle', $route_params);

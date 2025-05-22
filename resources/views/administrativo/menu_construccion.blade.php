@@ -49,6 +49,12 @@
                     </a>
                 </div>
 
+                <div class="max-auto">
+                    <a href="" class="nodo">
+                        <img src="{{ asset('images/svg/flujo-de-efectivo.svg') }}" alt="">
+                        <span>caja</span>
+                    </a>
+                </div>
 
             </div>
         </div>

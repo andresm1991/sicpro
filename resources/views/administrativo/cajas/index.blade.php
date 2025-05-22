@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Mano Obra')
+@section('title', 'Flujo de Caja')
 
 @section('content')
     @include('partials.header_page')
@@ -9,16 +9,15 @@
         <div class="card">
             <ul class="list-group list-group-flush">
                 <li class="list-group-item">
-                    <h4 class="mt-2 font-weight-bold">Mano de Obra</h4>
+                    <h4 class="mt-2 font-weight-bold">Flujo de caja</h4>
                 </li>
             </ul>
-            <div class="card-body ">
+            <div class="card-body">
                 <div class="row">
                     <div class="col-md-4 col-12">
                         <div class="form-group">
-                            <a href="{{ route('jp.limpieza.mano.obra.create', $proyecto->id) }}"
-                                class="btn btn-dark btn-sm">
-                                <i class="fa-regular fa-plus"></i> Nueva Planificación
+                            <a href="" class="btn btn-dark btn-sm">
+                                <i class="fa-regular fa-plus"></i> Nueva Registro
                             </a>
                         </div>
                     </div>
@@ -32,17 +31,19 @@
                     --}}
                 </div>
                 <div class="table-responsive" id="table">
-                    <table class="table table-bordered table-hover">
+                    <table class="table table-bordered table-hover table-sm">
                         <thead>
                             <tr>
-                                <th>#</th>
                                 <th>Fecha</th>
-                                <th scope="col">Proyecto</th>
+                                <th scope="col">decripcion</th>
+                                <th scope="col">saldo inical</th>
+                                <th scope="col">saldo actual</th>
+                                <th scope="col">estado</th>
                                 <th class="col-accion"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($mano_obras as $index => $mano_obra)
+                            @forelse ($cajas as $caja)
                                 <tr id="{{ $mano_obra->id }}">
                                     <td class="align-middle">{{ $index + 1 }}</td>
                                     <td class="align-middle">
@@ -63,7 +64,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-danger">No se encontraron datos para
+                                    <td colspan="8" class="text-center text-danger">No se encontraron datos para
                                         mostrar....
                                     </td>
                                 </tr>
@@ -73,15 +74,12 @@
                         </tbody>
                     </table>
                 </div>
-                @include('partials.pagination', ['paginator' => $mano_obras, 'interval' => 5])
+                {{-- @include('partials.pagination', ['paginator' => $mano_obras, 'interval' => 5]) --}}
             </div>
         </div>
     </section>
 @endsection
 
 @section('scripts')
-    <script>
-        var manObraUrl = "{{ route('jp.limpieza.mano.obra.index', $proyecto->id) }}";
-    </script>
-    <script src="{{ asset('js/jp_limpieza/mano_obra.js?v=' . config('app.version', '')) }}" type="module"></script>
+
 @endsection

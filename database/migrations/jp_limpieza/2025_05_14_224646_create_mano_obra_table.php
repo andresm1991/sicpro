@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('proyecto_id')->constrained('proyectos')->onDelete('cascade');
             $table->date('fecha_desde');
             $table->date('fecha_hasta');
+            $table->enum('tipo', ['JPLIMPIEZA', 'ASOCIACION']);
             $table->timestamps();
         });
     }

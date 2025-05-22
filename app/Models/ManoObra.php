@@ -88,7 +88,7 @@ class ManoObra extends Model
                 $prestamos = Prestamo::with('pagos_prestamo')
                     ->where('trabajador_id', $proveedor_id)
                     ->whereHas('estado', function ($query) {
-                        $query->where('descripcion', 'Pendiente')->orWhere('descripcion', 'Pagado');
+                        $query->where('descripcion', 'Pendiente');
                     })->get();
             }
             //$prestamos = Prestamo::where('trabajador_id', $proveedor_id)->get();
@@ -149,9 +149,19 @@ class ManoObra extends Model
                 $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
 
                 // Procesar préstamos y pagos
-                foreach ($prestamos as $prestamo) {
-                    $fila['prestamo'][] = ['pago_id' => $prestamo->pago_prestamo->id, 'pagos' => $prestamo->pago_prestamo->monto_pagado];
+                if ($estado == 'completo') {
+                    foreach ($prestamos as $prestamo) {
+                        $fila['prestamo'][] = ['pago_id' => $prestamo->pago_prestamo->id, 'pagos' => $prestamo->pago_prestamo->monto_pagado];
+                    }
+                } else {
+                    foreach ($prestamos as $prestamo) {
+                        foreach ($prestamo->pagos_prestamo as $pago) {
+                            $fila['prestamo'][] = ['pago_id' => $pago->id, 'pagos' => $pago->monto_pagado];
+                        }
+                    }
                 }
+
+
                 // Añadimos la fila al array de resultados
                 $info_mano_obra['detalle'][] = $fila;
 

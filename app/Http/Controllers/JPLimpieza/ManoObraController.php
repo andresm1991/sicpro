@@ -53,6 +53,8 @@ class ManoObraController extends Controller
             DB::beginTransaction();
             $fecha_desde = $request->input('fecha_desde');
             $fecha_hasta = $request->input('fecha_hasta');
+            $tipo = $request->input('tipo_plantilla');
+
 
 
             $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir) {
@@ -80,6 +82,7 @@ class ManoObraController extends Controller
                 'proyecto_id' => $proyecto->id,
                 'fecha_desde' => $fecha_desde,
                 'fecha_hasta' => $fecha_hasta,
+                'tipo' => strtoupper($tipo),
             ])->id;
 
             if ($mano_obra) {

@@ -37,7 +37,7 @@
                         <span>$ {{ $personal->horas_extras_formatted }}</span>
                         <input type="hidden" name="h_extras[]" value="{{ $personal->horas_extras }}">
                     </td>
-                    <td class="edit-item" style="cursor: pointer;">
+                    <td>
                         <span>{{ $personal->total_ganado_formatted }}</span>
                         <input type="hidden" name="total_ganado[]" value="{{ $personal->total_ganado }}">
                     </td>
@@ -57,7 +57,7 @@
                         <span>$ {{ $personal->total_ingresos_formatted }}</span>
                         <input type="hidden" name="total_ingresos[]" value="{{ $personal->total_ingreso }}">
                     </td>
-                    <td class="edit-item" style="cursor: pointer;">
+                    <td>
                         <span>$ {{ $personal->iess_formatted }}</span>
                         <input type="hidden" name="iess[]" value="{{ $personal->iess }}">
                     </td>
@@ -81,11 +81,11 @@
                         <span>$ {{ $personal->prestamo_jp_formatted }}</span>
                         <input type="hidden" name="prestamo_jp[]" value="{{ $personal->prestamo_jp }}">
                     </td>
-                    <td class="edit-item" style="cursor: pointer;">
+                    <td>
                         <span>$ {{ $personal->total_descuentos_formatted }}</span>
                         <input type="hidden" name="total_descuentos[]" value="{{ $personal->total_descuentos }}">
                     </td>
-                    <td class="edit-item" style="cursor: pointer;">
+                    <td>
                         <span>$ {{ $personal->total_recibir_formatted }}</span>
                         <input type="hidden" name="total_recibir[]" value="{{ $personal->total_recibir }}">
                     </td>
@@ -106,5 +106,5 @@
     <script>
         var manoObraUrl = "{{ route('jp.limpieza.mano.obra.create', $proyecto->id) }}"
     </script>
-    <script src="{{ asset('js/jp_limpieza/mano_obra.js') }}"></script>
+    <script src="{{ asset('js/jp_limpieza/mano_obra.js?v=' . config('app.version', '')) }}"></script>
 @endsection

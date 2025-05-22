@@ -14,11 +14,12 @@ class ManoObra extends Model
         'proyecto_id',
         'fecha_desde',
         'fecha_hasta',
+        'tipo',
     ];
 
     protected $casts = [
         'fecha_desde' => 'date',
-        'fecha_hasta' => 'date'
+        'fecha_hasta' => 'date',
     ];
 
     public function proyecto()
