@@ -46,7 +46,8 @@
                                     <th scope="col">Nro.</th>
                                     <th scope="col">Actividades </th>
                                     @for ($i = 1; $i <= $plazo_semanas; $i++)
-                                        <th class="text-center" data-semana={{ $i }}>
+                                        <th class="text-center {{ $proyecto->semanas_transcurridas == $i ? 'pintar-semana-en-curso' : '' }}"
+                                            data-semana={{ $i }}>
                                             <a
                                                 href="{{ route('proyecto.cronograma.actividades.semana', ['proyecto' => $proyecto, 'semana' => $i]) }}">{{ $i }}</a>
                                         </th>
@@ -59,7 +60,7 @@
                                 @endphp
                                 @forelse ($cronograma as $index => $rubro)
                                     <tr id="{{ $index }}">
-                                        <td class="aling-middle">{{ $nro }}</td>
+                                        <td class="aling-middle">{{ $nro }}ss</td>
                                         <td class="aling-middle">{{ $rubro['rubro_cronograma_nombre'] }}</td>
                                         @for ($i = 1; $i <= $plazo_semanas; $i++)
                                             <td class="aling-middle text-center editar-rubro {{ isset($rubro['semanas'][$i]) ? 'pintado_pendiente' : '' }}"

@@ -213,4 +213,15 @@ class Adquisicion extends Model
             ];
         });
     }
+
+    public function getSemanasAttribute()
+    {
+        $primerRegistro = $this->proyecto->mano_obra('created_at', 'asc')
+            ->first();
+
+        return obtenerSemanasEntreFechas($primerRegistro->fecha_inicio, $this->fecha);
+
+        //return ceil((Carbon::parse($primerRegistro->fecha_inicio)->diffInDays(now()) + 1) / 7);
+        //return semanasTranscurridas($primerRegistro->fecha_inicio);
+    }
 }

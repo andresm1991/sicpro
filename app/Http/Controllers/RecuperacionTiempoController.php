@@ -144,7 +144,7 @@ class RecuperacionTiempoController extends Controller
             $solicitud->fecha = Carbon::createFromFormat('d-m-Y', $request->fecha)->format('Y-m-d');
             $solicitud->hora_desde = $request->hora_inicio;
             $solicitud->hora_hasta = $request->hora_fin;
-            $solicitud->total = calcularTiempoTotal($solicitud->fecha, $solicitud->hora_desde, $solicitud->fecha, $solicitud->hora_hasta);
+            $solicitud->total = diferencia_horas("$solicitud->fecha $solicitud->hora_desde", "$solicitud->fecha $solicitud->hora_hasta");
             $solicitud->detalle = $request->detalle;
             $solicitud->estado_id = $request->estado ?? CatalogoDato::getIdCatalogo('estados.solicitud.pendiente');
             $solicitud->save();

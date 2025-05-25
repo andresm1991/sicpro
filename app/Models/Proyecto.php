@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Proyecto extends Model
 {
@@ -61,6 +62,12 @@ class Proyecto extends Model
     {
         return $this->hasMany(Cronograma::class);
     }
+
+    public function mano_obra()
+    {
+        return $this->hasMany(ManoObra::class);
+    }
+
     public static function presupuestoValorado($proyectoId)
     {
         return CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {
@@ -74,5 +81,16 @@ class Proyecto extends Model
                 }]);
             }])
             ->get();
+    }
+
+    public function getSemanasTranscurridasAttribute()
+    {
+        $primerRegistro = $this->mano_obra('created_at', 'asc')
+            ->first();
+
+        return semanaEnCurso($primerRegistro->fecha_inicio);
+
+        //return ceil((Carbon::parse($primerRegistro->fecha_inicio)->diffInDays(now()) + 1) / 7);
+        //return semanasTranscurridas($primerRegistro->fecha_inicio);
     }
 }

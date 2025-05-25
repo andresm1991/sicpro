@@ -46,14 +46,14 @@
             <div class="col-sm-4">
                 <div class="form-group">
                     <label class="col-form-label">Hora Desde <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('hora_inicio', old('hora_inicio', $reposicion->hora_desde ? Str::substr($reposicion->hora_desde, 0, 5) : '08:00'), ['class' => 'form-control timepicker', 'id' => 'hora_inicio', 'placeholder' => '0:00']) }}
+                    {{ Form::text('hora_inicio', old('hora_inicio', $reposicion->hora_desde ? Str::substr($reposicion->hora_desde, 0, 5) : '08:00'), ['class' => 'form-control timepickerSinHorario', 'id' => 'hora_inicio', 'placeholder' => '0:00']) }}
                     {!! $errors->first('hora_inicio', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                 </div>
             </div>
             <div class="col-sm-4">
                 <div class="form-group">
                     <label class="col-form-label">Hora Hasta <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('hora_fin', old('hora_fin', $reposicion->hora_hasta ? Str::substr($reposicion->hora_hasta, 0, 5) : '08:00'), ['class' => 'form-control timepicker', 'id' => 'hora_fin', 'placeholder' => '0:00']) }}
+                    {{ Form::text('hora_fin', old('hora_fin', $reposicion->hora_hasta ? Str::substr($reposicion->hora_hasta, 0, 5) : '08:00'), ['class' => 'form-control timepickerSinHorario', 'id' => 'hora_fin', 'placeholder' => '0:00']) }}
                     {!! $errors->first('hora_fin', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                 </div>
             </div>
@@ -83,5 +83,5 @@
 
 
 @section('scripts')
-    <script src="{{ asset('js/reposicion_tiempo_scripts.js') }}"></script>
+    <script src="{{ asset('js/reposicion_tiempo_scripts.js?v=' . config('app.version', '')) }}"></script>
 @endsection

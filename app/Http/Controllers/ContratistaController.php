@@ -2,21 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Constants\MessagesConstant;
-use App\Models\Articulo;
-use App\Models\CatalogoDato;
-use App\Models\Contratista;
-use App\Models\DetalleContratista;
-use App\Models\PagoOrdenTrabajoContratista;
-use App\Models\Proveedor;
-use App\Models\Proyecto;
-use App\Services\LogService;
-use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Throwable;
+use Carbon\Carbon;
+use App\Models\Articulo;
+use App\Models\Proyecto;
+use App\Models\Proveedor;
+use App\Models\Contratista;
+use App\Models\CatalogoDato;
+use App\Services\LogService;
+use Illuminate\Http\Request;
+use App\Models\DetalleContratista;
+use Illuminate\Support\Facades\DB;
+use App\Constants\MessagesConstant;
+use App\Enums\PushNotificationsEnum;
+use Illuminate\Support\Facades\Auth;
+use App\Services\PushNotificationService;
+use App\Models\PagoOrdenTrabajoContratista;
 
 class ContratistaController extends Controller
 {
@@ -129,6 +131,9 @@ class ContratistaController extends Controller
                     DetalleContratista::create($parametros);
                 }
                 DB::commit();
+
+                PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Contratista', 'Se registro una nueva orden de trabajo para el contratisa ' . $orden_trabajo->proveedor->razon_social, route('administrativo.index.contratistas'));
+
                 return redirect()->back()->with('success', 'Orden de trabajo contratista creada con éxito.');
             }
             throw new Exception(MessagesConstant::DEFAUL_ERROR);
@@ -313,6 +318,7 @@ class ContratistaController extends Controller
 
             if (PagoOrdenTrabajoContratista::create($pago)) {
                 DB::commit();
+                PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Pago contratista', 'Se genero un nuevo pago para el contratisa ' . $orden_trabajo->proveedor->razon_social, route('administrativo.index.contratistas'));
                 LogService::log('success', 'Pago orden de trabajo contratista registrado', ['user_id' => auth()->id(), 'action' => 'create']);
 
                 return redirect()->route('proyecto.adquisiciones.contratista.nuevo.pago.orden.trabajo', $route_params)->with('success', 'Pago a la Orden de trabajo contratista registrado con éxito.');

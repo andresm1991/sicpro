@@ -68,6 +68,9 @@ class PushNotificationService
                     'leido' => false,
                     'is_new' => true,
                 ]);
+            }
+
+            foreach ($users as $user) {
                 if ($user->notifications()->exists()) {
                     foreach ($user->notifications as $notification) {
                         // Verifica que 'subscriptions' no sea null

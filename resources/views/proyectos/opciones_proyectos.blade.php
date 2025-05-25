@@ -4,9 +4,14 @@
 
 @section('content')
     @include('partials.header_page')
-    <section class="content">
+    <section class="content d-flex justify-content-center align-items-center" style="height: calc(100vh - 200px)">
         <div class="container">
-            <div class="row align-items-center full-height">
+            <div class="col-12">
+                <h3 class="text-white text-center" style="padding: 0 10px 80px 10px">el proyecto se encuentra en la semana:
+                    {{ $proyecto->semanas_transcurridas }}
+                </h3>
+            </div>
+            <div class="row ">
                 <div class="col-sm-3 col-12">
                     <a href="{{ route('proyecto.informacion.general', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id]) }}"
                         class="nodo">

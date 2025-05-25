@@ -90,7 +90,7 @@ class TareaController extends Controller
                     'titulo' => $request->titulo,
                     'descripcion' => $request->descripcion,
                     'estado_id' => CatalogoDato::getIdCatalogo('estados.tarea.porhacer'),
-                    'categoria_id' => is_numeric($request->categoria_tarea) ? $request->categoria_tarea : (isset($request->categoria_tarea) ? newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda') : null),
+                    'categoria_id' => is_numeric($request->categoria_tarea) ? $request->categoria_tarea : (isset($request->categoria_tarea) ? newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda') : CatalogoDato::getIdCatalogo('categoria.agenda.laboral')),
                 ]);
 
                 foreach ($usuarios as $usuario) {

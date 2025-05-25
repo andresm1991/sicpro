@@ -101,7 +101,8 @@
     <div class="header">
         <img src="{{ logoBase64() }}" alt="Logo">
         <div class="order-number">
-            Adquisición Nro. <br>{{ $orden['numero_pedido'] }}
+            Adquisición Nro. {{ $orden['numero_pedido'] }}<br>
+            Semana: {{ $orden['semana'] }}
         </div>
     </div>
 

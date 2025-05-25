@@ -129,6 +129,63 @@ if (!function_exists('dateFormat')) {
         }
     }
 
+    function diferencia_horas($fechaInicio, $fechaFin)
+    {
+        $segundos = Carbon::parse($fechaInicio)->diffInSeconds(Carbon::parse($fechaFin));
+
+        return gmdate('H:i:s', $segundos);
+    }
+
+    function semanasTranscurridas($fechaInicio, $diaFinSemana = Carbon::SATURDAY)
+    {
+        $inicio = Carbon::parse($fechaInicio);
+        $hoy = Carbon::now();
+
+        // Ajustar ambas fechas al ciclo semanal deseado
+        $inicioAjustado = $inicio->copy()->previous($diaFinSemana);
+        $hoyAjustado = $hoy->copy()->previous($diaFinSemana);
+
+        return $inicioAjustado->diffInWeeks($hoyAjustado);
+    }
+
+    function semanaEnCurso($fechaIncio)
+    {
+        // Fechas de inicio y fin del rango
+        $start = Carbon::parse($fechaIncio)->startOfWeek(); // ajustamos al lunes
+        $end = Carbon::parse(now())->endOfWeek();     // ajustamos al domingo
+
+        // Creamos un periodo de semanas completas
+        $weeks = CarbonPeriod::create($start, '1 week', $end);
+
+        // Fecha actual
+        $today = Carbon::now();
+
+        // Variables de seguimiento
+        $weekNumber = 0;
+        $totalWeeks = 0;
+
+        foreach ($weeks as $weekStart) {
+            $totalWeeks++;
+            $weekEnd = (clone $weekStart)->endOfWeek();
+
+            if ($today->between($weekStart, $weekEnd)) {
+                $weekNumber = $totalWeeks;
+            }
+        }
+
+        return $weekNumber;
+    }
+
+    function obtenerSemanasEntreFechas($startDate, $endDate)
+    {
+        $start = Carbon::parse($startDate)->startOfWeek(); // lunes
+        $end = Carbon::parse($endDate)->endOfWeek();       // domingo
+
+        $period = CarbonPeriod::create($start, '1 week', $end);
+
+        return iterator_count($period);
+    }
+
     /**
      * Calcular la diferencia entre las fechas y horas en formato H:m.
      */
@@ -138,12 +195,16 @@ if (!function_exists('dateFormat')) {
         $fechaDesdeFormatted = validarYFormatearFecha($fechaDesde);
         $fechaHastaFormatted = validarYFormatearFecha($fechaHasta);
 
+        $horaDesde = substr($horaDesde, 0, 5);
+        $horaHasta = substr($horaHasta, 0, 5);
+
         // Crear objetos Carbon para el inicio y el fin
-        $inicio = Carbon::createFromFormat('Y-m-d H:i', "$fechaDesdeFormatted $horaDesde");
-        $fin = Carbon::createFromFormat('Y-m-d H:i', "$fechaHastaFormatted $horaHasta");
+        // Crea objetos Carbon (sin conversión automática a UTC)
+        $inicio = Carbon::createFromFormat('Y-m-d H:i', "$fechaDesdeFormatted $horaDesde", 'America/Lima');
+        $fin = Carbon::createFromFormat('Y-m-d H:i', "$fechaHastaFormatted $horaHasta", 'America/Lima');
 
         // Definir el horario laboral
-        $horaInicioLaboral = '08:00';
+        $horaInicioLaboral = '05:00';
         $horaFinLaboral = '18:00';
 
         // Inicializar el total de minutos laborales
