@@ -2305,7 +2305,14 @@ a[href="javascript:void(0);"] {
     cursor: pointer;
 }
 
+/*Pinta la semana en curso del proyecto en el cronograma valorado*/
+.pintar-semana-en-curso {
+    background-color: #53b450;
+}
 
+.pintar-semana-en-curso a {
+    color: white;
+}
 
 /*===========================================================*/
 /* Aqui inicia css para responsive*/

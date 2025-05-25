@@ -293,6 +293,41 @@ $(function () {
         }
     });
 
+    $('.timepickerSinHorario').timepicker({
+        timeFormat: 'HH:mm',
+        interval: 30,
+
+        defaultTime: false,
+        startTime: '08:00',
+        dynamic: false,
+        dropdown: true,
+        scrollbar: true,
+        useSelect: true,
+        change: function (time) {
+            const element = $(this);
+
+            // Evita loops infinitos
+            if (element.data('changing')) return;
+            element.data('changing', true);
+
+            let formattedTime = '';
+
+            if (time instanceof Date) {
+                const hours = String(time.getHours()).padStart(2, '0');
+                const minutes = String(time.getMinutes()).padStart(2, '0');
+                formattedTime = `${hours}:${minutes}`;
+            } else {
+                formattedTime = time;
+            }
+
+            // Establecer el nuevo valor y disparar el evento `change`
+            element.val(formattedTime);
+            element.trigger('change');
+
+            element.data('changing', false); // Reset
+        }
+    });
+
     $("select").select2({
         with: 'resolve',
     });

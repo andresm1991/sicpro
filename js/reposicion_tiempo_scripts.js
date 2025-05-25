@@ -180,7 +180,7 @@ $(function () {
             return;
         }
 
-        // Validar que ambas horas estén dentro del rango permitido
+        /*// Validar que ambas horas estén dentro del rango permitido
         if (!validarRangoHora(horaInicio)) {
             mensaje.text("La hora desde debe estar entre 08:00 y 18:00.");
             return;
@@ -188,7 +188,7 @@ $(function () {
         if (!validarRangoHora(horaFin)) {
             mensaje.text("La hora hasta debe estar entre 08:00 y 18:00.");
             return;
-        }
+        }*/
 
         // Convertir las horas a minutos para compararlas
         let [inicioHoras, inicioMinutos] = horaInicio.split(":").map(Number);
