@@ -8,7 +8,7 @@
         <div class="container">
             <div class="row justify-content-center align-items-center full-height">
                 <div class="col-sm-3 col-12">
-                    <a href="#" class="nodo" id="gerencia">
+                    <a href="{{ route('gerencia.index') }}" class="nodo" id="gerencia">
                         <img src="{{ asset('images/svg/manager.svg') }}" alt="Gerencia">
                         <span>Gerencia</span>
                     </a>

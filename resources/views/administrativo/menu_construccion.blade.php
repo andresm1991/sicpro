@@ -50,7 +50,7 @@
                 </div>
 
                 <div class="max-auto">
-                    <a href="{{ route('administrativo.caja.index') }}" class="nodo">
+                    <a href="" class="nodo">
                         <img src="{{ asset('images/svg/flujo-de-efectivo.svg') }}" alt="">
                         <span>caja</span>
                     </a>

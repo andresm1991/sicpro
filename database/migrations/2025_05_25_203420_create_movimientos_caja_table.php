@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('movimientos_caja', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('caja_id')->references('id')->on('cajas')->onDelete('cascade');
+            $table->date('fecha');
             $table->unsignedBigInteger('proveedor_id')->nullable();
             $table->enum('tipo', ['ingreso', 'egreso']);
             $table->decimal('monto', 14, 4);

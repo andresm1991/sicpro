@@ -49,6 +49,7 @@ Auth::routes();
 Route::group(['middleware' => ['auth']], function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
 
+    require base_path('routes/modules/gerencia.php');
     require base_path('routes/modules/proyectos.php');
     require base_path('routes/modules/sistema.php');
     require base_path('routes/modules/administrativo.php');
@@ -57,6 +58,7 @@ Route::group(['middleware' => ['auth']], function () {
     require base_path('routes/modules/solicitudes.php');
     require base_path('routes/modules/agenda.php');
     require base_path('routes/modules/jp_limpieza.php');
+
 
     // Perfil Usuario
     Route::group(['prefix' => 'mi-perfil', 'as' => 'perfil.'], function () {

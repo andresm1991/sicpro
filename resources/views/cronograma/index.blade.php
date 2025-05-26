@@ -60,7 +60,7 @@
                                 @endphp
                                 @forelse ($cronograma as $index => $rubro)
                                     <tr id="{{ $index }}">
-                                        <td class="aling-middle">{{ $nro }}ss</td>
+                                        <td class="aling-middle">{{ $nro }}</td>
                                         <td class="aling-middle">{{ $rubro['rubro_cronograma_nombre'] }}</td>
                                         @for ($i = 1; $i <= $plazo_semanas; $i++)
                                             <td class="aling-middle text-center editar-rubro {{ isset($rubro['semanas'][$i]) ? 'pintado_pendiente' : '' }}"
