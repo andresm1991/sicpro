@@ -283,8 +283,7 @@ $(function () {
                 $('[data-toggle="popover"]').popover({ html: true });
             }
         });
-    }
-    );
+    });
 
     function clearInputs() {
         $('#producto').val(null).trigger('change');

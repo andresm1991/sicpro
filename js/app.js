@@ -986,3 +986,46 @@ function limpiarCampos(campos) {
 function parsePrecio(texto) {
     return parseFloat(texto.replace(/[^\d.-]/g, '')) || 0;
 }
+
+
+
+//** Función para obtener la ubicación*/
+function getLocation() {
+    return new Promise(function (resolve, reject) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    // Resuelve la promesa con las coordenadas
+                    resolve({
+                        latitud: position.coords.latitude.toFixed(8),
+                        longitud: position.coords.longitude.toFixed(8)
+                    });
+                },
+                function (error) {
+                    // Rechaza la promesa con el error
+                    reject(error);
+                }
+            );
+        } else {
+            reject("La geolocalización no es compatible con este navegador.");
+        }
+    });
+}
+
+// Función para manejar errores
+function showError(error) {
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            alert("El usuario denegó la solicitud de geolocalización.");
+            break;
+        case error.POSITION_UNAVAILABLE:
+            alert("La información de ubicación no está disponible.");
+            break;
+        case error.TIMEOUT:
+            alert("La solicitud para obtener la ubicación del usuario excedió el tiempo de espera.");
+            break;
+        case error.UNKNOWN_ERROR:
+            alert("Ocurrió un error desconocido.");
+            break;
+    }
+}
