@@ -159,7 +159,7 @@ class TareaController extends Controller
 
                 $usuarios_notificacion = UsuarioTarea::where('tarea_id', $request->tarea_id)->pluck('usuario_id')->toArray();
 
-                PushNotificationService::sendNotification(PushNotificationsEnum::TAREAS, 'Comentario creado', "El usuario " . auth()->user()->nombre . " comento la tarea " . $tarea->titulo, route('tarea.visualizar', $tarea->id), $usuarios_notificacion);
+                PushNotificationService::sendNotification(PushNotificationsEnum::TAREAS, 'Tarea actualizada', "El usuario " . auth()->user()->nombre . " actualizo la tarea " . $tarea->titulo, route('tarea.visualizar', $tarea->id), $usuarios_notificacion);
 
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
             } catch (\Throwable $e) {

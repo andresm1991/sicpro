@@ -105,14 +105,11 @@ class SolicitudController extends Controller
 
             DB::commit();
 
-            try {
-                PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, "Solicitud", "Se genero una solicitud de {$store_solicitud->tipo_solicitud->descripcion} para el colaborador {$store_solicitud->usuario->nombre}", route('solicitud.permisos.show', $store_solicitud->id));
-            } catch (Throwable $e) {
-            }
+            PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, "Solicitud", "Se genero una solicitud de {$store_solicitud->tipo_solicitud->descripcion} para el colaborador {$store_solicitud->usuario->nombre}", route('solicitud.permisos.show', $store_solicitud->id));
+
             return redirect()->route('solicitud.permisos.create')->with('success', MessagesConstant::INSERT);
         } catch (Throwable $e) {
             DB::rollBack();
-            return $e;
             LogService::log('ERROR', 'Error al crear solicitud', ['execption' => $e, 'message' => $e->getMessage()]);
             return redirect()->route('solicitud.permisos.create')->with('success', MessagesConstant::DEFAUL_ERROR);
         }

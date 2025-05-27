@@ -38,7 +38,7 @@
                 <div class="form-group">
                     <label class="col-form-label">Fecha de reposición <i
                             class="fa-regular fa-asterisk fa-2xs"></i></label>
-                    {{ Form::text('fecha', old('fecha', $reposicion->fecha ? \Carbon\Carbon::createFromFormat('Y-m-d', $reposicion->fecha)->format('d-m-Y') : now()->format('d-m-Y')), ['class' => 'form-control datepicker-no-back', 'placeholder' => 'DD-MM-YYYY']) }}
+                    {{ Form::text('fecha', old('fecha', $reposicion->fecha ? \Carbon\Carbon::createFromFormat('Y-m-d', $reposicion->fecha)->format('d-m-Y') : now()->format('d-m-Y')), ['class' => 'form-control datepicker', 'placeholder' => 'DD-MM-YYYY']) }}
                     {!! $errors->first('fecha', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                 </div>
             </div>

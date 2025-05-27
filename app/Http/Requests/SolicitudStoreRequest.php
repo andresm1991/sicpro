@@ -25,7 +25,7 @@ class SolicitudStoreRequest extends FormRequest
         $rules = [
             'user' => 'required',
             'tipo_solicitud' => 'required',
-            'detalle' => 'required',
+            'detalle' => 'required|max:255',
         ];
 
         $catalogo = CatalogoDato::find($this->tipo_solicitud);
@@ -55,6 +55,7 @@ class SolicitudStoreRequest extends FormRequest
             'hora_inicio.before_or_equal' => 'La hora debe ser una hora anterior o igual a hora hasta.',
             'hora_fin.required' => 'Ingrese la hora final.',
             'detalle.required' => 'Ingrese el detalle de la solicitud.',
+            'detalle.max' => 'El detalle no debe exceder los 255 caracteres.',
         ];
     }
 }
