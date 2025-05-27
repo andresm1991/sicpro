@@ -56,6 +56,7 @@ $(function () {
     });
 
     $('.editar-rubro').on('click', function () {
+        console.log('Editar Rubro');
         // Obtener el número de semana desde el atributo 'data-semana'
         let semana = $(this).data('semana');
         let rubro = $(this).data('rubro');
@@ -258,4 +259,31 @@ $(function () {
             );
         });
     }
+
+    $(document).on('click', '.editar-actividad', function () {
+        // Aquí va tu lógica
+        let id = $(this).attr('id');
+        let nombre = $(this).text().trim();
+        Swal.fire({
+            title: 'Informacion de la Actividad',
+            input: 'text',
+            inputValue: nombre,
+            showCancelButton: true,
+            confirmButtonText: 'Actualizar',
+            cancelButtonText: 'Cancelar',
+            didOpen: () => {
+
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var value = parsePrecio(result.value) || '0.00'
+                // Actualizar el valor en el campo
+                $span.text('$ ' + value);
+                $input.val(value);
+
+                // Recalcular valores dependientes
+                recalculateDependentValues($tr, colName);
+            }
+        });
+    });
 });
