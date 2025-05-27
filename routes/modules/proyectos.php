@@ -84,7 +84,8 @@ Route::group(['prefix' => 'proyectos', 'as' => 'proyecto.'], function () {
         Route::post('/{proyecto}/semana/{semana}/rubro/{rubro}', [CronogramaController::class, 'storeActividadesDiaSemana'])->name('store.actividad.dias.semana');
         Route::get('/{proyecto}/semana/{semana}/rubro/{rubro}/editar', [CronogramaController::class, 'editarCronogramaDiaSemana'])->name('edit.actividad.dia.semana');
         Route::put('/{proyecto}/semana/{semana}', [CronogramaController::class, 'updateActividadesDiaSemana'])->name('update.actividades.semana');
-
         Route::post('{proyecto}/guardar/rubro-cronograma', [CronogramaController::class, 'ajaxStoreRubrosCronograma']);
+        Route::put('{proyecto}/actualizar-actividad/{rubro}', [CronogramaController::class, 'ajaxUpdateActividadCronograma']);
+        Route::delete('{proyecto}/eliminar-actividad/{rubro}', [CronogramaController::class, 'destroyCronogramaRubro']);
     });
 });

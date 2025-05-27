@@ -71,6 +71,7 @@ class CronogramaController extends Controller
             ];
         });
 
+
         $rubros_cronograma = RubroCronograma::where('activo', true)->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
 
         $total_estructural = $categorias->sum(function ($categoria) {
@@ -311,6 +312,51 @@ class CronogramaController extends Controller
             DB::rollBack();
             LogService::log('ERROR', 'ajaxStoreRubrosCronograma', ['error' => $e]);
             return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
+        }
+    }
+
+    public function ajaxUpdateActividadCronograma(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
+                $id = $request->rubro;
+                $descripcion = $request->nombre;
+
+                // Actualizar o crear la actividad del cronograma
+                RubroCronograma::updateOrCreate(
+                    ['id' => $id],
+                    ['descripcion' => $descripcion]
+                );
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                LogService::log('ERROR', 'ajaxUpdateActividadCronograma', ['error' => $e]);
+                return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
+            }
+        }
+    }
+
+    public function destroyCronogramaRubro(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
+                return $request->proyecto;
+                $id = $request->rubro;
+                // Eliminar el rubro del cronograma
+
+                Cronograma::where('rubro_cronograma_id', $id)
+                    ->where('proyecto_id', $request->proyecto)->delete();
+
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::DELETE]);
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                LogService::log('ERROR', 'destroyRubroCronograma', ['error' => $e]);
+                return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
+            }
         }
     }
     /*
