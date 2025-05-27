@@ -268,21 +268,111 @@ $(function () {
             title: 'Informacion de la Actividad',
             input: 'text',
             inputValue: nombre,
+            showDenyButton: true,
             showCancelButton: true,
             confirmButtonText: 'Actualizar',
+            denyButtonText: 'Eliminar',
             cancelButtonText: 'Cancelar',
             didOpen: () => {
 
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                var value = parsePrecio(result.value) || '0.00'
-                // Actualizar el valor en el campo
-                $span.text('$ ' + value);
-                $input.val(value);
+                let nuevoNombre = result.value;
+                $.ajax({
+                    url: 'actualizar-actividad/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'PUT',
+                    data: { nombre: nuevoNombre },
+                    beforeSend: function () {
 
-                // Recalcular valores dependientes
-                recalculateDependentValues($tr, colName);
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.success ? "success" : "error",
+                            text: response.message,
+                            confirmButtonText: 'Aceptar',
+                        }).then((result) => {
+                            if (response.success) {
+                                location.reload();
+                            }
+                        });
+                    },
+                    complete: function () {
+                        $('#modal-overlay').hide();
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    switch (jqXHR.status) {
+                        case 422: // ERROR INPUT VALIDATE
+                            break;
+
+                        case 419: // ERROR EXPIRATE SESSION
+                            window.location = '/';
+                            break;
+
+                        default:
+                            var errors = JSON.parse(jqXHR.responseText);
+                            Swal.fire(
+                                'Ups.!',
+                                'Algo salió mal, por favor vuelva a intentarlo.',
+                                'error'
+                            )
+                            console.log(errors)
+                    }
+                });
+
+            } else if (result.isDenied) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción eliminará la actividad.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'eliminar-actividad/' + id,
+                            headers: { 'X-CSRF-TOKEN': csrf },
+                            type: 'DELETE',
+                            beforeSend: function () {
+
+                            },
+                            success: function (response) {
+                                Swal.fire({
+                                    icon: response.success ? "success" : "error",
+                                    text: response.message,
+                                    confirmButtonText: 'Aceptar',
+                                }).then((result) => {
+                                    if (response.success) {
+                                        location.reload();
+                                    }
+                                });
+                            },
+                            complete: function () {
+
+                            }
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            switch (jqXHR.status) {
+                                case 422: // ERROR INPUT VALIDATE
+                                    break;
+
+                                case 419: // ERROR EXPIRATE SESSION
+                                    window.location = '/';
+                                    break;
+
+                                default:
+                                    var errors = JSON.parse(jqXHR.responseText);
+                                    Swal.fire(
+                                        'Ups.!',
+                                        'Algo salió mal, por favor vuelva a intentarlo.',
+                                        'error'
+                                    )
+                                    console.log(errors)
+                            }
+                        });
+                    }
+                });
             }
         });
     });

@@ -296,9 +296,8 @@ $(function () {
     $('.timepickerSinHorario').timepicker({
         timeFormat: 'HH:mm',
         interval: 30,
-
         defaultTime: false,
-        startTime: '08:00',
+        startTime: '06:00',
         dynamic: false,
         dropdown: true,
         scrollbar: true,
