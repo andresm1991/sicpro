@@ -21,10 +21,16 @@ $(function () {
             $('#fondos').attr('readonly', false);
             $('#decimo_tercero').attr('readonly', false);
             $('#decimo_cuarto').attr('readonly', false);
+            $('#iess').attr('readonly', false);
+            $('#fondos').val('');
+            $('#decimo_tercero').val('');
+            $('#decimo_cuarto').val('');
+            $('#iess').val('');
         } else {
             $('#fondos').attr('readonly', true);
             $('#decimo_tercero').attr('readonly', true);
             $('#decimo_cuarto').attr('readonly', true);
+            $('#iess').attr('readonly', true);
         }
     });
     /// Evento de ingreso total ganado
@@ -210,7 +216,7 @@ $(function () {
 
         var tipoPlantilla = $("#tipo_plantilla").val();
 
-        if (tipoPlantilla == 'JPLIMPIEZA' && (colName == 'fondos' || colName == 'decimo_tercero' || colName == 'decimo_cuarto')) {
+        if (tipoPlantilla == 'JPLIMPIEZA' && (colName == 'fondos' || colName == 'decimo_tercero' || colName == 'decimo_cuarto' || colName == 'iess')) {
             return;
         }
 
@@ -400,6 +406,7 @@ $(function () {
     });
 
     function cacularTotalRecibir() {
+
         let totalIngresos = parsePrecio($("#total_ingresos").text()) || 0;
         let totalDescuentos = parsePrecio($("#total_descuentos").text()) || 0;
         let totalRecibir = totalIngresos - totalDescuentos;
