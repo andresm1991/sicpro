@@ -157,5 +157,5 @@
 ])
 
 @section('scripts')
-    <script src="{{ asset('js/cronograma_scripts.js') }}" type="module"></script>
+    <script src="{{ asset('js/cronograma_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
 @endsection
