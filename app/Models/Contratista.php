@@ -10,7 +10,7 @@ class Contratista extends Model
 {
     use HasFactory;
     protected $table = 'contratistas';
-    protected $fillable = ['fecha', 'plazo_semanas', 'proveedor_id', 'articulo_id', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'estado_id', 'numero_casas'];
+    protected $fillable = ['fecha', 'plazo_semanas', 'proveedor_id', 'articulo_id', 'proyecto_id', 'etapa_id', 'tipo_etapa_id', 'usuario_id', 'estado_id', 'numero_casas', 'subproyecto'];
 
     public function detalle_contratistas()
     {

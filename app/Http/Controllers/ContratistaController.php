@@ -95,6 +95,7 @@ class ContratistaController extends Controller
         $precio_unitario = $request->precio_unitario;
         $plazo = $request->plazo_semanas;
         $nro_casas = $request->numero_casas;
+        $subproyecto = $request->subproyecto;
 
         try {
             DB::beginTransaction();
@@ -213,6 +214,7 @@ class ContratistaController extends Controller
             $orden_trabajo = Contratista::find($request->contratista);
             $orden_trabajo->plazo_semanas = $plazo;
             $orden_trabajo->numero_casas = $nro_casas;
+            $orden_trabajo->subproyecto = $request->subproyecto;
 
             if ($orden_trabajo->save()) {
                 foreach ($productos as $index => $producto) {

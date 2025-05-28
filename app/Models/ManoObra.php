@@ -18,7 +18,8 @@ class ManoObra extends Model
         'etapa_id',
         'tipo_etapa_id',
         'actividad_id',
-        'usuario_id'
+        'usuario_id',
+        'subproyecto',
     ];
 
     public function detalle_mano_obra()

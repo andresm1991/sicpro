@@ -302,6 +302,7 @@ class ManoObraController extends Controller
                     'tipo_etapa_id' => $request->tipo_etapa,
                     'usuario_id' => Auth::user()->id,
                     'actividad_id' => null,
+                    'subproyecto' => $request->subproyecto,
                 ];
 
                 if (is_numeric($request->actividad)) {
@@ -382,6 +383,7 @@ class ManoObraController extends Controller
             try {
                 DB::beginTransaction();
                 $mano_obra->fecha_fin = $fechaFin;
+                $mano_obra->subproyecto = $request->subproyecto;
 
                 if ($mano_obra->save()) {
                     DB::commit();
