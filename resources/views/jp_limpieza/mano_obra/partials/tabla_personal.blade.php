@@ -53,11 +53,11 @@
                         <span>$ {{ $personal->decimo_cuarto_formatted }}</span>
                         <input type="hidden" name="decimo_cuarto[]" value="{{ $personal->decimo_cuarto }}">
                     </td>
-                    <td class="edit-item" style="cursor: pointer;">
+                    <td>
                         <span>$ {{ $personal->total_ingresos_formatted }}</span>
                         <input type="hidden" name="total_ingresos[]" value="{{ $personal->total_ingreso }}">
                     </td>
-                    <td>
+                    <td class="edit-item" style="cursor: pointer;">
                         <span>$ {{ $personal->iess_formatted }}</span>
                         <input type="hidden" name="iess[]" value="{{ $personal->iess }}">
                     </td>
