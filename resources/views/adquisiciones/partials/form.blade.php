@@ -9,6 +9,11 @@
             {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
             {{ Form::text('etapa', $tipo_adquisicion->descripcion, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
         </div>
+
+        <div class="form-group">
+            {{ Form::label('', 'SubProyecto', ['class' => 'col-form-label']) }}
+            {{ Form::text('subproyecto', $orden_pedido->subproyecto, ['class' => 'form-control text-capitalize', 'placeholder' => 'opcional']) }}
+        </div>
     </div>
     <div class="col-md-6 col-12">
         <div class="form-group">
@@ -73,6 +78,7 @@
         </div>
 
     </div>
+
 </div>
 
 @include('adquisiciones.partials.items')

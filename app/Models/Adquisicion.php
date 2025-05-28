@@ -21,6 +21,7 @@ class Adquisicion extends Model
         'tipo_adquisicion',
         'factura',
         'archivo',
+        'subproyecto',
     ];
 
     public function proyecto()

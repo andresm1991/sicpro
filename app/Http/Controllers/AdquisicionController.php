@@ -147,6 +147,7 @@ class AdquisicionController extends Controller
 
         $orden_completa = isset($request->orden_completa) ? true : false;
         $inventario = $request->inventario;
+        $subproyecto = $request->subproyecto;
 
         try {
             DB::beginTransaction();
@@ -159,6 +160,7 @@ class AdquisicionController extends Controller
                 'tipo_etapa_id' => $etapa_id,
                 'usuario_id' => Auth::user()->id,
                 'estado' => $orden_completa ? 'Finalizado' : 'En Proceso',
+                'subproyecto' => $subproyecto,
             ]);
 
             if ($adquisicion) {
@@ -318,6 +320,8 @@ class AdquisicionController extends Controller
             }, $request->productos, $request->cantidad, $request->necesidad, $request->km, $unidad_medida, $precio);
 
             $pedido->estado = $orden_completa ? 'Finalizado' : 'En Proceso';
+            $pedido->subproyecto = $request->subproyecto;
+
             if (!$pedido->save()) {
                 throw new Exception('Error al intentar actualizar el estado de la adquisición.');
             }
