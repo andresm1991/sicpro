@@ -110,6 +110,7 @@ class ContratistaController extends Controller
                 'usuario_id' => Auth::user()->id,
                 'estado_id' => 38,
                 'numero_casas' => $nro_casas,
+                'subproyecto' => $subproyecto,
             ];
 
             if ($orden_trabajo = Contratista::create($orden_trabajo_param)) {

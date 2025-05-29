@@ -35,6 +35,12 @@
                         </div>
                         <div class="col-md-6 col-12">
                             <div class="form-group">
+                                {{ Form::label('', 'subProyecto', ['class' => 'col-form-label']) }}
+                                {{ Form::text('subproyecto', '', ['class' => 'form-control', 'placeholder' => 'opcional']) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-12">
+                            <div class="form-group">
                                 @if (strtolower($tipo_adquisicion->descripcion) == 'acabados')
                                     {{ Form::label('', 'Actividad', ['class' => 'col-form-label']) }}
                                     {{ Form::select('actividad', [], null, ['class' => 'form-control select2-tag', 'data-placeholder' => 'Seleccionar activdad']) }}
