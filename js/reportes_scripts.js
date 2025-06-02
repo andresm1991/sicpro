@@ -32,6 +32,9 @@ $(function () {
     });
 
 
+    /**
+     * Visualizar reportes de adquisiciones
+     */
     $('#visualizar-reporte').on('click', function () {
         let tipo_reporte_text = $('select[name=tipo] option:selected').text();
         let tipo_reporte = $('select[name=tipo]').val();
@@ -63,9 +66,9 @@ $(function () {
             success: function (response) {
                 const data = response.result;
                 let totalGeneral = 0;
+                let totalProductos = 0;
 
                 $('#table-view-reporte').empty();
-                console.log(data);
                 if (!response.success || data.length == 0) {
                     Swal.fire(
                         'Ups.!',
@@ -213,6 +216,8 @@ $(function () {
                         valor = parseFloat(valor);
 
                         totalGeneral += valor
+                        totalProductos += item.cantidad;
+
                         return `
                                 <tr>
                                     <td>${item.adquisicion.fecha}</td>
@@ -232,9 +237,13 @@ $(function () {
                     }).join('')}
                         </tbody>
                         <tfoot>
+                        ${producto != '' ? `<tr>
+                                <td colspan="${producto != '' ? '11' : '10'}" class="text-right"><strong>Total Productos:</strong></td>
+                                <td class="text-right"><strong>${totalProductos}</strong></td>
+                            </tr>` : ''}
                             <tr>
-                                <td colspan="${producto != '' ? '8' : '7'}" class="text-right"><strong>Total General:</strong></td>
-                                <td colspan="2" class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
+                                <td colspan="${producto != '' ? '11' : '10'}" class="text-right"><strong>Total General:</strong></td>
+                                <td class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
                             </tr>
                         </tfoot>
                         </table>
@@ -400,6 +409,55 @@ $(function () {
                     });
 
                     habilitarCampos();
+
+                    $('[data-toggle="tooltip"]').tooltip();
+                    $('[data-toggle="popover"]').popover({ html: true });
+                },
+                complete: function () {
+
+                }
+            }).fail(function (jqXHR, textStatus, errorThrown) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        var errors = JSON.parse(jqXHR.responseText);
+                        Swal.fire(
+                            'Ups.!',
+                            'Algo salió mal, por favor vuelva a intentarlo.',
+                            'error'
+                        )
+                        console.log(errors)
+                }
+            });
+        }
+    });
+
+    $('select[name=proyecto], select[name=tipo]').on('change', function () {
+        let proyectoId = $('select[name=proyecto]').val();
+        let tipoId = $('select[name=tipo]').val();
+
+        if (proyectoId != '' && tipoId != '') {
+            $.ajax({
+                url: 'filtro-reporte-adquisiciones/subproyectos/' + proyectoId + '/' + tipoId,
+                headers: { 'X-CSRF-TOKEN': csrf },
+                type: 'GET',
+                beforeSend: function () {
+                    $('select[name=subproyecto]').empty();
+                },
+                success: function (response) {
+                    $('select[name=subproyecto]').append('<option value=""></option>');
+                    $.each(response.subproyectos, function (index, name) {
+                        $('select[name=subproyecto]').append(
+                            '<option value="' + index + '">' + name + '</option>'
+                        );
+                    });
 
                     $('[data-toggle="tooltip"]').tooltip();
                     $('[data-toggle="popover"]').popover({ html: true });
