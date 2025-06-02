@@ -7,6 +7,7 @@ Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
     Route::get('/', [ReporteriaController::class, 'index'])->name('index');
     Route::get('/adquisiciones', [ReporteriaController::class, 'reporteAdquisiciones'])->name('adquisiciones');
     Route::get('/datos-filtro-reporte-adquisiciones', [ReporteriaController::class, 'filtroReportesAdquisiciones']);
+    Route::get('/filtro-reporte-adquisiciones/subproyectos/{proyecto}/{tipo}', [ReporteriaController::class, 'filtroSubProyectosAdquisiciones']);
     Route::post('/visulizar-reporte-adquisiciones', [ReporteriaController::class, 'visualizarReporteAdquisiciones']);
 
     Route::get('/gasolina-camioneta', [ReporteriaController::class, 'reporteGasolinaCamioneta'])->name('gasolina.camioneta');

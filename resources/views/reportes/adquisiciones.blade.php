@@ -72,6 +72,11 @@
                         </div>
 
                         <div class="form-group col-sm-4">
+                            <label for="" class="col-form-label">SubProyecto </label>
+                            {{ Form::select('subproyecto', [], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione subproyecto', 'data-allow-clear' => 'true']) }}
+                        </div>
+
+                        <div class="form-group col-sm-4">
                             <label for="" class="col-form-label">Etapa </label>
                             {{ Form::select('etapa', $etapas, '', ['class' => 'form-control', 'data-placeholder' => 'seleccione etapa', 'data-allow-clear' => 'true']) }}
                         </div>

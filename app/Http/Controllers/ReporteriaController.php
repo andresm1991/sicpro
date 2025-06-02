@@ -56,10 +56,11 @@ class ReporteriaController extends Controller
     {
         if ($request->ajax()) {
             $tipo = $request->input('tipo');
-            $result = ['proveedores' => null, 'productos' => null, 'cargos' => null];
+            $result = ['subproyecto' => null, 'proveedores' => null, 'productos' => null, 'cargos' => null];
 
             $tipo_proveedor = $tipo == 'materiales_y_herramientas' ? 'meteriales.herramientas' : ($tipo == 'servicios' ? 'servicios' : ($tipo == 'contratistas' ? 'contratista' : ($tipo == 'mano_de_obra' ? 'mano.obra' : '')));
 
+            /// Obtener los proveedores segun la categoria
             $proveedores = Proveedor::whereHas('categoria_proveedor', function ($query) use ($tipo_proveedor) {
                 $query->where('slug', $tipo_proveedor);
             })->orderBy('razon_social', 'asc')
@@ -83,6 +84,31 @@ class ReporteriaController extends Controller
             return response()->json([
                 'success' => true,
                 'result' => $result,
+            ]);
+        }
+    }
+
+    public function filtroSubProyectosAdquisiciones(Request $request)
+    {
+        if ($request->ajax()) {
+            $proyectoId = $request->proyecto;
+            $tipo = CatalogoDato::find($request->tipo);
+            $result = [];
+            if ($tipo->slug == 'contratista') {
+                $subproyecto = Contratista::where('proveedor_id', $proyectoId)->where('subproyecto', '!=', null)
+                    ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+            } elseif ($tipo->slug == 'mano.obra') {
+                $subproyecto = ManoObra::where('proyecto_id', $proyectoId)->where('subproyecto', '!=', null)
+                    ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+            } else {
+                $subproyecto = Adquisicion::where('proyecto_id', $proyectoId)
+                    ->where('tipo_etapa_id', $tipo->id)->where('subproyecto', '!=', null)
+                    ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+            }
+
+            return response()->json([
+                'success' => true,
+                'subproyectos' => $subproyecto,
             ]);
         }
     }
