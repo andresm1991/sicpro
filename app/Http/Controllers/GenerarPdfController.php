@@ -453,6 +453,10 @@ class GenerarPdfController extends Controller
         return $pdf->stream('resuemen_pago_semanal.pdf');
     }
 
+    /**
+     * Reporte de adquisiciones 
+     * Materiales y Herramientas / Servicios
+     */
     public function reportAdquisiciones(Request $request, $tipo_reporte)
     {
         $ordenado = $request->input('ordenado'); // Ejemplo: "secuencial"
@@ -497,6 +501,12 @@ class GenerarPdfController extends Controller
             return floatval(str_replace(['$', ','], '', $saldo));
         })->sum() ?? 0;
 
+        $totalCantidades = $query->map(function ($item) {
+            // Verificar si 'cantidad' existe antes de usarlo
+            $total = isset($item['cantidad']) ? $item['cantidad'] : 0;
+            return $total;
+        })->sum() ?? 0;
+
         $producto = $producto != '' ? Articulo::find($producto) : '';
         $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';
         $cargo = $cargo != '' ? Articulo::find($cargo) : '';
@@ -505,7 +515,7 @@ class GenerarPdfController extends Controller
             return Excel::download(new ReportAdquisicionesExport($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos, $view), $view . '.xlsx');
         }
 
-        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos'))->setPaper('a3', 'landscape');
+        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos', 'totalCantidades'))->setPaper('a3', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 

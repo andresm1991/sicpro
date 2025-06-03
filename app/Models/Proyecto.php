@@ -68,6 +68,11 @@ class Proyecto extends Model
         return $this->hasMany(ManoObra::class);
     }
 
+    public function contratista()
+    {
+        return $this->hasMany(Contratista::class);
+    }
+
     public static function presupuestoValorado($proyectoId)
     {
         return CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {

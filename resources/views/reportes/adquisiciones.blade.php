@@ -82,7 +82,7 @@
                         </div>
 
                         <div class="form-group col-sm-4">
-                            <label for="" class="col-form-label">Tipo </label>
+                            <label for="" class="col-form-label">Tipo adquisicion </label>
                             {{ Form::select('tipo', $tipoAdquisiciones, '', ['class' => 'form-control', 'data-placeholder' => 'seleccione tipo', 'data-allow-clear' => 'true']) }}
                         </div>
 
@@ -115,7 +115,7 @@
                             <label for="" class="col-form-label">Tipo reporte </label>
                             {{ Form::select(
                                 'tipo_reporte',
-                                ['' => ''] + ['administrativo' => 'Administrativo', 'operativo' => 'Operativo'],
+                                ['' => ''] + ['administrativo' => 'Administrativo', 'operativo' => 'Operativo', 'global' => 'Global'],
                                 '',
                                 ['class' => 'form-control', 'data-placeholder' => 'Seleccione tipo reporte', 'data-allow-clear' => 'true'],
                             ) }}

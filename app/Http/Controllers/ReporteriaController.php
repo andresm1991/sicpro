@@ -121,15 +121,25 @@ class ReporteriaController extends Controller
     {
         try {
             $tipo = $request->input('tipo');
+            $tipo_reporte = $request->input('tipo_reporte');
 
-            $tipoAdquisisicon = CatalogoDato::find($tipo);
-            if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
-                $query = Adquisicion::dataReporteAdquisiciones($request);
-            } elseif ($tipoAdquisisicon->slug == 'contratista') {
-                $query = Contratista::filtroContratista($request);
+            if ($tipo_reporte == 'global') {
+                $query = Adquisicion::reporteGlobalAdquisiciones($request);
+                return response()->json([
+                    'success' => true,
+                    'result' => $query,
+                ]);
             } else {
-                $query = ManoObra::filtroManoObra($request);
+                $tipoAdquisisicon = CatalogoDato::find($tipo);
+                if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
+                    $query = Adquisicion::dataReporteAdquisiciones($request);
+                } elseif ($tipoAdquisisicon->slug == 'contratista') {
+                    $query = Contratista::filtroContratista($request);
+                } else {
+                    $query = ManoObra::filtroManoObra($request);
+                }
             }
+
             return response()->json([
                 'success' => true,
                 'result' => $query,

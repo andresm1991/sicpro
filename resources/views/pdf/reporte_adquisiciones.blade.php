@@ -301,6 +301,11 @@
             </tbody>
         </table>
 
+        @if ($producto != '')
+            <h2 class="text-right">Total Cantidades: <strong>
+                    ${{ number_format($totalCantidades, 2) }}</strong></h2>
+        @endif
+
         <h2 class="text-right">Total General: <strong>
                 ${{ number_format($totalGeneral, 4) }}</strong></h2>
 

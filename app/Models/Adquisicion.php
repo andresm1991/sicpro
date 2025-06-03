@@ -221,6 +221,213 @@ class Adquisicion extends Model
         });
     }
 
+    /**
+     * Reporte global
+     */
+
+    public static function reporteGlobalAdquisiciones($request)
+    {
+        $ordenado = $request->input('ordenado');
+        $fechas = $request->input('fechas');
+        $estado = $request->input('estado');
+        $proyecto = $request->input('proyecto');
+        $etapa = $request->input('etapa');
+        $tipo = $request->input('tipo');
+        $necesidad = $request->input('necesidad');
+        $costo = $request->input('costo');
+        $proveedor = $request->input('proveedor');
+        $producto = $request->input('producto');
+        $tipo_reporte = $request->input('tipo_reporte');
+        $forma_pago = $request->input('forma_pago');
+        $subproyecto = $request->input('subproyecto');
+
+        $query = self::with(['proyecto', 'etapa', 'tipo_etapa', 'orden_recepcion', 'orden_recepcion.forma_pago', 'orden_recepcion.proveedor', 'proyecto.contratista', 'proyecto.mano_obra']);
+
+        if ($request->filled('proyecto')) {
+            $query->where('proyecto_id', $proyecto);
+        }
+
+        $query->when($estado, function ($q, $estado) {
+            if ($estado == 'pendientes') {
+                $q->whereIn('estado', ['En Proceso', 'Finalizado']);
+            } else {
+                $q->where('estado', 'Completado');
+            }
+        });
+
+        // Filtrar por proyecto
+        /*$query->when($proyecto, function ($q, $proyecto) {
+            $q->where('proyecto_id', $proyecto);
+        });*/
+
+        // Filtrar por etapa
+        $query->when($etapa, function ($q, $etapa) {
+            $q->where('etapa_id', $etapa);
+        });
+
+        // Filtrar por tipo_etapa
+        $query->when($tipo, function ($q, $tipo) {
+            $q->where('tipo_etapa_id', $tipo);
+        });
+
+        // Filtrar por costo (INDIRECTOS O DIRECTOS)
+        $query->when($costo, function ($q, $costo) {
+            $q->where('etapa_id', $costo);
+        });
+
+        $query->when($subproyecto, function ($q, $subproyecto) {
+            $q->where('subproyecto', $subproyecto);
+        });
+
+        // Filtrar por necesidad
+        $query->when($necesidad, function ($q, $necesidad) {
+            $q->whereHas('adquisiciones_detalle', function ($query) use ($necesidad) {
+                $query->where('necesidad', $necesidad);
+            })->with(['adquisiciones_detalle' => function ($query) use ($necesidad) {
+                $query->select('adquisicion_id', 'cantidad_solicitada', 'articulo_id')
+                    ->where('necesidad', $necesidad); // Filtrar por el producto específico
+            }]);
+        });
+
+        // Filtrar por producto y obtener la cantidad
+        $query->when($producto, function ($q, $producto) {
+            $q->whereHas('adquisiciones_detalle', function ($query) use ($producto) {
+                $query->where('articulo_id', $producto);
+            })->with(['adquisiciones_detalle' => function ($query) use ($producto) {
+                $query->where('articulo_id', $producto); // Filtrar por el producto específico
+            }]);
+        });
+
+        // Filtrar por proveedor
+        $query->when($proveedor, function ($q, $proveedor) {
+            $q->whereHas('orden_recepcion', function ($query) use ($proveedor) {
+                $query->where('proveedor_id', $proveedor);
+            });
+        });
+
+        // Filtrar por rango de fechas
+        $query->when($fechas, function ($q) use ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+        });
+
+        // Filtrar por la forma de pago
+        $query->when($forma_pago, function ($q, $forma_pago) {
+            $q->whereHas('orden_recepcion', function ($query) use ($forma_pago) {
+                $query->where('forma_pago_id', $forma_pago);
+            });
+        });
+
+        // Ordenar por secuencial u otro criterio
+        switch ($ordenado) {
+            case 'secuencial':
+                $query->orderBy('numero', 'asc');
+                break;
+            case 'fecha':
+                $query->orderBy('fecha', 'asc');
+                break;
+            case 'alfabetico':
+                $query->orderBy('tipo_adquisicion', 'asc');
+                break;
+            default:
+
+                break;
+        }
+
+        $resultado = [];
+
+        foreach ($query->get() as $adquisicion) {
+            $proyecto = $adquisicion->proyecto;
+            $proyectoNombre = $proyecto->nombre_proyecto ?? 'Sin proyecto';
+            $etapaNombre = $adquisicion->etapa->descripcion ?? 'Sin etapa';
+
+            if (!isset($resultado[$proyectoNombre][$etapaNombre])) {
+                // Contratistas del proyecto y etapa
+                $contratistas = $proyecto->contratista ?? collect();
+                $contratistasArray = [];
+                foreach ($contratistas as $contratista) {
+                    // Solo incluir si la etapa coincide
+                    if (($contratista->etapa_id ?? null) == $adquisicion->etapa_id) {
+                        $detalleContratistas = $contratista->detalle_contratistas ?? collect();
+                        $totalContratista = $detalleContratistas->sum(function ($detalle) {
+                            return ($detalle->cantidad ?? 0) * ($detalle->valor_unitario ?? 0);
+                        });
+
+                        $categoriaNombre = $contratista->articulo->descripcion ?? 'Sin categoría';
+                        $proveedorNombre = $contratista->proveedor->razon_social ?? 'Sin proveedor';
+
+                        // Clave única por proveedor y categoría
+                        $key = $proveedorNombre . '|' . $categoriaNombre;
+
+                        if (!isset($contratistasArray[$key])) {
+                            $contratistasArray[$key] = [
+                                'proveedor' => $proveedorNombre,
+                                'categoria' => $categoriaNombre,
+                                'cantidad' => $detalleContratistas->count(),
+                                'total' => $totalContratista
+                            ];
+                        } else {
+                            $contratistasArray[$key]['cantidad'] += $detalleContratistas->count();
+                            $contratistasArray[$key]['total'] += $totalContratista;
+                        }
+                    }
+                }
+                $contratistasArray = array_values($contratistasArray);
+
+                // Mano de obra del proyecto y etapa
+                $manosObra = $proyecto->mano_obra ?? collect();
+                // Filtrar mano_obra por etapa si corresponde
+                $manosObraEtapa = $manosObra->where('etapa_id', $adquisicion->etapa_id);
+                // Obtener pares únicos de fecha_inicio y fecha_fin
+                $uniqueFechas = $manosObraEtapa->unique(function ($item) {
+                    return $item->fecha_inicio . '|' . $item->fecha_fin;
+                });
+
+                $detalleManoObra = $manosObraEtapa->flatMap->detalle_mano_obra;
+                $totalManoObra = $detalleManoObra->sum(function ($detalle) {
+                    return ($detalle->valor ?? 0) + ($detalle->adicional ?? 0) - ($detalle->descuento ?? 0);
+                });
+
+                $resultado[$proyectoNombre][$etapaNombre] = [
+                    'contratista' => $contratistasArray,
+                    'mano_obra' => [[
+                        'cantidad' => $uniqueFechas->count(),
+                        'total' => $totalManoObra
+                    ]],
+                    'articulos' => []
+                ];
+            }
+
+            foreach ($adquisicion->adquisiciones_detalle as $detalle) {
+                $articuloId = $detalle->articulo_id;
+                $articuloNombre = $detalle->producto->descripcion ?? 'Sin nombre';
+
+                $key = array_search($articuloId, array_column($resultado[$proyectoNombre][$etapaNombre]['articulos'], 'articulo_id'));
+
+                $cantidad = $detalle->cantidad_solicitada ?? 0;
+                $valor = $detalle->valor ?? 0;
+                $iva = $detalle->iva ?? 0;
+                $totalDetalle = ($cantidad * $valor) + $iva;
+
+                if ($key === false) {
+                    $resultado[$proyectoNombre][$etapaNombre]['articulos'][] = [
+                        'articulo_id'    => $articuloId,
+                        'articulo'       => $articuloNombre,
+                        'cantidad_total' => $cantidad,
+                        'total'          => $totalDetalle,
+                    ];
+                } else {
+                    $resultado[$proyectoNombre][$etapaNombre]['articulos'][$key]['cantidad_total'] += $cantidad;
+                    $resultado[$proyectoNombre][$etapaNombre]['articulos'][$key]['total'] += $totalDetalle;
+                }
+            }
+        }
+
+        return $resultado;
+    }
+
     public function getSemanasAttribute()
     {
         $primerRegistro = $this->proyecto->mano_obra('created_at', 'asc')
