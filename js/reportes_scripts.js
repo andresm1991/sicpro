@@ -38,13 +38,14 @@ $(function () {
     $('#visualizar-reporte').on('click', function () {
         let tipo_reporte_text = $('select[name=tipo] option:selected').text();
         let tipo_reporte = $('select[name=tipo]').val();
+        let reporte = $('select[name=tipo_reporte]').val();
         let producto = $('select[name=producto]').val();
         let proveedor = $('select[name=proveedor]').val();
         let cargo = $('select[name=cargo]').val();
         let cargo_text = $('select[name=cargo] option:selected').text();
         let proyecto = $('select[name=proyecto]').val();
 
-        if (tipo_reporte == '') {
+        if (tipo_reporte == '' && reporte != 'global') {
             Swal.fire(
                 'Ups.!',
                 'Por favor seleccione un tipo para continuar.',
@@ -186,6 +187,129 @@ $(function () {
                         </table>
                         </div>
                         `);
+                } else if (reporte == 'global') {
+                    let html = '';
+                    let totalGeneral = 0;
+
+                    Object.entries(data).forEach(([proyecto, etapas]) => {
+                        html += `<h5 class="mt-4 mb-2 text-primary">${proyecto}</h5>`;
+                        Object.entries(etapas).forEach(([etapa, info]) => {
+                            html += `<h6 class="mb-1 text-secondary">${etapa}</h6>`;
+
+                            // Tabla de artículos
+                            let totalArticulos = 0;
+                            html += `<div class="table-responsive mb-2">
+            <table class="table table-bordered table-sm">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Item</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+                            info.articulos.forEach(articulo => {
+                                html += `
+                <tr>
+                    <td>${articulo.articulo}</td>
+                    <td>${parseFloat(articulo.cantidad_total).toFixed(4)}</td>
+                    <td>${formatearUSD(parseFloat(articulo.total).toFixed(4))}</td>
+                </tr>
+            `;
+                                totalArticulos += parseFloat(articulo.total);
+                            });
+                            html += `</tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="text-right"><strong>Total Artículos:</strong></td>
+                        <td class="text-right"><strong>${formatearUSD(totalArticulos.toFixed(4))}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>`;
+
+                            // Tabla de contratistas
+                            let totalContratistas = 0;
+                            if (info.contratista && info.contratista.length > 0) {
+                                html += `<h6 class="mb-1 text-info">Contratistas</h6>
+            <div class="table-responsive mb-2">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Categoría</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                                info.contratista.forEach(c => {
+                                    html += `
+                    <tr>
+                        <td>${c.proveedor}</td>
+                        <td>${c.categoria}</td>
+                        <td>${parseFloat(c.cantidad).toFixed(4)}</td>
+                        <td>${formatearUSD(parseFloat(c.total).toFixed(4))}</td>
+                    </tr>
+                `;
+                                    totalContratistas += parseFloat(c.total);
+                                });
+                                html += `</tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="text-right"><strong>Total Contratistas:</strong></td>
+                            <td class="text-right"><strong>${formatearUSD(totalContratistas.toFixed(4))}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
+                            }
+
+                            // Tabla de mano de obra
+                            let totalManoObra = 0;
+                            if (info.mano_obra && info.mano_obra.length > 0) {
+                                html += `<h6 class="mb-1 text-info">Mano de obra</h6>
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-sm">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Semanas</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                                info.mano_obra.forEach(m => {
+                                    html += `
+                    <tr>
+                        <td>${parseFloat(m.cantidad).toFixed(4)}</td>
+                        <td>${formatearUSD(parseFloat(m.total).toFixed(4))}</td>
+                    </tr>
+                `;
+                                    totalManoObra += parseFloat(m.total);
+                                });
+                                html += `</tbody>
+                    <tfoot>
+                        <tr>
+                            <td class="text-right"><strong>Total Mano de Obra:</strong></td>
+                            <td class="text-right"><strong>${formatearUSD(totalManoObra.toFixed(4))}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>`;
+                            }
+
+                            // Sumar totales de cada sección al total general
+                            totalGeneral += totalArticulos + totalContratistas + totalManoObra;
+                        });
+                    });
+
+                    html += `
+    <div class="text-right mb-4">
+        <strong>Total General: ${formatearUSD(totalGeneral.toFixed(4))}</strong>
+    </div>
+`;
+
+                    $('#table-view-reporte').append(html);
                 } else {
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
@@ -758,7 +882,7 @@ $(function () {
             $('select[name=cargo]').attr('disabled', true);
             $('select[name=necesidad]').attr('disabled', false);
             $('select[name=costo]').attr('disabled', false);
-            $('select[name=tipo_reporte]').attr('disabled', false);
+            //$('select[name=tipo_reporte]').attr('disabled', false);
             $('select[name=estado]').attr('disabled', false);
             $('select[name=forma_pago]').attr('disabled', false);
         } else if (tipo == 'contratistas') {
@@ -767,7 +891,7 @@ $(function () {
             $('select[name=cargo]').attr('disabled', true);
             $('select[name=necesidad]').attr('disabled', true);
             $('select[name=costo]').attr('disabled', true);
-            $('select[name=tipo_reporte]').attr('disabled', true);
+            //$('select[name=tipo_reporte]').attr('disabled', true);
             $('select[name=estado]').attr('disabled', false);
             $('select[name=forma_pago]').attr('disabled', true);
         } else if (tipo == 'mano_de_obra') {
@@ -776,7 +900,7 @@ $(function () {
             $('select[name=cargo]').attr('disabled', false);
             $('select[name=necesidad]').attr('disabled', true);
             $('select[name=costo]').attr('disabled', true);
-            $('select[name=tipo_reporte]').attr('disabled', true);
+            //$('select[name=tipo_reporte]').attr('disabled', true);
             $('select[name=estado]').attr('disabled', true);
             $('select[name=forma_pago]').attr('disabled', true);
         }

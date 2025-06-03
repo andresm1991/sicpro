@@ -12,6 +12,14 @@
     text-transform: uppercase !important;
 }
 
+#show_hide_password input[name="password"] {
+    text-transform: none !important;
+}
+
+input[name="password"] {
+    text-transform: none !important;
+}
+
 /* Estilo global para el scroll */
 
 *::-webkit-scrollbar {
