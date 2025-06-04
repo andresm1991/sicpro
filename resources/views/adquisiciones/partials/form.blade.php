@@ -12,7 +12,8 @@
 
         <div class="form-group">
             {{ Form::label('', 'SubProyecto', ['class' => 'col-form-label']) }}
-            {{ Form::text('subproyecto', $orden_pedido->subproyecto, ['class' => 'form-control text-capitalize', 'placeholder' => 'opcional']) }}
+            {{ Form::select('subproyecto', $subproyectos, $orden_pedido->subproyecto, ['class' => 'form-control select2-tag', 'data-placeholder' => 'seleccione subproyecto', 'data-allow-clear' => 'true']) }}
+
         </div>
     </div>
     <div class="col-md-6 col-12">

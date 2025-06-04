@@ -106,6 +106,11 @@ class AdquisicionController extends Controller
         $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
         $unidad_medidas = $unidad_medidas->prepend('', '');
 
+        $subproyectos = Adquisicion::where('proyecto_id', $proyecto->id)->where('subproyecto', '!=', null)->pluck('subproyecto', 'subproyecto');
+        $subproyectos = $subproyectos->prepend('', '');
+
+
+
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -114,7 +119,7 @@ class AdquisicionController extends Controller
         ];
 
 
-        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'unidad_medidas' => $unidad_medidas]);
+        $route_parametres = array_merge($route_parametres, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'unidad_medidas' => $unidad_medidas, 'subproyectos' => $subproyectos]);
         return view('adquisiciones.create', $route_parametres);
     }
 
@@ -272,7 +277,10 @@ class AdquisicionController extends Controller
         $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
         $unidad_medidas = $unidad_medidas->prepend('', '');
 
-        $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'unidad_medidas' => $unidad_medidas]);
+        $subproyectos = Adquisicion::where('proyecto_id', $request->proyecto)->where('subproyecto', '!=', null)->pluck('subproyecto', 'subproyecto');
+        $subproyectos = $subproyectos->prepend('', '');
+
+        $route_params = array_merge($route_params, ['numero_orden' => $numero_orden, 'orden_pedido' => $orden_pedido, 'aquisiciones' => $aquisiciones, 'productos' => $productos, 'title_page' => $title_page, 'breadcrumbs' => $breadcrumbs, 'proveedores' => $proveedores, 'forma_pagos' => $forma_pagos, 'unidad_medidas' => $unidad_medidas, 'subproyectos' => $subproyectos]);
 
         return view('adquisiciones.edit',  $route_params);
     }
