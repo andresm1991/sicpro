@@ -343,7 +343,6 @@ class CronogramaController extends Controller
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();
-                return $request->proyecto;
                 $id = $request->rubro;
                 // Eliminar el rubro del cronograma
 

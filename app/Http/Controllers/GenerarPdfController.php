@@ -465,6 +465,7 @@ class GenerarPdfController extends Controller
         $proyecto = $request->input('proyecto'); // Ejemplo: null o ID del proyecto
         $etapa = $request->input('etapa'); // Ejemplo: null o ID de la etapa
         $tipo = $request->input('tipo'); // Ejemplo: null o tipo_etapa_id
+        $tipo_reporte = $request->input('tipo_reporte'); // Ejemplo: null o tipo_etapa_id
         $necesidad = $request->input('necesidad'); // Ejemplo: null o valor de necesidad
         $costo = $request->input('costo'); // Ejemplo: null o valor de costo
         $cargo = $request->input('cargo'); // Ejemplo: null o ID del cargo
@@ -472,50 +473,58 @@ class GenerarPdfController extends Controller
         $producto = $request->input('producto'); // Ejemplo: null o ID del producto
 
         $tipoAdquisisicon = CatalogoDato::find($tipo);
-        if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
-            $query = Adquisicion::dataReporteAdquisiciones($request);
-            $view = 'reporte_adquisiciones';
-        } elseif ($tipoAdquisisicon->slug == 'contratista') {
-            $query = Contratista::filtroContratista($request);
-            $view = 'reporte_contratista';
+        if ($tipo_reporte == 'global') {
+            $query = Adquisicion::reporteGlobalAdquisiciones($request);
+            $view = 'reporte_adquisiciones_global';
+
+            $pdf = PDF::loadView('pdf.' . $view, compact('query'))->setPaper('a4', 'landscape');
         } else {
-            $query = ManoObra::filtroManoObra($request);
-            $view = 'reporte_mano_obra';
+            if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
+                $query = Adquisicion::dataReporteAdquisiciones($request);
+                $view = 'reporte_adquisiciones';
+            } elseif ($tipoAdquisisicon->slug == 'contratista') {
+                $query = Contratista::filtroContratista($request);
+                $view = 'reporte_contratista';
+            } else {
+                $query = ManoObra::filtroManoObra($request);
+                $view = 'reporte_mano_obra';
+            }
+
+            $tipo = CatalogoDato::find($tipo);
+
+            $totalGeneral = $query->map(function ($item) {
+                // Verificar si 'total' existe antes de usarlo
+                $total = isset($item['total']) ? $item['total'] : 0;
+                return floatval(str_replace(['$', ','], '', $total));
+            })->sum() ?? 0;
+
+            $totalPagado = $query->map(function ($item) {
+                $totalPagado = isset($item['total_pagado']) ? $item['total_pagado'] : 0;
+                return floatval(str_replace(['$', ','], '', $totalPagado));
+            })->sum() ?? 0;
+
+            $totalSaldos = $query->map(function ($item) {
+                $saldo = isset($item['saldo']) ? $item['saldo'] : 0;
+                return floatval(str_replace(['$', ','], '', $saldo));
+            })->sum() ?? 0;
+
+            $totalCantidades = $query->map(function ($item) {
+                // Verificar si 'cantidad' existe antes de usarlo
+                $total = isset($item['cantidad']) ? $item['cantidad'] : 0;
+                return $total;
+            })->sum() ?? 0;
+
+            $producto = $producto != '' ? Articulo::find($producto) : '';
+            $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';
+            $cargo = $cargo != '' ? Articulo::find($cargo) : '';
+
+
+            if ($tipo_reporte === 'excel') {
+                return Excel::download(new ReportAdquisicionesExport($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos, $view), $view . '.xlsx');
+            }
+
+            $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos', 'totalCantidades'))->setPaper('a3', 'landscape');
         }
-
-        $tipo = CatalogoDato::find($tipo);
-
-        $totalGeneral = $query->map(function ($item) {
-            // Verificar si 'total' existe antes de usarlo
-            $total = isset($item['total']) ? $item['total'] : 0;
-            return floatval(str_replace(['$', ','], '', $total));
-        })->sum() ?? 0;
-
-        $totalPagado = $query->map(function ($item) {
-            $totalPagado = isset($item['total_pagado']) ? $item['total_pagado'] : 0;
-            return floatval(str_replace(['$', ','], '', $totalPagado));
-        })->sum() ?? 0;
-
-        $totalSaldos = $query->map(function ($item) {
-            $saldo = isset($item['saldo']) ? $item['saldo'] : 0;
-            return floatval(str_replace(['$', ','], '', $saldo));
-        })->sum() ?? 0;
-
-        $totalCantidades = $query->map(function ($item) {
-            // Verificar si 'cantidad' existe antes de usarlo
-            $total = isset($item['cantidad']) ? $item['cantidad'] : 0;
-            return $total;
-        })->sum() ?? 0;
-
-        $producto = $producto != '' ? Articulo::find($producto) : '';
-        $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';
-        $cargo = $cargo != '' ? Articulo::find($cargo) : '';
-
-        if ($tipo_reporte === 'excel') {
-            return Excel::download(new ReportAdquisicionesExport($query, $tipo, $producto, $proveedor, $fechas, $cargo, $totalGeneral, $totalPagado, $totalSaldos, $view), $view . '.xlsx');
-        }
-
-        $pdf = PDF::loadView('pdf.' . $view, compact('query', 'tipo', 'producto', 'proveedor', 'fechas', 'cargo', 'totalGeneral', 'totalPagado', 'totalSaldos', 'totalCantidades'))->setPaper('a3', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 
