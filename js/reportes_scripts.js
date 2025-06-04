@@ -7,7 +7,10 @@ $(function () {
         const $form = $('#form-reporte');
 
         let tipo_reporte = $('select[name=tipo]').val();
-        if (tipo_reporte == '') {
+        let reporte = $('select[name=tipo_reporte]').val();
+
+
+        if (tipo_reporte == '' && reporte != 'global') {
             Swal.fire(
                 'Ups.!',
                 'Por favor seleccione un tipo de reporte.',
