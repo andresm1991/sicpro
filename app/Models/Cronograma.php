@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Cronograma extends Model
 {
@@ -49,7 +50,7 @@ class Cronograma extends Model
                 });
         })
             ->whereHas('mano_obra.pago_mano_obra') // Filtrar solo los detalles relacionados con PagoManoObra
-            ->sum('valor');
+            ->sum(DB::raw('COALESCE(valor, 0) + COALESCE(adicional, 0) - COALESCE(descuento, 0)'));
 
         $total_contratista = PagoOrdenTrabajoContratista::whereHas('contratista', function ($query) use ($proyectoId, $slug) {
             $query->where('proyecto_id', $proyectoId)

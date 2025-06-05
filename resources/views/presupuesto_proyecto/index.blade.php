@@ -94,7 +94,7 @@
                                                 <td class="align-middle">$ {{ $presupuestoProyecto->valor_unitario }}</td>
                                                 <td class="align-middle">
                                                     $
-                                                    {{ number_format($presupuestoProyecto->cantidad * $presupuestoProyecto->valor_unitario, 2) }}
+                                                    {{ number_format($presupuestoProyecto->cantidad * $presupuestoProyecto->valor_unitario, 4) }}
                                                 </td>
 
 
@@ -128,7 +128,7 @@
                                             Total General
                                         </td>
                                         <td colspan="2" class="font-weight-bold">
-                                            $ {{ number_format($total_categoria, 2) }}</td>
+                                            $ {{ number_format($total_categoria, 4) }}</td>
                                     </tr>
                                     <tr>
                                         <td colspan="7"></td>
@@ -162,7 +162,7 @@
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
-                                        {{ number_format($costos_directos, 2) }}
+                                        {{ number_format($costos_directos, 4) }}
                                     </td>
                                 </tr>
                                 <tr style="background-color: #b6e5c1;">
@@ -173,7 +173,7 @@
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
-                                        {{ number_format($costos_indirectos, 2) }}
+                                        {{ number_format($costos_indirectos, 4) }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -182,7 +182,7 @@
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
-                                        {{ number_format($costos_directos + $costos_indirectos, 2) }}
+                                        {{ number_format($costos_directos + $costos_indirectos, 4) }}
                                     </td>
                                 </tr>
 
@@ -192,7 +192,7 @@
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
-                                        {{ number_format($total_gatos, 2) }}
+                                        {{ number_format($total_gatos, 4) }}
                                     </td>
                                 </tr>
 
@@ -202,7 +202,7 @@
                                     </td>
                                     <td colspan="2" class="font-weight-bold">
                                         $
-                                        {{ number_format($saldo, 2) }}
+                                        {{ number_format($saldo, 4) }}
                                     </td>
                                 </tr>
                             </tfoot>

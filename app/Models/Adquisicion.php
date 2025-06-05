@@ -255,11 +255,6 @@ class Adquisicion extends Model
             }
         });
 
-        // Filtrar por proyecto
-        /*$query->when($proyecto, function ($q, $proyecto) {
-            $q->where('proyecto_id', $proyecto);
-        });*/
-
         // Filtrar por etapa
         $query->when($etapa, function ($q, $etapa) {
             $q->where('etapa_id', $etapa);
@@ -335,7 +330,6 @@ class Adquisicion extends Model
 
                 break;
         }
-
         $resultado = [];
 
         foreach ($query->get() as $adquisicion) {
@@ -350,10 +344,15 @@ class Adquisicion extends Model
                 foreach ($contratistas as $contratista) {
                     // Solo incluir si la etapa coincide
                     if (($contratista->etapa_id ?? null) == $adquisicion->etapa_id) {
-                        $detalleContratistas = $contratista->detalle_contratistas ?? collect();
-                        $totalContratista = $detalleContratistas->sum(function ($detalle) {
-                            return ($detalle->cantidad ?? 0) * ($detalle->valor_unitario ?? 0);
+                        $totalContratado = $contratista->detalle_contratistas->sum(function ($detalle) use ($contratista) {
+                            $cantidad = $detalle->cantidad ?? 0;
+                            $valor = $detalle->valor_unitario ?? 0;
+                            return $cantidad * $valor * ($contratista->numero_casas ?? 1);
                         });
+                        $pagos = $contratista->pagosOrdenTrabajoContratista->sum(function ($pago) {
+                            return $pago->pagado ? $pago->valor : 0;
+                        });
+                        $saldo = $totalContratado - $pagos;
 
                         $categoriaNombre = $contratista->articulo->descripcion ?? 'Sin categoría';
                         $proveedorNombre = $contratista->proveedor->razon_social ?? 'Sin proveedor';
@@ -365,12 +364,17 @@ class Adquisicion extends Model
                             $contratistasArray[$key] = [
                                 'proveedor' => $proveedorNombre,
                                 'categoria' => $categoriaNombre,
-                                'cantidad' => $detalleContratistas->count(),
-                                'total' => $totalContratista
+                                'cantidad' => $contratista->numero_casas ?? 0, // cantidad del modelo Contratista
+                                'total_contratado' => $totalContratado,
+                                'pagos' => $pagos,
+                                'saldo' => $saldo,
                             ];
                         } else {
-                            $contratistasArray[$key]['cantidad'] += $detalleContratistas->count();
-                            $contratistasArray[$key]['total'] += $totalContratista;
+                            // Si hay más de un registro para el mismo proveedor/categoría, suma los valores
+                            $contratistasArray[$key]['cantidad'] += $contratista->numero_casas ?? 0;
+                            $contratistasArray[$key]['total_contratado'] += $totalContratado;
+                            $contratistasArray[$key]['pagos'] += $pagos;
+                            $contratistasArray[$key]['saldo'] += $saldo;
                         }
                     }
                 }
@@ -378,15 +382,19 @@ class Adquisicion extends Model
 
                 // Mano de obra del proyecto y etapa
                 $manosObra = $proyecto->mano_obra ?? collect();
-                // Filtrar mano_obra por etapa si corresponde
                 $manosObraEtapa = $manosObra->where('etapa_id', $adquisicion->etapa_id);
-                // Obtener pares únicos de fecha_inicio y fecha_fin
                 $uniqueFechas = $manosObraEtapa->unique(function ($item) {
                     return $item->fecha_inicio . '|' . $item->fecha_fin;
                 });
 
                 $detalleManoObra = $manosObraEtapa->flatMap->detalle_mano_obra;
-                $totalManoObra = $detalleManoObra->sum(function ($detalle) {
+
+                $detalleManoObraPagados = $detalleManoObra->filter(function ($detalle) {
+                    // Solo incluir si existe relación con pago_mano_obra
+                    return $detalle->mano_obra && $detalle->mano_obra->pago_mano_obra && $detalle->mano_obra->pago_mano_obra->count() > 0;
+                });
+
+                $totalManoObra = $detalleManoObraPagados->sum(function ($detalle) {
                     return ($detalle->valor ?? 0) + ($detalle->adicional ?? 0) - ($detalle->descuento ?? 0);
                 });
 
@@ -396,31 +404,47 @@ class Adquisicion extends Model
                         'cantidad' => $uniqueFechas->count(),
                         'total' => $totalManoObra
                     ]],
-                    'articulos' => []
+                    'materiales_herramientas' => [],
+                    'servicios' => [],
                 ];
             }
 
             foreach ($adquisicion->adquisiciones_detalle as $detalle) {
                 $articuloId = $detalle->articulo_id;
                 $articuloNombre = $detalle->producto->descripcion ?? 'Sin nombre';
-
-                $key = array_search($articuloId, array_column($resultado[$proyectoNombre][$etapaNombre]['articulos'], 'articulo_id'));
+                $unidadMedida = $detalle->unidad_medida->descripcion ?? 'Sin unidad';
+                $tipoEtapa = $adquisicion->tipo_etapa->slug;
 
                 $cantidad = $detalle->cantidad_solicitada ?? 0;
                 $valor = $detalle->valor ?? 0;
                 $iva = $detalle->iva ?? 0;
-                $totalDetalle = ($cantidad * $valor) + $iva;
+                $totalDetalle =  calcularTotalProducto($cantidad, $valor, $iva);
 
-                if ($key === false) {
-                    $resultado[$proyectoNombre][$etapaNombre]['articulos'][] = [
-                        'articulo_id'    => $articuloId,
-                        'articulo'       => $articuloNombre,
-                        'cantidad_total' => $cantidad,
-                        'total'          => $totalDetalle,
-                    ];
-                } else {
-                    $resultado[$proyectoNombre][$etapaNombre]['articulos'][$key]['cantidad_total'] += $cantidad;
-                    $resultado[$proyectoNombre][$etapaNombre]['articulos'][$key]['total'] += $totalDetalle;
+                $articuloData = [
+                    'articulo_id'    => $articuloId,
+                    'articulo'       => $articuloNombre,
+                    'unidad_medida'  => $unidadMedida,
+                    'cantidad_total' => $cantidad,
+                    'total'          => $totalDetalle,
+                ];
+
+                // Separar por tipo_etapa_id
+                if ($tipoEtapa == 'meteriales.herramientas') {
+                    $key = array_search($articuloId, array_column($resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'], 'articulo_id'));
+                    if ($key === false) {
+                        $resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'][] = $articuloData;
+                    } else {
+                        $resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'][$key]['cantidad_total'] += $cantidad;
+                        $resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'][$key]['total'] += $totalDetalle;
+                    }
+                } else { // 2 = servicios (ajusta el valor según tu catálogo)
+                    $key = array_search($articuloId, array_column($resultado[$proyectoNombre][$etapaNombre]['servicios'], 'articulo_id'));
+                    if ($key === false) {
+                        $resultado[$proyectoNombre][$etapaNombre]['servicios'][] = $articuloData;
+                    } else {
+                        $resultado[$proyectoNombre][$etapaNombre]['servicios'][$key]['cantidad_total'] += $cantidad;
+                        $resultado[$proyectoNombre][$etapaNombre]['servicios'][$key]['total'] += $totalDetalle;
+                    }
                 }
             }
         }

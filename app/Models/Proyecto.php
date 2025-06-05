@@ -93,6 +93,9 @@ class Proyecto extends Model
         $primerRegistro = $this->mano_obra('created_at', 'asc')
             ->first();
 
+        if (!$primerRegistro) {
+            return 1; // O el valor que consideres adecuado si no hay mano de obra
+        }
         return semanaEnCurso($primerRegistro->fecha_inicio);
 
         //return ceil((Carbon::parse($primerRegistro->fecha_inicio)->diffInDays(now()) + 1) / 7);

@@ -50,14 +50,16 @@ class PresupuestoController extends Controller
             $query->where('proyecto_id', $proyecto->id);
         })
             ->whereHas('mano_obra.pago_mano_obra') // Filtrar solo los detalles relacionados con PagoManoObra
-            ->sum('valor');
+            ->sum(DB::raw('COALESCE(valor, 0) + COALESCE(adicional, 0) - COALESCE(descuento, 0)'));
 
         $total_contratista = PagoOrdenTrabajoContratista::whereHas('contratista', function ($query) use ($proyecto) {
             $query->where('proyecto_id', $proyecto->id);
         })->where('pagado', true)
             ->sum('valor');
 
+        //return 'total_adquisiciones: ' . $total_adquisiciones . ' total_mano_obra: ' . $total_mano_obra . ' total_contratista:' . $total_contratista;
         $total_gatos = $total_adquisiciones + $total_mano_obra + $total_contratista;
+
         return view('presupuesto_proyecto.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'unidades_medidas', 'categorias_presupuesto', 'etapas_construccion', 'total_gatos'));
     }
 
