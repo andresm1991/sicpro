@@ -191,126 +191,175 @@ $(function () {
                         </div>
                         `);
                 } else if (reporte == 'global') {
+                    // ...dentro de if (reporte == 'global') {
                     let html = '';
                     let totalGeneral = 0;
 
                     Object.entries(data).forEach(([proyecto, etapas]) => {
-                        html += `<h5 class="mt-4 mb-2 text-primary">${proyecto}</h5>`;
+                        html += `<h5 class="mt-4 mb-2 text-primary">Poryecto: ${proyecto}</h5> <hr>`;
                         Object.entries(etapas).forEach(([etapa, info]) => {
-                            html += `<h6 class="mb-1 text-secondary">${etapa}</h6>`;
+                            html += `<h6 class="mb-1 text-secondary">Etapa: ${etapa}</h6>`;
 
-                            // Tabla de artículos
-                            let totalArticulos = 0;
-                            html += `<div class="table-responsive mb-2">
-            <table class="table table-bordered table-sm">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Item</th>
-                        <th>Cantidad</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-                            info.articulos.forEach(articulo => {
-                                html += `
-                <tr>
-                    <td>${articulo.articulo}</td>
-                    <td>${parseFloat(articulo.cantidad_total).toFixed(4)}</td>
-                    <td>${formatearUSD(parseFloat(articulo.total).toFixed(4))}</td>
-                </tr>
-            `;
-                                totalArticulos += parseFloat(articulo.total);
-                            });
-                            html += `</tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2" class="text-right"><strong>Total Artículos:</strong></td>
-                        <td class="text-right"><strong>${formatearUSD(totalArticulos.toFixed(4))}</strong></td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>`;
-
-                            // Tabla de contratistas
-                            let totalContratistas = 0;
-                            if (info.contratista && info.contratista.length > 0) {
-                                html += `<h6 class="mb-1 text-info">Contratistas</h6>
-            <div class="table-responsive mb-2">
-                <table class="table table-bordered table-sm">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Proveedor</th>
-                            <th>Categoría</th>
-                            <th>Cantidad</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
-                                info.contratista.forEach(c => {
+                            // Tabla de Materiales y Herramientas
+                            let totalMateriales = 0;
+                            if (info.materiales_herramientas && info.materiales_herramientas.length > 0) {
+                                html += `<h6 class="mb-1 text-info">Materiales y Herramientas</h6>
+                                <div class="table-responsive mb-2">
+                                    <table class="table table-bordered table-sm">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Unidad de Medida</th>
+                                                <th>Cantidad</th>
+                                                <th>Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>`;
+                                info.materiales_herramientas.forEach(mat => {
                                     html += `
-                    <tr>
-                        <td>${c.proveedor}</td>
-                        <td>${c.categoria}</td>
-                        <td>${parseFloat(c.cantidad).toFixed(4)}</td>
-                        <td>${formatearUSD(parseFloat(c.total).toFixed(4))}</td>
-                    </tr>
-                `;
-                                    totalContratistas += parseFloat(c.total);
+                                        <tr>
+                                            <td>${mat.articulo}</td>
+                                            <td>${mat.unidad_medida}</td>
+                                            <td>${parseFloat(mat.cantidad_total).toFixed(4)}</td>
+                                            <td>${formatearUSD(parseFloat(mat.total).toFixed(4))}</td>
+                                        </tr>
+                                    `;
+                                    totalMateriales += parseFloat(mat.total);
                                 });
                                 html += `</tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="text-right"><strong>Total Contratistas:</strong></td>
-                            <td class="text-right"><strong>${formatearUSD(totalContratistas.toFixed(4))}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>`;
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="3" class="text-right"><strong>Total Materiales y Herramientas:</strong></td>
+                                                    <td class="text-right"><strong>${formatearUSD(totalMateriales.toFixed(4))}</strong></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>`;
                             }
 
-                            // Tabla de mano de obra
+                            // Tabla de Servicios
+                            let totalServicios = 0;
+                            if (info.servicios && info.servicios.length > 0) {
+                                html += `<h6 class="mb-1 text-info">Servicios</h6>
+                                    <div class="table-responsive mb-2">
+                                        <table class="table table-bordered table-sm">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>Item</th>
+                                                    <th>Unidad</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
+                                info.servicios.forEach(serv => {
+                                    html += `
+                                            <tr>
+                                                <td>${serv.articulo}</td>
+                                                <td>${serv.unidad_medida}</td>
+                                                <td>${parseFloat(serv.cantidad_total).toFixed(4)}</td>
+                                                <td>${formatearUSD(parseFloat(serv.total).toFixed(4))}</td>
+                                            </tr>
+                                        `;
+                                    totalServicios += parseFloat(serv.total);
+                                });
+                                html += `</tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="3" class="text-right"><strong>Total Servicios:</strong></td>
+                                                    <td class="text-right"><strong>${formatearUSD(totalServicios.toFixed(4))}</strong></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>`;
+                            }
+
+                            // Tabla de Contratistas
+                            let totalContratistas = 0, totalPagos = 0, totalSaldos = 0;
+                            if (info.contratista && info.contratista.length > 0) {
+                                html += `<h6 class="mb-1 text-info">Contratistas</h6>
+                                    <div class="table-responsive mb-2">
+                                        <table class="table table-bordered table-sm">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>Proveedor</th>
+                                                    <th>Categoría</th>
+                                                    <th>Total Contratado</th>
+                                                    <th>Pagos</th>
+                                                    <th>Saldo</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
+                                info.contratista.forEach(c => {
+                                    html += `
+                                            <tr>
+                                                <td>${c.proveedor}</td>
+                                                <td>${c.categoria}</td>
+                                                <td class="text-right">${formatearUSD(parseFloat(c.total_contratado).toFixed(4))}</td>
+                                                <td class="text-right">${formatearUSD(parseFloat(c.pagos).toFixed(4))}</td>
+                                                <td class="text-right">${formatearUSD(parseFloat(c.saldo).toFixed(4))}</td>
+                                            </tr>
+                                        `;
+                                    totalContratistas += parseFloat(c.total_contratado);
+                                    totalPagos += parseFloat(c.pagos);
+                                    totalSaldos += parseFloat(c.saldo);
+                                });
+                                html += `</tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <td colspan="2" class="text-right"><strong>Totales:</strong></td>
+                                                    <td class="text-right"><strong>${formatearUSD(totalContratistas.toFixed(4))}</strong></td>
+                                                    <td class="text-right"><strong>${formatearUSD(totalPagos.toFixed(4))}</strong></td>
+                                                    <td class="text-right"><strong>${formatearUSD(totalSaldos.toFixed(4))}</strong></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>`;
+                            }
+
+                            // Tabla de Mano de Obra
                             let totalManoObra = 0;
                             if (info.mano_obra && info.mano_obra.length > 0) {
                                 html += `<h6 class="mb-1 text-info">Mano de obra</h6>
-            <div class="table-responsive mb-4">
-                <table class="table table-bordered table-sm">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>Semanas</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+                                    <div class="table-responsive mb-4">
+                                        <table class="table table-bordered table-sm">
+                                            <thead class="thead-dark">
+                                                <tr>
+                                                    <th>Semanas</th>
+                                                    <th>Total</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
                                 info.mano_obra.forEach(m => {
                                     html += `
-                    <tr>
-                        <td>${parseFloat(m.cantidad).toFixed(4)}</td>
-                        <td>${formatearUSD(parseFloat(m.total).toFixed(4))}</td>
-                    </tr>
-                `;
+                                            <tr>
+                                                <td>${parseFloat(m.cantidad).toFixed(4)}</td>
+                                                <td class="text-right">${formatearUSD(parseFloat(m.total).toFixed(4))}</td>
+                                            </tr>
+                                        `;
                                     totalManoObra += parseFloat(m.total);
                                 });
                                 html += `</tbody>
-                    <tfoot>
-                        <tr>
-                            <td class="text-right"><strong>Total Mano de Obra:</strong></td>
-                            <td class="text-right"><strong>${formatearUSD(totalManoObra.toFixed(4))}</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>`;
+                                            <tfoot>
+                                                <tr>
+                                                    <td class="text-right"><strong>Total Mano de Obra:</strong></td>
+                                                    <td class="text-right"><strong>${formatearUSD(totalManoObra.toFixed(4))}</strong></td>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>`;
                             }
 
                             // Sumar totales de cada sección al total general
-                            totalGeneral += totalArticulos + totalContratistas + totalManoObra;
+                            totalGeneral += totalMateriales + totalServicios + totalPagos + totalManoObra;
                         });
                     });
 
                     html += `
-    <div class="text-right mb-4">
-        <strong>Total General: ${formatearUSD(totalGeneral.toFixed(4))}</strong>
-    </div>
-`;
+                        <div class="text-right mb-4">
+                            <strong>Total General: ${formatearUSD(totalGeneral.toFixed(4))}</strong>
+                        </div>
+                    `;
 
                     $('#table-view-reporte').append(html);
                 } else {
