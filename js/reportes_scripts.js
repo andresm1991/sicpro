@@ -5,6 +5,7 @@ $(function () {
 
     $('.generar-reporte').on('click', function () {
         const $form = $('#form-reporte');
+        const action = $(this).data('action'); // Obtener el valor de data-action
 
         let tipo_reporte = $('select[name=tipo]').val();
         let reporte = $('select[name=tipo_reporte]').val();
@@ -17,8 +18,15 @@ $(function () {
                 'error'
             )
             return false;
+        } else if (reporte == 'global' && action == 'excel') {
+            Swal.fire(
+                'Ups.!',
+                'Lo sentimos no es posile generar el excel de este reporte. Genera el pdf.',
+                'info'
+            )
+            return false;
         }
-        const action = $(this).data('action'); // Obtener el valor de data-action
+
 
         // Actualizar el campo oculto con el tipo de reporte
         $('#tipo_reporte').val(action);
@@ -617,9 +625,10 @@ $(function () {
 
     $('select[name=proyecto], select[name=tipo]').on('change', function () {
         let proyectoId = $('select[name=proyecto]').val();
-        let tipoId = $('select[name=tipo]').val();
+        let tipoId = $('select[name=tipo]').val() || 0;
+        let tipoReporte = $('select[name=tipo_reporte]').val();
 
-        if (proyectoId != '' && tipoId != '') {
+        if (proyectoId != '') {
             $.ajax({
                 url: 'filtro-reporte-adquisiciones/subproyectos/' + proyectoId + '/' + tipoId,
                 headers: { 'X-CSRF-TOKEN': csrf },
