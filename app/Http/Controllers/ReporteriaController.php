@@ -92,18 +92,48 @@ class ReporteriaController extends Controller
     {
         if ($request->ajax()) {
             $proyectoId = $request->proyecto;
-            $tipo = CatalogoDato::find($request->tipo);
+            $tipoId = $request->input('tipo');
             $result = [];
-            if ($tipo->slug == 'contratista') {
-                $subproyecto = Contratista::where('proveedor_id', $proyectoId)->where('subproyecto', '!=', null)
-                    ->pluck('subproyecto', 'subproyecto')->prepend('', '');
-            } elseif ($tipo->slug == 'mano.obra') {
-                $subproyecto = ManoObra::where('proyecto_id', $proyectoId)->where('subproyecto', '!=', null)
-                    ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+            if ($tipoId) {
+                $tipo = CatalogoDato::find($tipoId);
+                if ($tipo->slug == 'contratista') {
+                    $subproyecto = Contratista::where('proveedor_id', $proyectoId)->where('subproyecto', '!=', null)
+                        ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+                } elseif ($tipo->slug == 'mano.obra') {
+                    $subproyecto = ManoObra::where('proyecto_id', $proyectoId)->where('subproyecto', '!=', null)
+                        ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+                } else {
+                    $subproyecto = Adquisicion::where('proyecto_id', $proyectoId)
+                        ->where('tipo_etapa_id', $tipo->id)->where('subproyecto', '!=', null)
+                        ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+                }
             } else {
-                $subproyecto = Adquisicion::where('proyecto_id', $proyectoId)
-                    ->where('tipo_etapa_id', $tipo->id)->where('subproyecto', '!=', null)
-                    ->pluck('subproyecto', 'subproyecto')->prepend('', '');
+                $proyecto = Proyecto::with(['adquisiciones', 'mano_obra', 'contratista'])->find($proyectoId);
+
+                $subproyectos = collect();
+
+                // Adquisiciones
+                $subproyectos = $subproyectos->merge(
+                    $proyecto->adquisiciones->whereNotNull('subproyecto')->pluck('subproyecto')
+                );
+
+                // Mano de Obra
+                $subproyectos = $subproyectos->merge(
+                    $proyecto->mano_obra->whereNotNull('subproyecto')->pluck('subproyecto')
+                );
+
+                // Contratistas
+                $subproyectos = $subproyectos->merge(
+                    $proyecto->contratista->whereNotNull('subproyecto')->pluck('subproyecto')
+                );
+
+                // Eliminar duplicados y reindexar
+                $subproyectos = $subproyectos->unique()->values();
+
+                // Si quieres un pluck tipo ['subproyecto' => 'subproyecto']
+                $subproyecto = $subproyectos->mapWithKeys(function ($item) {
+                    return [$item => $item];
+                })->prepend('', '');
             }
 
             return response()->json([

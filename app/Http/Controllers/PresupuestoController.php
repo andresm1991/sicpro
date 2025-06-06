@@ -35,7 +35,7 @@ class PresupuestoController extends Controller
             ->where('estado', 'Completado')
             ->sum(function ($item) {
                 $sumAdquisiciones = $item->adquisiciones_detalle->sum(function ($item) {
-                    $iva = $item->producto->iva ? $item->producto->iva : 0;
+                    $iva = $item->iva ?? 0;
                     return calcularTotalProducto(
                         $item->cantidad_solicitada,
                         $item->valor,
@@ -57,7 +57,7 @@ class PresupuestoController extends Controller
         })->where('pagado', true)
             ->sum('valor');
 
-        //return 'total_adquisiciones: ' . $total_adquisiciones . ' total_mano_obra: ' . $total_mano_obra . ' total_contratista:' . $total_contratista;
+        // return 'total_adquisiciones: ' . $total_adquisiciones . ' total_mano_obra: ' . $total_mano_obra . ' total_contratista:' . $total_contratista;
         $total_gatos = $total_adquisiciones + $total_mano_obra + $total_contratista;
 
         return view('presupuesto_proyecto.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'unidades_medidas', 'categorias_presupuesto', 'etapas_construccion', 'total_gatos'));

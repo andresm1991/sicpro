@@ -33,7 +33,7 @@ class Cronograma extends Model
             ->get() // Obtener todas las adquisiciones completadas
             ->sum(function ($adquisicion) {
                 return $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
-                    $iva = $detalle->producto->iva ?? 0; // Usar el operador null coalescing
+                    $iva = $detalle->iva ?? 0; // Usar el operador null coalescing
                     return calcularTotalProducto(
                         $detalle->cantidad_solicitada,
                         $detalle->valor,
@@ -41,7 +41,6 @@ class Cronograma extends Model
                     );
                 });
             });
-
 
         $total_mano_obra = DetalleManoObra::whereHas('mano_obra', function ($query) use ($proyectoId, $slug) {
             $query->where('proyecto_id', $proyectoId)

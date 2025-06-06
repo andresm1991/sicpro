@@ -398,6 +398,7 @@ class Adquisicion extends Model
                     return ($detalle->valor ?? 0) + ($detalle->adicional ?? 0) - ($detalle->descuento ?? 0);
                 });
 
+
                 $resultado[$proyectoNombre][$etapaNombre] = [
                     'contratista' => $contratistasArray,
                     'mano_obra' => [[

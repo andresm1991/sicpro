@@ -233,7 +233,7 @@ return [
 
     ],
 
-    'version' => '2.1.31',
+    'version' => '2.1.32',
 
     'diasSemana' => ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo'],
 ];

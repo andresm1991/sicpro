@@ -154,7 +154,6 @@ class CronogramaController extends Controller
         $totales_obra_gris = Cronograma::TotalAdquisicionesEtapa($proyectoId, 'menu.adquisciones.obra.gris');
         $totales_acabados = Cronograma::TotalAdquisicionesEtapa($proyectoId, 'menu.adquisciones.acabados');
 
-
         return view('cronograma.index', compact('title_page', 'breadcrumbs', 'proyecto', 'categorias', 'plazo_semanas', 'cronograma', 'rubros_cronograma', 'total_estructural', 'total_obra_gris', 'total_acabados', 'total', 'totales_estructural', 'totales_obra_gris', 'totales_acabados'));
     }
 

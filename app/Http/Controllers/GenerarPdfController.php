@@ -474,10 +474,10 @@ class GenerarPdfController extends Controller
 
         $tipoAdquisisicon = CatalogoDato::find($tipo);
         if ($tipo_reporte == 'global') {
-            $query = Adquisicion::reporteGlobalAdquisiciones($request);
+            $data = Adquisicion::reporteGlobalAdquisiciones($request);
             $view = 'reporte_adquisiciones_global';
 
-            $pdf = PDF::loadView('pdf.' . $view, compact('query'))->setPaper('a4', 'landscape');
+            $pdf = PDF::loadView('pdf.' . $view, compact('data'))->setPaper('a4', 'landscape');
         } else {
             if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
                 $query = Adquisicion::dataReporteAdquisiciones($request);

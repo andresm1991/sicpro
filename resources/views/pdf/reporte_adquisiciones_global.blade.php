@@ -1,11 +1,11 @@
+{{-- filepath: c:\laragon\www\sicpro\resources\views\pdf\reporte_adquisiciones_global.blade.php --}}
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de adquisiciones</title>
+    <title>Reporte Global de Adquisiciones</title>
     <style>
-        /* Configuración general */
         body {
             font-family: Arial, sans-serif;
             font-size: 12px;
@@ -16,79 +16,39 @@
             text-transform: uppercase;
         }
 
-        /* Contenedor principal */
-        .container {
-            width: 100%;
-            margin: 0 auto;
-            padding: 20px;
-            box-sizing: border-box;
+        hr {
+            background-color: #bebdbe;
+            height: 0px;
+            border: transparent;
         }
 
-        /* Header */
-        .header {
-            display: flex;
-            align-items: center;
-            /* Alinea todos los elementos verticalmente */
-            justify-content: space-between;
-            /* Distribuye espacio entre los elementos */
-            margin-bottom: 20px;
-        }
-
-        /* Logo */
-        .header img {
-            float: left;
-            max-width: 150px;
-            height: 150px;
-            vertical-align: middle;
-            /* Asegura alineación precisa */
-        }
-
-        /* Contenido central */
-        .header .content {
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            margin-left: 20px;
-        }
-
-        .header .content small {
-            display: block;
-            font-size: 16px;
+        .titulo_etapa {
+            color: #6c757d;
+            font-size: 14px;
             font-weight: bold;
-            margin: 5px 0;
         }
 
-        /* Detalles del proyecto */
-        .details {
-            min-width: 300px;
+        .tipo_adquisicion {
+            color: #17a2b8;
+            font-size: 10;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
-        .details small {
-            display: block;
-            font-size: 12px;
-            margin: 5px 0;
-        }
-
-        /* Tabla */
-        .tabla-actividades {
-            width: 100%;
+        table {
             border-collapse: collapse;
-            margin-top: 20px;
+            width: 100%;
+            font-size: 12px;
         }
 
-        .tabla-actividades th,
-        .tabla-actividades td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-            background-color: #fefeff;
+        th,
+        td {
+            border: 1px solid #333;
+            padding: 2px;
         }
 
-        .tabla-actividades th {
-            background-color: #d6dce9;
+        th {
+            background: #eee;
         }
 
         /* style table header */
@@ -108,72 +68,11 @@
             text-align: center !important;
         }
 
-        .text-right {
-            text-align: right !important;
-        }
-
-        ul {
-
-            padding: 0 10px 0 10px;
-        }
 
 
-        /* Tabla */
-        #table-resumen {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        #table-resumen th,
-        #table-resumen td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: left;
-            background-color: #fefeff;
-        }
-
-        #table-resumen th {
-            background-color: #d6dce9;
-        }
-
-        /* Ajustar el ancho de la primera columna */
-        #table-resumen th:first-child,
-        #table-resumen td:first-child {
-            width: 100px;
-            /* Ancho fijo para la primera columna */
-            min-width: 100px;
-            /* Evita que se achique más allá de este valor */
-            max-width: 100px;
-            /* Evita que se expanda más allá de este valor */
-        }
-
-        /* Ajustar el ancho de las demás columnas */
-        #table-resumen th:nth-child(2),
-        #table-resumen td:nth-child(2) {
-            width: 80px;
-        }
-
-        /* Ajustar el ancho de las demás columnas */
-        #table-resumen th:nth-child(3),
-        #table-resumen td:nth-child(3) {
-            width: 150px;
-        }
-
-        #table-resumen th:nth-child(4),
-        #table-resumen td:nth-child(4) {
-            width: 150px;
-        }
-
-        /* Ajustar el ancho de las demás columnas */
-        #table-resumen th:nth-child(8),
-        #table-resumen td:nth-child(8) {
-            width: 1px;
-        }
-
-        #table-resumen th:nth-child(10),
-        #table-resumen td:nth-child(10) {
-            width: 80px;
+        h5,
+        h6 {
+            margin-bottom: 0;
         }
 
         /* Estilos para la marca de agua */
@@ -203,10 +102,6 @@
             z-index: -1;
             opacity: 0.2;
         }
-
-        .bg-success {
-            background-color: #28a745 !important;
-        }
     </style>
 </head>
 
@@ -215,42 +110,182 @@
     <div class="watermark">
         <img src="{{ logoBase64() }}" />
     </div>
-    <div class="container">
-        <table class="table-header">
-            <tbody>
-                <tr>
-                    <td style="width: 1px;">
-                        <img src="{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
-                    </td>
-                    <td class="text-center">
-                        <h2>Reporte Global de adquisiciones</h2>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2">
-                        <strong>Fecha: {{ date('Y-m-d') }}</strong>
-                    </td>
-                </tr>
+    <table class="table-header">
+        <tbody>
+            <tr>
+                <td style="width: 1px;">
+                    <img src="{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
+                </td>
+                <td class="text-center">
+                    <h2>Reporte global de adquisiciones</h2>
+                </td>
+            </tr>
 
-            </tbody>
-        </table>
+        </tbody>
+    </table>
+    <h6>Fecha Reporte: {{ date('Y-m-d') }}</h6>
+    @php $totalGeneral = 0; @endphp
 
-        <table id="table-resumen">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Item</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
+    @foreach ($data as $proyecto => $etapas)
+        <h5 style="color:#007bff;">Proyecto: {{ $proyecto }}</h5>
+        <hr>
+        @foreach ($etapas as $etapa => $info)
+            <h6 class="titulo_etapa">Etapa: {{ $etapa }}</h6>
 
-            </tbody>
-        </table>
+            {{-- Materiales y Herramientas --}}
+            @php $totalMateriales = 0; @endphp
+            @if (!empty($info['materiales_herramientas']))
+                <h6 class="tipo_adquisicion">Materiales y Herramientas</h6>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Unidad de Medida</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($info['materiales_herramientas'] as $mat)
+                            <tr>
+                                <td>{{ $mat['articulo'] }}</td>
+                                <td>{{ $mat['unidad_medida'] }}</td>
+                                <td>{{ number_format($mat['cantidad_total'], 4) }}</td>
+                                <td>${{ number_format($mat['total'], 4) }}</td>
+                            </tr>
+                            @php $totalMateriales += $mat['total']; @endphp
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align:right;"><strong>Total Materiales y
+                                    Herramientas:</strong>
+                            </td>
+                            <td style="text-align:right;"><strong>${{ number_format($totalMateriales, 4) }}</strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endif
 
-        <h2 class="text-right">Total General: <strong>
-                $</strong></h2>
+            {{-- Servicios --}}
+            @php $totalServicios = 0; @endphp
+            @if (!empty($info['servicios']))
+                <h6 class="tipo_adquisicion">Servicios</h6>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Unidad</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($info['servicios'] as $serv)
+                            <tr>
+                                <td>{{ $serv['articulo'] }}</td>
+                                <td>{{ $serv['unidad_medida'] }}</td>
+                                <td>{{ number_format($serv['cantidad_total'], 4) }}</td>
+                                <td>${{ number_format($serv['total'], 4) }}</td>
+                            </tr>
+                            @php $totalServicios += $serv['total']; @endphp
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align:right;"><strong>Total Servicios:</strong></td>
+                            <td style="text-align:right;"><strong>${{ number_format($totalServicios, 4) }}</strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endif
 
+            {{-- Contratistas --}}
+            @php
+                $totalContratistas = 0;
+                $totalPagos = 0;
+                $totalSaldos = 0;
+            @endphp
+            @if (!empty($info['contratista']))
+                <h6 class="tipo_adquisicion">Contratistas</h6>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Proveedor</th>
+                            <th>Categoría</th>
+                            <th>Cantidad</th>
+                            <th>Total Contratado</th>
+                            <th>Pagos</th>
+                            <th>Saldo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($info['contratista'] as $c)
+                            <tr>
+                                <td>{{ $c['proveedor'] }}</td>
+                                <td>{{ $c['categoria'] }}</td>
+                                <td>{{ number_format($c['cantidad'], 4) }}</td>
+                                <td style="text-align:right;">${{ number_format($c['total_contratado'], 4) }}</td>
+                                <td style="text-align:right;">${{ number_format($c['pagos'], 4) }}</td>
+                                <td style="text-align:right;">${{ number_format($c['saldo'], 4) }}</td>
+                            </tr>
+                            @php
+                                $totalContratistas += $c['total_contratado'];
+                                $totalPagos += $c['pagos'];
+                                $totalSaldos += $c['saldo'];
+                            @endphp
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" style="text-align:right;"><strong>Totales:</strong></td>
+                            <td style="text-align:right;"><strong>${{ number_format($totalContratistas, 4) }}</strong>
+                            </td>
+                            <td style="text-align:right;"><strong>${{ number_format($totalPagos, 4) }}</strong></td>
+                            <td style="text-align:right;"><strong>${{ number_format($totalSaldos, 4) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endif
+
+            {{-- Mano de Obra --}}
+            @php $totalManoObra = 0; @endphp
+            @if (!empty($info['mano_obra']))
+                <h6 class="tipo_adquisicion">Mano de obra</h6>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Semanas</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($info['mano_obra'] as $m)
+                            <tr>
+                                <td>{{ number_format($m['cantidad'], 4) }}</td>
+                                <td style="text-align:right;">${{ number_format($m['total'], 4) }}</td>
+                            </tr>
+                            @php $totalManoObra += $m['total']; @endphp
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td style="text-align:right;"><strong>Total Mano de Obra:</strong></td>
+                            <td style="text-align:right;"><strong>${{ number_format($totalManoObra, 4) }}</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            @endif
+
+            @php $totalGeneral += $totalMateriales + $totalServicios + $totalPagos + $totalManoObra; @endphp
+            <br>
+        @endforeach
+    @endforeach
+
+    <div style="text-align:right; margin-top:20px;">
+        <strong>Total General: ${{ number_format($totalGeneral, 4) }}</strong>
     </div>
 </body>
 
