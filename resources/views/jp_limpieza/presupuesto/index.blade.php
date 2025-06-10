@@ -169,6 +169,28 @@
                                     </tr>
                                 @endforelse
                             </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td class="aling-middle font-weight-bold" colspan="5">Costo directo</td>
+                                    <td class="aling-middle" colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td class="aling-middle font-weight-bold" colspan="5">Gastos</td>
+                                    <td class="aling-middle" colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td class="aling-middle font-weight-bold" colspan="5">Saldo</td>
+                                    <td class="aling-middle" colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td class="aling-middle font-weight-bold" colspan="5">valor contratado</td>
+                                    <td class="aling-middle" colspan="2"></td>
+                                </tr>
+                                <tr>
+                                    <td class="aling-middle font-weight-bold" colspan="5">Utilidad real</td>
+                                    <td class="aling-middle" colspan="2"></td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
 
