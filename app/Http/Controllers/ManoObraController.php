@@ -43,7 +43,11 @@ class ManoObraController extends Controller
             ->orderBy('semana', 'desc')
             ->paginate(15);
 
-        $route_params = array_merge($route_params, ['list_mano_obra' => $list_mano_obra, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
+        $proyecto = Proyecto::findOrFail($request->proyecto);
+        $subproyectos = $proyecto->subproyectos_unicos;
+
+
+        $route_params = array_merge($route_params, ['list_mano_obra' => $list_mano_obra, 'subproyectos' => $subproyectos, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page]);
         return view('mano_obra.index', $route_params);
     }
 

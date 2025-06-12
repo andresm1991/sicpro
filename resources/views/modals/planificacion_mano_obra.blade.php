@@ -36,7 +36,7 @@
                         <div class="col-md-6 col-12">
                             <div class="form-group">
                                 {{ Form::label('', 'subProyecto', ['class' => 'col-form-label']) }}
-                                {{ Form::text('subproyecto', '', ['class' => 'form-control', 'placeholder' => 'opcional']) }}
+                                {{ Form::select('subproyecto', $subproyectos, '', ['class' => 'form-control select2-tag', 'data-placeholder' => 'subproyecto', 'data-allow-clear' => 'true']) }}
                             </div>
                         </div>
                         <div class="col-md-6 col-12">

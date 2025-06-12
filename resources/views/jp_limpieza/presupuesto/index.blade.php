@@ -172,55 +172,36 @@
                             <tfoot>
                                 <tr>
                                     <td class="aling-middle font-weight-bold" colspan="5">Costo directo</td>
-                                    <td class="aling-middle" colspan="2"></td>
+                                    <td class="aling-middle text-right" colspan="2">
+                                        $ {{ number_format($categorias->sum('total_categoria'), 4) }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="aling-middle font-weight-bold" colspan="5">Gastos</td>
-                                    <td class="aling-middle" colspan="2"></td>
+                                    <td class="aling-middle text-right" colspan="2">
+                                        $ {{ number_format($totalGastos, 4) }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="aling-middle font-weight-bold" colspan="5">Saldo</td>
-                                    <td class="aling-middle" colspan="2"></td>
+                                    <td class="aling-middle text-right" colspan="2">
+                                        $ {{ number_format($categorias->sum('total_categoria') - $totalGastos, 4) }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="aling-middle font-weight-bold" colspan="5">valor contratado</td>
-                                    <td class="aling-middle" colspan="2"></td>
+                                    <td class="aling-middle text-right" colspan="2">
+                                        $ {{ $proyecto->total_contratado_formatted }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="aling-middle font-weight-bold" colspan="5">Utilidad real</td>
-                                    <td class="aling-middle" colspan="2"></td>
+                                    <td class="aling-middle text-right" colspan="2">
+                                        $ {{ number_format($proyecto->total_contratado - $totalGastos, 4) }}
+                                    </td>
                                 </tr>
                             </tfoot>
                         </table>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-10 d-flex justify-content-end">
-                            <label class="col-form-label">total contratado: </label>
-                        </div>
-                        <div class="col-2 d-flex justify-content-end">
-                            <span class="col-form-label" id="total-estimado">
-                                $ {{ $proyecto->total_contratado_formatted }}
-                            </span>
-                        </div>
-
-                        <div class="col-10 d-flex justify-content-end">
-                            <label class="col-form-label">total estimado: </label>
-                        </div>
-                        <div class="col-2 d-flex justify-content-end">
-                            <span class="col-form-label" id="total-estimado">
-                                $ {{ number_format($categorias->sum('total_categoria'), 4) }}
-                            </span>
-                        </div>
-
-                        <div class="col-10 d-flex justify-content-end">
-                            <label class="col-form-label">utilidad estimada: </label>
-                        </div>
-                        <div class="col-2 d-flex justify-content-end">
-                            <span class="col-form-label" id="total-utilidad">
-                                $ {{ number_format($proyecto->total_contratado - $categorias->sum('total_categoria'), 4) }}
-                            </span>
-                        </div>
                     </div>
                     {{ Form::close() }}
                 </div>

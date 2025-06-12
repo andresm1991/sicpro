@@ -8,21 +8,7 @@
         </div>
     </div>
 
-    <div class="col-sm-4 col-12">
-        <div class="form-group">
-            <label class="col-form-label">Tipo Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
-            {{ Form::select('tipo_solicitud', $tipo_solicitudes->prepend('', ''), old('tipo_solicitud', $solicitud->tipo_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
-
-            {!! $errors->first('tipo_solicitud', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
-        </div>
-    </div>
-
-
-
-
-    @if (auth()->user()->hasRole('Administrador') ||
-            auth()->user()->hasRole('Gerencial') ||
-            auth()->user()->hasRole('Administrativo'))
+    @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
         <div class="col-sm-4 col-12">
             <div class="form-group">
                 <label class="col-form-label">Estado Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
@@ -32,8 +18,6 @@
             </div>
         </div>
     @endif
-
-
 
 </div>
 

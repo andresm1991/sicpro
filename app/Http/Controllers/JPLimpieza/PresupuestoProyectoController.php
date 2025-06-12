@@ -17,7 +17,7 @@ class PresupuestoProyectoController extends Controller
 {
     public function index(Request $request)
     {
-        $proyecto = Proyecto::findOrFail($request->proyecto);
+        $proyecto = Proyecto::with(['adquisiciones', 'manoObra', 'contratistas'])->findOrFail($request->proyecto);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -39,7 +39,24 @@ class PresupuestoProyectoController extends Controller
             ->where('activo', true)
             ->get();
 
-        return view('jp_limpieza.presupuesto.index', compact('categorias', 'proyecto', 'breadcrumbs'));
+        $totalAdquisiciones = $proyecto->adquisiciones->sum(function ($item) {
+            $total = calcularTotalProducto($item->cantidad, $item->precio_unitario, $item->iva);
+            return $total;
+        });
+
+        $totalManoObra = $proyecto->manoObra->sum(function ($item) {
+            $total = $item->total_recibir;
+            return $total;
+        });
+
+        $totalContratistas = $proyecto->contratistas->sum(function ($item) {
+            $total = calcularTotalProducto($item->cantidad, $item->precio_unitario, $item->iva);
+            return $total;
+        });
+
+        $totalGastos = $totalAdquisiciones + $totalManoObra + $totalContratistas;
+
+        return view('jp_limpieza.presupuesto.index', compact('categorias', 'proyecto', 'breadcrumbs', 'totalGastos'));
     }
 
     public function store(Request $request)

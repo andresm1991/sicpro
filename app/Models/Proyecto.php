@@ -101,4 +101,27 @@ class Proyecto extends Model
         //return ceil((Carbon::parse($primerRegistro->fecha_inicio)->diffInDays(now()) + 1) / 7);
         //return semanasTranscurridas($primerRegistro->fecha_inicio);
     }
+
+    public function getSubproyectosUnicosAttribute()
+    {
+        // Obtener subproyectos únicos de cada relación
+        $subproyectosProyecto = collect([$this->subproyecto])->filter()->unique();
+
+        $subproyectosAdquisiciones = $this->adquisiciones->pluck('subproyecto')->filter()->unique();
+        $subproyectosManoObra = $this->mano_obra->pluck('subproyecto')->filter()->unique();
+        $subproyectosContratista = $this->contratista->pluck('subproyecto')->filter()->unique();
+
+        // Unir y agrupar todos los subproyectos, eliminando duplicados
+        $subproyectos = $subproyectosProyecto
+            ->merge($subproyectosAdquisiciones)
+            ->merge($subproyectosManoObra)
+            ->merge($subproyectosContratista)
+            ->unique()
+            ->values();
+
+        // Array asociativo para un select
+        return $subproyectos->mapWithKeys(function ($item) {
+            return [$item => $item];
+        })->prepend('', '');
+    }
 }

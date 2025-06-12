@@ -6,6 +6,7 @@ use App\Http\Controllers\RecuperacionTiempoController;
 
 Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function () {
     Route::get('/', [SolicitudController::class, 'index'])->name('index');
+    //** RUTAS SOLICITUDES */
     Route::group(['prefix' => 'permisos', 'as' => 'permisos.'], function () {
         Route::get('/', [SolicitudController::class, 'permisos'])->name('index');
         Route::get('/nueva-solicitud', [SolicitudController::class, 'create'])->name('create');
@@ -16,6 +17,16 @@ Route::group(['prefix' => 'solicitudes', 'as' => 'solicitud.'], function () {
         Route::delete('/eliminar-solicitud/{solicitud}', [SolicitudController::class, 'destroy']);
         Route::get('/buscar', [SolicitudController::class, 'buscar']);
     });
+    //** RUTAS EVENTUALIDADES */
+    Route::group(['prefix' => 'eventualidades', 'as' => 'eventualidad.'], function () {
+        Route::get('/', [SolicitudController::class, 'eventualidad'])->name('index');
+        Route::get('/nuevo', [SolicitudController::class, 'createEventualidad'])->name('create');
+        Route::post('/guardar', [SolicitudController::class, 'storeEventualidad'])->name('store');
+        Route::get('/{solicitud}/detalle', [SolicitudController::class, 'showEventualidad'])->name('show');
+        Route::get('/{solicitud}/editar', [SolicitudController::class, 'editEventualidad'])->name('edit');
+        Route::put('/{solicitud}', [SolicitudController::class, 'updateEventualidad'])->name('update');
+    });
+
     //** RUTAS REPOSICIONE DE TIEMPO */
     Route::group(['prefix' => 'reposicion', 'as' => 'reposicion.'], function () {
         Route::get('/', [RecuperacionTiempoController::class, 'index'])->name('index');

@@ -24,20 +24,12 @@ class SolicitudStoreRequest extends FormRequest
     {
         $rules = [
             'user' => 'required',
-            'tipo_solicitud' => 'required',
             'detalle' => 'required|max:255',
+            'fecha_desde' => 'required|date|before_or_equal:fecha_hasta',
+            'fecha_hasta' => 'required|date',
+            'hora_inicio' => 'required|date_format:H:i|before_or_equal:hora_fin',
+            'hora_fin' => 'required|date_format:H:i',
         ];
-
-        $catalogo = CatalogoDato::find($this->tipo_solicitud);
-        if (isset($catalogo) && $catalogo->slug != 'tipo.solicitudes.eventualidad') {
-            $rules = array_merge($rules, [
-                'fecha_desde' => 'required|date|before_or_equal:fecha_hasta',
-                'fecha_hasta' => 'required|date',
-                'hora_inicio' => 'required|date_format:H:i|before_or_equal:hora_fin',
-                'hora_fin' => 'required|date_format:H:i',
-            ]);
-        }
-
 
         return $rules;
     }
@@ -46,7 +38,6 @@ class SolicitudStoreRequest extends FormRequest
     {
         return [
             'user.required' => 'Seleccione el colcaborador.',
-            'tipo_solicitud.required' => 'Selecione una opción.',
             'estado_solicitud.required' => 'Seleccione una opción.',
             'fecha_desde.required' => 'Ingrese la fecha de inicio.',
             'fecha_desde.before_or_equal' => 'Esta fecha debe ser una fecha anterior o igual a fecha hasta.',

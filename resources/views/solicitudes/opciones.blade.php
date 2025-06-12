@@ -10,7 +10,13 @@
                 <div class="max-auto">
                     <a href="{{ route('solicitud.permisos.index') }}" class="nodo">
                         <img src="{{ asset('images/svg/evaluacion.svg') }}" alt="">
-                        <span>Ausencias & Eventualidades</span>
+                        <span>Ausencias</span>
+                    </a>
+                </div>
+                <div class="max-auto">
+                    <a href="{{ route('solicitud.eventualidad.index') }}" class="nodo">
+                        <img src="{{ asset('images/svg/evaluacion.svg') }}" alt="">
+                        <span>Eventualidades</span>
                     </a>
                 </div>
 

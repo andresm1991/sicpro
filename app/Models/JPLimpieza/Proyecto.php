@@ -35,6 +35,22 @@ class Proyecto extends Model
         return $this->hasMany(PresupuestoProyecto::class, 'proyecto_id');
     }
 
+    public function adquisiciones()
+    {
+        return $this->hasMany(Adquisicion::class, 'proyecto_id');
+    }
+
+    public function manoObra()
+    {
+        return $this->hasMany(ManoObra::class, 'proyecto_id');
+    }
+
+    public function contratistas()
+    {
+        return $this->hasMany(Contratista::class, 'proyecto_id');
+    }
+
+
     public function getValorContratadoMensualAttribute()
     {
         return $this->precio_por_metro * $this->metros_contratado;

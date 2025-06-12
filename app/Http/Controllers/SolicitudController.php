@@ -6,6 +6,7 @@ use App\Constants\MessagesConstant;
 use App\Enums\PushNotificationsEnum;
 use App\Http\Requests\SolicitudStoreRequest;
 use App\Models\CatalogoDato;
+use App\Models\EventualidadUsuario;
 use App\Models\Solicitud;
 use App\Models\User;
 use App\Services\LogService;
@@ -20,7 +21,7 @@ class SolicitudController extends Controller
 {
     public function index()
     {
-        $title_page = 'Solicitudes';
+        $title_page = 'Comunicación';
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -32,8 +33,8 @@ class SolicitudController extends Controller
 
     public function permisos()
     {
-        $title_page = 'Pemirsos';
-        $solicitudes = Solicitud::getSolicitudesPorUsuario();
+        $title_page = 'Ausencias';
+        $solicitudes = Solicitud::getSolicitudesPorUsuario('tipo.solicitudes.ausencia');
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -71,23 +72,15 @@ class SolicitudController extends Controller
             $estado_solicitud = $request->estado_solicitud ?? CatalogoDato::getIdCatalogo('estados.solicitud.pendiente');
             $solicitud = CatalogoDato::find($tipo_solicitud);
 
-            if (isset($solicitud) && $solicitud->slug != 'tipo.solicitudes.eventualidad') {
-                $fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
-                $hora_desde = $request->hora_inicio;
-                $fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
-                $hora_hasta = $request->hora_fin;
-                $total_horas = calcularTiempoTotal($fecha_desde, $hora_desde, $fecha_hasta, $hora_hasta);
-            } else {
-                $fecha_desde = date('Y-m-d');
-                $hora_desde = '08:00';
-                $fecha_hasta = date('Y-m-d');
-                $hora_hasta = '08:00';
-                $total_horas = '0:00';
-            }
+            $fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
+            $hora_desde = $request->hora_inicio;
+            $fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
+            $hora_hasta = $request->hora_fin;
+            $total_horas = calcularTiempoTotal($fecha_desde, $hora_desde, $fecha_hasta, $hora_hasta);
+
 
             $detalle = $request->detalle;
             $recuperable = $request->recuperable ? true : false;
-            //$resposicion = CatalogoDato::where('id', $tipo_solicitud)->where('slug', 'tipo.solicitudes.reposición.ausencia')->exists();
 
             $store_solicitud = Solicitud::create([
                 'usuario_id' => $user,
@@ -97,7 +90,7 @@ class SolicitudController extends Controller
                 'hora_desde' => $hora_desde,
                 'hora_hasta' => $hora_hasta,
                 'total_tiempo' => $total_horas,
-                'tipo_id' => $tipo_solicitud,
+                'tipo_id' => CatalogoDato::getIdCatalogo('tipo.solicitudes.ausencia'),
                 'estado_id' => $estado_solicitud,
                 'recuperable' => $recuperable,
                 'detalle' => $detalle
@@ -135,7 +128,6 @@ class SolicitudController extends Controller
     {
         try {
             DB::beginTransaction();
-            $solicitud->tipo_id = $request->tipo_solicitud;
             $solicitud->estado_id = $request->estado_solicitud;
             $solicitud->fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
             $solicitud->fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
@@ -180,66 +172,240 @@ class SolicitudController extends Controller
         }
     }
 
+    /**
+     * EVENTUALIDADES
+     */
+
+    public function eventualidad()
+    {
+        $title_page = 'Eventualidades';
+        $solicitudes = Solicitud::getSolicitudesPorUsuario('tipo.solicitudes.eventualidad');
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Opciones', 'url' => route('solicitud.index')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('solicitudes.eventualidad.index', compact('title_page', 'breadcrumbs', 'solicitudes'));
+    }
+
+    public function createEventualidad()
+    {
+        $title_page = 'Nueva Eventualidad';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Eventualidades', 'url' => route('solicitud.eventualidad.index')],
+            ['name' => $title_page, 'url' => ''],
+        ];
+        $solicitud = new Solicitud();
+        $estados_solicitud = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
+        $users = User::where('activo', true)->where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
+
+        return view('solicitudes.eventualidad.create', compact('title_page', 'breadcrumbs', 'solicitud', 'users', 'estados_solicitud'));
+    }
+
+    public function storeEventualidad(Request $request)
+    {
+        $request->validate(
+            [
+                'users' => 'required|array',
+                'detalle' => 'required',
+            ],
+            [
+                'users.required' => 'Seleccione al menos un colaborador',
+                'detalle.required' => 'Ingrese el detalle de la eventualidad'
+            ]
+        );
+
+        try {
+
+            DB::beginTransaction();
+            $users = $request->input('users', []);
+            $estado_solicitud = $request->estado_solicitud ?? CatalogoDato::getIdCatalogo('estados.solicitud.pendiente');
+
+            $fecha_desde = date('Y-m-d');
+            $hora_desde = '08:00';
+            $fecha_hasta = date('Y-m-d');
+            $hora_hasta = '08:00';
+            $total_horas = '0:00';
+
+            $detalle = $request->detalle;
+            $recuperable = false;
+
+            $store_solicitud = Solicitud::create([
+                'usuario_id' => auth()->user()->id,
+                'fecha_solicitud' => date('Y-m-d'),
+                'fecha_desde' => $fecha_desde,
+                'fecha_hasta' => $fecha_hasta,
+                'hora_desde' => $hora_desde,
+                'hora_hasta' => $hora_hasta,
+                'total_tiempo' => $total_horas,
+                'tipo_id' => CatalogoDato::getIdCatalogo('tipo.solicitudes.eventualidad'),
+                'estado_id' => $estado_solicitud,
+                'recuperable' => $recuperable,
+                'detalle' => $detalle
+            ]);
+
+            foreach ($users as $user) {
+                EventualidadUsuario::create([
+                    'solicitud_id' => $store_solicitud->id,
+                    'usuario_id' => $user,
+                ]);
+            }
+
+            DB::commit();
+
+            PushNotificationService::sendNotification(PushNotificationsEnum::EVENTUALIDAD, "Solicitud", "Se genero una solicitud de {$store_solicitud->tipo_solicitud->descripcion} para el colaborador {$store_solicitud->usuario->nombre}", route('solicitud.eventualidad.show', $store_solicitud->id), $users);
+
+            return redirect()->route('solicitud.eventualidad.index')->with('success', MessagesConstant::INSERT);
+        } catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('ERROR', 'Error al crear solicitud', ['execption' => $e, 'message' => $e->getMessage()]);
+            return redirect()->back()->with('success', MessagesConstant::DEFAUL_ERROR);
+        }
+    }
+
+    public function editEventualidad(Solicitud $solicitud)
+    {
+        $title_page = 'Detalle Eventualidad';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Eventualidades', 'url' => route('solicitud.eventualidad.index')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        $estados_solicitud = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
+        $users = User::where('activo', true)->where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
+
+        return view('solicitudes.eventualidad.edit', compact('title_page', 'breadcrumbs', 'solicitud', 'users', 'estados_solicitud'));
+    }
+
+    public function updateEventualidad(Request $request, Solicitud $solicitud)
+    {
+        $request->validate(
+            [
+                'users' => 'required|array',
+                'detalle' => 'required',
+            ],
+            [
+                'users.required' => 'Seleccione al menos un colaborador',
+                'detalle.required' => 'Ingrese el detalle de la eventualidad'
+            ]
+        );
+
+        try {
+            DB::beginTransaction();
+            $solicitud->estado_id = $request->estado_solicitud;
+            $solicitud->detalle = $request->detalle;
+
+            $solicitud->save();
+            DB::commit();
+
+            PushNotificationService::sendNotification(PushNotificationsEnum::EVENTUALIDAD, "Eventualidad", "La eventualidad fue {$solicitud->estado_solicitud->descripcion}", route('solicitud.eventualidad.show', $solicitud->id), [$solicitud->usuario_id]);
+
+            return redirect()->route('solicitud.eventualidad.index')->with('success', MessagesConstant::UPDATE);
+        } catch (Throwable $e) {
+            LogService::log('ERROR', 'Error al actualizar solicitud de permiso', ['message' => $e->getMessage()]);
+            return redirect()->back()->with('error', MessagesConstant::DEFAUL_ERROR);
+        }
+    }
+    public function showEventualidad(Solicitud $solicitud)
+    {
+        $title_page = 'Detalle Eventualidad';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Eventualidades', 'url' => route('solicitud.eventualidad.index')],
+            ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
+        ];
+
+        return view('solicitudes.eventualidad.show', compact('title_page', 'breadcrumbs', 'solicitud'));
+    }
+
     public function buscar(Request $request)
     {
         if ($request->ajax()) {
             $buscar = $request->text;
+            $tipo = $request->tipo == 'ausencia' ? 'tipo.solicitudes.ausencia' : 'tipo.solicitudes.eventualidad';
             $output = "";
 
             // Construir la consulta
-            $query = Solicitud::with(['usuario', 'tipo_solicitud', 'estado_solicitud']) // Cargar relaciones
-                ->whereHas('usuario', function ($query) use ($buscar) {
-                    // Filtrar por el nombre del usuario
-                    $query->where('nombre', 'like', "%{$buscar}%");
-                })
-                ->orWhereHas('tipo_solicitud', function ($query) use ($buscar) {
-                    // Filtrar por la descripción del catálogo de datos
-                    $query->where('descripcion', 'like', "%{$buscar}%");
-                })->orWhereHas('estado_solicitud', function ($query) use ($buscar) {
-                    // Filtrar por la descripción del catálogo de datos
-                    $query->where('descripcion', 'like', "%{$buscar}%");
-                });
-
-            if ($buscar === 'si') {
-                $recuperable = $buscar == 'si';
-                $query->orWhere('recuperable', $recuperable);
-            }
-
+            $query = Solicitud::buscarAusencias($buscar, $tipo);
             $solicitudes = $query->orderBy('fecha_solicitud', 'desc')->get();
 
             if ($solicitudes) {
-                foreach ($solicitudes as $solicitud) {
-                    $recuperable = $solicitud->recuperable ? 'SI' : 'NO';
-                    $editar = "<a href='" . route('solicitud.permisos.edit', $solicitud->id) . "' class='dropdown-item'>Editar</a>";
-                    $eliminar = "<a href='#' class='dropdown-item eliminar-solicitud' id='" . $solicitud->id . "'>Eliminar</a>";
+                if ($request->tipo == 'ausencia') {
+                    foreach ($solicitudes as $solicitud) {
+                        $recuperable = $solicitud->recuperable ? 'SI' : 'NO';
+                        $editar = "<a href='" . route('solicitud.permisos.edit', $solicitud->id) . "' class='dropdown-item'>Editar</a>";
+                        $eliminar = "<a href='#' class='dropdown-item eliminar-solicitud' id='" . $solicitud->id . "'>Eliminar</a>";
 
-                    if ($solicitud->estado_solicitud->descripcion == 'Aprobado') {
-                        $editar = "<a href='" . route('solicitud.permisos.show', $solicitud->id) . "' class='dropdown-item'>Detalle</a>";
+                        if ($solicitud->estado_solicitud->descripcion == 'Aprobado') {
+                            $editar = "<a href='" . route('solicitud.permisos.show', $solicitud->id) . "' class='dropdown-item'>Detalle</a>";
+                        }
+
+                        $output .= '<tr id="' . $solicitud->id . '">' .
+                            '<td class="align-middle text-capitalize">' . $solicitud->id . '</td>' .
+                            '<td class="align-middle text-capitalize">' . $solicitud->usuario->nombre . '</td>' .
+                            '<td class="align-middle">' . dateFormatHumans($solicitud->fecha_solicitud) . '</td>' .
+                            '<td class="align-middle">' . $recuperable . '</td>' .
+                            '<td class="align-middle">' . $solicitud->estado_solicitud->descripcion . '</td>' .
+                            '<td class="align-middle">' .
+                            '<div class="btn-group dropleft">' .
+                            '<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Opciones </button>' .
+                            '<div class="dropdown-menu">' . $editar . $eliminar . '</div>' .
+                            '</div>' .
+                            '</td>' .
+                            '</tr>';
                     }
 
-                    $output .= '<tr id="{{ $solicitud->id }}">' .
-                        '<td class="align-middle text-capitalize">' . $solicitud->id . '</td>' .
-                        '<td class="align-middle text-capitalize">' . $solicitud->usuario->nombre . '</td>' .
-                        '<td class="align-middle">' . dateFormatHumans($solicitud->fecha_solicitud) . '</td>' .
-                        '<td class="align-middle">' . $solicitud->tipo_solicitud->descripcion . '</td>' .
-                        '<td class="align-middle">' . $recuperable . '</td>' .
-                        '<td class="align-middle">' . $solicitud->estado_solicitud->descripcion . '</td>' .
-                        '<td class="align-middle">' .
-                        '<div class="btn-group dropleft">' .
-                        '<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Opciones </button>' .
-                        '<div class="dropdown-menu">' . $editar . $eliminar . '</div>' .
-                        '</div>' .
-                        '</td>' .
-                        '</tr>';
+                    if (empty($output)) {
+                        $output .= '<tr>' .
+                            '<td colspan="7" class="text-center">' .
+                            '<span class="text-danger">No existen datos para mostrar.</span>' .
+                            '</td>' .
+                            '</tr>';
+                    }
+                } else {
+                    foreach ($solicitudes as $solicitud) {
+                        $editar = "<a href='" . route('solicitud.eventualidad.edit', $solicitud->id) . "' class='dropdown-item'>Editar</a>";
+                        $eliminar = "<a href='#' class='dropdown-item eliminar-solicitud' id='" . $solicitud->id . "'>Eliminar</a>";
+
+                        if ($solicitud->usuariosEventualidad->count()) {
+                            $colaboradores = $solicitud->usuariosEventualidad->pluck('usuario.nombre')->join(', ');
+                        } else {
+                            $colaboradores = '<span class="text-muted">Sin colaboradores</span>';
+                        }
+
+                        if ($solicitud->estado_solicitud->descripcion == 'Aprobado') {
+                            $editar = "<a href='" . route('solicitud.eventualidad.show', $solicitud->id) . "' class='dropdown-item'>Detalle</a>";
+                        }
+
+                        $output .= '<tr id="' . $solicitud->id . '">' .
+                            '<td class="align-middle">' . $solicitud->id . '</td>' .
+                            '<td class="align-middle">' . $solicitud->usuario->nombre . '</td>' .
+                            '<td class="align-middle">' . $colaboradores . '</td>' .
+                            '<td class="align-middle">' . dateFormatHumans($solicitud->fecha_solicitud) . '</td>' .
+                            '<td class="align-middle">' . $solicitud->estado_solicitud->descripcion . '</td>' .
+                            '<td class="align-middle">' .
+                            '<div class="btn-group dropleft">' .
+                            '<button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> Opciones </button>' .
+                            '<div class="dropdown-menu">' . $editar . $eliminar . '</div>' .
+                            '</div>' .
+                            '</td>' .
+                            '</tr>';
+                    }
+
+                    if (empty($output)) {
+                        $output .= '<tr>' .
+                            '<td colspan="6" class="text-center">' .
+                            '<span class="text-danger">No existen datos para mostrar.</span>' .
+                            '</td>' .
+                            '</tr>';
+                    }
                 }
 
-                if (empty($output)) {
-                    $output .= '<tr>' .
-                        '<td colspan="7" class="text-center">' .
-                        '<span class="text-danger">No existen datos para mostrar.</span>' .
-                        '</td>' .
-                        '</tr>';
-                }
                 return Response($output);
             }
         }

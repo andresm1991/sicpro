@@ -58,6 +58,10 @@ class PushNotificationService
                     $users = User::whereIn('id', $usersNotified)->get();
                     break;
 
+                case PushNotificationsEnum::EVENTUALIDAD:
+                    $users = User::whereIn('id', $usersNotified)->get();
+                    break;
+
                 default:
             }
 

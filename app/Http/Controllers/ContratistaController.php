@@ -64,6 +64,9 @@ class ContratistaController extends Controller
 
         $proveedores = Proveedor::where('categoria_proveedor_id', $route_params['tipo_etapa']->id)->pluck('razon_social', 'id');
 
+        $proyecto = Proyecto::findOrFail($request->proyecto);
+        $subproyectos = $proyecto->subproyectos_unicos;
+
         $route_params = array_merge(
             $route_params,
             [
@@ -75,6 +78,7 @@ class ContratistaController extends Controller
                 'title_page' => $title_page,
                 'unidades_medidas' => $unidades_medidas,
                 'articulos' => $articulos,
+                'subproyectos' => $subproyectos,
             ]
         );
 
@@ -177,6 +181,9 @@ class ContratistaController extends Controller
             return  $orden_trabajo->numero_casas * ($detalle->valor_unitario * $detalle->cantidad);
         });
 
+        $proyecto = Proyecto::findOrFail($request->proyecto);
+        $subproyectos = $proyecto->subproyectos_unicos;
+
         $route_params = array_merge(
             $route_params,
             [
@@ -190,6 +197,7 @@ class ContratistaController extends Controller
                 'articulos' => $articulos,
                 'subTotal' => $subTotal,
                 'totalGeneral' => $totalGeneral,
+                'subproyectos' => $subproyectos,
             ]
         );
 

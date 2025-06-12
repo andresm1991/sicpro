@@ -58,6 +58,12 @@ class DetalleManoObra extends Model
         return $this->belongsTo(ManoObra::class, 'mano_obra_id');
     }
 
+    public function getTotalManoObraAttribute()
+    {
+        return $this->sueldo + $this->horas_extras + $this->fondos + $this->decimo_tercero + $this->decimo_cuarto - $this->iess - $this->atrasos_faltas - $this->anticipos - $this->prestamo_iess - $this->quincena - $this->prestamo_jp;
+    }
+
+
     public function getSueldoFormattedAttribute()
     {
         return number_format($this->sueldo, 2);

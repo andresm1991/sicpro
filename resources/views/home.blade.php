@@ -23,7 +23,7 @@
                 <div class="col-sm-3 col-12">
                     <a href="{{ route('solicitud.index') }}" class="nodo" id="operativo">
                         <img src="{{ asset('images/svg/solicitud.svg') }}" alt="Operativo">
-                        <span>Solicitudes</span>
+                        <span>Comunicación</span>
                     </a>
                 </div>
                 <div class="col-sm-3 col-12">

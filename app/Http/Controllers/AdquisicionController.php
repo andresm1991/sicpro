@@ -106,8 +106,8 @@ class AdquisicionController extends Controller
         $unidad_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida')->pluck('descripcion', 'id');
         $unidad_medidas = $unidad_medidas->prepend('', '');
 
-        $subproyectos = Adquisicion::where('proyecto_id', $proyecto->id)->where('subproyecto', '!=', null)->pluck('subproyecto', 'subproyecto');
-        $subproyectos = $subproyectos->prepend('', '');
+        $proyecto = Proyecto::findOrFail($proyecto->id);
+        $subproyectos = $proyecto->subproyectos_unicos;
 
 
 

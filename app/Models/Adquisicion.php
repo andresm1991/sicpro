@@ -340,6 +340,9 @@ class Adquisicion extends Model
             if (!isset($resultado[$proyectoNombre][$etapaNombre])) {
                 // Contratistas del proyecto y etapa
                 $contratistas = $proyecto->contratista ?? collect();
+                $contratistas = $contratistas->when($subproyecto, function ($collection) use ($subproyecto) {
+                    return $collection->where('subproyecto', $subproyecto);
+                });
                 $contratistasArray = [];
                 foreach ($contratistas as $contratista) {
                     // Solo incluir si la etapa coincide
@@ -382,6 +385,9 @@ class Adquisicion extends Model
 
                 // Mano de obra del proyecto y etapa
                 $manosObra = $proyecto->mano_obra ?? collect();
+                $manosObra = $manosObra->when($subproyecto, function ($collection) use ($subproyecto) {
+                    return $collection->where('subproyecto', $subproyecto);
+                });
                 $manosObraEtapa = $manosObra->where('etapa_id', $adquisicion->etapa_id);
                 $uniqueFechas = $manosObraEtapa->unique(function ($item) {
                     return $item->fecha_inicio . '|' . $item->fecha_fin;
@@ -449,6 +455,29 @@ class Adquisicion extends Model
                 }
             }
         }
+
+        // Ordenar internamente cada categoría por nombre de artículo
+        foreach ($resultado as $proyectoNombre => &$etapas) {
+            foreach ($etapas as $etapaNombre => &$categorias) {
+                if (!empty($categorias['materiales_herramientas'])) {
+                    usort($categorias['materiales_herramientas'], function ($a, $b) {
+                        return strcmp($a['articulo'], $b['articulo']);
+                    });
+                }
+                if (!empty($categorias['servicios'])) {
+                    usort($categorias['servicios'], function ($a, $b) {
+                        return strcmp($a['articulo'], $b['articulo']);
+                    });
+                }
+                if (!empty($categorias['contratista'])) {
+                    usort($categorias['contratista'], function ($a, $b) {
+                        return strcmp($a['proveedor'], $b['proveedor']);
+                    });
+                }
+                // Mano de obra no se ordena porque es resumen
+            }
+        }
+        unset($etapas); // Buenas prácticas para referencias
 
         return $resultado;
     }

@@ -7,6 +7,7 @@ enum PushNotificationsEnum: string
     case OPERATIVO = 'operativo';
     case ADMINISTRATIVO = 'administrativo';
     case TAREAS = 'tareas';
+    case EVENTUALIDAD = 'eventualidades';
 
     public static function values(): array
     {
@@ -19,6 +20,7 @@ enum PushNotificationsEnum: string
             self::OPERATIVO->value => 'operativo',
             self::ADMINISTRATIVO->value => 'administrativo',
             self::TAREAS->value => 'tareas',
+            self::EVENTUALIDAD->value => 'eventualidades',
         ];
     }
 
@@ -28,6 +30,7 @@ enum PushNotificationsEnum: string
             self::OPERATIVO => 'operativo',
             self::ADMINISTRATIVO => 'administrativo',
             self::TAREAS => 'tareas',
+            self::EVENTUALIDAD->value => 'eventualidades',
         };
     }
 }

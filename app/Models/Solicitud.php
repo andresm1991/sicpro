@@ -34,14 +34,22 @@ class Solicitud extends Model
         return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 
-    public static function getSolicitudesPorUsuario()
+    public function usuariosEventualidad()
+    {
+        return $this->hasMany(EventualidadUsuario::class);
+    }
+
+    public static function getSolicitudesPorUsuario($tipo)
     {
 
+        $tipo = CatalogoDato::getIdCatalogo($tipo);
+
+        $query = Solicitud::where('tipo_id', $tipo);
         if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial')) {
-            $solicitudes = Solicitud::orderBy('fecha_solicitud', 'desc')
+            $solicitudes = $query->orderBy('fecha_solicitud', 'desc')
                 ->paginate(15);
         } else {
-            $solicitudes = Solicitud::where('usuario_id', auth()->user()->id)
+            $solicitudes = $query->where('usuario_id', auth()->user()->id)
                 ->orderBy('fecha_solicitud', 'desc')
                 ->paginate(15);
         }
@@ -229,5 +237,29 @@ class Solicitud extends Model
                 break;
         }
         return $query->get();
+    }
+
+    public function scopeBuscarAusencias($query, $buscar, $slug)
+    {
+        return $query
+            ->with(['usuario', 'estado_solicitud'])
+            ->whereHas('tipo_solicitud', function ($q) use ($slug) {
+                $q->where('slug', $slug);
+            })
+            ->where(function ($q) use ($buscar) {
+                $q->whereHas('usuario', function ($query) use ($buscar) {
+                    $query->where('nombre', 'like', "%{$buscar}%");
+                })
+                    ->orWhereHas('estado_solicitud', function ($query) use ($buscar) {
+                        $query->where('descripcion', 'like', "%{$buscar}%");
+                    })
+                    ->orWhere(function ($q2) use ($buscar) {
+                        if ($buscar === 'si') {
+                            $q2->where('recuperable', true);
+                        } elseif ($buscar === 'no') {
+                            $q2->where('recuperable', false);
+                        }
+                    });
+            });
     }
 }

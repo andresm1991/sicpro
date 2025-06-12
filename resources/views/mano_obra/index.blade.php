@@ -86,6 +86,7 @@
             'tipo' => $tipo,
             'tipo_id' => $tipo_id,
             'proyecto' => $proyecto,
+            'subproyectos' => $subproyectos,
             'tipo_adquisicion' => $tipo_adquisicion,
             'tipo_etapa' => $tipo_etapa,
         ])
