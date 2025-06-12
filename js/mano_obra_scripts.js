@@ -463,7 +463,7 @@ $(function () {
         $('input:text[name=fecha_inicio]').attr('disabled', true);
         $('input:text[name=fecha_inicio]').val(convertirFecha($(this).data('fecha-inicio')));
         $('input:text[name=fecha_fin]').datepicker('setDate', convertirFecha($(this).data('fecha-fin')));
-        $('input:text[name=subproyecto]').val($(this).data('subproyecto'));
+        $('select[name=subproyecto]').val($(this).data('subproyecto')).trigger('change');
         $('#modalPlanificacionManoObra').modal('show');
     });
 

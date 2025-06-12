@@ -34,11 +34,13 @@ $(function () {
     */
     $('input:text[name=permisos_search]').on('keyup', function () {
         var $value = $(this).val();
+        let tipo = $(this).attr('id');
+
         $.ajax({
             url: 'permisos/buscar',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
-            data: { 'text': $value },
+            data: { 'text': $value, 'tipo': tipo },
             beforeSend: function () {
             },
             success: function (data) {
