@@ -725,5 +725,35 @@ class CatalogoDatoTableSeeder extends Seeder
             'activo' => true,
         ]);
         */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Tipo de propiedades en venta',
+            'detalle' => '',
+            'slug' => 'tipo.propiedades',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Terreno',
+            'detalle' => '',
+            'slug' => 'tipo.propiedades.terreno',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Casa',
+            'detalle' => '',
+            'slug' => 'tipo.propiedades.casa',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Arriendo',
+            'detalle' => '',
+            'slug' => 'tipo.propiedades.arriendo',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
     }
 }

@@ -20,7 +20,11 @@ class VentaPropiedad extends Model
         'longitud',
         'precio_venta',
         'precio_por_metros_cuadrados',
-        'estado'
+        'estado',
+        'frente',
+        'fondo',
+        'tipo_propiedad_id',
+        'observaciones',
     ];
 
     protected $appends = ['created_at_formatted', 'precio_venta_formatted', 'area_formatted'];

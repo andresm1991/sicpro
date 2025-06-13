@@ -739,4 +739,11 @@ if (!function_exists('palabras')) {
 
         return $categorias;
     }
+
+    function getTipoPropiedadesVenta()
+    {
+        $tipos = CatalogoDato::getChildrenCatalogo('tipo.propiedades')->pluck('descripcion', 'id');
+        $tipos->prepend('', '');
+        return $tipos;
+    }
 }

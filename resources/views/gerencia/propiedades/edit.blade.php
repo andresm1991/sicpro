@@ -21,6 +21,9 @@
                         <div class="row d-flex justify-content-center align-items-center">
                             <h4 class="col ">Información general</h4>
                             <div class="col text-right">
+                                <a href='javascript:void(0);' class='btn btn-secondary btn-options compartir-ubicacion'
+                                    data-ubicacion='{{ json_encode(['lat' => $propiedad->latitud, 'lng' => $propiedad->longitud]) }}'
+                                    data-nombre='{{ $propiedad->nombre }}'>Compartir ubicacón</a>
                                 <button class="btn btn-dark btn-options" form="form_propiedades">Guardar</button>
                             </div>
                         </div>

@@ -23,5 +23,6 @@ Route::group(['prefix' => 'gerencia', 'as' => 'gerencia.'], function () {
         Route::put('/actualizar-propiedad/{propiedad}', [VentaPropiedadController::class, 'update'])->name('update');
         Route::delete('/eliminar-propiedad/{propiedad}', [VentaPropiedadController::class, 'destroy'])->name('destroy');
         Route::get('/buscar-propiedad', [VentaPropiedadController::class, 'buscar']);
+        Route::get('/mapa-de-propiedades', [VentaPropiedadController::class, 'mapa'])->name('mapa');
     });
 });

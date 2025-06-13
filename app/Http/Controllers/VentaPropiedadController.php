@@ -68,7 +68,11 @@ class VentaPropiedadController extends Controller
                 'longitud' => $request->longitud,
                 'precio_venta' => $request->precio_venta,
                 'precio_por_metros_cuadrados' => $request->precio_mt2,
-                'estado' => $request->estado
+                'estado' => $request->estado,
+                'frente' => $request->frente,
+                'fondo' => $request->fondo,
+                'tipo_propiedad_id' => $request->tipo,
+                'observaciones' => $request->observaciones,
             ]);
 
             if ($propiedad) {
@@ -126,7 +130,11 @@ class VentaPropiedadController extends Controller
                 'longitud' => $request->longitud,
                 'precio_venta' => $request->precio_venta,
                 'precio_por_metros_cuadrados' => $request->precio_mt2,
-                'estado' => $request->estado
+                'estado' => $request->estado,
+                'frente' => $request->frente,
+                'fondo' => $request->fondo,
+                'tipo_propiedad_id' => $request->tipo,
+                'observaciones' => $request->observaciones,
             ]);
 
             if ($request->hasFile('files')) {
@@ -193,6 +201,7 @@ class VentaPropiedadController extends Controller
 
         foreach ($propiedades as $propiedad) {
             $estadoBadge = $propiedad->estado == 'VENDIDO' ? 'badge-warning' : 'badge-success';
+            $compartir = "<a href='javascript:void(0);' class='dropdown-item compartir-ubicacion' data-ubicacion='" . json_encode(['lat' => $propiedad->latitud, 'lng' => $propiedad->longitud]) . "' data-nombre='" . $propiedad->nombre . "'>Compartir ubicacón</a>";
             $edit = "<a href='" . route('gerencia.propiedades.edit', $propiedad->id) . "' class='dropdown-item'>Detalle</a>";
             $destroy = "<a href='javascript:void(0);' class='dropdown-item eliminar-propiedad' id='" . $propiedad->id . "'>Eliminar</a>";
 
@@ -203,12 +212,31 @@ class VentaPropiedadController extends Controller
             $rows .= '<td class="align-middle">$ ' . $propiedad->precio_venta_formatted . '</td>';
             $rows .= '<td class="align-middle">' . $propiedad->telefono . '</td>';
             $rows .= '<td class="align-middle"><span class="badge ' . $estadoBadge . '">' . $propiedad->estado . '</span></td>';
-            $rows .= '<td class="align-middle text-right text-truncate">';
-            $rows .= '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $edit . $destroy . '"> <i class="fas fa-caret-left font-weight-normal"></i> Opciones </button>';
+            $rows .= '<td class="align-middle text-right">';
+            $rows .= '<div class="btn-group dropleft">';
+            $rows .= '<button type="button" class="btn btn-outline-dark dropdown-toggle" data-container="body" data-toggle="dropdown" aria-expanded="false"> Opciones </button>';
+            $rows .= '<div class="dropdown-menu">';
+            $rows .= $compartir . $edit . $destroy;
+            $rows .= '</div>';
+            $rows .= '</div>';
             $rows .= '</td>';
             $rows .= '</tr>';
         }
 
         return response()->json($rows);
+    }
+
+    public function mapa()
+    {
+        $title_page = 'Mapa de propiedades';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Propiedades', 'url' => route('gerencia.propiedades.index')],
+            ['name' => 'Mapa de propiedades', 'url' => '']
+        ];
+
+        $propiedades = VentaPropiedad::orderBy('created_at', 'desc')->get();
+
+        return view('gerencia.propiedades.mapa', compact('title_page', 'propiedades', 'breadcrumbs'));
     }
 }

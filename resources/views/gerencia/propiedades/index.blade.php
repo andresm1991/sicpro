@@ -15,6 +15,9 @@
                                 <a href="{{ route('gerencia.propiedades.create') }}" class="btn btn-dark btn-sm">
                                     <i class="fa-regular fa-plus"></i> Nueva propiedad
                                 </a>
+                                <a href="{{ route('gerencia.propiedades.mapa') }}" class="btn btn-dark btn-sm">
+                                    <i class="fa-solid fa-map-location-dot"></i> ver mapa
+                                </a>
                             </div>
                         </div>
                         <div class="col-md-8 col-12 ">
@@ -50,14 +53,22 @@
                                             <span
                                                 class="badge {{ $propiedad->estado == 'VENDIDO' ? 'badge-warning' : 'badge-success' }} ">{{ $propiedad->estado }}</span>
                                         </td>
-                                        <td class="align-middle text-right text-truncate">
-                                            <button type="button" class="btn btn-outline-dark" data-container="body"
-                                                data-toggle="popover" data-placement="left" data-trigger="focus"
-                                                data-content ="
-                                                <a href='{{ route('gerencia.propiedades.edit', $propiedad->id) }}' class='dropdown-item'>Detalle</a>
-                                                <a href='#' class='dropdown-item eliminar-propiedad' id='{{ $propiedad->id }}'>Eliminar</a> ">
-                                                <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                            </button>
+                                        <td class="align-middle text-right">
+                                            <div class="btn-group dropleft">
+                                                <button type="button" class="btn btn-outline-dark dropdown-toggle"
+                                                    data-container="body" data-toggle="dropdown" aria-expanded="false">
+                                                    Opciones
+                                                </button>
+                                                <div class="dropdown-menu">
+                                                    <a href='javascript:void(0);' class='dropdown-item compartir-ubicacion'
+                                                        data-ubicacion='{{ json_encode(['lat' => $propiedad->latitud, 'lng' => $propiedad->longitud]) }}'
+                                                        data-nombre='{{ $propiedad->nombre }}'>Compartir ubicacón</a>
+                                                    <a href='{{ route('gerencia.propiedades.edit', $propiedad->id) }}'
+                                                        class='dropdown-item'>Detalle</a>
+                                                    <a href='#' class='dropdown-item eliminar-propiedad'
+                                                        id='{{ $propiedad->id }}'>Eliminar</a>
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty

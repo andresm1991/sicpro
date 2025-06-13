@@ -21,7 +21,7 @@
 
             <div class="col-sm-4 col-12 form-group">
                 <label class="col-form-label">teléfono</label>
-                {{ Form::text('telefono', old('telefono', $propiedad->telefono), ['class' => 'form-control solo-numeros', 'placeholder' => 'ingrese teléfono', 'maxlength' => '10']) }}
+                {{ Form::text('telefono', old('telefono', $propiedad->telefono), ['class' => 'form-control', 'placeholder' => 'ingrese teléfono']) }}
                 {!! $errors->first('telefono', '<small class="help-block text-danger">:message</small>') !!}
             </div>
 
@@ -52,9 +52,30 @@
             </div>
 
             <div class="col-sm-4 col-12 form-group">
+                <label class="col-form-label">tipo</label>
+                {{ Form::select('tipo', getTipoPropiedadesVenta(), $propiedad->tipo_propiedad_id, ['class' => 'form-control', 'data-placeholder' => 'seleccion opción']) }}
+                {!! $errors->first('tipo', '<small class="help-block text-danger">:message</small>') !!}
+            </div>
+
+            <div class="col-sm-4 col-12 form-group">
                 <label class="col-form-label">Estado</label>
                 {{ Form::select('estado', ['' => '', 'DISPONIBLE' => 'Disponible', 'VENDIDO' => 'Vendido'], $propiedad->estado, ['class' => 'form-control', 'data-placeholder' => 'seleccion opción']) }}
                 {!! $errors->first('estado', '<small class="help-block text-danger">:message</small>') !!}
+            </div>
+            <div class="col-12">
+                <label class="col-form-label">Dimensiones</label>
+                <div class="row">
+                    <div class="col">
+                        {{ Form::text('frente', old('frente', $propiedad->frente), ['class' => 'form-control input-double', 'placeholder' => 'ingrese el frente']) }}
+                    </div>
+                    <div class="col">
+                        {{ Form::text('fondo', old('fondo', $propiedad->fondo), ['class' => 'form-control input-double', 'placeholder' => 'ingrese el fondo']) }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <label class="col-form-label">Observaciones</label>
+                {{ Form::textarea('observaciones', old('observaciones', $propiedad->observaciones), ['class' => 'form-control', 'rows' => '4', 'placeholder' => 'ingrese observaciones']) }}
             </div>
         </div>
 

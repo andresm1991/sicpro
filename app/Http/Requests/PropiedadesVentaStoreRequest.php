@@ -25,12 +25,12 @@ class PropiedadesVentaStoreRequest extends FormRequest
             'nombre' => 'required',
             'direccion' => 'required',
             'area' => 'required|numeric',
-            'telefono' => 'nullable|string|max:10',
             'latitud' => 'required|numeric',
             'longitud' => 'required|numeric',
             'precio_venta' => 'required|numeric',
             'precio_mt2' => 'required|numeric',
             'estado' => 'required|in:DISPONIBLE,VENDIDO',
+            'tipo' => 'required',
             'files.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Max 2MB for each image
             'files' => 'nullable|array|max:5', // Max 5 images
         ];
@@ -42,7 +42,6 @@ class PropiedadesVentaStoreRequest extends FormRequest
             'nombre.required' => 'Ingrese el nombre.',
             'direccion.required' => 'Ingrese la dirección.',
             'area.required' => 'Ingrese el área.',
-            'telefono.max' => 'El teléfono no puede exceder los 10 caracteres.',
             'latitud.required' => 'Ingrese la latitud.',
             'longitud.required' => 'Ingrese la longitud.',
             'precio_venta.required' => 'Ingrese el precio de venta.',
@@ -53,7 +52,8 @@ class PropiedadesVentaStoreRequest extends FormRequest
             'files.*.mimes' => 'Las imágenes deben ser de tipo: jpeg, png, jpg, gif, svg.',
             'files.*.max' => 'Cada imagen no puede exceder los 2MB.',
             'files.array' => 'Los archivos deben ser un arreglo de imágenes.',
-            'files.max' => 'No se pueden subir más de 5 imágenes.'
+            'files.max' => 'No se pueden subir más de 5 imágenes.',
+            'tipo.required' => 'Seleccione el tipo de propiedad.',
         ];
     }
     /**
@@ -63,7 +63,7 @@ class PropiedadesVentaStoreRequest extends FormRequest
     {
         // You can manipulate the request data before validation if needed
         $this->merge([
-            'telefono' => $this->telefono ? preg_replace('/\D/', '', $this->telefono) : null, // Clean phone number
+            // 'telefono' => $this->telefono ? preg_replace('/\D/', '', $this->telefono) : null, // Clean phone number
             'precio_venta' => $this->precio_venta ? str_replace(',', '', $this->precio_venta) : null,
             'precio_mt2' => $this->precio_mt2 ? str_replace(',', '', $this->precio_mt2) : null,
         ]);
