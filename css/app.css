@@ -2322,6 +2322,44 @@ a[href="javascript:void(0);"] {
     color: white;
 }
 
+/* Pegar aquí las clases CSS de .custom-infowindow */
+.custom-infowindow {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    padding: 10px;
+    max-width: 280px;
+}
+
+.custom-infowindow img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+/* 1. Apunta al contenedor principal para quitar el padding por defecto */
+.gm-style-iw-c {
+    padding: 0 !important;
+    /* Quita el espacio en blanco alrededor de tu contenido */
+    max-width: none !important;
+    /* Permite que tu div controle el ancho máximo */
+    border-radius: 10px !important;
+    /* Opcional: aplica tu propio borde redondeado */
+}
+
+/* 2. Apunta al contenedor del contenido para ocultar las barras de scroll */
+.gm-style-iw-d {
+    overflow: hidden !important;
+    /* ¡Esta es la regla clave! Oculta el scroll. */
+    max-height: none !important;
+    /* Permite que tu div controle la altura máxima */
+}
+
+/* 3. (Opcional) Si no quieres la flecha/cola que apunta al marcador */
+.gm-style-iw-t::after {
+    display: none;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */

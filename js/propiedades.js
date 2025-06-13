@@ -147,6 +147,36 @@ $(function () {
         });
     });
 
+    $(document).on('click', '.compartir-ubicacion', function (event) {
+        event.preventDefault();
+        const $boton = $(this);
+        const coordenadas = $boton.data('ubicacion');
+        const nombrePropiedad = $boton.attr('data-nombre');
+        console.log(nombrePropiedad);
+        if (!coordenadas || typeof coordenadas.lat === 'undefined' || typeof coordenadas.lng === 'undefined') {
+            console.error('Los datos de ubicación son inválidos o no existen.');
+            alert('Los datos de ubicación son inválidos.');
+            return;
+        }
+
+        const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${coordenadas.lat},${coordenadas.lng}`;
+
+        navigator.clipboard.writeText(googleMapsUrl).then(() => {
+
+            Swal.fire({
+                icon: 'success',
+                title: '¡Copiado!',
+                text: `La URL de "${nombrePropiedad}" ha sido copiada al portapapeles.`,
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+        }).catch(err => {
+            console.error('Error al intentar copiar la URL: ', err);
+            alert('No se pudo copiar la URL. Por favor, inténtalo manualmente.');
+        });
+    });
+
     actualizarContador();
 
     function actualizarContador() {
