@@ -7,6 +7,12 @@
     </div>
     <div class="col-md-4 col-12">
         <div class="form-group">
+            {{ Form::label('', 'SubProyecto', ['class' => 'col-form-label']) }}
+            {{ Form::label('', $adquisicion->proyecto_id > 0 ? $adquisicion->subproyecto ?? 'subproyecto' : 'Otros', ['class' => 'form-control text-uppercase label-disabled']) }}
+        </div>
+    </div>
+    <div class="col-md-4 col-12">
+        <div class="form-group">
             {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
             {{ Form::label('', $adquisicion->etapa->descripcion, ['class' => 'form-control text-uppercase label-disabled']) }}
         </div>

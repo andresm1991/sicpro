@@ -33,8 +33,7 @@
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-8">
                                 <h4>Adquisición #{{ $numero_orden }}</h4>
-                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true]) !!} <i class="fa-regular fa-calendar-days datepicker-2"
-                                        id="fecha"></i></h6>
+
                             </div>
                             @include('adquisiciones.partials.boton_pedido_completo')
                             <div class="col-md-2 ">

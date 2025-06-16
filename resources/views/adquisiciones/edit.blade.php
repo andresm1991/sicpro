@@ -6,6 +6,8 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="container-fluid">
+            @include('partials.alerts')
+
             {!! Form::model($orden_pedido, [
                 'route' => [
                     'proyecto.adquisiciones.update',
@@ -34,7 +36,6 @@
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-8">
                                 <h4>Orden de Pedido #{{ $numero_orden }}</h4>
-                                <h6>Fecha: {{ $orden_pedido->fecha }}</h6>
                             </div>
 
                             @include('adquisiciones.partials.boton_pedido_completo')
@@ -53,9 +54,6 @@
                     </li>
                 </ul>
                 <div class="card-body">
-                    @include('partials.alerts')
-
-
                     @include('adquisiciones.partials.form')
 
                     @if (isset($orden_pedido->orden_recepcion->completado) && $orden_pedido->orden_recepcion->completado)

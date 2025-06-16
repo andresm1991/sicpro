@@ -1,4 +1,14 @@
 <div class="row">
+    <div class="col-sm-4 col-12">
+        <div class="form-group form-search form-icon">
+            {{ Form::label('', 'fecha de adquisición', ['class' => 'col-form-label']) }}
+            <i class="fa-regular fa-calendar-days fa-lg form-control-icon"></i>
+            {{ Form::text('fecha', old('fecha', $orden_pedido->fecha ?? date('Y-m-d')), ['class' => 'form-control form-control-round datepicker-2', 'id' => 'fecha', 'readonly' => true]) }}
+            <small class="form-text text-primary">Click en el campo para cambiar la fecha de adquisición.</small>
+        </div>
+    </div>
+</div>
+<div class="row">
     <div class="col-md-6 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}

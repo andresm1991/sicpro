@@ -754,12 +754,16 @@ class AdquisicionController extends Controller
             $tipo_busqueda  = $request->tipo == 'pendientes' ? 'Finalizado' : 'Completado';
             $output = '';
 
-            $adquisiciones = Adquisicion::where('numero', 'LIKE', '%' . $buscar . '%')
+            $adquisiciones = Adquisicion::where(function ($query) use ($buscar) {
+                $query->where('numero', 'LIKE', '%' . $buscar . '%')
+                    ->orWhereHas('proyecto', function ($q) use ($buscar) {
+                        $q->where('nombre_proyecto', 'LIKE', '%' . $buscar . '%');
+                    });
+            })
                 ->where('tipo_adquisicion', $tipo)
                 ->where('estado', $tipo_busqueda)
                 ->orderBy('fecha', 'desc')
-                ->paginate(15);
-
+                ->get();
             foreach ($adquisiciones as $index => $adquisicion) {
                 $opciones_boton = '';
                 if ($tipo == 'operativo') {
