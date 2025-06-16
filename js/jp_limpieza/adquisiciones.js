@@ -167,6 +167,7 @@ $(function () {
     // Evento submit del formulario para validar los campos
     $('#form_pedido').on('submit', function (event) {
         $('#proveedor').removeClass('error-border');
+        $('#tipo-adquisicion').removeClass('error-border');
         $('.select2-basic-single').removeClass('error-border');  // Remover borde rojo en select2
         $('.error-message').remove();  // Elimina los mensajes de error anteriores
         let isValid = true; // Variable para rastrear si el formulario es válido
@@ -200,6 +201,18 @@ $(function () {
                 text: 'No se ha agregado ningún producto.',
                 confirmButtonText: 'Aceptar'
             });
+        }
+
+        if ($('#tipo-adquisicion').length) {
+            // El elemento existe
+            let tipoAdquisicion = $('#tipo-adquisicion').val();
+            if (!tipoAdquisicion || tipoAdquisicion.trim() === '') {
+                isValid = false;
+                $('#tipo-adquisicion').next('.select2-container').find('.select2-selection').addClass('error-border');
+                $('#tipo-adquisicion').parent().append('<span class="error-message">Seleccione una opción.</span>');
+            }
+        } else {
+            // El elemento no existe
         }
 
         // Si alguna validación falla, evitar el envío del formulario
@@ -272,6 +285,8 @@ $(function () {
      */
     $(document).on('keyup', '#buscar-adquisicion', function () {
         let buscar = $(this).val();
+        let tipoAdquisicion = $(this).data('tipo');
+
         $.ajax({
             url: url + '/buscar',
             type: 'GET',
