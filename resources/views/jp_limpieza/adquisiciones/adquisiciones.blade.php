@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $tipoAdquisicion->descripcion)
+@section('title', $tipoAdquisicion->descripcion ?? 'Adquisiciones')
 
 @section('content')
     @include('partials.header_page')
@@ -12,16 +12,25 @@
                     <div class="row">
                         <div class="col-md-4 col-12">
                             <div class="form-group">
-                                <a href="{{ route('jp.limpieza.adquisiciones.create', [$proyecto, $tipoAdquisicion->slug]) }}"
-                                    class="btn btn-dark btn-sm">
-                                    <i class="fa-regular fa-plus"></i> Nuevo Pedido
-                                </a>
+                                @isset($proyecto)
+                                    <a href="{{ route('jp.limpieza.adquisiciones.create', [$proyecto, $tipoAdquisicion->slug]) }}"
+                                        class="btn btn-dark btn-sm">
+                                        <i class="fa-regular fa-plus"></i> Nuevo Pedido
+                                    </a>
+                                @else
+                                    <a href="{{ route('jp.limpieza.adquisiciones.administrativas.create') }}"
+                                        class="btn btn-dark btn-sm">
+                                        <i class="fa-regular fa-plus"></i> Nuevo Pedido
+                                    </a>
+                                @endisset
+
                             </div>
                         </div>
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
                                 <input type="text" name="buscar-adquisicion" id="buscar-adquisicion"
+                                    data-tipo="{{ isset($proyecto) ? 'operativo' : 'administrativo' }}"
                                     class="form-control form-control-round" placeholder="Buscar....">
                             </div>
                         </div>
@@ -56,8 +65,12 @@
                                         <td class="align-middle text-right text-truncate">
                                             <button type="button" class="btn btn-outline-dark" data-container="body"
                                                 data-toggle="popover" data-placement="left" data-trigger="focus"
-                                                data-content ="
+                                                data-content ="@isset($proyecto)
                                                 <a href='{{ route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id]) }}' class='dropdown-item'>Editar</a>
+                                                @else
+                                                <a href='{{ route('jp.limpieza.adquisiciones.administrativas.edit', $adquisicion->id) }}' class='dropdown-item'>Editar</a>
+                                                @endisset
+                                                
                                                 <a href='#' class='dropdown-item eliminar-adquisicion' id='{{ $adquisicion->id }}'>Eliminar</a>
                                                 <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a> ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
@@ -84,9 +97,12 @@
 @endsection
 
 @section('scripts')
+
     <script>
         var url =
-            "{{ route('jp.limpieza.adquisiciones.tipo.adquisicion', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug]) }}";
+            "{{ isset($proyecto) ? route('jp.limpieza.adquisiciones.tipo.adquisicion', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug]) : route('jp.limpieza.adquisiciones.administrativas.index') }}";
     </script>
+
+
     <script src="{{ asset('js/jp_limpieza/adquisiciones.js') }}"></script>
 @endsection

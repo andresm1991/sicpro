@@ -31,7 +31,7 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::delete('/{id}', [ProyectoController::class, 'destroy']);
     });
 
-
+    //** ADQUISICIONES */
     Route::group(['prefix' => 'adquisiciones', 'as' => 'adquisiciones.'], function () {
         Route::get('/{proyecto}', [AdquisicionController::class, 'index'])->name('index');
         Route::get('/{proyecto}/{tipo_adquisicion}', [AdquisicionController::class, 'adquisiciones'])->name('tipo.adquisicion');
@@ -43,6 +43,15 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/{proyecto}/{tipo_adquisicion}/buscar', [AdquisicionController::class, 'buscar']);
     });
 
+    //** ADQUISICIONES ADMINISTRATIVAS */
+    Route::group(['prefix' => 'adquisiciones-administrativas', 'as' => 'adquisiciones.administrativas.'], function () {
+        Route::get('/', [AdquisicionController::class, 'indexAdministrativo'])->name('index');
+        Route::get('/create', [AdquisicionController::class, 'createAdministrativo'])->name('create');
+        Route::get('/editar/{adquisicion}', [AdquisicionController::class, 'editAdministrativo'])->name('edit');
+        Route::get('//buscar', [AdquisicionController::class, 'buscar']);
+    });
+
+    //** CONTRATISTAS */
     Route::group(['prefix' => 'contratistas/{proyecto}', 'as' => 'contratistas.'], function () {
         Route::get('/', [ContratistaController::class, 'index'])->name('index');
         Route::get('/nuevo', [ContratistaController::class, 'create'])->name('create');
@@ -60,8 +69,7 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::delete('/pagos/{contratista}/eliminar-pago/{pago}', [PagoContratistaController::class, 'destroy']);
         Route::get('/pagos/{contratista}/buscar', [PagoContratistaController::class, 'buscar']);
     });
-
-    /// PRESUPUESTO
+    //** PRESUPUESTO */
     Route::group(['prefix' => 'presupuesto/{proyecto}', 'as' => 'presupuesto.'], function () {
         Route::get('/', [PresupuestoProyectoController::class, 'index'])->name('index');
         Route::get('/rubros-presupuesto', [PresupuestoProyectoController::class, 'ajaxRubros']);

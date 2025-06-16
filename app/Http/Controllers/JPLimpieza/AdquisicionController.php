@@ -4,6 +4,7 @@ namespace App\Http\Controllers\JPLimpieza;
 
 use Exception;
 use Throwable;
+use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use App\Models\JPLimpieza\Inventario;
 use App\Models\JPLimpieza\Adquisicion;
 use Illuminate\Support\Facades\Storage;
 use App\Models\JPLimpieza\DetalleAdquisicion;
-use App\Models\Proveedor;
+use App\Models\JPLimpieza\AdquisicionAdministrativo;
 
 class AdquisicionController extends Controller
 {
@@ -75,7 +76,7 @@ class AdquisicionController extends Controller
             ['name' => $tipoAdquisicion->descripcion, 'url' => ''],
         ];
 
-        $adquisiciones = Adquisicion::where('tipo_id', $tipoAdquisicion->id)
+        $adquisiciones = Adquisicion::where('tipo_id', $tipoAdquisicion->id)->where('proyecto_id', $proyecto)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
         // $adquisiciones->setPath(route('jp.limpieza.adquisiciones.tipo.adquisicion', $tipo_adquisicion));
@@ -103,15 +104,26 @@ class AdquisicionController extends Controller
         return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'proyecto', 'tipoAdquisicion', 'numero', 'adquisicion'));
     }
 
-    public function store(Request $request, Proyecto $proyecto, $tipo_adquisicion)
+    public function store(Request $request)
     {
+
         try {
             DB::beginTransaction();
 
-            $tipoAdquisicion = CatalogoDato::where('slug', $tipo_adquisicion)->first();
+            $proyectoId = $request->proyecto;
+            $tipo_adquisicion = $request->tipo_adquisicion;
+            $proyecto = Proyecto::find($proyectoId);
+
+            if (is_numeric($tipo_adquisicion)) {
+                $tipoAdquisicion = CatalogoDato::find($tipo_adquisicion);
+            } else {
+                $tipoAdquisicion = CatalogoDato::where('slug', $tipo_adquisicion)->first();
+            }
+
             if (!$tipoAdquisicion) {
                 abort(404);
             }
+
             $proveedor = $request->input('proveedor');
             $numero = $request->input('numero');
             $fecha = $request->input('fecha');
@@ -137,7 +149,7 @@ class AdquisicionController extends Controller
             $adquisicion = Adquisicion::create([
                 'fecha' => $fecha,
                 'numero' => $numero,
-                'proyecto_id' => $proyecto->id,
+                'proyecto_id' => $proyecto ? $proyecto->id : null,
                 'proveedor_id' => $proveedor,
                 'tipo_id' => $tipoAdquisicion->id,
                 'estado' => $completado ? 'completado' : 'pendiente',
@@ -183,7 +195,11 @@ class AdquisicionController extends Controller
                 }
 
                 DB::commit();
-                return redirect()->route('jp.limpieza.adquisiciones.create', [$proyecto->id, $tipoAdquisicion->slug])->with('success', 'Adquisición creada exitosamente.');
+                if ($proyecto) {
+                    return redirect()->route('jp.limpieza.adquisiciones.create', [$proyecto->id, $tipoAdquisicion->slug])->with('success', 'Adquisición creada exitosamente.');
+                } else {
+                    return redirect()->route('jp.limpieza.adquisiciones.administrativas.index')->with('success', 'Adquisición creada exitosamente.');
+                }
             }
 
             throw new Exception('el proceso no se completó correctamente, por favor intente nuevamente.');
@@ -209,12 +225,21 @@ class AdquisicionController extends Controller
         return view('jp_limpieza.adquisiciones.edit', compact('breadcrumbs', 'proyecto', 'tipoAdquisicion', 'adquisicion'));
     }
 
-    public function update(Request $request, Proyecto $proyecto, $tipo_adquisicion, Adquisicion $adquisicion)
+    public function update(Request $request)
     {
+        $proyecto = Proyecto::find($request->proyecto);
+        $adquisicion = Adquisicion::find($request->adquisicion);
         try {
             DB::beginTransaction();
 
-            $tipoAdquisicion = CatalogoDato::where('slug', $tipo_adquisicion)->first();
+            $tipo_adquisicion = $request->tipo_adquisicion;
+            if (is_numeric($tipo_adquisicion)) {
+                $tipoAdquisicion = CatalogoDato::find($request->tipo_adquisicion);
+            } else {
+                $tipoAdquisicion = CatalogoDato::where('slug', $request->tipo_adquisicion)->first();
+            }
+
+
             if (!$tipoAdquisicion) {
                 abort(404);
             }
@@ -296,7 +321,11 @@ class AdquisicionController extends Controller
             }
 
             DB::commit();
-            return redirect()->route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id])->with('success', 'Adquisición actualizada exitosamente.');
+            if ($proyecto) {
+                return redirect()->route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id])->with('success', 'Adquisición actualizada exitosamente.');
+            } else {
+                return redirect()->route('jp.limpieza.adquisiciones.administrativas.edit', $adquisicion->id)->with('success', 'Adquisición actualizada exitosamente.');
+            }
         } catch (Throwable $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
@@ -339,20 +368,55 @@ class AdquisicionController extends Controller
         // Obeter lps IDs de formas de pago
         $formaPagoIds = CatalogoDato::where('descripcion', 'LIKE', "%$buscar%")->pluck('id');
 
-        // Paso 2: Filtrar las adquisiciones en la conexión 'mysql_jp_limpieza'
-        $adquisiciones = Adquisicion::where('tipo_id', $tipoAdquisicion->id)
-            ->where('proyecto_id', $proyecto)
-            ->where(function ($q) use ($buscar, $proveedorIds, $formaPagoIds) {
-                $q->where('numero', 'LIKE', "%$buscar%")
-                    ->orWhereIn('proveedor_id', $proveedorIds)
-                    ->orWhereIn('forma_pago_id', $formaPagoIds);
-            })
-            ->orderBy('created_at', 'desc')
-            ->get();
+        // 1. Inicia la consulta
+        $query = Adquisicion::query();
+
+        // 2. Aplica filtros condicionales de forma limpia con when()
+        $query->when($tipoAdquisicion, function ($q) use ($tipoAdquisicion) {
+            return $q->where('tipo_id', $tipoAdquisicion->id);
+        });
+
+        // Tu lógica original (que es correcta para tu requisito)
+        if ($proyecto) {
+            // Si $proyecto existe (no es null, 0, false, ''),
+            // busca las adquisiciones con ese ID de proyecto.
+            $query->where('proyecto_id', $proyecto);
+        } else {
+            // Si $proyecto NO existe,
+            // busca solo las adquisiciones SIN proyecto.
+            $query->whereNull('proyecto_id');
+        }
+
+        // 3. Aplica el grupo de filtros solo si hay algo que buscar
+        // Esto evita que el `where` falle si todas las entradas están vacías.
+        $query->when($buscar || !empty($proveedorIds) || !empty($formaPagoIds), function ($q) use ($buscar, $proveedorIds, $formaPagoIds) {
+            $q->where(function ($subQuery) use ($buscar, $proveedorIds, $formaPagoIds) {
+                $subQuery->when($buscar, function ($sq) use ($buscar) {
+                    return $sq->where('numero', 'LIKE', "%$buscar%");
+                })
+                    ->when(!empty($proveedorIds), function ($sq) use ($proveedorIds) {
+                        return $sq->orWhereIn('proveedor_id', $proveedorIds);
+                    })
+                    ->when(!empty($formaPagoIds), function ($sq) use ($formaPagoIds) {
+                        return $sq->orWhereIn('forma_pago_id', $formaPagoIds);
+                    });
+            });
+        });
+
+
+        // 4. Ordena y ejecuta la consulta, ASIGNANDO EL RESULTADO
+        $adquisiciones = $query->orderBy('created_at', 'desc')->get();
+
 
         if ($adquisiciones) {
             foreach ($adquisiciones as $adquisicion) {
-                $editar = "<a href='" . route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
+
+                if ($proyecto) {
+                    $editar =  "<a href='" . route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
+                } else {
+                    $editar =  "<a href='" . route('jp.limpieza.adquisiciones.administrativas.edit', $adquisicion->id) . "' class='dropdown-item'>Editar</a>";
+                }
+
                 $eliminar = "<a href='#' class='dropdown-item eliminar-adquisicion' id='" . $adquisicion->id . "'>Eliminar</a>";
                 $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
 
@@ -383,5 +447,52 @@ class AdquisicionController extends Controller
             }
             return Response($output);
         }
+    }
+
+
+    /**
+     * Adquisiciones Administrativas
+     */
+    public function indexAdministrativo()
+    {
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Limpieza y mantenimiento', 'url' => route('jp.limpieza.index')],
+            ['name' => 'Adquisiciones administrativas', 'url' => ''],
+        ];
+
+        $adquisiciones = Adquisicion::where('proyecto_id', null)->orderBy('created_at', 'desc')->paginate('15');
+
+
+        return view('jp_limpieza.adquisiciones.adquisiciones', compact('breadcrumbs', 'adquisiciones'));
+    }
+
+    public function createAdministrativo()
+    {
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Adquisiciones administrativas', 'url' => route('jp.limpieza.adquisiciones.administrativas.index')],
+            ['name' => 'Nuevo', 'url' => ''],
+        ];
+
+        $numero = numeroPedido(Adquisicion::first());
+        $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
+
+        $adquisicion = new Adquisicion();
+        return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'tipoAdquisiciones', 'numero', 'adquisicion'));
+    }
+
+    public function editAdministrativo(Adquisicion $adquisicion)
+    {
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Adquisiciones administrativas', 'url' => route('jp.limpieza.adquisiciones.administrativas.index')],
+            ['name' => 'Editar', 'url' => ''],
+        ];
+
+        $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
+
+        return view('jp_limpieza.adquisiciones.edit', compact('breadcrumbs', 'tipoAdquisiciones', 'adquisicion'));
     }
 }

@@ -6,12 +6,14 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="container-fluid">
+            @include('partials.alerts')
+
             {!! Form::open([
                 'route' => [
                     'jp.limpieza.adquisiciones.store',
                     [
-                        'tipo_adquisicion' => $tipoAdquisicion->slug,
-                        'proyecto' => $proyecto->id,
+                        'tipo_adquisicion' => isset($tipoAdquisicion->slug) ? $tipoAdquisicion->slug : 'null',
+                        'proyecto' => $proyecto->id ?? 0,
                     ],
                 ],
                 'class' => 'form-horizontal',
@@ -26,8 +28,6 @@
                         <div class="row d-flex justify-content-between">
                             <div class="col-md-8">
                                 <h4>Adquisición #{!! Form::text('numero', $numero, ['class' => 'no-border', 'readonly' => true]) !!}</h4>
-                                <h6>Fecha: {!! Form::text('fecha', old('fecha', date('Y-m-d')), ['class' => 'auto-ajustable', 'readonly' => true]) !!} <i class="fa-regular fa-calendar-days datepicker-2"
-                                        id="fecha"></i></h6>
                             </div>
                             @include('adquisiciones.partials.boton_pedido_completo')
                             <div class="col-md-2 ">
@@ -37,7 +37,6 @@
                     </li>
                 </ul>
                 <div class="card-body">
-                    @include('partials.alerts')
                     @include('jp_limpieza.adquisiciones.partials.form')
                     @include('jp_limpieza.adquisiciones.partials.items')
                 </div>

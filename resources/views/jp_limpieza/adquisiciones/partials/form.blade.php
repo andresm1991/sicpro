@@ -1,19 +1,41 @@
 <div class="row">
-
-    <div class="col-sm-6 col-12">
-        <div class="form-group">
-            {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
-            {{ Form::text('', $proyecto->nombre_proyecto, ['class' => 'form-control', 'disabled' => true]) }}
-            {{ Form::hidden('proyecto', $proyecto->id) }}
+    <div class="col-sm-4 col-12">
+        <div class="form-group form-search form-icon">
+            {{ Form::label('', 'fecha de adquisición', ['class' => 'col-form-label']) }}
+            <i class="fa-regular fa-calendar-days fa-lg form-control-icon"></i>
+            {{ Form::text('fecha', old('fecha', $adquisicion->fecha_formateada ?? date('Y-m-d')), ['class' => 'form-control form-control-round datepicker-2', 'id' => 'fecha', 'readonly' => true]) }}
+            <small class="form-text text-primary">Click en el campo para cambiar la fecha de adquisición.</small>
         </div>
     </div>
+</div>
 
-    <div class="col-sm-6 col-12">
-        <div class="form-group">
-            {{ Form::label('', 'entidad', ['class' => 'col-form-label']) }}
-            {{ Form::text('', $proyecto->entidad, ['class' => 'form-control', 'disabled' => true]) }}
+<div class="row">
+    @isset($proyecto)
+        {{ Form::hidden('', $tipoAdquisicion->slug, ['id' => 'tipo_adquisicion']) }}
+
+        <div class="col-sm-6 col-12">
+            <div class="form-group">
+                {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
+                {{ Form::text('', $proyecto->nombre_proyecto, ['class' => 'form-control', 'disabled' => true]) }}
+                {{ Form::hidden('proyecto', $proyecto->id) }}
+            </div>
         </div>
-    </div>
+
+        <div class="col-sm-6 col-12">
+            <div class="form-group">
+                {{ Form::label('', 'entidad', ['class' => 'col-form-label']) }}
+                {{ Form::text('', $proyecto->entidad, ['class' => 'form-control', 'disabled' => true]) }}
+            </div>
+        </div>
+    @else
+        <div class="col-sm-6 col-12">
+            <div class="form-group">
+                {{ Form::label('', 'Tipo adquisición', ['class' => 'col-form-label']) }}
+                {{ Form::select('tipo_adquisicion', $tipoAdquisiciones, $adquisicion->tipo_id, ['class' => 'form-control', 'id' => 'tipo-adquisicion', 'data-placeholder' => 'selecciona o agrega la necesidad']) }}
+            </div>
+        </div>
+    @endisset
+
 
     <div class="col-md-6 col-12">
         <div class="form-group">
@@ -21,7 +43,7 @@
             <select name="proveedor" id="proveedor" class="form-control" data-placeholder="Selecione proveedor">
                 <option></option>
                 @foreach (getProveedores(true) as $id => $nombre)
-                    <option value="{{ $id }}" {{ $adquisicion->proyecto_id == $id ? 'selected' : '' }}>
+                    <option value="{{ $id }}" {{ $adquisicion->proveedor_id == $id ? 'selected' : '' }}>
                         {{ $nombre }}
                     </option>
                 @endforeach

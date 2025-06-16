@@ -133,5 +133,3 @@
             {{ $adquisicion->total_general_formatted ? $adquisicion->total_general_formatted : '0.0000' }}</span>
     </div>
 </div>
-
-{{ Form::hidden('', $tipoAdquisicion->slug, ['id' => 'tipo_adquisicion']) }}
