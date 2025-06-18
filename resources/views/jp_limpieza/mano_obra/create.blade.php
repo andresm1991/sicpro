@@ -26,7 +26,7 @@
                         'route' => [
                             'jp.limpieza.mano.obra.store',
                             [
-                                'proyecto' => $proyecto->id,
+                                'proyecto' => isset($proyecto) ? $proyecto->id : 0,
                             ],
                         ],
                         'class' => 'form-horizontal',

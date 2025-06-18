@@ -104,7 +104,8 @@
 
 @section('scripts')
     <script>
-        var manoObraUrl = "{{ route('jp.limpieza.mano.obra.create', $proyecto->id) }}"
+        var manoObraUrl =
+            "{{ isset($proyecto) ? route('jp.limpieza.mano.obra.create', $proyecto->id) : route('jp.limpieza.mano.obra.administrativa.create') }}"
     </script>
     <script src="{{ asset('js/jp_limpieza/mano_obra.js?v=' . config('app.version', '')) }}"></script>
 @endsection

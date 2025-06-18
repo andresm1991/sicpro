@@ -16,10 +16,18 @@
                 <div class="row">
                     <div class="col-md-4 col-12">
                         <div class="form-group">
-                            <a href="{{ route('jp.limpieza.mano.obra.create', $proyecto->id) }}"
-                                class="btn btn-dark btn-sm">
-                                <i class="fa-regular fa-plus"></i> Nueva Planificación
-                            </a>
+                            @isset($proyecto)
+                                <a href="{{ route('jp.limpieza.mano.obra.create', $proyecto->id) }}"
+                                    class="btn btn-dark btn-sm">
+                                    <i class="fa-regular fa-plus"></i> Nueva Planificación
+                                </a>
+                            @else
+                                <a href="{{ route('jp.limpieza.mano.obra.administrativa.create') }}"
+                                    class="btn btn-dark btn-sm">
+                                    <i class="fa-regular fa-plus"></i> Nueva Planificación
+                                </a>
+                            @endisset
+
                         </div>
                     </div>
                     {{--  <div class="col-md-8 col-12 ">
@@ -81,7 +89,7 @@
 
 @section('scripts')
     <script>
-        var manObraUrl = "{{ route('jp.limpieza.mano.obra.index', $proyecto->id) }}";
+        var manObraUrl = "{{ route('jp.limpieza.mano.obra.index', isset($proyecto) ? $proyecto->id : 0) }}";
     </script>
     <script src="{{ asset('js/jp_limpieza/mano_obra.js?v=' . config('app.version', '')) }}" type="module"></script>
 @endsection

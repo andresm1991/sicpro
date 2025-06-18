@@ -16,6 +16,10 @@
                     <img src="{{ asset('images/icons/adquisicion.png') }}">
                     <span style="margin-right: 10px;margin-left: 10px;">Adquisiciones administrativas</span>
                 </a>
+                <a href="{{ route('jp.limpieza.mano.obra.administrativa.index') }}" class="nodo">
+                    <img src="{{ asset('images/icons/mano_obra.png') }}">
+                    <span style="margin-right: 10px;margin-left: 10px;">mano de obra administrativa</span>
+                </a>
             </div>
         </div>
     </section>

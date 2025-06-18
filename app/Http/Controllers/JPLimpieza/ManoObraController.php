@@ -47,15 +47,14 @@ class ManoObraController extends Controller
         return view('jp_limpieza.mano_obra.create', compact('breadcrumbs', 'proyecto', 'planificacion', 'ultimosDetalles'));
     }
 
-    public function store(Request $request, Proyecto $proyecto)
+    public function store(Request $request)
     {
         try {
             DB::beginTransaction();
+            $proyecto = Proyecto::find($request->proyecto);
             $fecha_desde = $request->input('fecha_desde');
             $fecha_hasta = $request->input('fecha_hasta');
             $tipo = $request->input('tipo_plantilla');
-
-
 
             $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir) {
                 return [
@@ -79,7 +78,7 @@ class ManoObraController extends Controller
             }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir);
 
             $mano_obra = ManoObra::create([
-                'proyecto_id' => $proyecto->id,
+                'proyecto_id' => $proyecto ? $proyecto->id : null,
                 'fecha_desde' => $fecha_desde,
                 'fecha_hasta' => $fecha_hasta,
                 'tipo' => strtoupper($tipo),
@@ -108,7 +107,11 @@ class ManoObraController extends Controller
                     ]);
                 }
                 DB::commit();
-                return redirect()->route('jp.limpieza.mano.obra.index', $proyecto->id)->with('success', 'Planificacion creada exitosamente.');
+                if ($proyecto) {
+                    return redirect()->route('jp.limpieza.mano.obra.index', $proyecto->id)->with('success', 'Planificacion creada exitosamente.');
+                } else {
+                    return redirect()->route('jp.limpieza.mano.obra.administrativa.index')->with('success', 'Planificacion creada exitosamente.');
+                }
             }
 
             throw new \Exception('el proceso no se completó correctamente, por favor intente nuevamente.');
@@ -225,5 +228,40 @@ class ManoObraController extends Controller
                 return response()->json(['success' => false, 'message' => 'Ocurrio un error inesperado: ' . $e->getMessage()]);
             }
         }
+    }
+
+    public function indexAdministrativo()
+    {
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Limpieza y mantenimiento', 'url' => route('jp.limpieza.index')],
+            ['name' => 'Mano de obra', 'url' => ''],
+        ];
+
+        $mano_obras = ManoObra::where('proyecto_id', null)->orderBy('created_at', 'desc')->paginate(15);
+
+        return view('jp_limpieza.mano_obra.index', compact('breadcrumbs', 'mano_obras'));
+    }
+
+    public function createAdministrativo()
+    {
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Mano de obra', 'url' => route('jp.limpieza.mano.obra.administrativa.index')],
+            ['name' => 'Nueva planificacion', 'url' => ''],
+        ];
+
+        $planificacion = new ManoObra();
+        // Obtener la última ManoObra para este proyecto
+        $ultimaManoObra = ManoObra::where('proyecto_id', null)
+            ->latest()
+            ->first();
+
+        // Obtener los detalles asociados
+        $ultimosDetalles = $ultimaManoObra
+            ? $ultimaManoObra->detalles
+            : collect();
+
+        return view('jp_limpieza.mano_obra.create', compact('breadcrumbs', 'planificacion', 'ultimosDetalles'));
     }
 }
