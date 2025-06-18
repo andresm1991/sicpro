@@ -2360,6 +2360,68 @@ a[href="javascript:void(0);"] {
     display: none;
 }
 
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* --- ✅ ESTILOS PARA EL MARCADOR PERSONALIZADO --- */
+.price-marker {
+    position: absolute;
+    background-color: #007bff;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+
+    /* Con esto centramos el marcador justo encima del punto */
+    transform: translate(-50%, -100%);
+}
+
+.price-marker:hover {
+    transform: translate(-50%, -100%) scale(1.1);
+    /* Mantenemos el centrado al escalar */
+    z-index: 10;
+}
+
+.price-marker::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #007bff;
+}
+
+/* Oculta el botón de cerrar del InfoWindow */
+.gm-ui-hover-effect {
+    display: none !important;
+}
+
+/* Estilo personalizado para el InfoWindow */
+.custom-infowindow {
+    padding: 10px;
+    border-radius: 5px;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.custom-infowindow strong {
+    color: #333;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
