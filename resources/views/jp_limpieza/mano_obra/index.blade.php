@@ -56,13 +56,15 @@
                                     <td class="align-middle">
                                         {{ dateFormatHumansManoObra($mano_obra->fecha_desde_formatted, $mano_obra->fecha_hasta_formatted) }}
                                     </td>
-                                    <td class="align-middle">{{ $mano_obra->proyecto->nombre_proyecto }}</td>
+                                    <td class="align-middle">
+                                        {{ $mano_obra->proyecto != null ? $mano_obra->proyecto->nombre_proyecto : 'General' }}
+                                    </td>
 
                                     <td class="align-middle align-middle text-right text-truncate">
                                         <button type="button" class="btn btn-outline-dark" data-container="body"
                                             data-toggle="popover" data-placement="left" data-trigger="focus"
                                             data-content ="
-                                            <a href='{{ route('jp.limpieza.mano.obra.edit', [$proyecto->id, $mano_obra->id]) }}' class='dropdown-item'>Editar</a>
+                                            <a href='{{ isset($proyecto) ? route('jp.limpieza.mano.obra.edit', [$proyecto->id, $mano_obra->id]) : route('jp.limpieza.mano.obra.administrativa.edit', $mano_obra->id) }}' class='dropdown-item'>Editar</a>
                                             <a href='javascript:void(0);' class='dropdown-item eliminar-mano-obra' id='{{ $mano_obra->id }}'>Eliminar</a>
                                             <a href='{{ route('pdf.jp.limpieza.mano.obra', $mano_obra->id) }}' target='_blank' class='dropdown-item'>PDF Planificación</a>">
                                             <i class="fas fa-caret-left font-weight-normal"></i> Opciones

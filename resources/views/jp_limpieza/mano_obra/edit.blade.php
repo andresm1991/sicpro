@@ -6,6 +6,7 @@
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
         <div class="container-fluid">
+            @include('partials.alerts')
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
@@ -21,12 +22,12 @@
                     </li>
                 </ul>
                 <div class="card-body">
-                    @include('partials.alerts')
+
                     {!! Form::model($planificacion, [
                         'route' => [
                             'jp.limpieza.mano.obra.update',
                             [
-                                'proyecto' => $proyecto->id,
+                                'proyecto' => isset($proyecto) ? $proyecto->id : 0,
                                 'mano_obra' => $planificacion->id,
                             ],
                         ],

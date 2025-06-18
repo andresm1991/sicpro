@@ -51,14 +51,6 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('//buscar', [AdquisicionController::class, 'buscar']);
     });
 
-    //** MANO DE OBRA ADMINISTRATIVO */
-    Route::group(['prefix' => 'mano-de-obra-administrativa', 'as' => 'mano.obra.administrativa.'], function () {
-        Route::get('/', [ManoObraController::class, 'indexAdministrativo'])->name('index');
-        Route::get('/create', [ManoObraController::class, 'createAdministrativo'])->name('create');
-        Route::get('/editar/{adquisicion}', [ManoObraController::class, 'editAdministrativo'])->name('edit');
-        Route::get('//buscar', [ManoObraController::class, 'buscar']);
-    });
-
     //** CONTRATISTAS */
     Route::group(['prefix' => 'contratistas/{proyecto}', 'as' => 'contratistas.'], function () {
         Route::get('/', [ContratistaController::class, 'index'])->name('index');
@@ -95,5 +87,13 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/editar-planificacion/{mano_obra}', [ManoObraController::class, 'edit'])->name('edit');
         Route::put('/actualizar-planificacion/{mano_obra}', [ManoObraController::class, 'update'])->name('update');
         Route::delete('/eliminar-mano-obra/{mano_obra}', [ManoObraController::class, 'destroy']);
+    });
+
+    //** MANO DE OBRA ADMINISTRATIVO */
+    Route::group(['prefix' => 'mano-de-obra-administrativa', 'as' => 'mano.obra.administrativa.'], function () {
+        Route::get('/', [ManoObraController::class, 'indexAdministrativo'])->name('index');
+        Route::get('/create', [ManoObraController::class, 'createAdministrativo'])->name('create');
+        Route::get('/editar/{mano_obra}', [ManoObraController::class, 'editAdministrativo'])->name('edit');
+        Route::get('/buscar', [ManoObraController::class, 'buscar']);
     });
 });

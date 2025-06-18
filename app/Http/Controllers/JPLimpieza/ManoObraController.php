@@ -137,10 +137,13 @@ class ManoObraController extends Controller
     }
 
 
-    public function update(Request $request, Proyecto $proyecto, ManoObra $mano_obra)
+    public function update(Request $request)
     {
         try {
             DB::beginTransaction();
+            $proyecto = Proyecto::find($request->proyecto);
+            $mano_obra = ManoObra::find($request->mano_obra);
+
             $fecha_desde = $request->fecha_desde;
             $fecha_hasta = $request->fecha_hasta;
 
@@ -204,18 +207,23 @@ class ManoObraController extends Controller
             }
             DB::commit();
 
-            return redirect()->route('jp.limpieza.mano.obra.edit', [$proyecto->id, $mano_obra->id])->with('success', 'Planificacion actualizada exitosamente.');
+            if ($proyecto) {
+                return redirect()->route('jp.limpieza.mano.obra.edit', [$proyecto->id, $mano_obra->id])->with('success', 'Planificacion actualizada exitosamente.');
+            } else {
+                return redirect()->route('jp.limpieza.mano.obra.administrativa.edit', $mano_obra->id)->with('success', 'Planificacion actualizada exitosamente.');
+            }
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Ocurrio un error inesperado: ' . $e->getMessage());
         }
     }
 
-    public function destroy(Request $request, Proyecto $proyecto, ManoObra $mano_obra)
+    public function destroy(Request $request)
     {
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();
+                $mano_obra = ManoObra::find($request->mano_obra);
                 if ($mano_obra->delete()) {
                     DB::commit();
                     return response()->json(['success' => true, 'message' => 'Planificacion eliminada exitosamente.']);
@@ -263,5 +271,19 @@ class ManoObraController extends Controller
             : collect();
 
         return view('jp_limpieza.mano_obra.create', compact('breadcrumbs', 'planificacion', 'ultimosDetalles'));
+    }
+
+    public function editAdministrativo(ManoObra $mano_obra)
+    {
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Mano de obra', 'url' => route('jp.limpieza.mano.obra.administrativa.index')],
+            ['name' => 'Editar planificacion', 'url' => ''],
+        ];
+
+        $planificacion = $mano_obra;
+        $ultimosDetalles = $planificacion->detalles;
+
+        return view('jp_limpieza.mano_obra.edit', compact('breadcrumbs', 'planificacion', 'ultimosDetalles'));
     }
 }
