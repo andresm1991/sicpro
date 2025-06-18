@@ -2422,6 +2422,24 @@ a[href="javascript:void(0);"] {
     color: #333;
 }
 
+.custom-infowindow {
+    padding: 12px;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e0e0e0;
+    min-width: 180px;
+}
+
+.custom-infowindow strong {
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.custom-infowindow br {
+    margin-bottom: 5px;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
