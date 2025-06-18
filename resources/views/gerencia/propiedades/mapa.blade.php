@@ -27,110 +27,132 @@
 
 @section('scripts')
     <script>
-        function initMap() {
-            // Convertimos los datos de PHP (Laravel) a un objeto JavaScript.
-            // Usamos para que Blade no escape los caracteres JSON.
-            // json es una directiva de Blade que convierte el array/colección a JSON de forma segura.
-            const locations = {!! json_encode($propiedades) !!};
-            // 1. Creamos un objeto LatLngBounds. Este será nuestro "rectángulo" mágico.
-            const bounds = new google.maps.LatLngBounds();
-            // Coordenadas iniciales para el centro del mapa (puedes usar la primera ubicación o un punto fijo)
-            const initialCoords = {
-                lat: -0.25035893576944057,
-                lng: -79.19136065070049
-            };
-
-            // Creamos el mapa y lo centramos
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 13,
-                center: initialCoords,
+        function loadGoogleMapsScript() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.maps) {
+                    resolve();
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src =
+                    "https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}";
+                script.async = true;
+                script.defer = true;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
             });
-
-            // Creamos un objeto InfoWindow para mostrar información al hacer clic en un marcador
-            const infoWindow = new google.maps.InfoWindow();
-
-            // Iteramos sobre cada ubicación para crear un marcador
-            locations.forEach(location => {
-                const position = {
-                    lat: parseFloat(location.latitud),
-                    lng: parseFloat(location.longitud)
-                };
-
-                const marker = new google.maps.Marker({
-                    // Usamos parseFloat para asegurarnos de que lat y lng son números
-                    position: position,
-                    map: map,
-                    title: location.nombre, // El texto que aparece al pasar el cursor sobre el marcador
-                    icon: {
-                        url: "{{ asset('images/pin-ubicacion-propiedades.png') }}",
-                        // Opcional: ajusta el tamaño del icono
-                        scaledSize: new google.maps.Size(60, 60), // Ancho y alto en píxeles
-                        // Opcional: el punto del icono que se anclará a la coordenada del mapa
-                        anchor: new google.maps.Point(20, 40) // La punta inferior central del icono
-                    }
-
-                });
-
-                bounds.extend(position);
-                // Añadimos un listener para el evento 'click' en cada marcador
-                marker.addListener('click', () => {
-                    // Creamos el contenido del InfoWindow con el nombre y la descripción <!--<img src="${imageUrl}" alt="${location.nombre}">-->
-                    const content = `
-                        <div class="custom-infowindow">
-                            
-                            <h6>${location.nombre}</h6>
-                            <p>${location.direccion || 'Sin descripción.'}</p>
-                        </div>
-                    `;
-                    const infoWindow = new google.maps.InfoWindow();
-                    infoWindow.setContent(content);
-                    infoWindow.open(map, marker);
-                });
-            });
-
-            // --- INICIO DE LA LÓGICA DE GEOLOCALIZACIÓN ---
-            getLocation().then(function(coordenadas) {
-                // Obtenemos las coordenadas del usuario
-                const userLocation = {
-                    lat: parseFloat(coordenadas.latitud),
-                    lng: parseFloat(coordenadas.longitud)
-                };
-
-                // Centramos el mapa en la ubicación del usuario
-                map.setCenter(userLocation);
-                // Opcional: Añadimos un marcador especial para la ubicación del usuario
-                /*new google.maps.Marker({
-                    position: userLocation,
-                    map: map,
-                    title: "Tu ubicación actual",
-                    // Usamos un ícono diferente para distinguirlo
-                    /*icon: {
-                        url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
-                    }*/
-                // });
-            }).catch(function(error) {
-                alert(
-                    "No se pudo obtener la ubicación. Asegúrate de que los permisos de ubicación estén habilitados."
-                );
-            });
-
         }
+
+        loadGoogleMapsScript().then(() => {
+            // ⬇️ Ahora que google está definido, podemos usarlo
+
+            class PriceOverlay extends google.maps.OverlayView {
+                constructor(position, price, map, infoHtml) {
+                    super();
+                    this.position = position;
+                    this.price = price;
+                    this.map = map;
+                    this.infoHtml = infoHtml;
+                    this.div = null;
+                    this.infoWindow = null;
+                    this.hoverTimeout = null;
+                    this.isHovering = false;
+                    this.setMap(map);
+                }
+
+                onAdd() {
+                    this.div = document.createElement('div');
+                    this.div.className = 'price-marker';
+                    this.div.innerHTML = this.price;
+
+                    this.infoWindow = new google.maps.InfoWindow({
+                        content: this.infoHtml,
+                        pixelOffset: new google.maps.Size(0, -30) // Ajusta la posición vertical
+                    });
+
+                    this.div.addEventListener('mouseover', () => {
+                        this.isHovering = true;
+                        clearTimeout(this.hoverTimeout); // Cancelar cierre si aún está en hover
+                        this.infoWindow.setPosition(this.position);
+                        this.infoWindow.open(this.map);
+                    });
+
+                    this.div.addEventListener('mouseout', () => {
+                        this.isHovering = false;
+                        // Cerrar después de un pequeño retraso (evita parpadeo)
+                        this.hoverTimeout = setTimeout(() => {
+                            if (!this.isHovering) {
+                                this.infoWindow.close();
+                            }
+                        }, 100);
+                    });
+
+                    const panes = this.getPanes();
+                    panes.overlayMouseTarget.appendChild(this.div);
+                }
+
+                draw() {
+                    const overlayProjection = this.getProjection();
+                    const point = overlayProjection.fromLatLngToDivPixel(
+                        new google.maps.LatLng(this.position.lat, this.position.lng)
+                    );
+                    if (point && this.div) {
+                        this.div.style.left = point.x + 'px';
+                        this.div.style.top = point.y + 'px';
+                    }
+                }
+
+                onRemove() {
+                    if (this.div) {
+                        this.div.parentNode.removeChild(this.div);
+                        this.div = null;
+                    }
+                    if (this.infoWindow) {
+                        this.infoWindow.close();
+                        this.infoWindow = null;
+                    }
+                }
+            }
+
+            function initMap() {
+                const locations = {!! json_encode($propiedades) !!};
+                const bounds = new google.maps.LatLngBounds();
+
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 13,
+                    center: {
+                        lat: -0.25,
+                        lng: -79.19
+                    },
+                });
+
+                locations.forEach(location => {
+                    const pos = {
+                        lat: parseFloat(location.latitud),
+                        lng: parseFloat(location.longitud)
+                    };
+
+                    const infoHtml = `
+                            <div class="custom-infowindow" style="padding: 10px; font-family: Arial, sans-serif;">
+                                <strong>${location.nombre}</strong><br>
+                                ${location.direccion || 'Sin descripción'}<br>
+                                <strong>US$${location.precio_venta}</strong>
+                            </div>
+                        `;
+
+                    new PriceOverlay(pos, `US$${location.precio_por_metros_cuadrados}`, map, infoHtml);
+                    bounds.extend(pos);
+                });
+
+            }
+
+            // ⬇️ Ya puedes llamar a initMap
+            initMap();
+
+        }).catch(() => {
+            alert("Error al cargar Google Maps. Verifica tu clave API.");
+        });
     </script>
 
-    <!--
-                                                                                                                                                                                                                    Cargamos la API de Google Maps.
-                                                                                                                                                                                                                    - `key` usa la configuración que definimos en `config/services.php`.
-                                                                                                                                                                                                                    - `callback=initMap` le dice a la API que ejecute la función `initMap` cuando esté completamente cargada.
-                                                                                                                                                                                                                    - `async` y `defer` aseguran que el script se cargue sin bloquear la renderización de la página.
-                                                                                                                                                                                                                    -->
-    <script src="https://maps.googleapis.com/maps/api/js?key={{ config('services.google.maps_api_key') }}&callback=initMap"
-        async defer></script>
 @endsection
-
-<style>
-    /* Es importante definir un alto para el contenedor del mapa */
-    #map {
-        height: 600px;
-        width: 100%;
-    }
-</style>

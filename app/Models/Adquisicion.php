@@ -123,9 +123,7 @@ class Adquisicion extends Model
         $query->when($producto, function ($q, $producto) {
             $q->whereHas('adquisiciones_detalle', function ($query) use ($producto) {
                 $query->where('articulo_id', $producto);
-            })->with(['adquisiciones_detalle' => function ($query) use ($producto) {
-                $query->where('articulo_id', $producto); // Filtrar por el producto específico
-            }]);
+            });
         });
 
         // Filtrar por proveedor
@@ -187,17 +185,20 @@ class Adquisicion extends Model
                 break;
         }
 
+
         return $query->get()->map(function ($adquisicion) use ($producto, $gasolina) {
             $necesidad = '';
             // Si se filtra por producto, calcular el total solo para ese producto
             if ($producto) {
-                $detalle = $adquisicion->adquisiciones_detalle->firstWhere('articulo_id', $producto);
-                $cantidad = $detalle->cantidad_solicitada ?? 0;
-                $valor = $detalle->valor ?? 0;
-                $iva = $detalle->iva ?? 0;
-
-                $total = calcularTotalProducto($cantidad, $valor, $iva);
-                $necesidad .= $detalle->necesidad ?? '';
+                $detalles = $adquisicion->adquisiciones_detalle->where('articulo_id', $producto);
+                $cantidad = $detalles->sum('cantidad_solicitada');
+                $total = $detalles->sum(function ($detalle) {
+                    $cantidad = $detalle->cantidad_solicitada ?? 0;
+                    $valor = $detalle->valor ?? 0;
+                    $iva = $detalle->iva ?? 0;
+                    return calcularTotalProducto($cantidad, $valor, $iva);
+                });
+                $necesidad = implode(', ', $detalles->pluck('necesidad')->toArray());
             } else {
                 // Si no se filtra por producto, calcular el total para todos los detalles
                 $total = $adquisicion->adquisiciones_detalle->sum(function ($detalle) use ($necesidad) {
@@ -456,28 +457,38 @@ class Adquisicion extends Model
             }
         }
 
-        // Ordenar internamente cada categoría por nombre de artículo
+        // 1. Ordenar los proyectos (claves principales) alfabéticamente
+        ksort($resultado, SORT_STRING);
+
+        // 2. Iterar para ordenar internamente cada nivel
         foreach ($resultado as $proyectoNombre => &$etapas) {
+            // 2.1. Ordenar las etapas (claves secundarias) alfabéticamente
+            ksort($etapas, SORT_STRING);
+
             foreach ($etapas as $etapaNombre => &$categorias) {
+                // 2.2. Ordenar los artículos IGNORANDO MAYÚSCULAS/MINÚSCULAS
                 if (!empty($categorias['materiales_herramientas'])) {
                     usort($categorias['materiales_herramientas'], function ($a, $b) {
-                        return strcmp($a['articulo'], $b['articulo']);
+                        return strnatcasecmp($a['articulo'], $b['articulo']);
                     });
                 }
                 if (!empty($categorias['servicios'])) {
                     usort($categorias['servicios'], function ($a, $b) {
-                        return strcmp($a['articulo'], $b['articulo']);
+                        return strnatcasecmp($a['articulo'], $b['articulo']);
                     });
                 }
                 if (!empty($categorias['contratista'])) {
                     usort($categorias['contratista'], function ($a, $b) {
-                        return strcmp($a['proveedor'], $b['proveedor']);
+                        $proveedorCmp = strnatcasecmp($a['proveedor'], $b['proveedor']);
+                        if ($proveedorCmp !== 0) {
+                            return $proveedorCmp;
+                        }
+                        return strnatcasecmp($a['categoria'], $b['categoria']);
                     });
                 }
-                // Mano de obra no se ordena porque es resumen
             }
         }
-        unset($etapas); // Buenas prácticas para referencias
+        unset($etapas, $categorias); // Buenas prácticas para limpiar referencias
 
         return $resultado;
     }
