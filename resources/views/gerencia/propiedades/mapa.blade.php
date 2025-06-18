@@ -125,6 +125,8 @@
                         lat: -0.25,
                         lng: -79.19
                     },
+                    scrollwheel: true, // ✅ Zoom con rueda del mouse sin Ctrl
+                    gestureHandling: "auto" // ✅ Compatibilidad con touch
                 });
 
                 locations.forEach(location => {
