@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->date('fecha');
             $table->unsignedBigInteger('proveedor_id')->nullable();
+            $table->unsignedBigInteger('articulo_id')->nullable();
+            $table->string('articulo_manual')->nullable();
             $table->enum('tipo', ['ingreso', 'egreso']);
             $table->decimal('monto', 14, 4);
             $table->string('descripcion');
@@ -24,9 +26,8 @@ return new class extends Migration
             $table->unsignedBigInteger('origen_id')->nullable(); // ID del modelo relacionado
             $table->timestamps();
 
-            $table->index(['origen_type', 'origen_id', 'proveedor_id']);
-
             $table->foreign('proveedor_id')->references('id')->on('proveedores')->onDelete('cascade');
+            $table->foreign('articulo_id')->references('id')->on('articulos')->onDelete('cascade');
         });
     }
 

@@ -31,7 +31,7 @@
                                     <label class="rounded  text-white">
                                         <input type="checkbox" name="orden_completa" class="d-none" value="true"
                                             {{ $adquisicion->estado == 'Completado' ? 'checked' : '' }}
-                                            {{ $tipo == 'operativo' && $adquisicion->estado == 'Completado' ? 'disabled' : '' }}>
+                                            {{ $tipo == 'operativo' && $adquisicion->estado == 'Completado' ? 'readonly' : '' }}>
                                         <span
                                             class="text-center d-block py-3">{{ $adquisicion->tipo_etapa->descripcion == 'Servicios' ? 'Pedido Pagado' : 'Pedido Completo' }}
                                         </span>

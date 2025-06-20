@@ -16,9 +16,10 @@
                 <div class="row">
                     <div class="col-md-4 col-12">
                         <div class="form-group">
-                            <a href="" class="btn btn-dark btn-sm">
+                            <button type="button" class="btn btn-dark btn-sm" data-toggle="modal" data-backdrop="static"
+                                data-keyboard="false" data-target="#modalMovimientoCaja">
                                 <i class="fa-regular fa-plus"></i> Nueva Registro
-                            </a>
+                                </a>
                         </div>
                     </div>
                     {{--  <div class="col-md-8 col-12 ">
@@ -35,36 +36,52 @@
                         <thead>
                             <tr>
                                 <th>Fecha</th>
-                                <th scope="col">decripcion</th>
-                                <th scope="col">saldo inical</th>
-                                <th scope="col">saldo actual</th>
-                                <th scope="col">estado</th>
-                                <th class="col-accion"></th>
+                                <th scope="col">descripcion</th>
+                                <th scope="col">necesidad</th>
+                                <th scope="col">proveedor</th>
+                                <th scope="col">documento</th>
+                                <th scope="col">tipo</th>
+                                <th scope="col">monto</th>
+                                <th scope="col">saldo</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($cajas as $caja)
-                                <tr id="{{ $mano_obra->id }}">
-                                    <td class="align-middle">{{ $index + 1 }}</td>
+                            @forelse ($movimientos as $movimiento)
+                                <tr id="{{ $movimiento->id }}">
                                     <td class="align-middle">
-                                        {{ dateFormatHumansManoObra($mano_obra->fecha_desde_formatted, $mano_obra->fecha_hasta_formatted) }}
+                                        {{ $movimiento->fecha_formateada }}
                                     </td>
-                                    <td class="align-middle">{{ $mano_obra->proyecto->nombre_proyecto }}</td>
+                                    <td class="align-middle">
+                                        {{ isset($movimiento->articulo_id) ? $movimiento->articulo->descripcion : $movimiento->descripcion }}
+                                    </td>
 
-                                    <td class="align-middle align-middle text-right text-truncate">
-                                        <button type="button" class="btn btn-outline-dark" data-container="body"
-                                            data-toggle="popover" data-placement="left" data-trigger="focus"
-                                            data-content ="
-                                            <a href='{{ route('jp.limpieza.mano.obra.edit', [$proyecto->id, $mano_obra->id]) }}' class='dropdown-item'>Editar</a>
-                                            <a href='javascript:void(0);' class='dropdown-item eliminar-mano-obra' id='{{ $mano_obra->id }}'>Eliminar</a>
-                                            <a href='{{ route('pdf.jp.limpieza.mano.obra', $mano_obra->id) }}' target='_blank' class='dropdown-item'>PDF Planificación</a>">
-                                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                        </button>
+                                    <td class="align-middle">
+                                        {{ isset($movimiento->articulo_id) ? $movimiento->descripcion : '-' }}
+                                    </td>
+
+                                    <td class="align-middle">
+                                        {{ isset($movimiento->proveedor) ? $movimiento->proveedor->razon_social : '-' }}
+                                    </td>
+
+                                    <td class="align-middle">
+                                        {{ $movimiento->referencia ?? '-' }}
+                                    </td>
+
+                                    <td class="align-middle">
+                                        <span
+                                            class="badge {{ $movimiento->tipo == 'ingreso' ? 'badge-success' : 'badge-danger' }}">{{ $movimiento->tipo }}</span>
+
+                                    </td>
+                                    <td class="align-middle">
+                                        {{ $movimiento->monto_formatted }}
+                                    </td>
+                                    <td class="align-middle">
+                                        ${{ number_format($movimiento->saldo_acumulado, 4) }}
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="8" class="text-center text-danger">No se encontraron datos para
+                                    <td colspan="6" class="text-center text-danger">No se encontraron datos para
                                         mostrar....
                                     </td>
                                 </tr>
@@ -74,12 +91,13 @@
                         </tbody>
                     </table>
                 </div>
-                {{-- @include('partials.pagination', ['paginator' => $mano_obras, 'interval' => 5]) --}}
+                @include('partials.pagination', ['paginator' => $movimientos, 'interval' => 5])
             </div>
         </div>
+        @include('administrativo.cajas.modal_formulario_registro')
     </section>
 @endsection
 
 @section('scripts')
-
+    <script src="{{ asset('js/caja.js?v=' . config('app.version', '')) }}" type="module"></script>
 @endsection

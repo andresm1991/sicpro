@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Http\Requests\RecepcionAdquisicionAdministrativoRequest;
+use App\Models\MovimientoCaja;
 
 class AdministrativoController extends Controller
 {
@@ -218,6 +219,28 @@ class AdministrativoController extends Controller
             $adquisicion->factura = $request->numero_factura;
             if ($estado) {
                 $adquisicion->estado = "Completado";
+
+                // Registrar en caja si el pago esta completado y si fue pagado en efectivo
+                if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->forma_pago->slug == 'forma.pago.contado') {
+                    $detalles = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->get();
+
+                    foreach ($detalles as $detalle) {
+
+                        $request->merge([
+                            'proveedor' => $adquisicion->orden_recepcion->proveedor_id,
+                            'articulo' => $detalle->articulo_id,
+                            'tipo_movimiento' => 'egreso',
+                            'monto'        => calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva),
+                            'detalle'  =>  $detalle->necesidad,
+                            'referencia'   => $adquisicion->factura,
+                            'origen_type' => 'App\\Models\\Adquisicion',
+                            'origen_id' => $adquisicion->id,
+                        ]);
+
+                        MovimientoCaja::registrarMovimiento($request);
+                    }
+                }
+
                 PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Administrativo. Actualización de Adquisición', 'El usuario ' . Auth::user()->nombre . ' completó la información de la adquisición operativa #' . $adquisicion->numero, route('pdf.recepcion', $adquisicion->id));
             }
             $adquisicion->save();

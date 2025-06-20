@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Caja;
 use Illuminate\Http\Request;
 use App\Services\CajaService;
+use App\Models\MovimientoCaja;
+use Illuminate\Support\Facades\DB;
+use App\Constants\MessagesConstant;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CajaController extends Controller
 {
@@ -26,56 +30,46 @@ class CajaController extends Controller
             ['name' => 'Caja', 'url' => ''],
         ];
 
-        $cajas = Caja::orderBy('id', 'desc')->paginate(15);
+        $movimientosAsc = MovimientoCaja::orderBy('id', 'asc')->get();
+        $saldo = 0;
+        foreach ($movimientosAsc as $movimiento) {
+            if ($movimiento->tipo == 'ingreso') {
+                $saldo += $movimiento->monto;
+            } else {
+                $saldo -= $movimiento->monto;
+            }
+            $movimiento->saldo_acumulado = $saldo;
+        }
 
-        return view('administrativo.cajas.index', compact('cajas'));
+        $movimientos = $movimientosAsc->sortByDesc('id')->values();
+        $page = request()->get('page', 1);
+        $perPage = 15;
+        $items = $movimientos;
+        $paginated = new LengthAwarePaginator(
+            $items->forPage($page, $perPage),
+            $items->count(),
+            $perPage,
+            $page,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+        return view('administrativo.cajas.index', ['movimientos' => $paginated, 'breadcrumbs' => $breadcrumbs]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function guardarMovimiento(Request $request)
     {
-        //
-    }
+        if ($request->ajax()) {
+            try {
+                DB::beginTransaction();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+                MovimientoCaja::registrarMovimiento($request);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+                DB::commit();
+                return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR, 'error' => $e->getMessage()]);
+            }
+        }
     }
 }
