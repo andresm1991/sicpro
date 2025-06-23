@@ -14,6 +14,8 @@ class Solicitud extends Model
     protected $table = 'solicitudes';
     protected $fillable = ['usuario_id', 'fecha_solicitud', 'fecha_desde', 'fecha_hasta', 'hora_desde', 'hora_hasta', 'total_tiempo', 'tipo_id', 'estado_id', 'recuperable', 'detalle'];
 
+    protected $appends = ['tiempo_total'];
+
     public function usuario()
     {
         return $this->belongsTo(User::class, 'usuario_id');
@@ -155,6 +157,22 @@ class Solicitud extends Model
         });
 
         return $resultados;
+    }
+
+    public function getTiempoTotalAttribute()
+    {
+        // Combina fecha y hora de inicio y fin
+        $inicio = Carbon::parse($this->fecha_desde . ' ' . $this->hora_desde);
+        $fin = Carbon::parse($this->fecha_hasta . ' ' . $this->hora_hasta);
+
+        // Calcula la diferencia en minutos
+        $minutos = $inicio->diffInMinutes($fin);
+
+        // Convierte a horas y minutos
+        $horas = intdiv($minutos, 60);
+        $min = $minutos % 60;
+
+        return sprintf('%d:%02d', $horas, $min);
     }
 
     public static function getTotalTiempoUsuario($usuarioId)

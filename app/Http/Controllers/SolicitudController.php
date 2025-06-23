@@ -78,7 +78,6 @@ class SolicitudController extends Controller
             $hora_hasta = $request->hora_fin;
             $total_horas = calcularTiempoTotal($fecha_desde, $hora_desde, $fecha_hasta, $hora_hasta);
 
-
             $detalle = $request->detalle;
             $recuperable = $request->recuperable ? true : false;
 
@@ -117,6 +116,14 @@ class SolicitudController extends Controller
             ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
         ];
 
+        $total_db = Carbon::createFromFormat('H:i:s', $solicitud->total_tiempo);
+        $total_caculado = Carbon::createFromFormat('H:i', $solicitud->tiempo_total);
+
+        if ($total_db->format('H:i') != $total_caculado->format('H:i')) {
+            $solicitud->total_tiempo = $total_caculado->format('H:i');
+            $solicitud->save();
+        }
+
         $tipo_solicitudes = CatalogoDato::getChildrenCatalogo('tipo.solicitudes')->pluck('descripcion', 'id');
         $estados_solicitud = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id');
         $users = User::getUsusarios()->pluck('nombre', 'id');
@@ -127,14 +134,20 @@ class SolicitudController extends Controller
     public function update(Request $request, Solicitud $solicitud)
     {
         try {
+            $fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
+            $fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
+            $hora_desde = $request->hora_inicio;
+            $hora_hasta = $request->hora_fin;
+
             DB::beginTransaction();
             $solicitud->estado_id = $request->estado_solicitud;
-            $solicitud->fecha_desde = Carbon::createFromFormat('d-m-Y', $request->fecha_desde)->format('Y-m-d');
-            $solicitud->fecha_hasta = Carbon::createFromFormat('d-m-Y', $request->fecha_hasta)->format('Y-m-d');
-            $solicitud->hora_desde = $request->hora_inicio;
-            $solicitud->hora_hasta = $request->hora_fin;
+            $solicitud->fecha_desde = $fecha_desde;
+            $solicitud->fecha_hasta = $fecha_hasta;
+            $solicitud->hora_desde = $hora_desde;
+            $solicitud->hora_hasta = $hora_hasta;
             $solicitud->detalle = $request->detalle;
             $solicitud->recuperable = $request->recuperable ? true : false;
+            $solicitud->total_tiempo = calcularTiempoTotal($fecha_desde, $hora_desde, $fecha_hasta, $hora_hasta);
 
             $solicitud->save();
             DB::commit();
@@ -155,6 +168,14 @@ class SolicitudController extends Controller
             ['name' => 'Solicitudes', 'url' => route('solicitud.permisos.index')],
             ['name' => $title_page, 'url' => ''] // Último breadcrumb no tiene URL, es el actual
         ];
+
+        $total_db = Carbon::createFromFormat('H:i:s', $solicitud->total_tiempo);
+        $total_caculado = Carbon::createFromFormat('H:i', $solicitud->tiempo_total);
+
+        if ($total_db->format('H:i') != $total_caculado->format('H:i')) {
+            $solicitud->total_tiempo = $total_caculado->format('H:i');
+            $solicitud->save();
+        }
 
         return view('solicitudes.show', compact('title_page', 'breadcrumbs', 'solicitud'));
     }
@@ -341,7 +362,7 @@ class SolicitudController extends Controller
                         $editar = "<a href='" . route('solicitud.permisos.edit', $solicitud->id) . "' class='dropdown-item'>Editar</a>";
                         $eliminar = "<a href='#' class='dropdown-item eliminar-solicitud' id='" . $solicitud->id . "'>Eliminar</a>";
 
-                        if ($solicitud->estado_solicitud->descripcion == 'Aprobado') {
+                        if ($solicitud->estado_solicitud->descripcion == 'Aprobado' && !auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
                             $editar = "<a href='" . route('solicitud.permisos.show', $solicitud->id) . "' class='dropdown-item'>Detalle</a>";
                         }
 

@@ -132,6 +132,7 @@ class GenerarPdfController extends Controller
 
         $orden = [
             'proyecto' => $pedido->proyecto_id ? $pedido->proyecto->nombre_proyecto : 'General',
+            'subproyecto' => $pedido->subproyecto ?? '---',
             'numero_pedido' => $pedido->numero,
             'semana' => $pedido->semanas,
             'fecha' => date('d-m-Y', strtotime($pedido->fecha)),

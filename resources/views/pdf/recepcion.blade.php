@@ -111,6 +111,8 @@
             <div class="left">
                 <strong>PROYECTO:</strong>
                 {{ strtoupper($orden['proyecto']) }}<br>
+                <strong>subPROYECTO:</strong>
+                {{ strtoupper($orden['subproyecto']) }}<br>
                 <strong>ETAPA:</strong>
                 {{ strtoupper($orden['etapa']) }}<br>
                 <strong>PROVEEDOR:</strong>

@@ -58,14 +58,18 @@
                                                 </button>
                                                 <div class="dropdown-menu">
                                                     <!-- Dropdown menu links -->
-                                                    @if ($solicitud->estado_solicitud->descripcion == 'Aprobado')
-                                                        <a href='{{ route('solicitud.permisos.show', $solicitud->id) }}'
-                                                            class='dropdown-item'>Detalle</a>
-                                                    @else
+                                                    @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
                                                         <a href='{{ route('solicitud.permisos.edit', $solicitud->id) }}'
                                                             class='dropdown-item'>Editar</a>
+                                                    @else
+                                                        @if ($solicitud->estado_solicitud->descripcion == 'Aprobado')
+                                                            <a href='{{ route('solicitud.permisos.show', $solicitud->id) }}'
+                                                                class='dropdown-item'>Detalle</a>
+                                                        @else
+                                                            <a href='{{ route('solicitud.permisos.edit', $solicitud->id) }}'
+                                                                class='dropdown-item'>Editar</a>
+                                                        @endif
                                                     @endif
-
                                                     <a href='javascript:void(0);' class='dropdown-item eliminar-solicitud'
                                                         id='{{ $solicitud->id }}'>Eliminar</a>
                                                 </div>
@@ -94,5 +98,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/solicitud_scripts.js') }}"></script>
+    <script src="{{ asset('js/solicitud_scripts.js?v=' . config('app.version', '')) }}"></script>
 @endsection

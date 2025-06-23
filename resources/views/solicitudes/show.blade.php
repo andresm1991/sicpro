@@ -80,8 +80,7 @@
                         <div class="col-sm-2">
                             <div class="form-group">
                                 <label class="col-form-label">Tiempo total</label><br>
-                                <span
-                                    class="form-control">{{ \Carbon\Carbon::createFromFormat('H:i:s', $solicitud->total_tiempo)->format('H:i') }}</span>
+                                <span class="form-control">{{ $solicitud->tiempo_total }}</span>
                             </div>
                         </div>
                     </div>

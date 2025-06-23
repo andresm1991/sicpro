@@ -57,7 +57,7 @@
         <div class="form-group">
             <label class="col-form-label">Tiempo total</label><br>
             <span id="resultado"
-                class="form-control">{{ $solicitud->total_tiempo ? \Carbon\Carbon::createFromFormat('H:i:s', $solicitud->total_tiempo)->format('H:i') : '0:00' }}</span>
+                class="form-control">{{ $solicitud->total_tiempo ? $solicitud->tiempo_total : '0:00' }}</span>
         </div>
     </div>
 </div>
