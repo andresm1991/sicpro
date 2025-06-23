@@ -129,10 +129,10 @@ $(function () {
             $('#resultado').text('00:00');
             return;
         }
-
+        console.log(fechaDesde, horaDesde, fechaHasta, horaHasta)
         // Calcular el tiempo laboral
         let tiempoLaboral = calcularTiempoLaboral(fechaDesde, horaDesde, fechaHasta, horaHasta);
-
+        console.log(tiempoLaboral)
         // Mostrar el resultado
         $('#resultado').text(tiempoLaboral);
     }

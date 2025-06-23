@@ -785,7 +785,7 @@ $(function () {
                                     <td>${item.usuario.nombre}</td>
                                     <td>${item.fecha_solicitud}</td>
                                     <td>${item.fecha_desde} hasta ${item.fecha_hasta}</td>
-                                    <td>${item.total_tiempo}</td>
+                                    <td>${item.tiempo_total}</td>
                                     <td>${item.tipo_solicitud.descripcion}</td>
                                     <td>${item.recuperable > 0 ? 'SI' : 'NO'}</td>
                                     <td>${item.estado_solicitud.descripcion}</td>

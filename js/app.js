@@ -135,51 +135,35 @@ function cargarTipoCuentas() {
  * Calcular tiempo de entre fechas en formato H:m
  */
 function calcularTiempoLaboral(fechaDesde, horaDesde, fechaHasta, horaHasta) {
-    // Convertir fechas de 'd-m-Y' a 'Y-m-d'
+    // Función auxiliar para convertir el formato de fecha 'd-m-Y' a 'Y-m-d'
+    // que es más compatible con el constructor de Date.
     function parseDate(dmy) {
         let [day, month, year] = dmy.split('-');
         return `${year}-${month}-${day}`;
     }
 
+    // Crear los objetos Date para el inicio y el fin.
     let inicio = new Date(`${parseDate(fechaDesde)}T${horaDesde}:00`);
     let fin = new Date(`${parseDate(fechaHasta)}T${horaHasta}:00`);
 
-    // Definir el horario laboral
-    const horaInicioLaboral = 8; // 08:00
-    const horaFinLaboral = 16;   // 16:00
-
-    // Inicializar el total de minutos laborales
-    let totalMinutosLaborales = 0;
-
-    // Iterar sobre cada día en el rango de fechas
-    for (let dia = new Date(inicio); dia <= fin; dia.setDate(dia.getDate() + 1)) {
-        // Saltar los fines de semana (opcional)
-        if (dia.getDay() === 0 || dia.getDay() === 6) { // 0 = Domingo, 6 = Sábado
-            continue;
-        }
-
-        // Definir el inicio y fin del día laboral
-        let inicioDiaLaboral = new Date(dia);
-        inicioDiaLaboral.setHours(horaInicioLaboral, 0, 0, 0);
-
-        let finDiaLaboral = new Date(dia);
-        finDiaLaboral.setHours(horaFinLaboral, 0, 0, 0);
-
-        // Determinar el rango efectivo para este día
-        let inicioEfectivo = inicio > inicioDiaLaboral ? inicio : inicioDiaLaboral;
-        let finEfectivo = fin < finDiaLaboral ? fin : finDiaLaboral;
-
-        // Asegurarse de que el rango efectivo esté dentro del horario laboral
-        if (inicioEfectivo <= finEfectivo) {
-            totalMinutosLaborales += (finEfectivo - inicioEfectivo) / (1000 * 60); // Diferencia en minutos
-        }
+    // Validar que la fecha de fin sea posterior a la de inicio.
+    // Y también que las fechas sean válidas (no NaN).
+    if (fin <= inicio || isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+        return '00:00';
     }
 
-    // Convertir el total de minutos a horas y minutos
-    let horas = Math.floor(totalMinutosLaborales / 60);
-    let minutos = Math.floor(totalMinutosLaborales % 60);
+    // Calcular la diferencia total en milisegundos.
+    let diferenciaMs = fin.getTime() - inicio.getTime();
 
-    // Formatear el resultado como "H:m"
+    // Convertir la diferencia de milisegundos a minutos totales.
+    // Usamos Math.floor para no contar segundos parciales.
+    let totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
+
+    // Calcular las horas y los minutos restantes.
+    let horas = Math.floor(totalMinutos / 60);
+    let minutos = totalMinutos % 60;
+
+    // Formatear el resultado como "H:mm", asegurando que los minutos tengan dos dígitos.
     return `${horas}:${String(minutos).padStart(2, '0')}`;
 }
 
