@@ -3,8 +3,13 @@ import { getFormData, limpiarFormulario } from './helpers.js';
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     var success = false;
+    var tipoCaja = "";
 
     $('#modalMovimientoCaja').on('shown.bs.modal', function (e) {
+        var button = $(e.relatedTarget);
+        // Obtiene el valor de data-caja
+        tipoCaja = button.data('caja');
+
         $('.select2-basic-single').select2({
             width: '100%',
             dropdownParent: $('#modalMovimientoCaja'),
@@ -42,7 +47,7 @@ $(function () {
 
         var form = $("#form_movimiento_caja");
         var data = getFormData(form);
-        console.log(data)
+
         const camposAValidar = [
             { selector: '#monto', mensaje: 'Ingrese un valor.' },
             { selector: '#tipo_movimiento', mensaje: 'Seleccione la opción.' },

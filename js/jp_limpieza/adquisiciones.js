@@ -240,7 +240,7 @@ $(function () {
         }).then((result) => {
             if (result.value) {
                 $.ajax({
-                    url: 'eliminar/' + adquisicionId,
+                    url: url + '/eliminar/' + adquisicionId,
                     headers: { 'X-CSRF-TOKEN': csrfToken },
                     type: 'DELETE',
                     dataType: 'json',
