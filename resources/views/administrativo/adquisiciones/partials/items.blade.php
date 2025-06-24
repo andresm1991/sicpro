@@ -51,12 +51,12 @@
                         ) !!}
                     </td>
                     <td class="align-middle col-md-1 col-12">
-                        {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'data-valor-actual' => $detalle->producto->valor_unitario, 'placeholder' => '$ 0.00', 'data-index' => $index]) }}
+                        {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'data-valor-actual' => $detalle->valor, 'placeholder' => '$ 0.00', 'data-index' => $index]) }}
 
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>
                     <td class="align-middle col-md-1 col-12">
-                        {{ Form::text('iva_producto[' . $index . ']', old('iva_producto.' . $index, $detalle->producto->iva), ['class' => 'form-control col-sm-12 input-enteros iva-producto', 'placeholder' => '0', 'data-index' => $index]) }}
+                        {{ Form::text('iva_producto[' . $index . ']', old('iva_producto.' . $index, $detalle->iva), ['class' => 'form-control col-sm-12 input-enteros iva-producto', 'placeholder' => '0', 'data-index' => $index]) }}
 
                         {!! $errors->first(
                             'iva_producto.' . $index,
@@ -64,7 +64,7 @@
                         ) !!}
                     </td>
                     <td class="align-middle calculo-total" data-index="{{ $index }}">$
-                        {{ number_format(calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva), 4) }}
+                        {{ number_format(calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva), 4) }}
                     </td>
                     <td class="align-middle">
                         {{ $detalle->necesidad }}

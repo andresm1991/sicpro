@@ -113,9 +113,10 @@ class GenerarPdfController extends Controller
 
         foreach ($pedido->adquisiciones_detalle as $key => $detalle) {
 
-            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva);
+            $iva = $detalle->iva ?? 0;
+            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
 
-            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->producto->iva) : $total;
+            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva) : $total;
 
             $items[] = [
                 'producto' => $detalle->producto->descripcion,
@@ -123,7 +124,7 @@ class GenerarPdfController extends Controller
                 'cantidad_recibida' => $detalle->cantidad_recibida,
                 'unidad_medida' => $detalle->unidad_medida->descripcion ?? '',
                 'valor' => $detalle->valor,
-                'iva' => $detalle->producto->iva,
+                'iva' => $iva,
                 'total' => $total,
                 'necesidad' => $detalle->necesidad,
                 'kilometraje' => $detalle->kilometraje,

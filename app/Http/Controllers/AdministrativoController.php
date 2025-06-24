@@ -91,7 +91,7 @@ class AdministrativoController extends Controller
         ];
 
         $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
-            $iva = $detalle->producto->iva ?? 0;
+            $iva = $detalle->iva ?? 0;
             $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
             return $total;
         });
@@ -403,8 +403,9 @@ class AdministrativoController extends Controller
         $proveedores = Proveedor::where('categoria_proveedor_id', $adquisicion->tipo_etapa_id)->pluck('razon_social', 'id');
 
         $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
-            $iva = ($detalle->valor * $detalle->producto->iva) / 100;
-            return ($detalle->cantidad_recibida * $detalle->valor) + $iva;
+            $iva = $detalle->producto->iva ?? 0;
+            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
+            return $total;
         });
 
         return view('administrativo.adquisiciones.edit', compact('adquisicion', 'tipo', 'totalGeneral', 'proveedores', 'title_page', 'breadcrumbs'));

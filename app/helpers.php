@@ -391,6 +391,7 @@ if (!function_exists('registrarProducto')) {
     function calcularTotalProducto($cantidad, $valor, $iva)
     {
         $subTotal = $cantidad * $valor;
+        $iva = $iva ?? 0;
         $iva = ($subTotal * $iva) / 100;
         $total = $subTotal + $iva;
         return  $total;
