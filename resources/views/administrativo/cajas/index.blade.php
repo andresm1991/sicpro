@@ -81,7 +81,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center text-danger">No se encontraron datos para
+                                    <td colspan="8" class="text-center text-danger">No se encontraron datos para
                                         mostrar....
                                     </td>
                                 </tr>
