@@ -282,6 +282,8 @@
     <div class="row clearfix">
         <div class="col-sm-6">
             <p><strong class="title">Proyecto:</strong> <span class="text-content">{{ $info['proyecto'] }}</span></p>
+            <p><strong class="title">SubProyecto:</strong> <span class="text-content">{{ $info['subproyecto'] }}</span>
+            </p>
             <p><strong class="title">Categoria:</strong> <span class="text-content">{{ $info['categoria'] }}</span></p>
             <p><strong class="title">Etapa:</strong> <span class="text-content">{{ $info['etapa'] }}</span></p>
             <p><strong class="title">Estado:</strong> <span class="text-content">{{ $info['estado'] }}</span></p>

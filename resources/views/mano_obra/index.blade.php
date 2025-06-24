@@ -29,6 +29,7 @@
                                 placeholder="Buscar....">
                         </div>
                     </div>
+                    <small class="my-2 mx-3  badge badge-info">Click en la fecha para editar la planificacion</small>
                 </div>
                 <div class="table-responsive" id="table">
                     <table class="table table-bordered table-hover">
@@ -98,5 +99,5 @@
         var url =
             "{{ route('proyecto.adquisiciones.mano.obra', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
     </script>
-    <script src="{{ asset('js/mano_obra_scripts.js') }}" type="module"></script>
+    <script src="{{ asset('js/mano_obra_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
 @endsection

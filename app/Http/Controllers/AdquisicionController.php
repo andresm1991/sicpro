@@ -14,14 +14,15 @@ use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
+use App\Models\MovimientoCaja;
 use App\Models\OrdenRecepcion;
 use Yajra\DataTables\DataTables;
 use App\Models\AdquisicionDetalle;
 use App\Models\DiccionarioPalabra;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
-use App\Enums\PushNotificationsEnum;
 use Illuminate\Support\Facades\Log;
+use App\Enums\PushNotificationsEnum;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
@@ -934,18 +935,44 @@ class AdquisicionController extends Controller
                     $orden_recepcion_param
                 );
 
-                foreach ($inventario as $index => $item) {
-                    if ($item && $orden_completa) {
-                        Inventario::create([
-                            'orden_recepcion_id' => $orden_recepcion->id,
-                            'producto_id' => $productos[$index],
-                            'cantidad' => str_replace(',', '', $cantidad[$index]),
-                            'fecha' => date('Y-m-d'),
-                            'usuario_id' => Auth::user()->id,
-                            'estado' => 10,
-                        ]);
+                if ($orden_completa) {
+                    foreach ($inventario as $index => $item) {
+                        if ($item) {
+                            Inventario::create([
+                                'orden_recepcion_id' => $orden_recepcion->id,
+                                'producto_id' => $productos[$index],
+                                'cantidad' => str_replace(',', '', $cantidad[$index]),
+                                'fecha' => date('Y-m-d'),
+                                'usuario_id' => Auth::user()->id,
+                                'estado' => 10,
+                            ]);
+                        }
+                    }
+
+
+                    // Registrar en caja si el pago esta completado y si fue pagado en efectivo
+                    if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->forma_pago->slug == 'forma.pago.contado') {
+                        $detalles = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->get();
+
+                        foreach ($detalles as $detalle) {
+
+                            $request->merge([
+                                'proveedor' => $adquisicion->orden_recepcion->proveedor_id,
+                                'articulo' => $detalle->articulo_id,
+                                'tipo_movimiento' => 'egreso',
+                                'monto'        => calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva),
+                                'detalle'  =>  $detalle->necesidad,
+                                'referencia'   => $adquisicion->factura,
+                                'origen_type' => 'adquisicion_administrativa',
+                                'origen_id' => $adquisicion->id,
+                            ]);
+
+                            MovimientoCaja::registrarMovimiento($request);
+                        }
                     }
                 }
+
+
                 DB::commit();
                 LogService::log('info', 'Adquisición administrativa creada', ['user_id' => auth()->id(), 'action' => 'create']);
                 return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('success', 'Pedido generado con éxito.');

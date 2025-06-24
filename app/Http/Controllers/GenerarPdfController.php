@@ -169,6 +169,7 @@ class GenerarPdfController extends Controller
         $info_mano_obra = [
             'pago_nro' => '',
             'proyecto' => $mano_obra->proyecto->nombre_proyecto,
+            'subproyecto' => $mano_obra->subproyecto ?? '---',
             'etapa' => $mano_obra->etapa->descripcion,
             'actividad' => $mano_obra->actividad->descripcion ?? null,
             'fecha' => dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin),
@@ -276,6 +277,7 @@ class GenerarPdfController extends Controller
         $info = [
             'orden' => numeroOrden($orden_trabajo, false),
             'proyecto' => strtoupper($orden_trabajo->proyecto->nombre_proyecto),
+            'subproyecto' => $orden_trabajo->subproyecto ?? '---',
             'etapa' => $orden_trabajo->etapa->descripcion,
             'fecha' => dateFormatHumans($orden_trabajo->fecha),
             'plazo' => $fecha_final,

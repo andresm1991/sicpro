@@ -342,6 +342,28 @@ class AdministrativoController extends Controller
                         ]);
                     }
                 }
+
+
+                // Registrar en caja si el pago esta completado y si fue pagado en efectivo
+                if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->forma_pago->slug == 'forma.pago.contado') {
+                    $detalles = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->get();
+
+                    foreach ($detalles as $detalle) {
+
+                        $request->merge([
+                            'proveedor' => $adquisicion->orden_recepcion->proveedor_id,
+                            'articulo' => $detalle->articulo_id,
+                            'tipo_movimiento' => 'egreso',
+                            'monto'        => calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva),
+                            'detalle'  =>  $detalle->necesidad,
+                            'referencia'   => $adquisicion->factura,
+                            'origen_type' => 'adquisicion_administrativa',
+                            'origen_id' => $adquisicion->id,
+                        ]);
+
+                        MovimientoCaja::registrarMovimiento($request);
+                    }
+                }
             }
 
 
@@ -355,6 +377,7 @@ class AdministrativoController extends Controller
                 AdquisicionDetalle::where('adquisicion_id', $pedido_id)
                     ->whereIn('articulo_id', $productos_eliminar)->delete();
             }
+
 
             DB::commit();
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);

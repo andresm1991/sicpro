@@ -195,6 +195,8 @@
                 <div class="left">
                     <strong class="title">Proyecto:</strong> <span
                         class="text-content">{{ $info_mano_obra['proyecto'] }}</span><br>
+                    <strong class="title">SubProyecto:</strong> <span
+                        class="text-content">{{ $info_mano_obra['subproyecto'] }}</span><br>
                     <strong class="title">Fecha:</strong> <span
                         class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
                     <strong class="title">Semana:</strong> <span class="text-content">
@@ -218,6 +220,8 @@
 
             <div class="details">
                 <div class="left">
+                    <strong class="title">SubProyecto:</strong> <span
+                        class="text-content">{{ $info_mano_obra['subproyecto'] }}</span><br>
                     <strong class="title">Fecha:</strong> <span
                         class="text-content">{{ $info_mano_obra['fecha'] }}</span><br>
                     <strong class="title">Semana:</strong> <span class="text-content">

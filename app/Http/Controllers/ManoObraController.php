@@ -346,46 +346,61 @@ class ManoObraController extends Controller
     public function updatePlanificacion(Request $request)
     {
         if ($request->ajax()) {
+            // 1. Encuentra el registro a actualizar
             $mano_obra = ManoObra::find($request->id);
-            $request->merge([
-                'fecha_fin' => Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d'),
-            ]);
-            $fechaInicio = $mano_obra->fecha_inicio;
-            $fechaFin = $request->fecha_fin;
 
-            // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
-            $fechasExistentes = ManoObra::where('id', '!=', $mano_obra->id)
+            // 2. Prepara las fechas para la validación y actualización
+            // Se asume que fecha_inicio no cambia en la actualización
+            $fechaInicio = $mano_obra->fecha_inicio;
+            // Se formatea la fecha_fin que viene del request
+            $fechaFin = Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d');
+
+            // ====================================================================
+            //  NUEVA Y MEJORADA LÓGICA DE VALIDACIÓN DE SUPERPOSICIÓN
+            // ====================================================================
+            $fechasSuperpuestas = ManoObra::where('id', '!=', $mano_obra->id)->where('proyecto_id', $request->proyecto_id) // Ignora el registro actual
                 ->where(function ($query) use ($fechaInicio, $fechaFin) {
-                    $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
-                        ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
-                        ->orWhere(function ($query) use ($fechaInicio, $fechaFin) {
-                            $query->where('fecha_inicio', '<=', $fechaInicio)
-                                ->where('fecha_fin', '>=', $fechaFin);
-                        });
+                    // La condición mágica: (A_inicio <= B_fin) Y (A_fin >= B_inicio)
+                    // Se traduce a:
+                    // El inicio de un registro existente es ANTES que nuestro fin
+                    // Y el fin de ese mismo registro es DESPUÉS que nuestro inicio.
+                    $query->where('fecha_inicio', '<=', $fechaFin)
+                        ->where('fecha_fin', '>=', $fechaInicio);
                 })->exists();
 
-            if ($fechasExistentes) {
+            if ($fechasSuperpuestas) {
+                // Lanza una excepción de validación que Laravel captura y formatea como JSON.
                 throw ValidationException::withMessages([
-                    'fecha_inicio' => 'La fecha inicio esta dentro del rago ya registrado.',
-                    'fecha_fin' => 'La fecha fin esta dentro del rago ya registrado.',
+                    'fecha_fin' => 'El rango de fechas seleccionado se superpone con una planificación existente.',
                 ]);
             }
 
+            // Validación adicional (que también podría estar en un FormRequest)
+            // La regla 'unique' aquí es redundante si la validación de superposición ya se hizo.
+            // La mantendré por si quieres validar un caso muy específico, pero considera quitarla.
             $request->validate([
                 'fecha_fin' => [
                     'required',
                     'date',
-                    'after:fecha_inicio',
-                    Rule::unique('mano_obra', 'fecha_fin')->ignore($mano_obra->id),
+                    // 'after:fecha_inicio' no funciona bien aquí porque fecha_inicio no está en el request.
+                    // Lo validaremos manualmente.
                 ],
             ], [
-                'fecha_fin.after' => 'La fecha de fin de ser mayor a la fecha de inicio.',
-                'fecha_inicio.unique' => 'La fecha inicio ya se encuentra registrada.',
-                'fecha_fin.unique' => 'La fecha fin ya se encuentra registrada.'
+                'fecha_fin.required' => 'La fecha de fin es obligatoria.',
             ]);
 
+            if (Carbon::parse($fechaFin)->lessThanOrEqualTo(Carbon::parse($fechaInicio))) {
+                throw ValidationException::withMessages([
+                    'fecha_fin' => 'La fecha de fin debe ser posterior a la fecha de inicio.',
+                ]);
+            }
+
+            // ====================================================================
+            //  LÓGICA DE ACTUALIZACIÓN (TRY-CATCH)
+            // ====================================================================
             try {
                 DB::beginTransaction();
+
                 $mano_obra->fecha_fin = $fechaFin;
                 $mano_obra->subproyecto = $request->subproyecto;
 
@@ -398,7 +413,7 @@ class ManoObraController extends Controller
                     $route_params = $this->getRouteParameters($request);
                     $response = $this->htmlTable($list_mano_obra, $route_params);
 
-                    LogService::log('info', 'Se actualizo al planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'update']);
+                    LogService::log('info', 'Se actualizo la planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'update']);
                     return response()->json(['success' => true, 'mensaje' => 'Planificación actualizada correctamente.', 'planificacion' => $response]);
                 }
 
@@ -407,7 +422,8 @@ class ManoObraController extends Controller
                 return response()->json(['success' => false, 'mensaje' => 'Ocurrió un error por favor vuelva a intentarlo.']);
             } catch (Throwable $e) {
                 DB::rollBack();
-                LogService::log('error', 'Error al actualizar planificaciónn mano de obra', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+                LogService::log('error', 'Error al actualizar planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+                // En desarrollo, puedes usar: return response()->json(['message' => $e->getMessage()], 500);
                 return response()->json(['success' => false, 'mensaje' => 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.']);
             }
         }
