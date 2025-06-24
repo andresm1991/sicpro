@@ -8,6 +8,7 @@ use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
+use App\Models\JPLimpieza\Caja;
 use Illuminate\Support\Facades\DB;
 use App\Models\JPLimpieza\Producto;
 use App\Models\JPLimpieza\Proyecto;
@@ -156,7 +157,7 @@ class AdquisicionController extends Controller
                 'nro_factura' => $factura,
                 'archivo' => $archivo ? Storage::disk('digitalocean')->put($this->path_files, $archivo) : null,
                 'forma_pago_id' => $formaPago,
-            ])->id;
+            ]);
 
             if ($adquisicion) {
                 foreach ($items as $item) {
@@ -164,13 +165,17 @@ class AdquisicionController extends Controller
                         return redirect()->back()->with('error', 'Por favor, complete todos los campos requeridos.');
                     }
 
+                    $cantidad = $item['cantidad'];
+                    $valor = str_replace(',', '', $item['valor']);
+                    $iva = $item['iva'];
+
                     DetalleAdquisicion::create([
-                        'adquisicion_id' => $adquisicion,
+                        'adquisicion_id' => $adquisicion->id,
                         'producto_id' => $item['producto'],
-                        'cantidad' => $item['cantidad'],
+                        'cantidad' => $cantidad,
                         'unidad_medida_id' => $item['unidad_medida'],
-                        'precio_unitario' => str_replace(',', '', $item['valor']),
-                        'iva' => $item['iva'],
+                        'precio_unitario' => $valor,
+                        'iva' => $iva,
                         'necesidad' => $item['necesidad'],
                     ]);
 
@@ -182,15 +187,33 @@ class AdquisicionController extends Controller
                         $articulo->save();
                     }
 
-                    if ($item['inventario'] && $completado) {
-                        Inventario::create([
-                            'adquisicion_id' => $adquisicion->id,
-                            'producto_id' => $item['producto'],
-                            'cantidad' => str_replace(',', '', $item['cantidad']),
-                            'fecha_ingreso' => date('Y-m-d'),
-                            'usuario_id' => Auth::user()->id,
-                            'estado' => 10,
-                        ]);
+                    if ($completado) {
+                        if ($item['inventario']) {
+                            Inventario::create([
+                                'adquisicion_id' => $adquisicion->id,
+                                'producto_id' => $item['producto'],
+                                'cantidad' => str_replace(',', '', $item['cantidad']),
+                                'fecha_ingreso' => date('Y-m-d'),
+                                'usuario_id' => Auth::user()->id,
+                                'estado' => 10,
+                            ]);
+                        }
+
+                        // Registrar en caja si el pago esta completado y si fue pagado en efectivo
+                        if ($adquisicion->formaPago->slug == 'forma.pago.contado') {
+                            $request->merge([
+                                'proveedor' => $proveedor,
+                                'articulo' => $item['producto'],
+                                'tipo_movimiento' => 'egreso',
+                                'monto'        => calcularTotalProducto($cantidad, $valor, $iva),
+                                'detalle'  =>  $item['necesidad'],
+                                'referencia'   => $factura,
+                                'origen_type' => 'adquisicion_jplimpieza',
+                                'origen_id' => $adquisicion->id,
+                            ]);
+
+                            Caja::registrarMovimiento($request);
+                        }
                     }
                 }
 
@@ -283,13 +306,17 @@ class AdquisicionController extends Controller
                     return redirect()->back()->with('error', 'Por favor, complete todos los campos requeridos.');
                 }
 
+                $cantidad = str_replace(',', '', $producto['cantidad']);
+                $valor = str_replace(',', '', $producto['valor']);
+                $iva = $producto['iva'];
+
                 DetalleAdquisicion::updateOrCreate(
                     ['adquisicion_id' => $adquisicion->id, 'producto_id' => $producto['producto']],
                     [
-                        'cantidad' => str_replace(',', '', $producto['cantidad']),
+                        'cantidad' => $cantidad,
                         'unidad_medida_id' => $producto['unidad_medida'],
-                        'precio_unitario' => str_replace(',', '', $producto['valor']),
-                        'iva' => $producto['iva'],
+                        'precio_unitario' => $valor,
+                        'iva' => $iva,
                         'necesidad' => $producto['necesidad'],
                     ]
                 );
@@ -302,15 +329,33 @@ class AdquisicionController extends Controller
                     $articulo->save();
                 }
 
-                if ($producto['inventario'] && $completado) {
-                    Inventario::create([
-                        'adquisicion_id' => $adquisicion->id,
-                        'producto_id' => $producto['producto'],
-                        'cantidad' => str_replace(',', '', $producto['cantidad']),
-                        'fecha_ingreso' => date('Y-m-d'),
-                        'usuario_id' => Auth::user()->id,
-                        'estado' => 10,
-                    ]);
+                if ($completado) {
+
+                    if ($producto['inventario']) {
+                        Inventario::create([
+                            'adquisicion_id' => $adquisicion->id,
+                            'producto_id' => $producto['producto'],
+                            'cantidad' => str_replace(',', '', $producto['cantidad']),
+                            'fecha_ingreso' => date('Y-m-d'),
+                            'usuario_id' => Auth::user()->id,
+                            'estado' => 10,
+                        ]);
+                    }
+
+                    if ($adquisicion->formaPago->slug == 'forma.pago.contado') {
+                        $request->merge([
+                            'proveedor' => $proveedor,
+                            'articulo' =>  $producto['producto'],
+                            'tipo_movimiento' => 'egreso',
+                            'monto'        => calcularTotalProducto($cantidad, $valor, $iva),
+                            'detalle'  =>  $producto['necesidad'],
+                            'referencia'   => $factura,
+                            'origen_type' => 'adquisicion_jplimpieza',
+                            'origen_id' => $adquisicion->id,
+                        ]);
+
+                        Caja::registrarMovimiento($request);
+                    }
                 }
             }
 
@@ -338,7 +383,7 @@ class AdquisicionController extends Controller
             DB::beginTransaction();
             $adquisicion = Adquisicion::find($id);
             if ($adquisicion) {
-                if (Storage::disk('digitalocean')->exists($adquisicion->archivo)) {
+                if ($adquisicion->archivo && Storage::disk('digitalocean')->exists($adquisicion->archivo)) {
                     Storage::disk('digitalocean')->delete($adquisicion->archivo);
                 }
                 $adquisicion->delete();

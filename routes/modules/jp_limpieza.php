@@ -6,6 +6,7 @@ use App\Models\JPLimpieza\PresupuestoProyecto;
 use App\Http\Controllers\JPLimpieza\ManoObraController;
 use App\Http\Controllers\JPLimpieza\ProyectoController;
 use App\Http\Controllers\JPLimpieza\AdquisicionController;
+use App\Http\Controllers\JPLimpieza\CajaController;
 use App\Http\Controllers\JPLimpieza\ContratistaController;
 use App\Http\Controllers\JPLimpieza\PagoContratistaController;
 use App\Http\Controllers\JPLimpieza\PresupuestoProyectoController;
@@ -48,7 +49,8 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/', [AdquisicionController::class, 'indexAdministrativo'])->name('index');
         Route::get('/create', [AdquisicionController::class, 'createAdministrativo'])->name('create');
         Route::get('/editar/{adquisicion}', [AdquisicionController::class, 'editAdministrativo'])->name('edit');
-        Route::get('//buscar', [AdquisicionController::class, 'buscar']);
+        Route::delete('/eliminar/{adquisicion}', [AdquisicionController::class, 'destroy']);
+        Route::get('/buscar', [AdquisicionController::class, 'buscar']);
     });
 
     //** CONTRATISTAS */
@@ -95,5 +97,11 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         Route::get('/create', [ManoObraController::class, 'createAdministrativo'])->name('create');
         Route::get('/editar/{mano_obra}', [ManoObraController::class, 'editAdministrativo'])->name('edit');
         Route::get('/buscar', [ManoObraController::class, 'buscar']);
+    });
+
+    //** CAJA */
+    Route::group(['prefix' => 'caja', 'as' => 'caja.'], function () {
+        Route::get('/', [CajaController::class, 'index'])->name('index');
+        Route::post('/guardar', [CajaController::class, 'guardarMovimiento'])->name('store');
     });
 });

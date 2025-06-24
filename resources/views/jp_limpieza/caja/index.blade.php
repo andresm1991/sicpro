@@ -16,10 +16,10 @@
                 <div class="row">
                     <div class="col-md-4 col-12">
                         <div class="form-group">
-                            <button type="button" class="btn btn-dark btn-sm" data-caja="prime" data-toggle="modal"
+                            <button type="button" class="btn btn-dark btn-sm" data-caja="jpLimpieza" data-toggle="modal"
                                 data-backdrop="static" data-keyboard="false" data-target="#modalMovimientoCaja">
                                 <i class="fa-regular fa-plus"></i> Nueva Registro
-                                </a>
+                            </button>
                         </div>
                     </div>
                     {{--  <div class="col-md-8 col-12 ">
@@ -52,11 +52,11 @@
                                         {{ $movimiento->fecha_formateada }}
                                     </td>
                                     <td class="align-middle">
-                                        {{ isset($movimiento->articulo_id) ? $movimiento->articulo->descripcion : $movimiento->descripcion }}
+                                        {{ isset($movimiento->producto_id) ? $movimiento->producto->nombre : $movimiento->descripcion }}
                                     </td>
 
                                     <td class="align-middle">
-                                        {{ isset($movimiento->articulo_id) ? $movimiento->descripcion : '-' }}
+                                        {{ isset($movimiento->producto_id) ? $movimiento->descripcion : '-' }}
                                     </td>
 
                                     <td class="align-middle">

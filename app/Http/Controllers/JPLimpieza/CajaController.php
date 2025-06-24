@@ -1,29 +1,25 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\JPLimpieza;
 
-use App\Models\Caja;
 use Illuminate\Http\Request;
-use App\Services\CajaService;
-use App\Models\MovimientoCaja;
+use App\Models\JPLimpieza\Caja;
 use Illuminate\Support\Facades\DB;
 use App\Constants\MessagesConstant;
+use App\Http\Controllers\Controller;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class CajaController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
-            ['name' => 'Administrativo', 'url' => route('administrativo.index')],
+            ['name' => 'JPLimpieza', 'url' => route('jp.limpieza.index')],
             ['name' => 'Caja', 'url' => ''],
         ];
 
-        $movimientosAsc = MovimientoCaja::orderBy('id', 'asc')->get();
+        $movimientosAsc = Caja::orderBy('id', 'asc')->get();
         $saldo = 0;
         foreach ($movimientosAsc as $movimiento) {
             if ($movimiento->tipo == 'ingreso') {
@@ -46,7 +42,7 @@ class CajaController extends Controller
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('administrativo.cajas.index', ['movimientos' => $paginated, 'breadcrumbs' => $breadcrumbs]);
+        return view('jp_limpieza.caja.index', ['movimientos' => $paginated, 'breadcrumbs' => $breadcrumbs]);
     }
 
     public function guardarMovimiento(Request $request)
@@ -55,7 +51,7 @@ class CajaController extends Controller
             try {
                 DB::beginTransaction();
 
-                MovimientoCaja::registrarMovimiento($request);
+                Caja::registrarMovimiento($request);
 
                 DB::commit();
                 return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
