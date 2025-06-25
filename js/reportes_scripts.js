@@ -1020,6 +1020,14 @@ $(function () {
                             </tr>
                         </thead>
                     <tbody>
+                        <tr>
+                            <td class="aling-middle bg-secondary text-white" colspan="7">
+                                <strong>${response.result.fecha_saldo_inicio}</strong>
+                            </td>
+                            <td class="aling-middle bg-secondary text-white">
+                                $${response.result.saldo_inicial}
+                            </td>
+                        </tr>
                         ${data.map((item) => {
                     return `
                                     <tr>
@@ -1030,7 +1038,7 @@ $(function () {
                                         <td>${item.referencia ?? '-'}</td>
                                         <td>${item.tipo == 'ingreso' ? item.monto_formatted : '-'}</td>
                                         <td>${item.tipo == 'egreso' ? item.monto_formatted : '-'}</td>
-                                        <td>${item.saldo_acumulado}</td>
+                                        <td>$${item.saldo_acumulado}</td>
                                     </tr>
                                 `;
                 }).join('')}
@@ -1041,10 +1049,13 @@ $(function () {
                                 <strong>Sumas totales</strong>
                             </td>
                             <td class="aling-middle">
-                                <strong>${response.result.total_ingresos}</strong>
+                                <strong>$${response.result.total_ingresos}</strong>
                             </td>
                             <td class="aling-middle">
-                                <strong>${response.result.total_egresos}</strong>
+                                <strong>$${response.result.total_egresos}</strong>
+                            </td>
+                            <td class="aling-middle">
+                                -
                             </td>
                         </tr>
                         <tr>
@@ -1052,7 +1063,7 @@ $(function () {
                                 <strong>${response.result.fecha_saldo_fin}</strong>
                             </td>
                             <td class"aling-middle">
-                                <strong>${response.result.total_general}</strong>
+                                <strong>$${response.result.saldo_final}</strong>
                             </td>
                         </tr>
                     </tfoot>
