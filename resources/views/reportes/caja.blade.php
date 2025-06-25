@@ -7,7 +7,7 @@
     <section>
         <div class="container-fluid">
             {!! Form::open([
-                'route' => ['pdf.reporte.solicitudes', ''],
+                'route' => ['pdf.reporte.caja', ''],
                 'class' => 'form-horizontal',
                 'autocomplete' => 'off',
                 'enctype' => 'multipart/form-data',

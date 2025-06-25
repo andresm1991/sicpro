@@ -28,6 +28,7 @@ use App\Exports\ReportGasolinaCamionetaExport;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
 use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
+use App\Models\MovimientoCaja;
 
 class GenerarPdfController extends Controller
 {
@@ -591,6 +592,13 @@ class GenerarPdfController extends Controller
             return Excel::download(new ReportSolicitudesExport($query, $fechas, $tipo_solicitud), 'reporte_solicitudes.xlsx');
         }
         $pdf = PDF::loadView('pdf.reporte_solicitudes', compact('query', 'fechas', 'tipo_solicitud'))->setPaper('a4', 'landscape');
+        return $pdf->stream('reportes.pdf');
+    }
+
+    public function reportCaja(Request $request)
+    {
+        $query = MovimientoCaja::dataReporteCaja($request);
+        $pdf = PDF::loadView('pdf.reporte_caja', compact('query'))->setPaper('a4', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 

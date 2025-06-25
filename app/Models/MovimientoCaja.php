@@ -105,56 +105,61 @@ class MovimientoCaja extends Model
     public static function dataReporteCaja($request)
     {
         $fechas = $request->input('fechas');
-        $query = self::with(['usuario', 'proveedor', 'articulo']);
+        list($fechaInicioStr, $fechaFinStr) = explode(' - ', $fechas);
+        $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($fechaInicioStr))->startOfDay();
+        $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fechaFinStr))->endOfDay();
 
-        // Filtrar por rango de fechas
-        $fechaInicioFormatted = null;
-        $fechaFinFormatted = null;
-        if ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $query->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
-        }
 
-        // Obtener movimientos filtrados
-        $movimientos = $query->orderBy('fecha', 'asc')->get();
-
-        // Calcular saldo acumulado hasta la fecha final
-        $saldo = self::where('fecha', '<=', $fechaFinFormatted ?? now()->format('Y-m-d'))
+        // ---- 1. CALCULAR EL SALDO INICIAL ----
+        // Suma todos los ingresos y resta todos los egresos ANTES de la fecha de inicio del reporte.
+        $saldo_inicial = self::where('fecha', '<', $fechaInicio->format('Y-m-d'))
             ->get()
             ->reduce(function ($carry, $mov) {
                 return $carry + ($mov->tipo === 'ingreso' ? $mov->monto : -$mov->monto);
             }, 0);
 
-        // Calcular totales de ingresos y egresos en el rango
-        $totalIngresos = $movimientos->where('tipo', 'ingreso')->sum('monto');
-        $totalEgresos = $movimientos->where('tipo', 'egreso')->sum('monto');
+        // ---- 2. OBTENER LOS MOVIMIENTOS DEL PERIODO ----
+        // Obtiene solo los movimientos dentro del rango de fechas seleccionado.
+        $movimientos_periodo = self::with(['usuario', 'proveedor', 'articulo'])
+            ->whereBetween('fecha', [$fechaInicio, $fechaFin])
+            ->orderBy('fecha', 'asc')
+            ->get();
 
-        // Calcular saldo acumulado en cada movimiento del rango
-        $saldoAcumulado = 0;
-        foreach ($movimientos as $movimiento) {
+        // ---- 3. CALCULAR EL SALDO ACUMULADO PARA CADA MOVIMIENTO ----
+        // El saldo acumulado comienza con el saldo_inicial que ya calculamos.
+        $saldoAcumulado = $saldo_inicial;
+        foreach ($movimientos_periodo as $movimiento) {
             if ($movimiento->tipo === 'ingreso') {
                 $saldoAcumulado += $movimiento->monto;
             } else {
                 $saldoAcumulado -= $movimiento->monto;
             }
-            $movimiento->saldo_acumulado = '$' . number_format($saldoAcumulado, 2);
+            // Asignamos el saldo actualizado a cada movimiento para mostrarlo en la tabla.
+            $movimiento->saldo_acumulado = number_format($saldoAcumulado, 4);
         }
 
-        // Puedes retornar todos los valores
+        // ---- 4. CALCULAR LOS TOTALES DEL PERIODO ----
+        $totalIngresosPeriodo = $movimientos_periodo->where('tipo', 'ingreso')->sum('monto');
+        $totalEgresosPeriodo = $movimientos_periodo->where('tipo', 'egreso')->sum('monto');
+
+        // El saldo final es el último valor del saldo acumulado.
+        $saldo_final = $saldoAcumulado;
+
+        // ---- 5. PREPARAR LA RESPUESTA ----
         return [
-            'saldo_al' => number_format($saldo, 2),
-            'fecha_saldo_inicio' => $fechaInicioFormatted
-                ? 'Saldo al ' . Carbon::parse($fechaInicioFormatted)->translatedFormat('d \d\e F \d\e Y')
-                : 'Saldo al ' . now()->translatedFormat('d \d\e F \d\e Y'),
-            'fecha_saldo_fin' => $fechaFinFormatted
-                ? 'Saldo al ' . Carbon::parse($fechaFinFormatted)->translatedFormat('d \d\e F \d\e Y')
-                : 'Saldo al ' . now()->translatedFormat('d \d\e F \d\e Y'),
-            'movimientos' => $movimientos,
-            'total_ingresos' => '$' . number_format($totalIngresos, 2),
-            'total_egresos' => '$' . number_format($totalEgresos, 2),
-            'total_general' => '$' . number_format($totalIngresos - $totalEgresos, 2),
+            'fecha_reporte' => 'del ' . $fechaInicio->subDay()->translatedFormat('d \d\e F \d\e Y') . ' al ' . $fechaFin->translatedFormat('d \d\e F \d\e Y'),
+            // Datos para la primera fila (saldo inicial)
+            'saldo_inicial' => number_format($saldo_inicial, 4),
+            'fecha_saldo_inicio' => 'SALDO AL ' . $fechaInicio->subDay()->translatedFormat('d \d\e F \d\e Y'),
+
+            // Lista de movimientos para el cuerpo de la tabla
+            'movimientos' => $movimientos_periodo,
+
+            // Datos para el pie de tabla
+            'total_ingresos' => number_format($totalIngresosPeriodo, 4),
+            'total_egresos' => number_format($totalEgresosPeriodo, 4),
+            'fecha_saldo_fin' => 'SALDO AL ' . $fechaFin->translatedFormat('d \d\e F \d\e Y'),
+            'saldo_final' => number_format($saldo_final, 4),
         ];
     }
 }
