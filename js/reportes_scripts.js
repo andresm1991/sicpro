@@ -978,4 +978,115 @@ $(function () {
         total = parseFloat(total);
         return total;
     }
+
+
+    $('#generar-reporte-caja').on('click', function () {
+        var form = $("#form-reporte");
+        var data = getFormData(form);
+
+        $.ajax({
+            url: 'visulizar-reporte-caja',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: data,
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                const data = response.result.movimientos;
+                console.log(response);
+                $('#table-view-reporte').empty();
+
+                if (!response.success || data.length == 0) {
+                    Swal.fire(
+                        'Ups.!',
+                        'No se encontraron resultados.',
+                        'error'
+                    )
+                    return;
+                }
+                $('#table-view-reporte').append(`<div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">fecha</th>
+                                <th scope="col">descripción</th>
+                                <th scope="col">necesidad</th>
+                                <th scope="col">proveedor</th>
+                                <th scope="col">documento</th>
+                                <th scope="col">ingreso</th>
+                                <th scope="col">egreso</th>
+                                <th scope="col">saldo</th>
+                            </tr>
+                        </thead>
+                    <tbody>
+                        ${data.map((item) => {
+                    return `
+                                    <tr>
+                                        <td>${item.fecha_formateada}</td>
+                                        <td>${item.articulo_id != null ? item.articulo.descripcion : item.descripcion}</td>
+                                        <td>${item.articulo_id != null ? item.descripcion : '-'}</td>
+                                        <td>${item.proveedor != null ? item.proveedor.razon_social : '-'}</td>
+                                        <td>${item.referencia ?? '-'}</td>
+                                        <td>${item.tipo == 'ingreso' ? item.monto_formatted : '-'}</td>
+                                        <td>${item.tipo == 'egreso' ? item.monto_formatted : '-'}</td>
+                                        <td>${item.saldo_acumulado}</td>
+                                    </tr>
+                                `;
+                }).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" class="aling-middle">
+                                <strong>Sumas totales</strong>
+                            </td>
+                            <td class="aling-middle">
+                                <strong>${response.result.total_ingresos}</strong>
+                            </td>
+                            <td class="aling-middle">
+                                <strong>${response.result.total_egresos}</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class"aling-middle" colspan="7">
+                                <strong>${response.result.fecha_saldo_fin}</strong>
+                            </td>
+                            <td class"aling-middle">
+                                <strong>${response.result.total_general}</strong>
+                            </td>
+                        </tr>
+                    </tfoot>
+                    </table>
+                    </div>
+                    `);
+
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+    });
 });
