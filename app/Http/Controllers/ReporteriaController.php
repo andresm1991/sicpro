@@ -12,6 +12,7 @@ use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
 use App\Models\DiccionarioPalabra;
+use App\Models\MovimientoCaja;
 use App\Models\ReposicionTiempo;
 use App\Models\Solicitud;
 use App\Models\User;
@@ -283,6 +284,37 @@ class ReporteriaController extends Controller
             } else {
                 $query = ReposicionTiempo::getTotalReposiciones($request);
             }
+            // return $result;
+            return response()->json([
+                'success' => true,
+                'result' => $query,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
+                'error' => $th->getLine(),
+            ]);
+        }
+    }
+
+    //** Reporte de caja (Flujo de efectivo) */
+    public function reporteCaja()
+    {
+        $title_page = 'Reporte Caja';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Reportes', 'url' => route('reporte.index')],
+            ['name' => 'Caja', 'url' => ''],
+        ];
+
+        return view('reportes.caja', compact('title_page', 'breadcrumbs'));
+    }
+
+    public function visualizarReporteCaja(Request $request)
+    {
+        try {
+            $query = MovimientoCaja::dataReporteCaja($request);
             // return $result;
             return response()->json([
                 'success' => true,

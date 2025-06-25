@@ -15,4 +15,7 @@ Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
 
     Route::get('/eventualidades', [ReporteriaController::class, 'reporteAusenciasReposiciones'])->name('eventualidades');
     Route::post('/visulizar-reporte-solicitudes', [ReporteriaController::class, 'visualizarSolicitudes']);
+
+    Route::get('/flujo-de-efectivo', [ReporteriaController::class, 'reporteCaja'])->name('caja');
+    Route::post('/visulizar-reporte-caja', [ReporteriaController::class, 'visualizarReporteCaja']);
 });

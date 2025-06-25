@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,6 +30,7 @@ class MovimientoCaja extends Model
     protected $casts = [
         'fecha' => 'date',
     ];
+    protected $appends = ['monto_formatted', 'fecha_formateada'];
 
     // Relación polimórfica para registrar de dónde viene el movimiento
     public function origen()
@@ -56,17 +58,6 @@ class MovimientoCaja extends Model
         return '$' . number_format($this->monto, 4);
     }
 
-    public function getSaldoFormattedAttribute()
-    {
-        $saldo = 0;
-        if ($this->tipo === 'ingreso') {
-            $saldo += $this->monto;
-        } else {
-            $saldo -= $this->monto;
-        }
-
-        return number_format($saldo, 4);
-    }
 
     public function getFechaFormateadaAttribute()
     {
@@ -109,5 +100,61 @@ class MovimientoCaja extends Model
                 ]
             );
         }
+    }
+
+    public static function dataReporteCaja($request)
+    {
+        $fechas = $request->input('fechas');
+        $query = self::with(['usuario', 'proveedor', 'articulo']);
+
+        // Filtrar por rango de fechas
+        $fechaInicioFormatted = null;
+        $fechaFinFormatted = null;
+        if ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            $query->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+        }
+
+        // Obtener movimientos filtrados
+        $movimientos = $query->orderBy('fecha', 'asc')->get();
+
+        // Calcular saldo acumulado hasta la fecha final
+        $saldo = self::where('fecha', '<=', $fechaFinFormatted ?? now()->format('Y-m-d'))
+            ->get()
+            ->reduce(function ($carry, $mov) {
+                return $carry + ($mov->tipo === 'ingreso' ? $mov->monto : -$mov->monto);
+            }, 0);
+
+        // Calcular totales de ingresos y egresos en el rango
+        $totalIngresos = $movimientos->where('tipo', 'ingreso')->sum('monto');
+        $totalEgresos = $movimientos->where('tipo', 'egreso')->sum('monto');
+
+        // Calcular saldo acumulado en cada movimiento del rango
+        $saldoAcumulado = 0;
+        foreach ($movimientos as $movimiento) {
+            if ($movimiento->tipo === 'ingreso') {
+                $saldoAcumulado += $movimiento->monto;
+            } else {
+                $saldoAcumulado -= $movimiento->monto;
+            }
+            $movimiento->saldo_acumulado = '$' . number_format($saldoAcumulado, 2);
+        }
+
+        // Puedes retornar todos los valores
+        return [
+            'saldo_al' => number_format($saldo, 2),
+            'fecha_saldo_inicio' => $fechaInicioFormatted
+                ? 'Saldo al ' . Carbon::parse($fechaInicioFormatted)->translatedFormat('d \d\e F \d\e Y')
+                : 'Saldo al ' . now()->translatedFormat('d \d\e F \d\e Y'),
+            'fecha_saldo_fin' => $fechaFinFormatted
+                ? 'Saldo al ' . Carbon::parse($fechaFinFormatted)->translatedFormat('d \d\e F \d\e Y')
+                : 'Saldo al ' . now()->translatedFormat('d \d\e F \d\e Y'),
+            'movimientos' => $movimientos,
+            'total_ingresos' => '$' . number_format($totalIngresos, 2),
+            'total_egresos' => '$' . number_format($totalEgresos, 2),
+            'total_general' => '$' . number_format($totalIngresos - $totalEgresos, 2),
+        ];
     }
 }

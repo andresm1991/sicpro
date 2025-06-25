@@ -28,6 +28,13 @@
                     </a>
                 </div>
 
+                <div class="max-auto">
+                    <a href="{{ route('reporte.caja') }}" class="nodo">
+                        <img src="{{ asset('images/svg/flujo-de-dinero.svg') }}" alt="">
+                        <span>Caja</span>
+                    </a>
+                </div>
+
 
             </div>
         </div>
