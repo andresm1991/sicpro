@@ -983,9 +983,11 @@ $(function () {
     $('#generar-reporte-caja').on('click', function () {
         var form = $("#form-reporte");
         var data = getFormData(form);
+        var tipoReporte = $('#tipo_reporte').val();
+        var ajaxUrl = tipoReporte != 'jp_limpieza' ? 'visulizar-reporte-caja' : 'visulizar-reporte-caja';
 
         $.ajax({
-            url: 'visulizar-reporte-caja',
+            url: ajaxUrl,
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'POST',
             data: data,
@@ -993,8 +995,9 @@ $(function () {
                 $('#loading').addClass('show');
             },
             success: function (response) {
-                const data = response.result.movimientos;
                 console.log(response);
+                const data = response.result.movimientos;
+
                 $('#table-view-reporte').empty();
 
                 if (!response.success || data.length == 0) {
@@ -1032,8 +1035,8 @@ $(function () {
                     return `
                                     <tr>
                                         <td>${item.fecha_formateada}</td>
-                                        <td>${item.articulo_id != null ? item.articulo.descripcion : item.descripcion}</td>
-                                        <td>${item.articulo_id != null ? item.descripcion : '-'}</td>
+                                        <td>${item.articulo_id != null || item.producto_id != null ? (tipoReporte != 'jp_limpieza' ? item.articulo.descripcion : item.producto.nombre) : item.descripcion}</td>
+                                        <td>${item.articulo_id != null || item.producto_id != null ? item.descripcion : '-'}</td>
                                         <td>${item.proveedor != null ? item.proveedor.razon_social : '-'}</td>
                                         <td>${item.referencia ?? '-'}</td>
                                         <td>${item.tipo == 'ingreso' ? item.monto_formatted : '-'}</td>
