@@ -107,5 +107,6 @@
         var url =
             "{{ route('proyecto.adquisiciones.contratista', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
     </script>
-    <script src="{{ asset('js/orden_trabajo_contratistas_scripts.js') }}" type="module"></script>
+    <script src="{{ asset('js/orden_trabajo_contratistas_scripts.js?v=' . config('app.version', '')) }}" type="module">
+    </script>
 @endsection

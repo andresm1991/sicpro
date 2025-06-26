@@ -54,7 +54,7 @@
         <div class="col-md-4 col 12">
             <div class="form-group">
                 {{ Form::label('', 'Productos', ['class' => 'col-form-label']) }}
-                <select name="producto" id="producto" class="form-control select2-basic-single"
+                <select name="producto" id="producto" class="form-control select2-tag"
                     data-placeholder="Selecione producto">
                     <option></option>
                     @foreach ($articulos as $id => $nombre)
@@ -199,5 +199,6 @@
         var url =
             "{{ route('proyecto.adquisiciones.contratista', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
     </script>
-    <script src="{{ asset('js/orden_trabajo_contratistas_scripts.js') }}" type="module"></script>
+    <script src="{{ asset('js/orden_trabajo_contratistas_scripts.js?v=' . config('app.version', '')) }}" type="module">
+    </script>
 @endsection

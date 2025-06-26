@@ -704,7 +704,7 @@ if (!function_exists('palabras')) {
     }
 
     /**
-     * Agregar un nuevo producto a la base de datos
+     * Agregar un nuevo producto a la base de datos JPLimpieza
      * @param string $nombre
      */
     function agregarProducto($nombre, $valor = null, $iva = null, $unidad_medida = null)

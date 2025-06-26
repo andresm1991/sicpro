@@ -51,7 +51,7 @@
                         ) !!}
                     </td>
                     <td class="align-middle col-md-1 col-12">
-                        {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'data-valor-actual' => $detalle->valor, 'placeholder' => '$ 0.00', 'data-index' => $index]) }}
+                        {{ Form::text('valor[' . $index . ']', old('valor.' . $index, $detalle->valor), ['class' => 'form-control currency precio-unitario', 'data-valor-actual' => $detalle->producto->valor_unitario, 'placeholder' => '$ 0.00', 'data-index' => $index]) }}
 
                         {!! $errors->first('valor.' . $index, '<small class="help-block text-danger error_mensajes">:message</small>') !!}
                     </td>

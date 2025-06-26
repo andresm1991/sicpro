@@ -119,12 +119,15 @@ class ContratistaController extends Controller
 
             if ($orden_trabajo = Contratista::create($orden_trabajo_param)) {
                 foreach ($productos as $index => $producto) {
+                    $valor = str_replace(',', '', $precio_unitario[$index]);
+                    $tipo_etapa = CatalogoDato::find($request->tipo_etapa);
+
                     $parametros = [
                         'unidad_medida_id' => '',
                         'contratista_id' => $orden_trabajo->id,
-                        'articulo_id' => $producto,
+                        'articulo_id' => is_numeric($producto) ? $producto : registrarProducto($tipo_etapa, $producto, $valor)->id,
                         'cantidad' => $cantidad[$index],
-                        'valor_unitario' => str_replace(',', '', $precio_unitario[$index]),
+                        'valor_unitario' => $valor,
                     ];
 
                     if (is_numeric($unidad_medida[$index])) {
