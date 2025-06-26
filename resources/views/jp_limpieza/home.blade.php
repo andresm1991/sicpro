@@ -24,6 +24,10 @@
                     <img src="{{ asset('images/svg/flujo-de-efectivo.svg') }}" alt="">
                     <span>caja</span>
                 </a>
+                <a href="{{ route('jp.limpieza.reporte.index') }}" class="nodo">
+                    <img src="{{ asset('images/svg/analitica.svg') }}" alt="">
+                    <span>reportes</span>
+                </a>
             </div>
         </div>
     </section>

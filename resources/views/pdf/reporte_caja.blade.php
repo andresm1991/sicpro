@@ -185,14 +185,14 @@
 <body>
     <!-- Marca de agua -->
     <div class="watermark">
-        <img src="{{ logoBase64() }}" />
+        <img src="{{ logoBase64($tipo) }}" />
     </div>
     <div class="container">
         <table class="table-header">
             <tbody>
                 <tr>
                     <td style="width: 1px;">
-                        <img src="{{ logoBase64() }}" alt="Logo del Proyecto" width="150">
+                        <img src="{{ logoBase64($tipo) }}" alt="Logo del Proyecto" width="150">
                     </td>
                     <td class="text-center">
                         <h2>Reporte de Caja</h2>
@@ -233,16 +233,16 @@
                             {{ $movimiento['fecha_formateada'] }}
                         </td>
                         <td>
-                            {{ isset($movimiento['articulo_id']) ? $movimiento['articulo']['descripcion'] : $movimiento['descripcion'] }}
+                            {{ isset($movimiento['articulo_id']) ? $movimiento['articulo']['descripcion'] : (isset($movimiento['producto_id']) ? $movimiento['producto']['nombre'] : $movimiento['descripcion']) }}
                         </td>
                         <td>
-                            {{ isset($movimiento['articulo_id']) ? $movimiento['descripcion'] : '-' }}
+                            {{ isset($movimiento['articulo_id']) || isset($movimiento['producto_id']) ? $movimiento['descripcion'] : '-' }}
                         </td>
                         <td>
                             {{ isset($movimiento['proveedor']) ? $movimiento['proveedor']['razon_social'] : '-' }}
                         </td>
                         <td>
-                            {{ isset($movimiento['referencia']) ?? '-' }}
+                            {{ isset($movimiento['referencia']) ? $movimiento['referencia'] : '-' }}
                         </td>
                         <td>
                             {{ $movimiento['tipo'] == 'ingreso' ? $movimiento['monto_formatted'] : '-' }}

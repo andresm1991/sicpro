@@ -207,11 +207,18 @@
         <div class="header">
             <h1 class="text-center">Mano de obra</h1>
             <p>
-                <span class="text-titulo">Proyecto: </span> <span
+                <span class="text-titulo">Proyecto: </span>
+                <span
                     class="text-subtitulo">{{ isset($mano_obra->proyecto) ? $mano_obra->proyecto->nombre_proyecto : 'General' }}</span>
             </p>
             <p>
-                <span class="text-titulo">Fecha:</span> <span
+                <span class="text-titulo">Entidad: </span>
+                <span
+                    class="text-subtitulo">{{ isset($mano_obra->proyecto) ? $mano_obra->proyecto->entidad : 'General' }}</span>
+            </p>
+            <p>
+                <span class="text-titulo">Fecha:</span>
+                <span
                     class="text-subtitulo">{{ dateFormatHumansManoObra($mano_obra->fecha_desde_formatted, $mano_obra->fecha_hasta_formatted) }}</span>
             </p>
 
@@ -298,8 +305,8 @@
                     </tr>
                 </tbody>
                 <tfoot>
-                    <tr>
-                        <td style="text-align: right; font-weight: bold">totales</td>
+                    <tr style="font-weight: bold">
+                        <td style="text-align: right">totales</td>
                         <td>$ {{ $mano_obra->total_sueldos_formatted }}</td>
                         <td>$ {{ $mano_obra->total_horas_hextras_formatted }}</td>
                         <td>$ {{ $mano_obra->total_ganado_formatted }}</td>

@@ -141,77 +141,77 @@ class ManoObra extends Model
 
     public function getTotalSueldosFormattedAttribute()
     {
-        return number_format($this->total_sueldos, 4);
+        return number_format($this->total_sueldos, 2);
     }
 
     public function getTotalHorasHextrasFormattedAttribute()
     {
-        return number_format($this->total_horas_hextras, 4);
+        return number_format($this->total_horas_hextras, 2);
     }
 
     public function getTotalGanadoFormattedAttribute()
     {
-        return number_format($this->total_ganado, 4);
+        return number_format($this->total_ganado, 2);
     }
 
     public function getTotalFondosFormattedAttribute()
     {
-        return number_format($this->total_fondos, 4);
+        return number_format($this->total_fondos, 2);
     }
 
     public function getTotalDecimoTerceroFormattedAttribute()
     {
-        return number_format($this->total_decimo_tercero, 4);
+        return number_format($this->total_decimo_tercero, 2);
     }
 
     public function getTotalDecimoCuartoFormattedAttribute()
     {
-        return number_format($this->total_decimo_cuarto, 4);
+        return number_format($this->total_decimo_cuarto, 2);
     }
 
     public function getTotalIngresoFormattedAttribute()
     {
-        return number_format($this->total_ingreso, 4);
+        return number_format($this->total_ingreso, 2);
     }
 
     public function getTotalIessFormattedAttribute()
     {
-        return number_format($this->total_iess, 4);
+        return number_format($this->total_iess, 2);
     }
 
     public function getTotalAtrasosFaltasFormattedAttribute()
     {
-        return number_format($this->total_atrasos_faltas, 4);
+        return number_format($this->total_atrasos_faltas, 2);
     }
 
     public function getTotalAnticiposFormattedAttribute()
     {
-        return number_format($this->total_anticipos, 4);
+        return number_format($this->total_anticipos, 2);
     }
 
     public function getTotalPrestamoIessFormattedAttribute()
     {
-        return number_format($this->total_prestamo_iess, 4);
+        return number_format($this->total_prestamo_iess, 2);
     }
 
     public function getTotalQuincenaFormattedAttribute()
     {
-        return number_format($this->total_quincena, 4);
+        return number_format($this->total_quincena, 2);
     }
 
     public function getTotalPrestamosJpFormattedAttribute()
     {
-        return number_format($this->total_prestamos_jp, 4);
+        return number_format($this->total_prestamos_jp, 2);
     }
 
     public function getTotalDescuentosFormattedAttribute()
     {
-        return number_format($this->total_descuentos, 4);
+        return number_format($this->total_descuentos, 2);
     }
 
     public function getTotalRecibirFormattedAttribute()
     {
-        return number_format($this->total_recibir, 4);
+        return number_format($this->total_recibir, 2);
     }
 
     public function getFechaDesdeFormattedAttribute()

@@ -47,7 +47,7 @@
                 </div>
                 <div class="col-sm-3 col-12">
                     <a href="{{ route('reporte.index') }}" class="nodo">
-                        <img src="{{ asset('images/icons/descripcion-general.png') }}" alt="">
+                        <img src="{{ asset('images/svg/analitica.svg') }}" alt="">
                         <span>Rerportes</span>
                     </a>
                 </div>

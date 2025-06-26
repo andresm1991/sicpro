@@ -566,9 +566,11 @@ if (!function_exists('palabras')) {
         return $jp_limpieza;
     }
 
-    function logoBase64()
+    function logoBase64($logo = 'prime')
     {
-        $rutaImagen = public_path('images/logo_empresa.jpg');
+        $path = $logo != 'prime' ? 'images/logo_limpieza.jpeg' : 'images/logo_empresa.jpg';
+
+        $rutaImagen = public_path($path);
 
         if (!file_exists($rutaImagen)) {
             return false;

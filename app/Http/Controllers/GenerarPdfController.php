@@ -25,6 +25,7 @@ use App\Exports\ReportSolicitudesExport;
 use App\Exports\ReportAdquisicionesExport;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Exports\ReportGasolinaCamionetaExport;
+use App\Models\JPLimpieza\Caja;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
 use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
@@ -595,10 +596,12 @@ class GenerarPdfController extends Controller
         return $pdf->stream('reportes.pdf');
     }
 
+    //** Reporte de caja */
     public function reportCaja(Request $request)
     {
         $query = MovimientoCaja::dataReporteCaja($request);
-        $pdf = PDF::loadView('pdf.reporte_caja', compact('query'))->setPaper('a4', 'landscape');
+        $tipo = 'prime';
+        $pdf = PDF::loadView('pdf.reporte_caja', compact('query', 'tipo'))->setPaper('a4', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 
@@ -640,5 +643,14 @@ class GenerarPdfController extends Controller
     {
         $logo_base64 = base64_encode(file_get_contents(public_path('images/logo_empresa.jpg')));
         return $logo_base64;
+    }
+
+    //** Reporte de caja JPLimpieza */
+    public function reportCajaJPLimpieza(Request $request)
+    {
+        $query = Caja::dataReporteCaja($request);
+        $tipo = 'jp_limpieza';
+        $pdf = PDF::loadView('pdf.reporte_caja', compact('query', 'tipo'))->setPaper('a4', 'landscape');
+        return $pdf->stream('reportes.pdf');
     }
 }

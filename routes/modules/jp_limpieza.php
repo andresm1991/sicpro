@@ -10,6 +10,8 @@ use App\Http\Controllers\JPLimpieza\CajaController;
 use App\Http\Controllers\JPLimpieza\ContratistaController;
 use App\Http\Controllers\JPLimpieza\PagoContratistaController;
 use App\Http\Controllers\JPLimpieza\PresupuestoProyectoController;
+use App\Http\Controllers\JPLimpieza\ReporteController;
+use SebastianBergmann\CodeCoverage\Report\Xml\Report;
 
 Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::get('/', function () {
@@ -103,5 +105,12 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::group(['prefix' => 'caja', 'as' => 'caja.'], function () {
         Route::get('/', [CajaController::class, 'index'])->name('index');
         Route::post('/guardar', [CajaController::class, 'guardarMovimiento'])->name('store');
+    });
+
+    //** REPORTES */
+    Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
+        Route::get('/', [ReporteController::class, 'index'])->name('index');
+        Route::get('/caja', [ReporteController::class, 'caja'])->name('caja');
+        Route::POST('/visulizar-reporte-caja', [ReporteController::class, 'visualizarReporteCaja']);
     });
 });
