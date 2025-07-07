@@ -344,6 +344,10 @@ class Adquisicion extends Model
                 $contratistas = $contratistas->when($subproyecto, function ($collection) use ($subproyecto) {
                     return $collection->where('subproyecto', $subproyecto);
                 });
+                // APLICAR FILTRO POR PROVEEDOR
+                if ($proveedor) {
+                    $contratistas = $contratistas->where('proveedor_id', $proveedor);
+                }
                 $contratistasArray = [];
                 foreach ($contratistas as $contratista) {
                     // Solo incluir si la etapa coincide
@@ -389,6 +393,10 @@ class Adquisicion extends Model
                 $manosObra = $manosObra->when($subproyecto, function ($collection) use ($subproyecto) {
                     return $collection->where('subproyecto', $subproyecto);
                 });
+                // APLICAR FILTRO POR PROVEEDOR
+                if ($proveedor) {
+                    $manosObra = $manosObra->where('proveedor_id', $proveedor);
+                }
                 $manosObraEtapa = $manosObra->where('etapa_id', $adquisicion->etapa_id);
                 $uniqueFechas = $manosObraEtapa->unique(function ($item) {
                     return $item->fecha_inicio . '|' . $item->fecha_fin;
