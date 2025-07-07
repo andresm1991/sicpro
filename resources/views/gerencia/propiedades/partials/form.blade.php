@@ -59,7 +59,7 @@
 
             <div class="col-sm-4 col-12 form-group">
                 <label class="col-form-label">Estado</label>
-                {{ Form::select('estado', ['' => '', 'DISPONIBLE' => 'Disponible', 'VENDIDO' => 'Vendido'], $propiedad->estado, ['class' => 'form-control', 'data-placeholder' => 'seleccion opción']) }}
+                {{ Form::select('estado', ['DISPONIBLE' => 'Disponible', 'VENDIDO' => 'Vendido'], $propiedad->estado, ['class' => 'form-control', 'data-placeholder' => 'seleccion opción']) }}
                 {!! $errors->first('estado', '<small class="help-block text-danger">:message</small>') !!}
             </div>
             <div class="col-12">

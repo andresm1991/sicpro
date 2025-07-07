@@ -54,7 +54,7 @@ class VentaPropiedadController extends Controller
         return view('gerencia.propiedades.create', compact('propiedad', 'title_page', 'breadcrumbs'));
     }
 
-    public function store(PropiedadesVentaStoreRequest $request)
+    public function store(Request $request)
     {
         $files = $request->file('files') ?? [];
         try {
@@ -114,7 +114,7 @@ class VentaPropiedadController extends Controller
         return view('gerencia.propiedades.edit', compact('propiedad', 'title_page', 'breadcrumbs'));
     }
 
-    public function update(PropiedadesVentaUpdateRequest $request, VentaPropiedad $propiedad)
+    public function update(Request $request, VentaPropiedad $propiedad)
     {
         $filesNuevos = $request->file('files') ?? [];
         $imagenesAntiguas = $propiedad->imagenes_propiedades->whereNotIn('id', $request->imagenes_propiedades ?? []);
