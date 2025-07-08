@@ -126,8 +126,11 @@
     <h6>Fecha Reporte: {{ date('Y-m-d') }}</h6>
     @php $totalGeneral = 0; @endphp
 
-    @foreach ($data as $proyecto => $etapas)
+    @foreach ($data['data'] as $proyecto => $etapas)
         <h5 style="color:#007bff;">Proyecto: {{ $proyecto }}</h5>
+        @if ($data['subproyecto'])
+            <h5 style="color:#007bff;">SubProyecto: {{ $data['subproyecto'] }}</h5>
+        @endif
         <hr>
         @foreach ($etapas as $etapa => $info)
             <h6 class="titulo_etapa">Etapa: {{ $etapa }}</h6>

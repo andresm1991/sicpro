@@ -271,9 +271,6 @@ class Adquisicion extends Model
             $q->where('etapa_id', $costo);
         });
 
-        $query->when($subproyecto, function ($q, $subproyecto) {
-            $q->where('subproyecto', $subproyecto);
-        });
 
         // Filtrar por necesidad
         $query->when($necesidad, function ($q, $necesidad) {
@@ -341,13 +338,14 @@ class Adquisicion extends Model
             if (!isset($resultado[$proyectoNombre][$etapaNombre])) {
                 // Contratistas del proyecto y etapa
                 $contratistas = $proyecto->contratista ?? collect();
-                $contratistas = $contratistas->when($subproyecto, function ($collection) use ($subproyecto) {
-                    return $collection->where('subproyecto', $subproyecto);
+                $contratistas = $contratistas->filter(function ($item) use ($subproyecto) {
+                    return trim(mb_strtolower($item->subproyecto ?? '')) === trim(mb_strtolower($subproyecto));
                 });
                 // APLICAR FILTRO POR PROVEEDOR
                 if ($proveedor) {
                     $contratistas = $contratistas->where('proveedor_id', $proveedor);
                 }
+
                 $contratistasArray = [];
                 foreach ($contratistas as $contratista) {
                     // Solo incluir si la etapa coincide
@@ -390,8 +388,8 @@ class Adquisicion extends Model
 
                 // Mano de obra del proyecto y etapa
                 $manosObra = $proyecto->mano_obra ?? collect();
-                $manosObra = $manosObra->when($subproyecto, function ($collection) use ($subproyecto) {
-                    return $collection->where('subproyecto', $subproyecto);
+                $manosObra = $manosObra->filter(function ($item) use ($subproyecto) {
+                    return trim(mb_strtolower($item->subproyecto ?? '')) === trim(mb_strtolower($subproyecto));
                 });
                 // APLICAR FILTRO POR PROVEEDOR
                 if ($proveedor) {
@@ -435,6 +433,15 @@ class Adquisicion extends Model
                 $valor = $detalle->valor ?? 0;
                 $iva = $detalle->iva ?? 0;
                 $totalDetalle =  calcularTotalProducto($cantidad, $valor, $iva);
+
+                // APLICAR FILTRO POR $subproyecto EN DETALLES (insensible a mayúsculas/minúsculas y espacios)
+                if ($subproyecto) {
+                    $subproyectoDetalle = trim(mb_strtolower($detalle->subproyecto ?? ''));
+                    $subproyectoFiltro = trim(mb_strtolower($subproyecto));
+                    if ($subproyectoDetalle !== $subproyectoFiltro) {
+                        continue; // Saltar si no coincide el subproyecto
+                    }
+                }
 
                 $articuloData = [
                     'articulo_id'    => $articuloId,
@@ -498,7 +505,10 @@ class Adquisicion extends Model
         }
         unset($etapas, $categorias); // Buenas prácticas para limpiar referencias
 
-        return $resultado;
+        return [
+            'subproyecto' => $subproyecto, // <-- Aquí agregas el valor
+            'data' => $resultado
+        ];
     }
 
     public function getSemanasAttribute()
