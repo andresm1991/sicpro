@@ -76,7 +76,7 @@ $(function () {
                 $('#loading').addClass('show');
             },
             success: function (response) {
-                const data = response.result;
+                let data = response.result;
                 let totalGeneral = 0;
                 let totalProductos = 0;
 
@@ -203,8 +203,15 @@ $(function () {
                     let html = '';
                     let totalGeneral = 0;
 
-                    Object.entries(data).forEach(([proyecto, etapas]) => {
-                        html += `<h5 class="mt-4 mb-2 text-primary">Poryecto: ${proyecto}</h5> <hr>`;
+                    let info = response.result.data;
+
+                    Object.entries(info).forEach(([proyecto, etapas]) => {
+                        html += `<h5 class="mt-4 mb-2 text-primary">Poryecto: ${proyecto}</h5>`;
+                        if (data.subproyecto) {
+                            html += `<h6 class="mb-2 text-primary">SubPoryecto: ${data.subproyecto}</h5>`;
+                        }
+
+                        html += '<hr>';
                         Object.entries(etapas).forEach(([etapa, info]) => {
                             html += `<h6 class="mb-1 text-secondary">Etapa: ${etapa}</h6>`;
 
