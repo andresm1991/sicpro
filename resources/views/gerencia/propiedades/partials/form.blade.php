@@ -26,17 +26,9 @@
             </div>
 
             <div class="col-sm-4 col-12 form-group">
-                <label class="col-form-label">ubicación</label>
-                <div class="input-group">
-                    {{ Form::text('', old('ubicacion', $propiedad->latitud ? 'ubicación registrada' : ''), ['class' => 'form-control', 'id' => 'ubicacion', 'placeholder' => 'ingrese la ubicación', 'readonly' => true]) }}
-                    <button type="button" class="btn btn-secondary" id="mi-ubicacion"><i
-                            class="fa-solid fa-location-dot"></i></button>
-
-                    {{ Form::hidden('latitud', old('latitud', $propiedad->latitud)) }}
-                    {{ Form::hidden('longitud', old('longitud', $propiedad->longitud)) }}
-                </div>
-
-                {!! $errors->first('ubicacion', '<small class="help-block text-danger">:message</small>') !!}
+                <label class="col-form-label">tipo</label>
+                {{ Form::select('tipo', getTipoPropiedadesVenta(), $propiedad->tipo_propiedad_id, ['class' => 'form-control', 'id' => 'tipo-propiedad', 'data-placeholder' => 'seleccion opción']) }}
+                {!! $errors->first('tipo', '<small class="help-block text-danger">:message</small>') !!}
             </div>
 
             <div class="col-sm-4 col-12 form-group">
@@ -51,10 +43,13 @@
                 {!! $errors->first('precio_mt2', '<small class="help-block text-danger">:message</small>') !!}
             </div>
 
-            <div class="col-sm-4 col-12 form-group">
-                <label class="col-form-label">tipo</label>
-                {{ Form::select('tipo', getTipoPropiedadesVenta(), $propiedad->tipo_propiedad_id, ['class' => 'form-control', 'data-placeholder' => 'seleccion opción']) }}
-                {!! $errors->first('tipo', '<small class="help-block text-danger">:message</small>') !!}
+
+
+            <div class="col-sm-4 col-12 form-group" id="metros-construccion"
+                style="{{ $propiedad->tipo_propiedad_id && $propiedad->tipo_propiedad->slug == 'tipo.propiedades.casa' ? 'display: block;' : 'display: none;' }}">
+                <label class="col-form-label">metros de construcción</label>
+                {{ Form::text('metros_construccion', old('metros_construccion', $propiedad->metros_construccion), ['class' => 'form-control input-double', 'id' => 'area-construccion', 'placeholder' => '0']) }}
+                {!! $errors->first('metros_construccion', '<small class="help-block text-danger">:message</small>') !!}
             </div>
 
             <div class="col-sm-4 col-12 form-group">
@@ -62,7 +57,7 @@
                 {{ Form::select('estado', ['DISPONIBLE' => 'Disponible', 'VENDIDO' => 'Vendido'], $propiedad->estado, ['class' => 'form-control', 'data-placeholder' => 'seleccion opción']) }}
                 {!! $errors->first('estado', '<small class="help-block text-danger">:message</small>') !!}
             </div>
-            <div class="col-12">
+            <div class="col-12 form-group">
                 <label class="col-form-label">Dimensiones</label>
                 <div class="row">
                     <div class="col">
@@ -73,6 +68,23 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-12 form-group">
+                <label class="col-form-label">Ubicación</label>
+                <div class="row">
+                    <div class="col">
+                        {{ Form::text('latitud', old('latitud', $propiedad->latitud), ['class' => 'form-control simple-double', 'placeholder' => 'ingrese la latitud']) }}
+                    </div>
+                    <div class="col">
+                        {{ Form::text('longitud', old('longitud', $propiedad->longitud), ['class' => 'form-control simple-double', 'placeholder' => 'ingrese la longitud']) }}
+                    </div>
+                </div>
+                <div class="row form-group col mt-2">
+                    <button type="button" class="btn btn-dark btn-sm" id="mi-ubicacion">Obtener coordenadas</button>
+                </div>
+
+            </div>
+
             <div class="col-12">
                 <label class="col-form-label">Observaciones</label>
                 {{ Form::textarea('observaciones', old('observaciones', $propiedad->observaciones), ['class' => 'form-control', 'rows' => '4', 'placeholder' => 'ingrese observaciones']) }}

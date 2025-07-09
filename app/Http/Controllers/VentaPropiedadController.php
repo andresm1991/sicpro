@@ -66,11 +66,12 @@ class VentaPropiedadController extends Controller
                 'telefono' => $request->telefono,
                 'latitud' => $request->latitud,
                 'longitud' => $request->longitud,
-                'precio_venta' => $request->precio_venta,
+                'precio_venta' => limpiarValor($request->precio_venta),
                 'precio_por_metros_cuadrados' => $request->precio_mt2,
                 'estado' => $request->estado,
                 'frente' => $request->frente,
                 'fondo' => $request->fondo,
+                'metros_construccion' => $request->metros_construccion,
                 'tipo_propiedad_id' => $request->tipo,
                 'observaciones' => $request->observaciones,
             ]);
@@ -110,7 +111,6 @@ class VentaPropiedadController extends Controller
             ['name' => 'Editar Propiedad', 'url' => '']
         ];
 
-
         return view('gerencia.propiedades.edit', compact('propiedad', 'title_page', 'breadcrumbs'));
     }
 
@@ -124,15 +124,16 @@ class VentaPropiedadController extends Controller
             $propiedad->update([
                 'nombre' => $request->nombre,
                 'direccion' => $request->direccion,
-                'area' => $request->area,
+                'area' => limpiarValor($request->area),
                 'telefono' => $request->telefono,
                 'latitud' => $request->latitud,
                 'longitud' => $request->longitud,
-                'precio_venta' => $request->precio_venta,
-                'precio_por_metros_cuadrados' => $request->precio_mt2,
+                'precio_venta' => limpiarValor($request->precio_venta),
+                'precio_por_metros_cuadrados' => limpiarValor($request->precio_mt2),
                 'estado' => $request->estado,
                 'frente' => $request->frente,
                 'fondo' => $request->fondo,
+                'metros_construccion' => $request->metros_construccion,
                 'tipo_propiedad_id' => $request->tipo,
                 'observaciones' => $request->observaciones,
             ]);

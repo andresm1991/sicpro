@@ -23,6 +23,7 @@ class VentaPropiedad extends Model
         'estado',
         'frente',
         'fondo',
+        'metros_construccion',
         'tipo_propiedad_id',
         'observaciones',
     ];
@@ -32,6 +33,11 @@ class VentaPropiedad extends Model
     public function imagenes_propiedades()
     {
         return $this->hasMany(ImagenPropiedad::class);
+    }
+
+    public function tipo_propiedad()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'tipo_propiedad_id');
     }
 
     public function getPrecioVentaFormattedAttribute()
