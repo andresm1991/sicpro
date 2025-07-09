@@ -242,8 +242,11 @@ class ManoObraController extends Controller
     public function storePlanificacion(ValidarFechasPlanificacionRequest $request)
     {
         if ($request->ajax()) {
+
+            // Obtener el numero de la semana segun el proyecto y tipo
             $semana = ManoObra::where('proyecto_id', $request->proyecto_id)
                 ->where('etapa_id', $request->tipo_adquisicion)->count();
+
             $request->merge([
                 'fecha_inicio' => Carbon::createFromFormat('d-m-Y', $request->fecha_inicio)->format('Y-m-d'),
                 'fecha_fin' => Carbon::createFromFormat('d-m-Y', $request->fecha_fin)->format('Y-m-d'),
@@ -252,9 +255,13 @@ class ManoObraController extends Controller
             $fechaInicio = $request->fecha_inicio;
             $fechaFin = $request->fecha_fin;
 
-            // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas
+            // Comprobar si existe un rango de fechas en la base de datos que se superponga con las nuevas fechas segun proyecto y subproyecto
             $fechasExistentes = ManoObra::where('etapa_id', $request->tipo_adquisicion)
                 ->where('proyecto_id', $request->proyecto_id)
+                ->when($request->filled('subproyecto'), function ($query) use ($request) {
+                    $subproyecto = trim(mb_strtolower($request->subproyecto));
+                    $query->whereRaw('LOWER(TRIM(subproyecto)) = ?', [$subproyecto]);
+                })
                 ->where(function ($query) use ($fechaInicio, $fechaFin) {
                     $query->whereBetween('fecha_inicio', [$fechaInicio, $fechaFin])
                         ->orWhereBetween('fecha_fin', [$fechaInicio, $fechaFin])
@@ -277,7 +284,11 @@ class ManoObraController extends Controller
                     'date',
                     Rule::unique('mano_obra', 'fecha_inicio')->where(function ($query) use ($request) {
                         return $query->where('etapa_id', $request->tipo_adquisicion)
-                            ->where('proyecto_id', $request->proyecto_id);
+                            ->where('proyecto_id', $request->proyecto_id)
+                            ->when($request->filled('subproyecto'), function ($query) use ($request) {
+                                $subproyecto = trim(mb_strtolower($request->subproyecto));
+                                $query->whereRaw('LOWER(TRIM(subproyecto)) = ?', [$subproyecto]);
+                            });
                     }),
                 ],
                 'fecha_fin' => [
@@ -286,7 +297,11 @@ class ManoObraController extends Controller
                     'after:fecha_inicio',
                     Rule::unique('mano_obra', 'fecha_fin')->where(function ($query) use ($request) {
                         return $query->where('etapa_id', $request->tipo_adquisicion)
-                            ->where('proyecto_id', $request->proyecto_id);;
+                            ->where('proyecto_id', $request->proyecto_id)
+                            ->when($request->filled('subproyecto'), function ($query) use ($request) {
+                                $subproyecto = trim(mb_strtolower($request->subproyecto));
+                                $query->whereRaw('LOWER(TRIM(subproyecto)) = ?', [$subproyecto]);
+                            });
                     }),
                 ],
             ], [
