@@ -2,6 +2,19 @@ $(function () {
     var csrfToken = $('meta[name="csrf-token"]').attr('content');
     let maxInputs = 5;
 
+    //$('#metros-construccion').hide();
+
+    $('#tipo-propiedad').on('change', function () {
+        let tipo = $("#tipo-propiedad option:selected").text().toLowerCase();
+        if (tipo == 'casa') {
+            $('#metros-construccion').show();
+        } else {
+            $('#metros-construccion').hide();
+        }
+
+        calcularPrecioPorMetroCuadrado();
+    })
+
     $('#mi-ubicacion').click(function () {
         $('#loading').addClass('show');
         getLocation().then(function (coordenadas) {
@@ -20,15 +33,8 @@ $(function () {
         });
     });
 
-    $('#area_lote, #precio_venta').on('input change keyup', function () {
-        var areaLote = parseFloat($('#area_lote').val()) || 0;
-        var precioVenta = parsePrecio($('#precio_venta').val());
-        if (areaLote > 0 && precioVenta > 0) {
-            var precioPorMetroCuadrado = (precioVenta / areaLote).toFixed(2);
-            $('#precio_mt2').val(precioPorMetroCuadrado);
-        } else {
-            $('#precio_mt2').val('');
-        }
+    $('#area_lote, #precio_venta, #area-construccion').on('input change keyup', function () {
+        calcularPrecioPorMetroCuadrado();
     });
 
 
@@ -184,5 +190,27 @@ $(function () {
         let restantes = maxInputs - total;
         $('#imagenes_restantes').text('Puedes subir ' + restantes + ' imagen' + (restantes === 1 ? '' : 'es') + ' más');
         $('#agregar_imagen').prop('disabled', restantes <= 0);
+    }
+
+    function calcularPrecioPorMetroCuadrado() {
+        let tipo = $("#tipo-propiedad option:selected").text().toLowerCase();
+        var areaLote = parseFloat($('#area_lote').val()) || 0;
+        var areaConstruccion = parseFloat($('#area-construccion').val()) || 0;
+        var precioVenta = parsePrecio($('#precio_venta').val());
+        var precioPorMetroCuadrado = 0;
+        if (areaLote > 0 && precioVenta > 0) {
+            if (tipo == 'casa') {
+                if (areaConstruccion > 0) {
+                    precioPorMetroCuadrado = (precioVenta / areaConstruccion).toFixed(2);
+                } else {
+                    precioPorMetroCuadrado = '';
+                }
+            } else {
+                precioPorMetroCuadrado = (precioVenta / areaLote).toFixed(2);
+            }
+            $('#precio_mt2').val(precioPorMetroCuadrado);
+        } else {
+            $('#precio_mt2').val('');
+        }
     }
 });

@@ -410,13 +410,22 @@ $(function () {
         placeholder: $('.input-double').data('placeholder')
     });
 
+    $('.simple-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        digits: 100,
+        digitsOptional: true,
+        rightAlign: false,
+        allowMinus: true,
+        placeholder: $('.simple-double').data('placeholder'),
+    });
+
     $('.input-enteros').inputmask({
         alias: 'numeric',
         rightAlign: false,      // No alinear a la derecha
         allowMinus: false,      // No permitir números negativos
         digits: 0,              // No permitir decimales
         min: 0,                 // Valor mínimo (0 o positivo)
-        placeholder: $('.input-double').data('placeholder'),         // Dejar vacío el placeholder si lo deseas
+        placeholder: $('.input-enteros').data('placeholder'),         // Dejar vacío el placeholder si lo deseas
         autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
     });
 
@@ -814,6 +823,16 @@ function inicializarPlugins() {
         rightAlign: false, // Alinear a la izquierda
         allowMinus: false,   // Permitir números negativos
         placeholder: $('.input-double').data('placeholder')
+    });
+
+    $('.simple-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ",",   // Definir el punto decimal
+        groupSeparator: ".",  // Separador de miles (opcional)
+        autoGroup: false,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: true,   // Permitir números negativos
+        placeholder: $('.simple-double').data('placeholder')
     });
 
     $('.input-enteros').inputmask({
