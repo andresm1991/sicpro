@@ -46,7 +46,7 @@
                     </a>
                 </div>
                 <div class="col-sm-3 col-12">
-                    <a href="{{ route('proformas.index') }}" class="nodo" id="administrativo">
+                    <a href="{{-- route('proformas.index') --}}" class="nodo" id="administrativo">
                         <img src="{{ asset('images/svg/cotizacion.svg') }}" alt="Administrativo">
                         <span>Proformas</span>
                     </a>
