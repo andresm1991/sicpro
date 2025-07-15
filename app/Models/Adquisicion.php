@@ -436,7 +436,7 @@ class Adquisicion extends Model
 
                 // APLICAR FILTRO POR $subproyecto EN DETALLES (insensible a mayúsculas/minúsculas y espacios)
                 if ($subproyecto) {
-                    $subproyectoDetalle = trim(mb_strtolower($detalle->subproyecto ?? ''));
+                    $subproyectoDetalle = trim(mb_strtolower($adquisicion->subproyecto ?? ''));
                     $subproyectoFiltro = trim(mb_strtolower($subproyecto));
                     if ($subproyectoDetalle !== $subproyectoFiltro) {
                         continue; // Saltar si no coincide el subproyecto
