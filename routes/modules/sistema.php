@@ -67,4 +67,6 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.'], function () {
         Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
         Route::get('/configuraciones/detalle/{config}', [ConfiguracionController::class, 'detalle'])->name('detalle');
     });
+
+    require base_path('routes/modules/cliente.php');
 });

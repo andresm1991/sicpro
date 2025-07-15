@@ -2,21 +2,23 @@
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Tarea;
+use App\Models\Cliente;
 use App\Models\Articulo;
 use Carbon\CarbonPeriod;
+use App\Models\Proveedor;
 use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
 use App\Models\OrdenRecepcion;
 use App\Models\DiccionarioPalabra;
+use App\Models\JPLimpieza\Producto;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Storage;
 use App\Models\DetalleResumenPagoSemanal;
-use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\DetalleAdquisicion;
+use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
-use App\Models\JPLimpieza\Producto;
-use App\Models\Proveedor;
-use App\Models\Tarea;
+use App\Models\ProformaProducto;
 
 if (!function_exists('encrypted_route')) {
     function encrypted_route($name, $parameters = [], $absolute = true)
@@ -473,6 +475,36 @@ if (!function_exists('numeroOrden')) {
         $numero_pedido = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
         return $numero_pedido;
     }
+
+
+    /**
+     * Genera el número de proforma basado en la fecha actual y el último ID
+     * @param ProformaAdecentamiento|null $proforma
+     * @return string $numero_proforma
+     */
+    function numeroProforma($numero)
+    {
+        $numero_proforma = date('Ymd') . '-' . str_pad($numero, 3, '0', STR_PAD_LEFT);
+        return $numero_proforma;
+    }
+
+    /**
+     * Obtiene los clientes activos para un select
+     * @return Collection
+     */
+    function getClientes()
+    {
+        $clientes = Cliente::where('activo', true)->pluck('nombre', 'id');
+        $clientes->prepend('', '');
+        return $clientes;
+    }
+
+    function getProdutosProformas()
+    {
+        $productos = ProformaProducto::where('activo', true)->pluck('nombre', 'id');
+        $productos->prepend('', '');
+        return $productos;
+    }
 }
 /**
  * Calcula la fecha final por semanas de plazo
@@ -734,6 +766,37 @@ if (!function_exists('palabras')) {
         return $nuevoProducto->id;
     }
 
+    function agregarProductoProforma($nombre, $valor, $iva = null, $unidad_medida = null, $descripcion = null, $codigo = null, $observaciones = null)
+    {
+        // Verificar si el producto ya existe
+        $productoExistente = ProformaProducto::where('nombre', $nombre)->first();
+        if ($productoExistente) {
+            return $productoExistente->id;
+        }
+
+        // Registrar la unidad de medida si no existe
+        if ($unidad_medida) {
+            $unidad_medida_id = registrarUnidadMedida($unidad_medida);
+        } else {
+            $unidad_medida_id = null;
+        }
+
+        // Crear el nuevo producto
+        $nuevoProducto = ProformaProducto::create([
+            'nombre' => $nombre,
+            'descripcion' => $descripcion,
+            'precio' => limpiarValor($valor),
+            'iva' => limpiarValor($iva),
+            'precio_final' => calcularTotalProducto(1, limpiarValor($valor), limpiarValor($iva)),
+            'unidad_medida_id' => $unidad_medida_id,
+            'activo' => true,
+            'codigo' => $codigo,
+            'observaciones' => $observaciones
+        ]);
+
+        return $nuevoProducto->id;
+    }
+
     function getCategoriasPresupuesto()
     {
         $categorias = PlantillaPresupuesto::whereNull('padre_id')
@@ -748,5 +811,12 @@ if (!function_exists('palabras')) {
         $tipos = CatalogoDato::getChildrenCatalogo('tipo.propiedades')->pluck('descripcion', 'id');
         $tipos->prepend('', '');
         return $tipos;
+    }
+
+    function getCiudades()
+    {
+        $ciudades = Cliente::groupBy('ciudad')->pluck('ciudad', 'ciudad');
+        $ciudades->prepend('', '');
+        return $ciudades;
     }
 }

@@ -86,6 +86,12 @@
                     </div>
                     <div class="col-sm-2 col-12">
                         <div class="form-group">
+                            {{ Form::label('', 'aporte patronal', ['class' => 'col-form-label']) }}
+                            {{ Form::text('', '', ['class' => 'form-control moneyDosDecimales', 'id' => 'aporte_patronal', 'placeholder' => '$ 0.00']) }}
+                        </div>
+                    </div>
+                    <div class="col-sm-2 col-12">
+                        <div class="form-group">
                             {{ Form::label('', 'atrasos y faltas', ['class' => 'col-form-label']) }}
                             {{ Form::text('', '', ['class' => 'form-control moneyDosDecimales', 'id' => 'atrasos_faltas', 'placeholder' => '$ 0.00']) }}
                         </div>

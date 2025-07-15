@@ -56,7 +56,7 @@ class ManoObraController extends Controller
             $fecha_hasta = $request->input('fecha_hasta');
             $tipo = $request->input('tipo_plantilla');
 
-            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir) {
+            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir, $aportePatronal) {
                 return [
                     'proveedor' => $proveedor,
                     'sueldo' => $sueldo,
@@ -67,6 +67,7 @@ class ManoObraController extends Controller
                     'decimo_cuarto' => $dCuarto,
                     'total_ingresos' => $totalIngresos,
                     'iess' => $iess,
+                    'aporte_patronal' => $aportePatronal,
                     'atrasos_faltas' => $atrasos,
                     'anticipos' => $anticipos,
                     'prestamo_iess' => $prestamoIess,
@@ -75,7 +76,7 @@ class ManoObraController extends Controller
                     'total_descuentos' => $totalDescuentos,
                     'total_recibir' => $totalRecibir,
                 ];
-            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir);
+            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir, $request->aporte_patronal);
 
             $mano_obra = ManoObra::create([
                 'proyecto_id' => $proyecto ? $proyecto->id : null,
@@ -97,6 +98,7 @@ class ManoObraController extends Controller
                         'decimo_cuarto' => $item['decimo_cuarto'],
                         'total_ingreso' => $item['total_ingresos'],
                         'iess' => $item['iess'],
+                        'aporte_patronal' => $item['aporte_patronal'],
                         'atrasos_faltas' => $item['atrasos_faltas'],
                         'anticipos' => $item['anticipos'],
                         'prestamo_iess' => $item['prestamo_iess'],
@@ -155,7 +157,7 @@ class ManoObraController extends Controller
                 DetalleManoObra::whereIn('proveedor_id', $personalEliminar)->delete();
             }
 
-            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir) {
+            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir, $aportePatronal) {
                 return [
                     'proveedor' => $proveedor,
                     'sueldo' => $sueldo,
@@ -166,6 +168,7 @@ class ManoObraController extends Controller
                     'decimo_cuarto' => $dCuarto,
                     'total_ingresos' => $totalIngresos,
                     'iess' => $iess,
+                    'aporte_patronal' => $aportePatronal,
                     'atrasos_faltas' => $atrasos,
                     'anticipos' => $anticipos,
                     'prestamo_iess' => $prestamoIess,
@@ -174,7 +177,7 @@ class ManoObraController extends Controller
                     'total_descuentos' => $totalDescuentos,
                     'total_recibir' => $totalRecibir,
                 ];
-            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir);
+            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir, $request->aporte_patronal);
 
             $mano_obra->fecha_desde = $fecha_desde;
             $mano_obra->fecha_hasta = $fecha_hasta;
@@ -195,6 +198,7 @@ class ManoObraController extends Controller
                         'decimo_cuarto' => $item['decimo_cuarto'],
                         'total_ingreso' => $item['total_ingresos'],
                         'iess' => $item['iess'],
+                        'aporte_patronal' => $item['aporte_patronal'],
                         'atrasos_faltas' => $item['atrasos_faltas'],
                         'anticipos' => $item['anticipos'],
                         'prestamo_iess' => $item['prestamo_iess'],

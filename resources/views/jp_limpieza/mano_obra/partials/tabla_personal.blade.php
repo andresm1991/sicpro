@@ -11,7 +11,8 @@
                 <th scope="col">decimo tercer sueldo</th>
                 <th scope="col">decimo cuarto sueldo</th>
                 <th scope="col">total ingresos</th>
-                <th scope="col">i.e.s.s</th>
+                <th scope="col">iess</th>
+                <th scope="col">aporte patronal</th>
                 <th scope="col">atrasos y faltas</th>
                 <th scope="col">anticipos</th>
                 <th scope="col">Prestamo iess</th>
@@ -60,6 +61,11 @@
                     <td class="edit-item" style="cursor: pointer;">
                         <span>$ {{ $personal->iess_formatted }}</span>
                         <input type="hidden" name="iess[]" value="{{ $personal->iess }}">
+                    </td>
+
+                    <td class="edit-item" style="cursor: pointer;">
+                        <span>$ {{ $personal->aporte_patronal_formatted }}</span>
+                        <input type="hidden" name="aporte_patronal[]" value="{{ $personal->aporte_patronal }}">
                     </td>
                     <td class="edit-item" style="cursor: pointer;">
                         <span>$ {{ $personal->atrasos_faltas_formatted }}</span>

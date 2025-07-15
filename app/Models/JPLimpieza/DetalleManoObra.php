@@ -21,6 +21,7 @@ class DetalleManoObra extends Model
         'decimo_cuarto',
         'total_ingreso',
         'iess',
+        'aporte_patronal',
         'atrasos_faltas',
         'anticipos',
         'prestamo_iess',
@@ -39,6 +40,7 @@ class DetalleManoObra extends Model
         'decimo_cuarto' => 'decimal:4',
         'total_ingreso' => 'decimal:4',
         'iess' => 'decimal:4',
+        'aporte_patronal' => 'decimal:2',
         'atrasos_faltas' => 'decimal:4',
         'anticipos' => 'decimal:4',
         'prestamo_iess' => 'decimal:4',
@@ -96,6 +98,10 @@ class DetalleManoObra extends Model
     public function getIessFormattedAttribute()
     {
         return number_format($this->iess, 2);
+    }
+    public function getAportePatronalFormattedAttribute()
+    {
+        return number_format($this->aporte_patronal, 2);
     }
     public function getAtrasosFaltasFormattedAttribute()
     {

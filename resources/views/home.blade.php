@@ -7,7 +7,7 @@
     <section style="padding: 10px 0 50px 0;">
         <div class="container">
             <div class="row justify-content-center align-items-center full-height">
-                <div class="col-sm-3 col-12">
+                <div class="col-12 align-items-center d-flex justify-content-center">
                     <a href="{{ route('gerencia.index') }}" class="nodo" id="gerencia">
                         <img src="{{ asset('images/svg/manager.svg') }}" alt="Gerencia">
                         <span>Gerencia</span>
@@ -43,6 +43,12 @@
                     <a href="{{ route('tarea.index') }}" class="nodo" id="administrativo">
                         <img src="{{ asset('images/svg/lista-de-tareas.svg') }}" alt="Administrativo">
                         <span>Agenda</span>
+                    </a>
+                </div>
+                <div class="col-sm-3 col-12">
+                    <a href="{{ route('proformas.index') }}" class="nodo" id="administrativo">
+                        <img src="{{ asset('images/svg/cotizacion.svg') }}" alt="Administrativo">
+                        <span>Proformas</span>
                     </a>
                 </div>
                 <div class="col-sm-3 col-12">

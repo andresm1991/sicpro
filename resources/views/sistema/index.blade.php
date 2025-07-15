@@ -22,10 +22,16 @@
                     <span>Inventario</span>
                 </a>
 
+                <a href="{{ route('sistema.clientes.index') }}" class="nodo">
+                    <img src="{{ asset('images/icons/personas.png') }}">
+                    <span>Clientes</span>
+                </a>
+
                 <a href="{{ route('sistema.users.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/personas.png') }}">
                     <span>Usuarios</span>
                 </a>
+
 
                 {{-- <a href="{{ route('sistema.rubros.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/icono_1.png') }}">

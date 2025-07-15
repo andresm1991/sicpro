@@ -104,5 +104,5 @@
     </script>
 
 
-    <script src="{{ asset('js/jp_limpieza/adquisiciones.js') }}"></script>
+    <script src="{{ asset('js/jp_limpieza/adquisiciones.js?v=' . config('app.version', '')) }}"></script>
 @endsection
