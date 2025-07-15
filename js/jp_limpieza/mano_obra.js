@@ -120,6 +120,7 @@ $(function () {
         let prestamoJp = parsePrecio($("#prestamo_jp").val()) || 0;
         let totalDescuentos = parsePrecio($("#total_descuentos").text());
         let totalRecibir = parsePrecio($("#total_recibir").text());
+        let aportePatronal = parsePrecio($("#aporte_patronal").val()) || 0;
 
 
         var nuevaFila = `<tr class="elementos-agregados">
@@ -155,9 +156,13 @@ $(function () {
                 <span>$ ${totalIngresos.toFixed(2)}</span>
                 <input type="hidden" name="total_ingresos[]" value="${totalIngresos}">
             </td>
-            <td style="cursor: pointer;">
+            <td class="edit-item" style="cursor: pointer;">
                 <span>$ ${iess.toFixed(2)}</span>
                 <input type="hidden" name="iess[]" value="${iess}">
+            </td>
+            <td class="edit-item" style="cursor: pointer;">
+                <span>$ ${aportePatronal.toFixed(2)}</span>
+                <input type="hidden" name="aporte_patronal[]" value="${aportePatronal}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
                 <span>$ ${atrasosFaltas.toFixed(2)}</span>
@@ -236,9 +241,9 @@ $(function () {
             }
         }).then((result) => {
             if (result.isConfirmed) {
-                var value = parsePrecio(result.value) || '0.00'
+                var value = parsePrecio(result.value) || 0.00
                 // Actualizar el valor en el campo
-                $span.text('$ ' + value);
+                $span.text('$ ' + value.toFixed(2));
                 $input.val(value);
 
                 // Recalcular valores dependientes

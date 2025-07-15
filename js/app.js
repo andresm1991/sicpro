@@ -798,7 +798,7 @@ function calcularTotalFilasYGeneral() {
 
 
 // Calcular el total de cada fila
-function calcularTotal($element) {
+function calcularTotal($element, $decimales = 4) {
     let subtotal = 0;
 
     // Iterar por cada fila del tbody
@@ -809,7 +809,7 @@ function calcularTotal($element) {
         subtotal += total;
     });
     // Actualizar el total general
-    return subtotal.toFixed(4);
+    return subtotal.toFixed($decimales);
 }
 
 function inicializarPlugins() {
@@ -953,7 +953,7 @@ function validarCampos(campos) {
         const elemento = $(campo.selector);
         const valor = elemento.val();
 
-        if (campo.selector != '#iva' && (valor === null || valor.trim() === '' || valor === '0')) {
+        if (campo.selector != '#iva' && valor != undefined && (valor === null || valor.trim() === '' || valor === '0')) {
             isValid = false;
             // Agregar borde rojo y mensaje de error
             if (elemento.prop('tagName').toLowerCase() === 'select') {
@@ -976,10 +976,12 @@ function validarCampos(campos) {
 function limpiarCampos(campos) {
     campos.forEach(campo => {
         const elemento = $(campo.selector);
-        if (elemento.prop('tagName').toLowerCase() === 'select') {
-            elemento.val(null).trigger('change');
-        } else {
-            elemento.val('');
+        if (elemento.prop('tagName') != undefined) {
+            if (elemento.prop('tagName').toLowerCase() === 'select') {
+                elemento.val(null).trigger('change');
+            } else {
+                elemento.val('');
+            }
         }
     });
 }
