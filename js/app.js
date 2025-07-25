@@ -37,6 +37,31 @@ document.onclick = function (event) {
     }
 };
 
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Función para redimensionar un textarea
+    function autoResize(textarea) {
+        // Lo reseteamos a 'auto' para que pueda encogerse si se borra texto
+        textarea.style.height = 'auto';
+        // Establecemos la altura igual a la altura del contenido
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Seleccionamos todos los textareas con la clase 'auto-resize'
+    const textareas = document.querySelectorAll('textarea.auto-resize');
+
+    textareas.forEach(textarea => {
+        // Redimensionamos al cargar la página por si ya tiene contenido
+        autoResize(textarea);
+
+        // Añadimos un listener para el evento 'input' (cuando se escribe, pega, etc.)
+        textarea.addEventListener('input', () => {
+            autoResize(textarea);
+        });
+    });
+
+});
+
 
 // Funcion para cargar bancos dentro del select
 function cargarBancos() {

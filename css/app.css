@@ -2440,6 +2440,13 @@ a[href="javascript:void(0);"] {
     margin-bottom: 5px;
 }
 
+.auto-resize {
+    resize: none;
+    /* Opcional: Deshabilita el handle para redimensionar manualmente */
+    overflow-y: hidden;
+    /* ¡Esta es la regla clave! Oculta el scroll vertical */
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
