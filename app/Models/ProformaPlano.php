@@ -5,20 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ProformaAdecentamiento extends Model
+class ProformaPlano extends Model
 {
     use HasFactory;
-    protected $table = 'proforma_adecentamientos';
+    protected $table = 'proformas_planos';
+
     protected $fillable = [
         'numero',
         'fecha',
         'cliente_id',
+        'ubicacion_lote',
+        'area_lote',
+        'presupuesto',
+        'incluye',
+        'plazo_ejecucion',
         'observaciones',
-        'notas',
         'estado_id',
-        'validez',
         'forma_pago',
-        'plazo_entrega',
+        'abono',
         'subtotal',
         'descuento',
         'iva',
@@ -27,6 +31,9 @@ class ProformaAdecentamiento extends Model
 
     protected $casts = [
         'fecha' => 'date',
+        'incluye' => 'array',
+        'forma_pago' => 'array',
+        'abono' => 'array',
     ];
 
     protected $appends = [
@@ -48,9 +55,9 @@ class ProformaAdecentamiento extends Model
         return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 
-    public function detalleAdecentamientos()
+    public function detallePlanos()
     {
-        return $this->hasMany(DetalleProformaAdecentamiento::class);
+        return $this->hasMany(DetalleProformaPlano::class);
     }
 
     public function getTotalIvaAttribute()

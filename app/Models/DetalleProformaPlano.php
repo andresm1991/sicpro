@@ -5,21 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class DetalleProformaAdecentamiento extends Model
+class DetalleProformaPlano extends Model
 {
     use HasFactory;
-
-    protected $table = 'detalle_proforma_adecentamientos';
+    protected $table = 'detalle_proformas_planos';
     protected $fillable = [
-        'proforma_adecentamiento_id',
+        'proforma_plano_id',
         'producto_id',
-        'cantidad',
+        'area',
         'precio_unitario',
         'total'
     ];
-    public function proformaAdecentamiento()
+    public function proformaPlano()
     {
-        return $this->belongsTo(ProformaAdecentamiento::class, 'proforma_adecentamiento_id');
+        return $this->belongsTo(ProformaPlano::class, 'proforma_plano_id');
     }
     public function producto()
     {
@@ -27,7 +26,7 @@ class DetalleProformaAdecentamiento extends Model
     }
     public function getTotalAttribute()
     {
-        return $this->cantidad * $this->precio_unitario;
+        return $this->area * $this->precio_unitario;
     }
 
     public function getTotalFormatAttribute()

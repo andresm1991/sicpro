@@ -499,9 +499,11 @@ if (!function_exists('numeroOrden')) {
         return $clientes;
     }
 
-    function getProdutosProformas()
+    function getProdutosProformas($tipo_proforma)
     {
-        $productos = ProformaProducto::where('activo', true)->pluck('nombre', 'id');
+        $tipo = $tipo_proforma == 'adecentamientos' ? 'tipo.proformas.adecentamientos' : 'tipo.proformas.diseno.planos';
+        $tipoId = CatalogoDato::getIdCatalogo($tipo);
+        $productos = ProformaProducto::where('categoria_id', $tipoId)->where('activo', true)->pluck('nombre', 'id');
         $productos->prepend('', '');
         return $productos;
     }
@@ -766,7 +768,7 @@ if (!function_exists('palabras')) {
         return $nuevoProducto->id;
     }
 
-    function agregarProductoProforma($nombre, $valor, $iva = null, $unidad_medida = null, $descripcion = null, $codigo = null, $observaciones = null)
+    function agregarProductoProforma($nombre, $valor, $tipo, $iva = null, $unidad_medida = null, $descripcion = null)
     {
         // Verificar si el producto ya existe
         $productoExistente = ProformaProducto::where('nombre', $nombre)->first();
@@ -783,6 +785,7 @@ if (!function_exists('palabras')) {
 
         // Crear el nuevo producto
         $nuevoProducto = ProformaProducto::create([
+            'categoria_id' => CatalogoDato::getIdCatalogo($tipo == 'adecentamientos' ? 'tipo.proformas.adecentamientos' : 'tipo.proformas.diseno.planos'),
             'nombre' => $nombre,
             'descripcion' => $descripcion,
             'precio' => limpiarValor($valor),
@@ -790,8 +793,6 @@ if (!function_exists('palabras')) {
             'precio_final' => calcularTotalProducto(1, limpiarValor($valor), limpiarValor($iva)),
             'unidad_medida_id' => $unidad_medida_id,
             'activo' => true,
-            'codigo' => $codigo,
-            'observaciones' => $observaciones
         ]);
 
         return $nuevoProducto->id;
@@ -818,5 +819,25 @@ if (!function_exists('palabras')) {
         $ciudades = Cliente::groupBy('ciudad')->pluck('ciudad', 'ciudad');
         $ciudades->prepend('', '');
         return $ciudades;
+    }
+
+    function getInfoEmpresa()
+    {
+        $empresa = CatalogoDato::getChildrenCatalogo('informacion.general');
+        return $empresa;
+    }
+
+    function calcularTotalProforma($subtotal, $iva = 0, $descuento = 0)
+    {
+        if ($descuento > 0) {
+            $subtotal = $subtotal - ($subtotal * $descuento / 100);
+        }
+        if ($iva > 0) {
+            $iva = $subtotal * $iva / 100;
+        }
+
+        $total = $subtotal + $iva;
+
+        return $total;
     }
 }

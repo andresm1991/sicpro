@@ -724,7 +724,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
+        
 
         $padre = CatalogoDato::create([
             'descripcion' => 'Tipo de propiedades en venta',
@@ -752,6 +752,30 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Arriendo',
             'detalle' => '',
             'slug' => 'tipo.propiedades.arriendo',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Tipo de proformas',
+            'detalle' => '',
+            'slug' => 'tipo.proformas',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Adecentamientos',
+            'detalle' => '',
+            'slug' => 'tipo.proformas.adecentamientos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Diseño de Planos',
+            'detalle' => '',
+            'slug' => 'tipo.proformas.diseno.planos',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

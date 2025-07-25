@@ -15,21 +15,23 @@ use App\Models\Adquisicion;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
+use App\Models\MovimientoCaja;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
+use App\Models\JPLimpieza\Caja;
 use App\Models\RubroCronograma;
 use App\Models\ReposicionTiempo;
 use App\Models\ResumenPagoSemanal;
+use App\Models\ProformaPlano;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\ProformaAdecentamiento;
 use App\Exports\ReportSolicitudesExport;
 use App\Exports\ReportAdquisicionesExport;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Exports\ReportGasolinaCamionetaExport;
-use App\Models\JPLimpieza\Caja;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
 use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
-use App\Models\MovimientoCaja;
 
 class GenerarPdfController extends Controller
 {
@@ -652,5 +654,21 @@ class GenerarPdfController extends Controller
         $tipo = 'jp_limpieza';
         $pdf = PDF::loadView('pdf.reporte_caja', compact('query', 'tipo'))->setPaper('a4', 'landscape');
         return $pdf->stream('reportes.pdf');
+    }
+
+
+    //** Proformas */
+    public function  proformas($tipo, $id)
+    {
+        $proforma = $tipo == 'adecentamientos' ? ProformaAdecentamiento::find($id) : ProformaPlano::find($id);
+        $empresa = getInfoEmpresa();
+
+        if (!$proforma) {
+            return back()->with('error', 'No se encontró la proforma solicitada.');
+        }
+
+        $pdf = PDF::loadView('pdf.proforma', compact('proforma', 'empresa', 'tipo'));
+        //return view('pdf.proforma', compact('proforma', 'empresa', 'tipo'));
+        return $pdf->stream('proforma_' . $tipo . '_' . $proforma->numero . '.pdf');
     }
 }

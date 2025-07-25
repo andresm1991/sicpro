@@ -4,13 +4,19 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('', 'Productos', ['class' => 'col-form-label']) }}
-                {{ Form::select('', getProdutosProformas(), '', ['class' => 'form-control select2-tag', 'data-placeholder' => 'selecciona producto', 'id' => 'producto']) }}
+                {{ Form::select('', getProdutosProformas($tipo), '', ['class' => 'form-control select2-tag', 'data-placeholder' => 'selecciona producto', 'id' => 'producto']) }}
             </div>
         </div>
         <div class="col-sm-2">
             <div class="form-group">
-                {{ Form::label('', 'Cantidad', ['class' => 'col-form-label']) }}
-                {{ Form::text('', 0, ['class' => 'form-control input-double', 'id' => 'cantidad']) }}
+                @if ($tipo == 'adecentamientos')
+                    {{ Form::label('', 'Cantidad', ['class' => 'col-form-label']) }}
+                    {{ Form::text('', 0, ['class' => 'form-control input-double', 'id' => 'cantidad']) }}
+                @else
+                    {{ Form::label('', 'Area M2', ['class' => 'col-form-label']) }}
+                    {{ Form::text('', 0, ['class' => 'form-control input-double', 'id' => 'area_m2']) }}
+                @endif
+
             </div>
         </div>
 
@@ -18,12 +24,6 @@
             <div class="form-group">
                 {{ Form::label('', 'V.Unit', ['class' => 'col-form-label']) }}
                 {{ Form::text('', 0, ['class' => 'form-control money', 'id' => 'valor_unitario']) }}
-            </div>
-        </div>
-        <div class="col-sm-2">
-            <div class="form-group">
-                {{ Form::label('', 'iva', ['class' => 'col-form-label']) }}
-                {{ Form::text('', 0, ['class' => 'form-control input-enteros', 'id' => 'iva']) }}
             </div>
         </div>
 
@@ -48,15 +48,46 @@
             <tr>
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
-                <th scope="col">Cantidad</th>
+                <th scope="col">{{ $tipo == 'adecentamientos' ? 'Cantidad' : 'area m2' }}</th>
                 <th scope="col">V.Unit</th>
-                <th scope="col">% iva</th>
                 <th scope="col">total</th>
                 <th class="table-actions"></th>
             </tr>
         </thead>
         <tbody>
+            @foreach ($tipo == 'adecentamientos' ? $proforma->detalleAdecentamientos : $proforma->detallePlanos as $index => $detalle)
+                <tr class="elementos-agregados" data-producto-id="{{ $detalle->producto_id }}">
+                    <td>{{ $index + 1 }}</td>
+                    <td>
+                        {{ $detalle->producto->nombre }}
+                        <input type="hidden" name="producto[]" value="{{ $detalle->producto_id }}">
+                    </td>
+                    <td class="cantidad-celda">
+                        {{ $tipo == 'adecentamientos' ? $detalle->cantidad : $detalle->area }}
+                        <input type="hidden" name="cantidad[]"
+                            value="{{ $tipo == 'adecentamientos' ? $detalle->cantidad : $detalle->area }}">
+                    </td>
+                    <td class="precio-unitario-celda">
+                        {{ $detalle->precio_unitario_format }}
+                        <input type="hidden" name="precio[]" value="{{ $detalle->precio_unitario }}">
+                    </td>
+                    <td class="total_unitario total-celda">
+                        {{ $detalle->total_format }}
+                    </td>
+                    <td class="align-middle table-actions">
+                        <div class="action-buttons">
+                            <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                id=""><i class="fa-solid fa-trash-can"></i></a>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
 
+
+            <tr id="tr-default" style="display:{{ $proforma->id ? 'none' : '' }}">
+                <td colspan="6" class="text-center">No existen elementos en la
+                    lista...</td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -64,18 +95,11 @@
 
 <div class="row">
     <div class="col-sm-8 col-12">
-        <div class="form-group">
-            <label class="col-form-label">Notas</label>
-            {{ Form::textarea(
-                'nota',
-                old(
-                    'nota',
-                    $proforma->nota ??
-                        'Los trabajos incluyen todo el equipamiento de seguridad requerido, así como la seguridad social del personal que ingrese a trabajar.',
-                ),
-                ['class' => 'form-control', 'rows' => 5, 'placeholder' => 'Ingrese una nota para la proforma'],
-            ) }}
-        </div>
+        @if ($tipo == 'adecentamientos')
+            @include('proformas.partials.notas_adecentamientos')
+        @else
+            @include('proformas.partials.incluye_planos')
+        @endif
     </div>
     <div class="col-sm-4 col-12">
         <div class="row">
@@ -84,7 +108,7 @@
             </div>
 
             <div class="col-sm-7">
-                <label class="form-control" id="subtotal">$ 0.00</label>
+                <label class="form-control" id="subtotal">$ {{ $proforma->subtotal_formatted ?? '$ 0.00' }}</label>
             </div>
         </div>
         <div class="row">
@@ -94,13 +118,15 @@
                         <label class="col-form-label">descuento % </label>
                     </div>
                     <div class="col-3">
-                        {{ Form::text('descuento', old('descuento', $proforma->descuento ?? '0'), ['class' => 'form-control p-0 text-center', 'id' => 'porcentaje_descuento']) }}
+                        {{ Form::text('descuento', $proforma->descuento ?? '0', ['class' => 'form-control p-0 text-center', 'id' => 'porcentaje_descuento']) }}
                     </div>
                 </div>
             </div>
 
             <div class="col-sm-7">
-                <label class="form-control" id="totales_descuento">$ 0.00</label>
+                <label class="form-control"
+                    id="totales_descuento">{{ $proforma->total_descuento_formatted ?? '$ 0.00' }}
+                </label>
             </div>
         </div>
 
@@ -111,65 +137,30 @@
                         <label class="col-form-label">iva % </label>
                     </div>
                     <div class="col-3">
-                        {{ Form::text('porcentaje_iva', old('iva', $proforma->iva ?? '15'), ['class' => 'form-control p-0 text-center', 'id' => 'porcentaje_iva']) }}
+                        {{ Form::text('porcentaje_iva', $proforma->iva ?? '15', ['class' => 'form-control p-0 text-center', 'id' => 'porcentaje_iva']) }}
                     </div>
                 </div>
             </div>
 
             <div class="col-sm-7">
-                <label class="form-control" id="totales_iva">$ 0.00</label>
+                <label class="form-control" id="totales_iva">{{ $proforma->total_iva_formatted ?? '$ 0.00' }}</label>
             </div>
         </div>
 
         <div class="form-group row">
             <label class="col-sm-5 col-form-label">Total: </label>
             <div class="col-sm-7">
-                <label class="form-control" id="total_proforma">$ 0.00</label>
+                <label class="form-control" id="total_proforma">{{ $proforma->total_formatted ?? '$ 0.00' }}</label>
             </div>
         </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-sm-12">
-        <div class="form-group">
-            <h4>terminos y condiciones</h4>
-        </div>
-    </div>
-
-    <div class="col-sm-12 form-group">
-        <div class="form-row align-items-center">
-            <div class="col-auto">
-                <h6 class="mt-2">Validez de la proforma: </h6>
-            </div>
-            <div class="col-auto">
-                {{ Form::text('validez', old('validez', $proforma->validez ?? '15 días calendario'), ['class' => 'form-control']) }}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-12 form-group">
-        <div class="form-row align-items-center">
-            <div class="col-auto">
-                <h6 class="mt-2">forma de pago: </h6>
-            </div>
-            <div class="col-auto">
-                {{ Form::text('forma_pago', old('forma_pago', $proforma->forma_pago ?? 'Contado'), ['class' => 'form-control']) }}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-sm-12 form-group">
-        <div class="form-row align-items-center">
-            <div class="col-auto">
-                <h6 class="mt-2">Tiempo de entrega: </h6>
-            </div>
-            <div class="col-auto">
-                {{ Form::text('plazo_entrega', old('plazo_entrega', $proforma->plazo_entrega ?? '15 días laborables'), ['class' => 'form-control']) }}
-            </div>
-        </div>
-    </div>
-</div>
+@if ($tipo == 'adecentamientos')
+    @include('proformas.partials.termino_condiciones_adecentamientos')
+@else
+    @include('proformas.partials.plazos_pagos_planos')
+@endif
 
 <div class="row">
     <div class="col-sm-12">
@@ -182,5 +173,5 @@
 
 </div>
 @section('scripts')
-    <script src="{{ asset('js/proformas.js') }}"></script>
+    <script src="{{ asset('js/proformas.js?v=' . config('app.version', '')) }}"></script>
 @endsection

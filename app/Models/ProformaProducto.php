@@ -10,6 +10,7 @@ class ProformaProducto extends Model
     use HasFactory;
     protected $table = 'proforma_productos';
     protected $fillable = [
+        'categoria_id',
         'nombre',
         'descripcion',
         'precio',
@@ -17,18 +18,16 @@ class ProformaProducto extends Model
         'precio_final',
         'unidad_medida_id',
         'activo',
-        'codigo',
-        'observaciones'
+    ];
+
+    protected $appends = [
+        'precio_format',
+        'precio_final_format',
     ];
 
     public function unidadMedida()
     {
         return $this->belongsTo(CatalogoDato::class, 'unidad_medida_id');
-    }
-
-    public function getPrecioAttribute()
-    {
-        return $this->precio;
     }
 
     public function getPrecioFinalAttribute()

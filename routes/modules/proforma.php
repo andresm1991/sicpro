@@ -16,9 +16,11 @@ Route::group(['prefix' => 'proformas', 'as' => 'proformas.'], function () {
 
     Route::get('{tipo}/', [ProformaController::class, 'index'])->name('tipo');
     Route::get('/{tipo}/nuevo', [ProformaController::class, 'create'])->name('create');
-    Route::post('/{tipo}/guardar', [ProformaController::class, 'store'])->name('store');
-    Route::get('/editar/{tipo}/{proforma}', [ProformaController::class, 'edit'])->name('edit');
-    Route::put('/actualizar/{tipo}/{proforma}', [ProformaController::class, 'update'])->name('update');
-    Route::delete('/eliminar/{tipo}/{proforma}', [ProformaController::class, 'destroy'])->name('destroy');
-    Route::get('/buscar', [ProformaController::class, 'buscar'])->name('buscar');
+    Route::post('/adecentamientos/guardar', [ProformaController::class, 'storeAdecentamiento'])->name('store.adecentamientos');
+    Route::post('/diseno_planos/guardar', [ProformaController::class, 'storePlanos'])->name('store.planos');
+    Route::get('/editar/{tipo}/{id}', [ProformaController::class, 'edit'])->name('edit');
+    Route::put('/actualizar/adecentamientos/{id}', [ProformaController::class, 'updateAdecentamientos'])->name('update.adecentamientos');
+    Route::put('/actualizar/diseno_planos/{id}', [ProformaController::class, 'updatePlanos'])->name('update.planos');
+    Route::delete('/eliminar/{tipo}/{id}', [ProformaController::class, 'destroy']);
+    Route::get('/buscar/{tipo}', [ProformaController::class, 'buscar'])->name('buscar');
 });

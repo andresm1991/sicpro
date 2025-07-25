@@ -21,8 +21,7 @@
                         <div class="col-md-8 col-12 ">
                             <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                                 <i class="fal fa-search fa-lg form-control-icon"></i>
-                                <input type="text" name="permisos_search" id="eventualidad"
-                                    class="form-control form-control-round"
+                                <input type="text" name="proformas_search" class="form-control form-control-round"
                                     placeholder="ingrese numero o cliente para Buscar....">
                             </div>
                         </div>
@@ -35,17 +34,16 @@
                                     <th scope="col">fecha</th>
                                     <th scope="col">Cliente</th>
                                     <th scope="col">total</th>
-                                    <th scope="col">Estado</th>
                                     <th class="table-actions"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($proformas as $proforma)
-                                    {{--   <tr id="{{ $proforma->id }}">
-                                        <td class="align-middle">{{ $proforma->fecha }}</td>
+                                    <tr id="{{ $proforma->id }}">
+                                        <td class="align-middle">{{ $proforma->numero }}</td>
+                                        <td class="align-middle">{{ $proforma->fecha_formatted }}</td>
                                         <td class="align-middle">{{ $proforma->cliente->nombre }}</td>
                                         <td class="align-middle">{{ $proforma->total_formatted }}</td>
-                                        <td class="align-middle">{{ $proforma->estado->descripcion }}</td>
                                         <td class="align-middle">
                                             <div class="btn-group dropleft">
                                                 <button type="button" class="btn btn-secondary dropdown-toggle"
@@ -55,13 +53,14 @@
                                                 <div class="dropdown-menu">
                                                     <a href='{{ route('proformas.edit', [$tipo, $proforma->id]) }}'
                                                         class='dropdown-item'>Editar</a>
-                                                    <a href='javascript:void(0);' class='dropdown-item eliminar-solicitud'
+                                                    <a href='javascript:void(0);' class='dropdown-item eliminar'
                                                         id='{{ $proforma->id }}'>Eliminar</a>
+                                                    <a href='{{ route('pdf.proformas', [$tipo, $proforma->id]) }}'
+                                                        class='dropdown-item' target="_blank">generar pdf</a>
                                                 </div>
                                             </div>
                                         </td>
                                     </tr>
-                                    --}}
                                 @empty
                                     <tr>
                                         <td colspan="6" class="text-center text-danger">No se encontraron datos para
@@ -81,8 +80,10 @@
         </div>
     </section>
 
+    {{ Form::hidden('tipo_proforma', $tipo, ['id' => 'tipo-proforma']) }}
+
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/solicitud_scripts.js') }}"></script>
+    <script src="{{ asset('js/proformas.js?v=' . config('app.version', '')) }}"></script>
 @endsection

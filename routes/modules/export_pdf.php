@@ -22,6 +22,10 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
     Route::post('/reporte-solicitudes/{tipo_reporte}', [GenerarPdfController::class, 'reportSolicitudes'])->name('reporte.solicitudes');
     Route::post('/reporte-caja/{tipo_reporte}', [GenerarPdfController::class, 'reportCaja'])->name('reporte.caja');
 
+
+    //** PROFORMAS */
+    Route::get('/proformas-pdf/{tipo}/{id}', [GenerarPdfController::class, 'proformas'])->name('proformas');
+
     //** JPLIMPIEZA */
     Route::get('/presupuesto-jplimpieza/{proyecto}', [GenerarPdfController::class, 'presupuestoJPLimpiezaPDF'])->name('jp.limpieza.presupuesto');
     Route::get('/jp-limpieza/mano-obra/{mano_obra}', [GenerarPdfController::class, 'manoObraJPLimpiezaPDF'])->name('jp.limpieza.mano.obra');

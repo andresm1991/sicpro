@@ -86,11 +86,21 @@ class ManoObra extends Model
                     })
                     ->get();
             } else {
+
                 $prestamos = Prestamo::with('pagos_prestamo')
+                    ->where('trabajador_id', $proveedor_id)
+                    ->whereHas('pagos_prestamo', function ($query) {
+                        $query->whereHas('estado', function ($q) {
+                            $q->where('descripcion', 'Pagado');
+                        });
+                    })
+                    ->get();
+                // old
+                /*$prestamos = Prestamo::with('pagos_prestamo')
                     ->where('trabajador_id', $proveedor_id)
                     ->whereHas('estado', function ($query) {
                         $query->where('descripcion', 'Pendiente');
-                    })->get();
+                    })->get();*/
             }
             //$prestamos = Prestamo::where('trabajador_id', $proveedor_id)->get();
             foreach ($registros_por_proveedor->groupBy('articulo_id') as $articulo_id => $registros) {

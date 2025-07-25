@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('proforma_productos', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('categoria_id')->constrained('catalogo_datos')->onDelete('cascade');
             $table->string('nombre')->unique(); // Nombre del producto
             $table->text('descripcion')->nullable(); // Descripción del producto
             $table->decimal('precio', 10, 2); // Precio del producto
@@ -20,8 +21,6 @@ return new class extends Migration
             $table->decimal('precio_final', 10, 2); // Precio final del producto
             $table->unsignedBigInteger('unidad_medida_id')->nullable(); // Unidad de medida del producto
             $table->boolean('activo')->default(true); // Indica si el producto está activo o no
-            $table->string('codigo')->nullable(); // Código del producto, si aplica
-            $table->text('observaciones')->nullable(); // Observaciones adicionales sobre el producto
             $table->timestamps();
 
             $table->foreign('unidad_medida_id')->references('id')->on('catalogo_datos')->onDelete('cascade');
