@@ -36,6 +36,7 @@
                             <tr>
                                 <th scope="col">Orden Nro.</th>
                                 <th scope="col">Contratista</th>
+                                <th scope="col">SubProyecto</th>
                                 <th scope="col">Categoria</th>
                                 <th scope="col">Valor Contrato</th>
                                 <th scope="col">Avance</th>
@@ -52,6 +53,9 @@
                                     </td>
                                     <td class="align-middle text-uppercase">
                                         {{ $orden_trabajo->proveedor->razon_social }}
+                                    </td>
+                                    <td class="align-middle text-uppercase">
+                                        {{ $orden_trabajo->subproyecto }}
                                     </td>
                                     <td class="align-middle text-uppercase">
                                         {{ $orden_trabajo->articulo->descripcion }}

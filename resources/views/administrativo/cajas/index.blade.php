@@ -36,6 +36,8 @@
                         <thead>
                             <tr>
                                 <th>Fecha</th>
+                                <th>Proyecto</th>
+                                <th>SubProyecto</th>
                                 <th scope="col">descripcion</th>
                                 <th scope="col">necesidad</th>
                                 <th scope="col">proveedor</th>
@@ -50,6 +52,12 @@
                                 <tr id="{{ $movimiento->id }}">
                                     <td class="align-middle">
                                         {{ $movimiento->fecha_formateada }}
+                                    </td>
+                                    <td class="align-middle">
+                                        {{ isset($movimiento->origen_id) && $movimiento->origen_type == 'App\Models\Adquisicion' ? $movimiento->adquisicion->proyecto->nombre_proyecto : '' }}
+                                    </td>
+                                    <td class="align-middle">
+                                        {{ isset($movimiento->origen_id) ? $movimiento->adquisicion->subproyecto : '' }}
                                     </td>
                                     <td class="align-middle">
                                         {{ isset($movimiento->articulo_id) ? $movimiento->articulo->descripcion : $movimiento->descripcion }}

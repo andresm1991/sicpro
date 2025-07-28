@@ -38,6 +38,7 @@
                                     <th scope="col">#</th>
                                     <th scope="col">Fecha Pedido</th>
                                     <th scope="col">Proyecto</th>
+                                    <th scope="col">SubProyecto</th>
                                     <th scope="col">Etapa</th>
                                     <th scope="col">Tipo</th>
                                     <th scope="col">Estado</th>
@@ -50,6 +51,7 @@
                                         <td class="align-middle">{{ $pedido->numero }}</td>
                                         <td class="align-middle">{{ date('d-m-Y', strtotime($pedido->fecha)) }}</td>
                                         <td class="align-middle">{{ $pedido->proyecto->nombre_proyecto }}</td>
+                                        <td class="align-middle">{{ $pedido->subproyecto }}</td>
                                         <td class="align-middle">{{ $pedido->etapa->descripcion }}</td>
                                         <td class="align-middle">{{ $pedido->tipo_etapa->descripcion }}</td>
                                         <td class="align-middle">

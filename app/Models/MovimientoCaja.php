@@ -53,6 +53,10 @@ class MovimientoCaja extends Model
         return $this->belongsTo(Articulo::class, 'articulo_id');
     }
 
+    public function adquisicion(){
+        return $this->belongsTo(Adquisicion::class, 'origen_id');
+    }
+
     public function getMontoFormattedAttribute()
     {
         return '$' . number_format($this->monto, 4);
@@ -120,7 +124,7 @@ class MovimientoCaja extends Model
 
         // ---- 2. OBTENER LOS MOVIMIENTOS DEL PERIODO ----
         // Obtiene solo los movimientos dentro del rango de fechas seleccionado.
-        $movimientos_periodo = self::with(['usuario', 'proveedor', 'articulo'])
+        $movimientos_periodo = self::with(['usuario', 'proveedor', 'articulo', 'adquisicion', 'adquisicion.proyecto'])
             ->whereBetween('fecha', [$fechaInicio, $fechaFin])
             ->orderBy('fecha', 'asc')
             ->get();

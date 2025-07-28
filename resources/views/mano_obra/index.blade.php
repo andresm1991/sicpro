@@ -38,6 +38,7 @@
                                 <th style="width: 1px">Semana</th>
                                 <th scope="col">Fecha</th>
                                 <th scope="col">Proyecto</th>
+                                <th scope="col">SubProyecto</th>
                                 <th scope="col">Etapa</th>
                                 <th scope="col">Tipo</th>
                                 <th class="col-accion"></th>
@@ -53,6 +54,7 @@
                                         data-subproyecto="{{ $mano_obra->subproyecto }}">
                                         {{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}</td>
                                     <td class="align-middle">{{ $mano_obra->proyecto->nombre_proyecto }}</td>
+                                    <td class="align-middle">{{ $mano_obra->subproyecto }}</td>
                                     <td class="align-middle">{{ $mano_obra->etapa->descripcion }}</td>
                                     <td class="align-middle">
                                         {{ $mano_obra->actividad->descripcion ?? $mano_obra->tipo_etapa->descripcion }}</td>

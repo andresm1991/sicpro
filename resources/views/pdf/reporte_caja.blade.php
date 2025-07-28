@@ -210,6 +210,8 @@
         <table id="table-resumen">
             <tr>
                 <th scope="col">fecha</th>
+                <th scope="col">proyecto</th>
+                <th scope="col">subproyecto</th>
                 <th scope="col">descripción</th>
                 <th scope="col">necesidad</th>
                 <th scope="col">proveedor</th>
@@ -220,7 +222,7 @@
             </tr>
             <tbody>
                 <tr>
-                    <td class="aling-middle bg-secondary text-white" colspan="7" style="background-color: #d2d5da">
+                    <td class="aling-middle bg-secondary text-white" colspan="9" style="background-color: #d2d5da">
                         <strong>{{ $query['fecha_saldo_inicio'] }}</strong>
                     </td>
                     <td class="aling-middle bg-secondary text-white" style="background-color: #d2d5da">
@@ -231,6 +233,12 @@
                     <tr>
                         <td>
                             {{ $movimiento['fecha_formateada'] }}
+                        </td>
+                        <td class="align-middle">
+                            {{ isset($movimiento['origen_id']) && $movimiento['origen_type'] == 'App\Models\Adquisicion' ? $movimiento['adquisicion']['proyecto']['nombre_proyecto'] : '-' }}
+                        </td>
+                        <td class="align-middle">
+                            {{ isset($movimiento['origen_id']) ? $movimiento['adquisicion']['subproyecto'] : '-' }}
                         </td>
                         <td>
                             {{ isset($movimiento['articulo_id']) ? $movimiento['articulo']['descripcion'] : (isset($movimiento['producto_id']) ? $movimiento['producto']['nombre'] : $movimiento['descripcion']) }}
@@ -257,7 +265,7 @@
             </tbody>
             <tfoot>
                 <tr>
-                    <td colspan="5" class="aling-middle">
+                    <td colspan="7" class="aling-middle">
                         <strong>Sumas totales</strong>
                     </td>
                     <td class="aling-middle">
@@ -271,7 +279,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class"aling-middle" colspan="7">
+                    <td class="aling-middle" colspan="9">
                         <strong>{{ $query['fecha_saldo_fin'] }}</strong>
                     </td>
                     <td class"aling-middle">
