@@ -43,7 +43,7 @@ class ProformaController extends Controller
             $numero = ProformaAdecentamiento::max('id') + 1;
         } else {
             $proforma = new ProformaPlano();
-            $numero = ProformaPlano::max('numero') + 1; // Asumiendo que tienes un modelo ProformaPlano
+            $numero = ProformaPlano::max('id') + 1; // Asumiendo que tienes un modelo ProformaPlano
         }
 
         return view('proformas.create', compact('title_page', 'breadcrumbs', 'tipo', 'proforma', 'numero'));

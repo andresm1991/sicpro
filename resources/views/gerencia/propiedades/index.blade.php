@@ -64,7 +64,7 @@
                                                         data-ubicacion='{{ json_encode(['lat' => $propiedad->latitud, 'lng' => $propiedad->longitud]) }}'
                                                         data-nombre='{{ $propiedad->nombre }}'>Compartir ubicacón</a>
                                                     <a href='{{ route('gerencia.propiedades.edit', $propiedad->id) }}'
-                                                        class='dropdown-item'>Detalle</a>
+                                                        class='dropdown-item'>Editar</a>
                                                     <a href='#' class='dropdown-item eliminar-propiedad'
                                                         id='{{ $propiedad->id }}'>Eliminar</a>
                                                 </div>

@@ -18,22 +18,23 @@
     </div>
 </div>
 <div id="pagos-list">
-    <!-- Items iniciales de pago -->
-    @forelse ($proforma->forma_pago as $forma_pago)
-        <div class="row mb-2 align-items-center">
-            <div class="col-md-7">
-                {{ Form::text('forma_pago[]', $forma_pago, ['class' => 'form-control']) }}
+    @isset($proforma->forma_pago)
+        <!-- Items iniciales de pago -->
+        @foreach ($proforma->forma_pago as $forma_pago)
+            <div class="row mb-2 align-items-center">
+                <div class="col-md-7">
+                    {{ Form::text('forma_pago[]', $forma_pago, ['class' => 'form-control']) }}
+                </div>
+                <div class="col-md-3">
+                    {{ Form::text('abono[]', $proforma->abono[$loop->index] ?? '0', ['class' => 'form-control text-end input-enteros']) }}
+                </div>
+                <div class="col-md-2 text-end">
+                    <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i
+                            class="fas fa-trash"></i></a>
+                </div>
             </div>
-            <div class="col-md-3">
-                {{ Form::text('abono[]', $proforma->abono[$loop->index] ?? '0', ['class' => 'form-control text-end input-enteros']) }}
-            </div>
-            <div class="col-md-2 text-end">
-                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i
-                        class="fas fa-trash"></i></a>
-            </div>
-        </div>
-
-    @empty
+        @endforeach
+    @else
         <div class="row mb-2 align-items-center">
             <div class="col-md-7">
                 {{ Form::text('forma_pago[]', 'A la aprobación de la proforma', ['class' => 'form-control']) }}
@@ -42,8 +43,7 @@
                 {{ Form::text('abono[]', '50', ['class' => 'form-control text-end input-enteros']) }}
             </div>
             <div class="col-md-2 text-end">
-                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i
-                        class="fas fa-trash"></i></a>
+                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i class="fas fa-trash"></i></a>
             </div>
         </div>
         <div class="row mb-2 align-items-center">
@@ -54,8 +54,7 @@
                 {{ Form::text('abono[]', '25', ['class' => 'form-control text-end input-enteros']) }}
             </div>
             <div class="col-md-2 text-end">
-                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i
-                        class="fas fa-trash"></i></a>
+                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i class="fas fa-trash"></i></a>
             </div>
         </div>
         <div class="row mb-2 align-items-center">
@@ -66,11 +65,10 @@
                 {{ Form::text('abono[]', '25', ['class' => 'form-control text-end input-enteros']) }}
             </div>
             <div class="col-md-2 text-end">
-                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i
-                        class="fas fa-trash"></i></a>
+                <a href="javascript:void(0);" class="btn btn-sm btn-danger remove-pago-btn"><i class="fas fa-trash"></i></a>
             </div>
         </div>
-    @endforelse
+    @endisset
 
 </div>
 <a href="javascript:void(0);" class="btn btn-dark btn-sm mt-2 form-group" id="add-pago-btn">+ Agregar Forma de Pago</a>

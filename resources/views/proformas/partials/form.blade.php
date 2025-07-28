@@ -20,8 +20,8 @@
             {{ Form::text('area_lote', $proforma->area_lote, ['class' => 'form-control input-enteros', 'id' => 'area_lote', 'placeholder' => 'Ingrese área']) }}
         </div>
 
-        <div class="form-group col-md-2 col-12">
-            <label class="col-form-label">presupuesto</label>
+        <div class="form-group col-md-4 col-12">
+            <label class="col-form-label">presupuesto para construccion de vivienda</label>
             {{ Form::text('presupuesto', $proforma->presupuesto, ['class' => 'form-control moneyDosDecimales', 'id' => 'presupuesto', 'placeholder' => '$ 0.00']) }}
         </div>
     @endif

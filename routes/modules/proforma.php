@@ -23,4 +23,6 @@ Route::group(['prefix' => 'proformas', 'as' => 'proformas.'], function () {
     Route::put('/actualizar/diseno_planos/{id}', [ProformaController::class, 'updatePlanos'])->name('update.planos');
     Route::delete('/eliminar/{tipo}/{id}', [ProformaController::class, 'destroy']);
     Route::get('/buscar/{tipo}', [ProformaController::class, 'buscar'])->name('buscar');
+
+    Route::get('/{tipo}/{id}/programa-arquitectonico', [ProformaController::class, 'buscar'])->name('programa.arquitectonico');
 });

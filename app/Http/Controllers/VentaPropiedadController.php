@@ -203,7 +203,7 @@ class VentaPropiedadController extends Controller
         foreach ($propiedades as $propiedad) {
             $estadoBadge = $propiedad->estado == 'VENDIDO' ? 'badge-warning' : 'badge-success';
             $compartir = "<a href='javascript:void(0);' class='dropdown-item compartir-ubicacion' data-ubicacion='" . json_encode(['lat' => $propiedad->latitud, 'lng' => $propiedad->longitud]) . "' data-nombre='" . $propiedad->nombre . "'>Compartir ubicacón</a>";
-            $edit = "<a href='" . route('gerencia.propiedades.edit', $propiedad->id) . "' class='dropdown-item'>Detalle</a>";
+            $edit = "<a href='" . route('gerencia.propiedades.edit', $propiedad->id) . "' class='dropdown-item'>Editar</a>";
             $destroy = "<a href='javascript:void(0);' class='dropdown-item eliminar-propiedad' id='" . $propiedad->id . "'>Eliminar</a>";
 
             $rows .= '<tr id="' . $propiedad->id . '">';
@@ -236,7 +236,7 @@ class VentaPropiedadController extends Controller
             ['name' => 'Mapa de propiedades', 'url' => '']
         ];
 
-        $propiedades = VentaPropiedad::orderBy('created_at', 'desc')->get();
+        $propiedades = VentaPropiedad::with('tipo_propiedad')->orderBy('created_at', 'desc')->get();
 
         return view('gerencia.propiedades.mapa', compact('title_page', 'propiedades', 'breadcrumbs'));
     }

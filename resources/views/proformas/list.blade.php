@@ -51,6 +51,10 @@
                                                     Opciones
                                                 </button>
                                                 <div class="dropdown-menu">
+                                                    @if ($tipo == 'diseno_planos')
+                                                        <a href='{{ route('proformas.programa.arquitectonico', [$tipo, $proforma->id]) }}'
+                                                            class='dropdown-item'>Prog. Arquitectónico</a>
+                                                    @endif
                                                     <a href='{{ route('proformas.edit', [$tipo, $proforma->id]) }}'
                                                         class='dropdown-item'>Editar</a>
                                                     <a href='javascript:void(0);' class='dropdown-item eliminar'

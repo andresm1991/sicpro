@@ -48,7 +48,7 @@
             // ⬇️ Ahora que google está definido, podemos usarlo
 
             class PriceOverlay extends google.maps.OverlayView {
-                constructor(position, price, map, infoHtml) {
+                constructor(position, price, map, infoHtml, extraClass = '') {
                     super();
                     this.position = position;
                     this.price = price;
@@ -58,12 +58,13 @@
                     this.infoWindow = null;
                     this.hoverTimeout = null;
                     this.isHovering = false;
+                    this.extraClass = extraClass;
                     this.setMap(map);
                 }
 
                 onAdd() {
                     this.div = document.createElement('div');
-                    this.div.className = 'price-marker';
+                    this.div.className = 'price-marker ' + this.extraClass;
                     this.div.innerHTML = this.price;
 
                     this.infoWindow = new google.maps.InfoWindow({
@@ -130,10 +131,18 @@
                 });
 
                 locations.forEach(location => {
+                    const lat = parseFloat(location.latitud);
+                    const lng = parseFloat(location.longitud);
+                    if (isNaN(lat) || isNaN(lng)) {
+                        console.error("Invalid coordinates for location:", location);
+                        return; // Skip this location if coordinates are invalid
+                    }
                     const pos = {
-                        lat: parseFloat(location.latitud),
-                        lng: parseFloat(location.longitud)
+                        lat: lat,
+                        lng: lng
                     };
+
+
 
                     const infoHtml = `
                             <div class="custom-infowindow" style="padding: 10px; font-family: Arial, sans-serif;">
@@ -142,8 +151,13 @@
                                 <strong>US$${location.precio_venta}</strong>
                             </div>
                         `;
+                    console.log(location.tipo_propiedad);
+                    const markerClass = (location.tipo_propiedad_id && location.tipo_propiedad.slug
+                        .toLowerCase() === 'tipo.propiedades.casa') ? 'price-marker-casa' : '';
 
-                    new PriceOverlay(pos, `US$${location.precio_por_metros_cuadrados}`, map, infoHtml);
+
+                    new PriceOverlay(pos, `US$${location.precio_por_metros_cuadrados}`, map, infoHtml,
+                        markerClass);
                     bounds.extend(pos);
                 });
 

@@ -13,7 +13,7 @@
                     {{ Form::label('', 'Cantidad', ['class' => 'col-form-label']) }}
                     {{ Form::text('', 0, ['class' => 'form-control input-double', 'id' => 'cantidad']) }}
                 @else
-                    {{ Form::label('', 'Area M2', ['class' => 'col-form-label']) }}
+                    {{ Form::label('', 'estimado M2', ['class' => 'col-form-label']) }}
                     {{ Form::text('', 0, ['class' => 'form-control input-double', 'id' => 'area_m2']) }}
                 @endif
 
@@ -48,7 +48,7 @@
             <tr>
                 <th scope="col">Item</th>
                 <th scope="col">Producto</th>
-                <th scope="col">{{ $tipo == 'adecentamientos' ? 'Cantidad' : 'area m2' }}</th>
+                <th scope="col">{{ $tipo == 'adecentamientos' ? 'Cantidad' : 'estimado m2' }}</th>
                 <th scope="col">V.Unit</th>
                 <th scope="col">total</th>
                 <th class="table-actions"></th>
