@@ -1020,6 +1020,8 @@ $(function () {
                         <thead class="thead-dark">
                             <tr>
                                 <th scope="col">fecha</th>
+                                <th scope="col">proyecto</th>
+                                <th scope="col">subproyecto</th>
                                 <th scope="col">descripción</th>
                                 <th scope="col">necesidad</th>
                                 <th scope="col">proveedor</th>
@@ -1031,7 +1033,7 @@ $(function () {
                         </thead>
                     <tbody>
                         <tr>
-                            <td class="aling-middle bg-secondary text-white" colspan="7">
+                            <td class="aling-middle bg-secondary text-white" colspan="9">
                                 <strong>${response.result.fecha_saldo_inicio}</strong>
                             </td>
                             <td class="aling-middle bg-secondary text-white">
@@ -1042,6 +1044,12 @@ $(function () {
                     return `
                                     <tr>
                                         <td>${item.fecha_formateada}</td>
+                                        <td class="align-middle">
+                                            ${item.origen_id && item.origen_type =="App\\Models\\Adquisicion" ? item.adquisicion.proyecto.nombre_proyecto : '-' }
+                                        </td>
+                                        <td class="align-middle">
+                                            ${item.origen_id ? item.adquisicion.subproyecto : '-' }
+                                        </td>
                                         <td>${item.articulo_id != null || item.producto_id != null ? (tipoReporte != 'jp_limpieza' ? item.articulo.descripcion : item.producto.nombre) : item.descripcion}</td>
                                         <td>${item.articulo_id != null || item.producto_id != null ? item.descripcion : '-'}</td>
                                         <td>${item.proveedor != null ? item.proveedor.razon_social : '-'}</td>
@@ -1055,7 +1063,7 @@ $(function () {
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="5" class="aling-middle">
+                            <td colspan="7" class="aling-middle">
                                 <strong>Sumas totales</strong>
                             </td>
                             <td class="aling-middle">
@@ -1069,7 +1077,7 @@ $(function () {
                             </td>
                         </tr>
                         <tr>
-                            <td class"aling-middle" colspan="7">
+                            <td class"aling-middle" colspan="9">
                                 <strong>${response.result.fecha_saldo_fin}</strong>
                             </td>
                             <td class"aling-middle">
