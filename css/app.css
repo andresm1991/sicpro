@@ -2405,6 +2405,14 @@ a[href="javascript:void(0);"] {
     border-top: 10px solid #007bff;
 }
 
+.price-marker-casa {
+    background-color: #28a745 !important;
+}
+
+.price-marker-casa::after {
+    border-top: 10px solid #28a745 !important;
+}
+
 /* Oculta el botón de cerrar del InfoWindow */
 .gm-ui-hover-effect {
     display: none !important;
