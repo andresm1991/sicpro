@@ -238,46 +238,57 @@ class Adquisicion extends Model
             return ['data' => [], 'subproyecto' => $filters['subproyecto']];
         }
 
-        // 2. Obtener las etapas relevantes para el proyecto
-        $etapas = $filters['proyectoModel']->etapas()
-            ->when($filters['etapa'], fn($q) => $q->where('etapas.id', $filters['etapa']))
-            ->get();
-
         $resultado = [];
 
-        // 3. Procesar cada etapa por separado
-        foreach ($etapas as $etapa) {
-            $etapaNombre = $etapa->descripcion ?? 'Sin etapa';
-
-            // Inicializa la estructura para esta etapa
-            $resultado[$etapaNombre] = [
-                'contratista' => [],
-                'mano_obra' => [],
-                'materiales_herramientas' => [],
-                'servicios' => [],
-            ];
-
-            // 4. Obtener datos para cada categoría si el filtro de "tipo" lo permite
-            if (in_array($filters['tipo_slug'], [null, 'contratista'])) {
-                $resultado[$etapaNombre]['contratista'] = self::getContratistasData($filters, $etapa->id);
-            }
-            if (in_array($filters['tipo_slug'], [null, 'mano.obra'])) {
-                $resultado[$etapaNombre]['mano_obra'] = self::getManoDeObraData($filters, $etapa->id);
-            }
-            if (in_array($filters['tipo_slug'], [null, 'meteriales.herramientas', 'servicios'])) {
-                $adquisiciones = self::getAdquisicionesData($filters, $etapa->id);
-                $resultado[$etapaNombre]['materiales_herramientas'] = $adquisiciones['meteriales.herramientas'] ?? [];
-                $resultado[$etapaNombre]['servicios'] = $adquisiciones['servicios'] ?? [];
-            }
+        // 2. Obtener datos para cada categoría (si el filtro 'tipo' lo permite)
+        // Cada función ahora devolverá datos ya agrupados por nombre de etapa.
+        if (in_array($filters['tipo_slug'], [null, 'contratista'])) {
+            $contratistas = self::getContratistasData($filters);
+            self::mergeResults($resultado, $contratistas, 'contratista');
+        }
+        if (in_array($filters['tipo_slug'], [null, 'mano.obra'])) {
+            $manosDeObra = self::getManoDeObraData($filters);
+            self::mergeResults($resultado, $manosDeObra, 'mano_obra');
+        }
+        if (in_array($filters['tipo_slug'], [null, 'meteriales.herramientas', 'servicios'])) {
+            $adquisiciones = self::getAdquisicionesData($filters);
+            self::mergeResults($resultado, $adquisiciones, 'adquisiciones');
         }
 
-        // 5. Ordenar el resultado final
+        // 3. Ordenar el resultado final
         $resultado = self::sortFinalResult($resultado);
 
         return [
+            'proyecto' => $filters['proyectoNombre'],
             'subproyecto' => $filters['subproyecto'],
             'data' => $resultado
         ];
+    }
+
+    /**
+     * Función auxiliar para fusionar los resultados de cada categoría en el array principal.
+     */
+    private static function mergeResults(array &$resultado, array $dataToMerge, string $category)
+    {
+        foreach ($dataToMerge as $etapaNombre => $items) {
+            // Inicializa la estructura de la etapa si no existe
+            if (!isset($resultado[$etapaNombre])) {
+                $resultado[$etapaNombre] = [
+                    'contratista' => [],
+                    'mano_obra' => [],
+                    'materiales_herramientas' => [],
+                    'servicios' => [],
+                ];
+            }
+
+            if ($category === 'adquisiciones') {
+                // Las adquisiciones se dividen en dos subcategorías
+                $resultado[$etapaNombre]['materiales_herramientas'] = array_merge($resultado[$etapaNombre]['materiales_herramientas'], $items['meteriales.herramientas'] ?? []);
+                $resultado[$etapaNombre]['servicios'] = array_merge($resultado[$etapaNombre]['servicios'], $items['servicios'] ?? []);
+            } else {
+                $resultado[$etapaNombre][$category] = array_merge($resultado[$etapaNombre][$category], $items);
+            }
+        }
     }
 
     /**
@@ -309,125 +320,136 @@ class Adquisicion extends Model
     }
 
     /**
-     * Obtiene y procesa los datos de Contratistas.
+     * Obtiene y procesa los datos de Contratistas, agrupados por etapa.
+     * La lógica de cálculo es compleja, por lo que agrupamos en PHP después de filtrar en la DB.
      */
-    private static function getContratistasData(array $filters, int $etapaId): array
+    private static function getContratistasData(array $filters): array
     {
         $query = \App\Models\Contratista::query()
+            ->select('contratistas.*', 'etapa_catalogo.descripcion as etapa_nombre')
+            ->join('catalogo_datos as etapa_catalogo', 'contratistas.etapa_id', '=', 'etapa_catalogo.id')
             ->with(['proveedor:id,razon_social', 'articulo:id,descripcion', 'detalle_contratistas', 'pagosOrdenTrabajoContratista'])
-            ->where('proyecto_id', $filters['proyecto'])
-            ->where('etapa_id', $etapaId);
+            ->where('contratistas.proyecto_id', $filters['proyecto']);
 
-        // Aplicar filtros comunes
-        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor']);
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'etapa'], 'contratistas');
 
         $contratistas = $query->get();
 
-        // Agrupar en PHP, ya que los cálculos son complejos y se basan en relaciones.
-        $contratistasAgrupados = $contratistas->groupBy(function ($item) {
-            $proveedorNombre = $item->proveedor->razon_social ?? 'Sin proveedor';
-            $categoriaNombre = $item->articulo->descripcion ?? 'Sin categoría';
-            return $proveedorNombre . '|' . $categoriaNombre;
-        })->map(function ($group) {
-            $first = $group->first();
-            $totalContratado = $group->sum(function ($contratista) {
-                return $contratista->detalle_contratistas->sum(fn($d) => ($d->cantidad ?? 0) * ($d->valor_unitario ?? 0)) * ($contratista->numero_casas ?? 1);
-            });
-            $pagos = $group->sum(fn($c) => $c->pagosOrdenTrabajoContratista->where('pagado', true)->sum('valor'));
+        // CAMBIO: Se reemplaza el groupBy por una función de callback para evitar la ambigüedad con SQL.
+        // Esto asegura que la agrupación se realice en la colección de PHP.
+        return $contratistas->groupBy('etapa_nombre')
+            ->map(function ($contratistasPorEtapa) {
+                return $contratistasPorEtapa->groupBy(function ($item) {
+                    return ($item->proveedor->razon_social ?? 'Sin proveedor') . '|' . ($item->articulo->descripcion ?? 'Sin categoría');
+                })->map(function ($group) {
+                    $first = $group->first();
+                    $totalContratado = $group->sum(function ($c) {
+                        return $c->detalle_contratistas->sum(fn($d) => ($d->cantidad ?? 0) * ($d->valor_unitario ?? 0)) * ($c->numero_casas ?? 1);
+                    });
+                    $pagos = $group->sum(fn($c) => $c->pagosOrdenTrabajoContratista->where('pagado', true)->sum('valor'));
 
-            return [
-                'proveedor' => $first->proveedor->razon_social ?? 'Sin proveedor',
-                'categoria' => $first->articulo->descripcion ?? 'Sin categoría',
-                'cantidad' => $group->sum('numero_casas'),
-                'total_contratado' => $totalContratado,
-                'pagos' => $pagos,
-                'saldo' => $totalContratado - $pagos,
-            ];
-        });
-
-        return $contratistasAgrupados->values()->all();
+                    return [
+                        'proveedor' => $first->proveedor->razon_social ?? 'Sin proveedor',
+                        'categoria' => $first->articulo->descripcion ?? 'Sin categoría',
+                        'cantidad' => $group->sum('numero_casas'),
+                        'total_contratado' => $totalContratado,
+                        'pagos' => $pagos,
+                        'saldo' => $totalContratado - $pagos,
+                    ];
+                })->values()->all();
+            })->all();
     }
 
     /**
-     * Obtiene y procesa los datos de Mano de Obra.
+     * Obtiene y procesa los datos de Mano de Obra, agrupados por etapa.
      */
-    private static function getManoDeObraData(array $filters, int $etapaId): array
+    private static function getManoDeObraData(array $filters): array
     {
         $query = \App\Models\ManoObra::query()
-            ->where('proyecto_id', $filters['proyecto'])
-            ->where('etapa_id', $etapaId);
+            ->select(
+                'etapa_catalogo.descripcion as etapa_nombre',
+                DB::raw('COUNT(DISTINCT mano_obra.fecha_inicio, mano_obra.fecha_fin) as cantidad'),
+                DB::raw('SUM(COALESCE(dmo.valor, 0) + COALESCE(dmo.adicional, 0) - COALESCE(dmo.descuento, 0)) as total')
+            )
+            ->join('catalogo_datos as etapa_catalogo', 'mano_obra.etapa_id', '=', 'etapa_catalogo.id')
+            ->join('detalle_mano_obra as dmo', 'mano_obra.id', '=', 'dmo.mano_obra_id')
+            ->where('mano_obra.proyecto_id', $filters['proyecto'])
+            ->whereExists(function ($q) {
+                $q->select(DB::raw(1))->from('pagos_mano_obra')->whereColumn('pagos_mano_obra.mano_obra_id', 'mano_obra.id');
+            });
 
-        // Aplicar filtros comunes
-        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor']);
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'etapa'], 'mano_obra');
 
-        // Obtener la suma total directamente desde la base de datos
-        $totalManoObra = $query->clone()
-            ->join('detalle_mano_obra', 'mano_obra.id', '=', 'detalle_mano_obra.mano_obra_id')
-            ->whereExists(function ($query) { // Solo si tiene pagos
-                $query->select(DB::raw(1))
-                    ->from('pago_mano_obra')
-                    ->whereColumn('pago_mano_obra.mano_obra_id', 'mano_obra.id');
-            })
-            ->sum(DB::raw('COALESCE(detalle_mano_obra.valor, 0) + COALESCE(detalle_mano_obra.adicional, 0) - COALESCE(detalle_mano_obra.descuento, 0)'));
+        $query->groupBy('etapa_catalogo.descripcion');
 
-        $cantidad = $query->distinct('fecha_inicio', 'fecha_fin')->count();
+        $resultados = $query->get();
 
-        return [[
-            'cantidad' => $cantidad,
-            'total' => $totalManoObra
-        ]];
+        // Reformatear para la estructura final: ['Nombre Etapa' => [[...data...]]]
+        return $resultados->keyBy('etapa_nombre')->map(function ($item) {
+            return [[
+                'cantidad' => $item->cantidad,
+                'total' => $item->total,
+            ]];
+        })->all();
     }
 
     /**
-     * Obtiene y procesa los datos de Adquisiciones (Materiales y Servicios).
+     * Obtiene y procesa los datos de Adquisiciones, agrupados por etapa y tipo de adquisición.
      */
-    private static function getAdquisicionesData(array $filters, int $etapaId): array
+    private static function getAdquisicionesData(array $filters): array
     {
         $query = \App\Models\AdquisicionDetalle::query()
             ->select(
-                'articulo_id',
+                'etapa_catalogo.descripcion as etapa_nombre',
+                'tipo_etapa_catalogo.slug as tipo_etapa_slug',
+                'adquisiciones_detalle.articulo_id',
                 'articulos.descripcion as articulo_nombre',
-                'unidad_medidas.descripcion as unidad_medida_nombre',
-                'tipo_etapas.slug as tipo_etapa_slug',
-                DB::raw('SUM(adquisicion_detalles.cantidad_solicitada) as cantidad_total'),
-                DB::raw('SUM( (adquisicion_detalles.cantidad_solicitada * adquisicion_detalles.valor) * (1 + adquisicion_detalles.iva/100) ) as total_con_iva')
+                // CAMBIO: Se usa el nuevo alias para la unidad de medida
+                'unidad_medida_catalogo.descripcion as unidad_medida_nombre',
+                DB::raw('SUM(adquisiciones_detalle.cantidad_solicitada) as cantidad_total'),
+                DB::raw('SUM( (adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + adquisiciones_detalle.iva/100) ) as total_con_iva')
             )
-            ->join('adquisiciones', 'adquisicion_detalles.adquisicion_id', '=', 'adquisiciones.id')
-            ->join('articulos', 'adquisicion_detalles.articulo_id', '=', 'articulos.id')
-            ->join('unidad_medidas', 'adquisicion_detalles.unidad_medida_id', '=', 'unidad_medidas.id')
-            ->join('tipo_etapas', 'adquisiciones.tipo_etapa_id', '=', 'tipo_etapas.id')
-            ->where('adquisiciones.proyecto_id', $filters['proyecto'])
-            ->where('adquisiciones.etapa_id', $etapaId);
+            ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
+            ->join('catalogo_datos as etapa_catalogo', 'adquisiciones.etapa_id', '=', 'etapa_catalogo.id')
+            ->join('articulos', 'adquisiciones_detalle.articulo_id', '=', 'articulos.id')
+            // CAMBIO: Se reemplaza el JOIN a 'unidad_medidas' por uno a 'catalogo_datos' con un nuevo alias.
+            ->join('catalogo_datos as unidad_medida_catalogo', 'adquisiciones_detalle.unidad_medida_id', '=', 'unidad_medida_catalogo.id')
+            ->join('catalogo_datos as tipo_etapa_catalogo', 'adquisiciones.tipo_etapa_id', '=', 'tipo_etapa_catalogo.id')
+            ->where('adquisiciones.proyecto_id', $filters['proyecto']);
 
-        // Aplicar filtros comunes a la tabla 'adquisiciones'
-        self::applyCommonFilters($query, $filters, ['subproyecto', 'estado', 'fechas'], 'adquisiciones');
-
-        // Filtros específicos de esta consulta
-        $query->when($filters['producto'], fn($q) => $q->where('adquisicion_detalles.articulo_id', $filters['producto']));
-        $query->when($filters['necesidad'], fn($q) => $q->where('adquisicion_detalles.necesidad', $filters['necesidad']));
+        // Aplicar filtros
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'estado', 'fechas', 'etapa'], 'adquisiciones');
+        $query->when($filters['producto'], fn($q) => $q->where('adquisiciones_detalle.articulo_id', $filters['producto']));
+        $query->when($filters['necesidad'], fn($q) => $q->where('adquisiciones_detalle.necesidad', $filters['necesidad']));
         $query->when($filters['costo_directo'], fn($q) => $q->where('adquisiciones.etapa_id', $filters['costo_directo']));
-
-        $query->groupBy('articulo_id', 'articulo_nombre', 'unidad_medida_nombre', 'tipo_etapa_slug');
-
-        // Filtrar por tipo_etapa_slug si es necesario
-        $query->when($filters['tipo_slug'], function ($q) use ($filters) {
-            if (in_array($filters['tipo_slug'], ['meteriales.herramientas', 'servicios'])) {
-                $q->where('tipo_etapas.slug', $filters['tipo_slug']);
+        $query->when($filters['tipo_slug'], function ($q, $slug) {
+            if (in_array($slug, ['meteriales.herramientas', 'servicios'])) {
+                $q->where('tipo_etapa_catalogo.slug', $slug);
             }
         });
 
+        $query->groupBy(
+            'etapa_catalogo.descripcion',
+            'tipo_etapa_catalogo.slug',
+            'adquisiciones_detalle.articulo_id',
+            'articulos.descripcion',
+            'unidad_medida_catalogo.descripcion' // <-- Columna corregida
+        );
+
         $detalles = $query->get();
 
-        // Agrupar por slug en PHP
-        return $detalles->groupBy('tipo_etapa_slug')->map(function ($group) {
-            return $group->map(function ($item) {
-                return [
-                    'articulo_id'    => $item->articulo_id,
-                    'articulo'       => $item->articulo_nombre,
-                    'unidad_medida'  => $item->unidad_medida_nombre,
-                    'cantidad_total' => $item->cantidad_total,
-                    'total'          => $item->total_con_iva,
-                ];
+        // Reformatear en la estructura final: ['Nombre Etapa' => ['slug' => [...items...]]]
+        return $detalles->groupBy('etapa_nombre')->map(function ($itemsPorEtapa) {
+            return $itemsPorEtapa->groupBy('tipo_etapa_slug')->map(function ($itemsPorTipo) {
+                return $itemsPorTipo->map(function ($item) {
+                    return [
+                        'articulo_id'    => $item->articulo_id,
+                        'articulo'       => $item->articulo_nombre,
+                        'unidad_medida'  => $item->unidad_medida_nombre,
+                        'cantidad_total' => $item->cantidad_total,
+                        'total'          => (float) $item->total_con_iva,
+                    ];
+                })->values()->all();
             });
         })->all();
     }
@@ -435,9 +457,14 @@ class Adquisicion extends Model
     /**
      * Aplica un conjunto de filtros comunes a una consulta Eloquent.
      */
-    private static function applyCommonFilters(Builder $query, array $filters, array $applicableFilters, string $table = null)
+    private static function applyCommonFilters(Builder $query, array $filters, array $applicableFilters, ?string $table = null)
     {
         $prefix = $table ? "{$table}." : '';
+
+        // Filtro por ETAPA (ID del Catálogo de Datos)
+        if (in_array('etapa', $applicableFilters)) {
+            $query->when($filters['etapa'], fn($q) => $q->where("{$prefix}etapa_id", $filters['etapa']));
+        }
 
         if (in_array('subproyecto', $applicableFilters)) {
             $query->when($filters['subproyecto'], fn($q) => $q->where(DB::raw("TRIM(LOWER({$prefix}subproyecto))"), trim(strtolower($filters['subproyecto']))));
