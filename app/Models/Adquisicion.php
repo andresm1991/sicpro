@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Adquisicion extends Model
 {
@@ -228,287 +230,264 @@ class Adquisicion extends Model
 
     public static function reporteGlobalAdquisiciones($request)
     {
-        $ordenado = $request->input('ordenado');
-        $fechas = $request->input('fechas');
-        $estado = $request->input('estado');
-        $proyecto = $request->input('proyecto');
-        $etapa = $request->input('etapa');
-        $tipo = $request->input('tipo');
-        $necesidad = $request->input('necesidad');
-        $costo = $request->input('costo');
-        $proveedor = $request->input('proveedor');
-        $producto = $request->input('producto');
-        $tipo_reporte = $request->input('tipo_reporte');
-        $forma_pago = $request->input('forma_pago');
-        $subproyecto = $request->input('subproyecto');
+        // 1. Recopilar y validar filtros de entrada
+        $filters = self::prepareFilters($request);
 
-        $query = self::with(['proyecto', 'etapa', 'tipo_etapa', 'orden_recepcion', 'orden_recepcion.forma_pago', 'orden_recepcion.proveedor', 'proyecto.contratista', 'proyecto.mano_obra']);
-
-        if ($request->filled('proyecto')) {
-            $query->where('proyecto_id', $proyecto);
+        // Si no hay un proyecto, no podemos continuar.
+        if (!$filters['proyectoModel']) {
+            return ['data' => [], 'subproyecto' => $filters['subproyecto']];
         }
 
-        $query->when($estado, function ($q, $estado) {
-            if ($estado == 'pendientes') {
-                $q->whereIn('estado', ['En Proceso', 'Finalizado']);
-            } else {
-                $q->where('estado', 'Completado');
-            }
-        });
+        // 2. Obtener las etapas relevantes para el proyecto
+        $etapas = $filters['proyectoModel']->etapas()
+            ->when($filters['etapa'], fn($q) => $q->where('etapas.id', $filters['etapa']))
+            ->get();
 
-        // Filtrar por etapa
-        $query->when($etapa, function ($q, $etapa) {
-            $q->where('etapa_id', $etapa);
-        });
-
-        // Filtrar por tipo_etapa
-        $query->when($tipo, function ($q, $tipo) {
-            $q->where('tipo_etapa_id', $tipo);
-        });
-
-        // Filtrar por costo (INDIRECTOS O DIRECTOS)
-        $query->when($costo, function ($q, $costo) {
-            $q->where('etapa_id', $costo);
-        });
-
-
-        // Filtrar por necesidad
-        $query->when($necesidad, function ($q, $necesidad) {
-            $q->whereHas('adquisiciones_detalle', function ($query) use ($necesidad) {
-                $query->where('necesidad', $necesidad);
-            })->with(['adquisiciones_detalle' => function ($query) use ($necesidad) {
-                $query->select('adquisicion_id', 'cantidad_solicitada', 'articulo_id')
-                    ->where('necesidad', $necesidad); // Filtrar por el producto específico
-            }]);
-        });
-
-        // Filtrar por producto y obtener la cantidad
-        $query->when($producto, function ($q, $producto) {
-            $q->whereHas('adquisiciones_detalle', function ($query) use ($producto) {
-                $query->where('articulo_id', $producto);
-            })->with(['adquisiciones_detalle' => function ($query) use ($producto) {
-                $query->where('articulo_id', $producto); // Filtrar por el producto específico
-            }]);
-        });
-
-        // Filtrar por proveedor
-        $query->when($proveedor, function ($q, $proveedor) {
-            $q->whereHas('orden_recepcion', function ($query) use ($proveedor) {
-                $query->where('proveedor_id', $proveedor);
-            });
-        });
-
-        // Filtrar por rango de fechas
-        $query->when($fechas, function ($q) use ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
-        });
-
-        // Filtrar por la forma de pago
-        $query->when($forma_pago, function ($q, $forma_pago) {
-            $q->whereHas('orden_recepcion', function ($query) use ($forma_pago) {
-                $query->where('forma_pago_id', $forma_pago);
-            });
-        });
-
-        // Ordenar por secuencial u otro criterio
-        switch ($ordenado) {
-            case 'secuencial':
-                $query->orderBy('numero', 'asc');
-                break;
-            case 'fecha':
-                $query->orderBy('fecha', 'asc');
-                break;
-            case 'alfabetico':
-                $query->orderBy('tipo_adquisicion', 'asc');
-                break;
-            default:
-
-                break;
-        }
         $resultado = [];
 
-        foreach ($query->get() as $adquisicion) {
-            $proyecto = $adquisicion->proyecto;
-            $proyectoNombre = $proyecto->nombre_proyecto ?? 'Sin proyecto';
-            $etapaNombre = $adquisicion->etapa->descripcion ?? 'Sin etapa';
+        // 3. Procesar cada etapa por separado
+        foreach ($etapas as $etapa) {
+            $etapaNombre = $etapa->descripcion ?? 'Sin etapa';
 
-            if (!isset($resultado[$proyectoNombre][$etapaNombre])) {
-                // Contratistas del proyecto y etapa
-                $contratistas = $proyecto->contratista ?? collect();
-                $contratistas = $contratistas->filter(function ($item) use ($subproyecto) {
-                    return trim(mb_strtolower($item->subproyecto ?? '')) === trim(mb_strtolower($subproyecto));
-                });
-                // APLICAR FILTRO POR PROVEEDOR
-                if ($proveedor) {
-                    $contratistas = $contratistas->where('proveedor_id', $proveedor);
-                }
+            // Inicializa la estructura para esta etapa
+            $resultado[$etapaNombre] = [
+                'contratista' => [],
+                'mano_obra' => [],
+                'materiales_herramientas' => [],
+                'servicios' => [],
+            ];
 
-                $contratistasArray = [];
-                foreach ($contratistas as $contratista) {
-                    // Solo incluir si la etapa coincide
-                    if (($contratista->etapa_id ?? null) == $adquisicion->etapa_id) {
-                        $totalContratado = $contratista->detalle_contratistas->sum(function ($detalle) use ($contratista) {
-                            $cantidad = $detalle->cantidad ?? 0;
-                            $valor = $detalle->valor_unitario ?? 0;
-                            return $cantidad * $valor * ($contratista->numero_casas ?? 1);
-                        });
-                        $pagos = $contratista->pagosOrdenTrabajoContratista->sum(function ($pago) {
-                            return $pago->pagado ? $pago->valor : 0;
-                        });
-                        $saldo = $totalContratado - $pagos;
-
-                        $categoriaNombre = $contratista->articulo->descripcion ?? 'Sin categoría';
-                        $proveedorNombre = $contratista->proveedor->razon_social ?? 'Sin proveedor';
-
-                        // Clave única por proveedor y categoría
-                        $key = $proveedorNombre . '|' . $categoriaNombre;
-
-                        if (!isset($contratistasArray[$key])) {
-                            $contratistasArray[$key] = [
-                                'proveedor' => $proveedorNombre,
-                                'categoria' => $categoriaNombre,
-                                'cantidad' => $contratista->numero_casas ?? 0, // cantidad del modelo Contratista
-                                'total_contratado' => $totalContratado,
-                                'pagos' => $pagos,
-                                'saldo' => $saldo,
-                            ];
-                        } else {
-                            // Si hay más de un registro para el mismo proveedor/categoría, suma los valores
-                            $contratistasArray[$key]['cantidad'] += $contratista->numero_casas ?? 0;
-                            $contratistasArray[$key]['total_contratado'] += $totalContratado;
-                            $contratistasArray[$key]['pagos'] += $pagos;
-                            $contratistasArray[$key]['saldo'] += $saldo;
-                        }
-                    }
-                }
-                $contratistasArray = array_values($contratistasArray);
-
-                // Mano de obra del proyecto y etapa
-                $manosObra = $proyecto->mano_obra ?? collect();
-                $manosObra = $manosObra->filter(function ($item) use ($subproyecto) {
-                    return trim(mb_strtolower($item->subproyecto ?? '')) === trim(mb_strtolower($subproyecto));
-                });
-                // APLICAR FILTRO POR PROVEEDOR
-                if ($proveedor) {
-                    $manosObra = $manosObra->where('proveedor_id', $proveedor);
-                }
-                $manosObraEtapa = $manosObra->where('etapa_id', $adquisicion->etapa_id);
-                $uniqueFechas = $manosObraEtapa->unique(function ($item) {
-                    return $item->fecha_inicio . '|' . $item->fecha_fin;
-                });
-
-                $detalleManoObra = $manosObraEtapa->flatMap->detalle_mano_obra;
-
-                $detalleManoObraPagados = $detalleManoObra->filter(function ($detalle) {
-                    // Solo incluir si existe relación con pago_mano_obra
-                    return $detalle->mano_obra && $detalle->mano_obra->pago_mano_obra && $detalle->mano_obra->pago_mano_obra->count() > 0;
-                });
-
-                $totalManoObra = $detalleManoObraPagados->sum(function ($detalle) {
-                    return ($detalle->valor ?? 0) + ($detalle->adicional ?? 0) - ($detalle->descuento ?? 0);
-                });
-
-
-                $resultado[$proyectoNombre][$etapaNombre] = [
-                    'contratista' => $contratistasArray,
-                    'mano_obra' => [[
-                        'cantidad' => $uniqueFechas->count(),
-                        'total' => $totalManoObra
-                    ]],
-                    'materiales_herramientas' => [],
-                    'servicios' => [],
-                ];
+            // 4. Obtener datos para cada categoría si el filtro de "tipo" lo permite
+            if (in_array($filters['tipo_slug'], [null, 'contratista'])) {
+                $resultado[$etapaNombre]['contratista'] = self::getContratistasData($filters, $etapa->id);
             }
-
-            foreach ($adquisicion->adquisiciones_detalle as $detalle) {
-                $articuloId = $detalle->articulo_id;
-                $articuloNombre = $detalle->producto->descripcion ?? 'Sin nombre';
-                $unidadMedida = $detalle->unidad_medida->descripcion ?? 'Sin unidad';
-                $tipoEtapa = $adquisicion->tipo_etapa->slug;
-
-                $cantidad = $detalle->cantidad_solicitada ?? 0;
-                $valor = $detalle->valor ?? 0;
-                $iva = $detalle->iva ?? 0;
-                $totalDetalle =  calcularTotalProducto($cantidad, $valor, $iva);
-
-                // APLICAR FILTRO POR $subproyecto EN DETALLES (insensible a mayúsculas/minúsculas y espacios)
-                if ($subproyecto) {
-                    $subproyectoDetalle = trim(mb_strtolower($adquisicion->subproyecto ?? ''));
-                    $subproyectoFiltro = trim(mb_strtolower($subproyecto));
-                    if ($subproyectoDetalle !== $subproyectoFiltro) {
-                        continue; // Saltar si no coincide el subproyecto
-                    }
-                }
-
-                $articuloData = [
-                    'articulo_id'    => $articuloId,
-                    'articulo'       => $articuloNombre,
-                    'unidad_medida'  => $unidadMedida,
-                    'cantidad_total' => $cantidad,
-                    'total'          => $totalDetalle,
-                ];
-
-                // Separar por tipo_etapa_id
-                if ($tipoEtapa == 'meteriales.herramientas') {
-                    $key = array_search($articuloId, array_column($resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'], 'articulo_id'));
-                    if ($key === false) {
-                        $resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'][] = $articuloData;
-                    } else {
-                        $resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'][$key]['cantidad_total'] += $cantidad;
-                        $resultado[$proyectoNombre][$etapaNombre]['materiales_herramientas'][$key]['total'] += $totalDetalle;
-                    }
-                } else { // 2 = servicios (ajusta el valor según tu catálogo)
-                    $key = array_search($articuloId, array_column($resultado[$proyectoNombre][$etapaNombre]['servicios'], 'articulo_id'));
-                    if ($key === false) {
-                        $resultado[$proyectoNombre][$etapaNombre]['servicios'][] = $articuloData;
-                    } else {
-                        $resultado[$proyectoNombre][$etapaNombre]['servicios'][$key]['cantidad_total'] += $cantidad;
-                        $resultado[$proyectoNombre][$etapaNombre]['servicios'][$key]['total'] += $totalDetalle;
-                    }
-                }
+            if (in_array($filters['tipo_slug'], [null, 'mano.obra'])) {
+                $resultado[$etapaNombre]['mano_obra'] = self::getManoDeObraData($filters, $etapa->id);
+            }
+            if (in_array($filters['tipo_slug'], [null, 'meteriales.herramientas', 'servicios'])) {
+                $adquisiciones = self::getAdquisicionesData($filters, $etapa->id);
+                $resultado[$etapaNombre]['materiales_herramientas'] = $adquisiciones['meteriales.herramientas'] ?? [];
+                $resultado[$etapaNombre]['servicios'] = $adquisiciones['servicios'] ?? [];
             }
         }
 
-        // 1. Ordenar los proyectos (claves principales) alfabéticamente
-        ksort($resultado, SORT_STRING);
+        // 5. Ordenar el resultado final
+        $resultado = self::sortFinalResult($resultado);
 
-        // 2. Iterar para ordenar internamente cada nivel
-        foreach ($resultado as $proyectoNombre => &$etapas) {
-            // 2.1. Ordenar las etapas (claves secundarias) alfabéticamente
-            ksort($etapas, SORT_STRING);
+        return [
+            'subproyecto' => $filters['subproyecto'],
+            'data' => $resultado
+        ];
+    }
 
-            foreach ($etapas as $etapaNombre => &$categorias) {
-                // 2.2. Ordenar los artículos IGNORANDO MAYÚSCULAS/MINÚSCULAS
+    /**
+     * Prepara y centraliza todos los filtros del request.
+     */
+    private static function prepareFilters($request): array
+    {
+        $proyectoId = $request->input('proyecto');
+        $proyectoModel = $proyectoId ? Proyecto::find($proyectoId) : null;
+        $tipoId = $request->input('tipo');
+
+        return [
+            'ordenado' => $request->input('ordenado'),
+            'fechas' => $request->input('fechas'),
+            'estado' => $request->input('estado'),
+            'proyecto' => $proyectoId,
+            'proyectoModel' => $proyectoModel,
+            'proyectoNombre' => $proyectoModel->nombre_proyecto ?? 'Sin proyecto',
+            'etapa' => $request->input('etapa'),
+            'tipo' => $tipoId,
+            'tipo_slug' => $tipoId ? CatalogoDato::find($tipoId)->slug : null,
+            'costo_directo' => $request->input('costo'), // Asumiendo que 'costo' es un ID de etapa para costos directos/indirectos
+            'proveedor' => $request->input('proveedor'),
+            'producto' => $request->input('producto'),
+            'necesidad' => $request->input('necesidad'),
+            'forma_pago' => $request->input('forma_pago'),
+            'subproyecto' => $request->input('subproyecto'),
+        ];
+    }
+
+    /**
+     * Obtiene y procesa los datos de Contratistas.
+     */
+    private static function getContratistasData(array $filters, int $etapaId): array
+    {
+        $query = \App\Models\Contratista::query()
+            ->with(['proveedor:id,razon_social', 'articulo:id,descripcion', 'detalle_contratistas', 'pagosOrdenTrabajoContratista'])
+            ->where('proyecto_id', $filters['proyecto'])
+            ->where('etapa_id', $etapaId);
+
+        // Aplicar filtros comunes
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor']);
+
+        $contratistas = $query->get();
+
+        // Agrupar en PHP, ya que los cálculos son complejos y se basan en relaciones.
+        $contratistasAgrupados = $contratistas->groupBy(function ($item) {
+            $proveedorNombre = $item->proveedor->razon_social ?? 'Sin proveedor';
+            $categoriaNombre = $item->articulo->descripcion ?? 'Sin categoría';
+            return $proveedorNombre . '|' . $categoriaNombre;
+        })->map(function ($group) {
+            $first = $group->first();
+            $totalContratado = $group->sum(function ($contratista) {
+                return $contratista->detalle_contratistas->sum(fn($d) => ($d->cantidad ?? 0) * ($d->valor_unitario ?? 0)) * ($contratista->numero_casas ?? 1);
+            });
+            $pagos = $group->sum(fn($c) => $c->pagosOrdenTrabajoContratista->where('pagado', true)->sum('valor'));
+
+            return [
+                'proveedor' => $first->proveedor->razon_social ?? 'Sin proveedor',
+                'categoria' => $first->articulo->descripcion ?? 'Sin categoría',
+                'cantidad' => $group->sum('numero_casas'),
+                'total_contratado' => $totalContratado,
+                'pagos' => $pagos,
+                'saldo' => $totalContratado - $pagos,
+            ];
+        });
+
+        return $contratistasAgrupados->values()->all();
+    }
+
+    /**
+     * Obtiene y procesa los datos de Mano de Obra.
+     */
+    private static function getManoDeObraData(array $filters, int $etapaId): array
+    {
+        $query = \App\Models\ManoObra::query()
+            ->where('proyecto_id', $filters['proyecto'])
+            ->where('etapa_id', $etapaId);
+
+        // Aplicar filtros comunes
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor']);
+
+        // Obtener la suma total directamente desde la base de datos
+        $totalManoObra = $query->clone()
+            ->join('detalle_mano_obra', 'mano_obra.id', '=', 'detalle_mano_obra.mano_obra_id')
+            ->whereExists(function ($query) { // Solo si tiene pagos
+                $query->select(DB::raw(1))
+                    ->from('pago_mano_obra')
+                    ->whereColumn('pago_mano_obra.mano_obra_id', 'mano_obra.id');
+            })
+            ->sum(DB::raw('COALESCE(detalle_mano_obra.valor, 0) + COALESCE(detalle_mano_obra.adicional, 0) - COALESCE(detalle_mano_obra.descuento, 0)'));
+
+        $cantidad = $query->distinct('fecha_inicio', 'fecha_fin')->count();
+
+        return [[
+            'cantidad' => $cantidad,
+            'total' => $totalManoObra
+        ]];
+    }
+
+    /**
+     * Obtiene y procesa los datos de Adquisiciones (Materiales y Servicios).
+     */
+    private static function getAdquisicionesData(array $filters, int $etapaId): array
+    {
+        $query = \App\Models\AdquisicionDetalle::query()
+            ->select(
+                'articulo_id',
+                'articulos.descripcion as articulo_nombre',
+                'unidad_medidas.descripcion as unidad_medida_nombre',
+                'tipo_etapas.slug as tipo_etapa_slug',
+                DB::raw('SUM(adquisicion_detalles.cantidad_solicitada) as cantidad_total'),
+                DB::raw('SUM( (adquisicion_detalles.cantidad_solicitada * adquisicion_detalles.valor) * (1 + adquisicion_detalles.iva/100) ) as total_con_iva')
+            )
+            ->join('adquisiciones', 'adquisicion_detalles.adquisicion_id', '=', 'adquisiciones.id')
+            ->join('articulos', 'adquisicion_detalles.articulo_id', '=', 'articulos.id')
+            ->join('unidad_medidas', 'adquisicion_detalles.unidad_medida_id', '=', 'unidad_medidas.id')
+            ->join('tipo_etapas', 'adquisiciones.tipo_etapa_id', '=', 'tipo_etapas.id')
+            ->where('adquisiciones.proyecto_id', $filters['proyecto'])
+            ->where('adquisiciones.etapa_id', $etapaId);
+
+        // Aplicar filtros comunes a la tabla 'adquisiciones'
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'estado', 'fechas'], 'adquisiciones');
+
+        // Filtros específicos de esta consulta
+        $query->when($filters['producto'], fn($q) => $q->where('adquisicion_detalles.articulo_id', $filters['producto']));
+        $query->when($filters['necesidad'], fn($q) => $q->where('adquisicion_detalles.necesidad', $filters['necesidad']));
+        $query->when($filters['costo_directo'], fn($q) => $q->where('adquisiciones.etapa_id', $filters['costo_directo']));
+
+        $query->groupBy('articulo_id', 'articulo_nombre', 'unidad_medida_nombre', 'tipo_etapa_slug');
+
+        // Filtrar por tipo_etapa_slug si es necesario
+        $query->when($filters['tipo_slug'], function ($q) use ($filters) {
+            if (in_array($filters['tipo_slug'], ['meteriales.herramientas', 'servicios'])) {
+                $q->where('tipo_etapas.slug', $filters['tipo_slug']);
+            }
+        });
+
+        $detalles = $query->get();
+
+        // Agrupar por slug en PHP
+        return $detalles->groupBy('tipo_etapa_slug')->map(function ($group) {
+            return $group->map(function ($item) {
+                return [
+                    'articulo_id'    => $item->articulo_id,
+                    'articulo'       => $item->articulo_nombre,
+                    'unidad_medida'  => $item->unidad_medida_nombre,
+                    'cantidad_total' => $item->cantidad_total,
+                    'total'          => $item->total_con_iva,
+                ];
+            });
+        })->all();
+    }
+
+    /**
+     * Aplica un conjunto de filtros comunes a una consulta Eloquent.
+     */
+    private static function applyCommonFilters(Builder $query, array $filters, array $applicableFilters, string $table = null)
+    {
+        $prefix = $table ? "{$table}." : '';
+
+        if (in_array('subproyecto', $applicableFilters)) {
+            $query->when($filters['subproyecto'], fn($q) => $q->where(DB::raw("TRIM(LOWER({$prefix}subproyecto))"), trim(strtolower($filters['subproyecto']))));
+        }
+        if (in_array('proveedor', $applicableFilters)) {
+            $query->when($filters['proveedor'], fn($q) => $q->where("{$prefix}proveedor_id", $filters['proveedor']));
+        }
+        if (in_array('estado', $applicableFilters)) {
+            $query->when($filters['estado'], function ($q, $estado) use ($prefix) {
+                $column = "{$prefix}estado";
+                $statusValues = ($estado == 'pendientes') ? ['En Proceso', 'Finalizado'] : ['Completado'];
+                $q->whereIn($column, $statusValues);
+            });
+        }
+        if (in_array('fechas', $applicableFilters)) {
+            $query->when($filters['fechas'], function ($q) use ($filters, $prefix) {
+                list($fechaInicio, $fechaFin) = explode(' - ', $filters['fechas']);
+                $q->whereBetween("{$prefix}fecha", [
+                    Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->startOfDay(),
+                    Carbon::createFromFormat('m/d/Y', trim($fechaFin))->endOfDay(),
+                ]);
+            });
+        }
+    }
+
+    /**
+     * Ordena el array de resultados final.
+     */
+    private static function sortFinalResult(array $resultado): array
+    {
+        ksort($resultado, SORT_STRING); // Ordenar proyectos
+
+        foreach ($resultado as &$etapas) {
+            ksort($etapas, SORT_STRING); // Ordenar etapas
+            foreach ($etapas as &$categorias) {
                 if (!empty($categorias['materiales_herramientas'])) {
-                    usort($categorias['materiales_herramientas'], function ($a, $b) {
-                        return strnatcasecmp($a['articulo'], $b['articulo']);
-                    });
+                    usort($categorias['materiales_herramientas'], fn($a, $b) => strnatcasecmp($a['articulo'], $b['articulo']));
                 }
                 if (!empty($categorias['servicios'])) {
-                    usort($categorias['servicios'], function ($a, $b) {
-                        return strnatcasecmp($a['articulo'], $b['articulo']);
-                    });
+                    usort($categorias['servicios'], fn($a, $b) => strnatcasecmp($a['articulo'], $b['articulo']));
                 }
                 if (!empty($categorias['contratista'])) {
                     usort($categorias['contratista'], function ($a, $b) {
-                        $proveedorCmp = strnatcasecmp($a['proveedor'], $b['proveedor']);
-                        if ($proveedorCmp !== 0) {
-                            return $proveedorCmp;
-                        }
-                        return strnatcasecmp($a['categoria'], $b['categoria']);
+                        $cmp = strnatcasecmp($a['proveedor'], $b['proveedor']);
+                        return $cmp !== 0 ? $cmp : strnatcasecmp($a['categoria'], $b['categoria']);
                     });
                 }
             }
         }
-        unset($etapas, $categorias); // Buenas prácticas para limpiar referencias
-
-        return [
-            'subproyecto' => $subproyecto, // <-- Aquí agregas el valor
-            'data' => $resultado
-        ];
+        return $resultado;
     }
 
     public function getSemanasAttribute()
