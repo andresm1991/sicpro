@@ -89,7 +89,7 @@ $(function () {
                     )
                     return;
                 }
-                if (tipo_reporte_text.toLowerCase() == 'contratistas') {
+                if (tipo_reporte_text.toLowerCase() == 'contratistas' && reporte != 'global') {
                     let totalPagado = 0;
                     let totalSaldo = 0;
                     $('#table-view-reporte').append(`<div class="table-responsive">
@@ -148,7 +148,7 @@ $(function () {
                         </table>
                         </div>
                         `);
-                } else if (tipo_reporte_text.toLowerCase() == 'mano de obra') {
+                } else if (tipo_reporte_text.toLowerCase() == 'mano de obra' && reporte != 'global') {
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
                             <thead class="thead-dark">
@@ -199,12 +199,19 @@ $(function () {
                         </div>
                         `);
                 } else if (reporte == 'global') {
-                    // ...dentro de if (reporte == 'global') {
                     let html = '';
                     let totalGeneral = 0;
 
                     let info = response.result.data;
 
+                    if (info.length == 0) {
+                        Swal.fire(
+                            'Ups.!',
+                            'No se encontraron resultados.',
+                            'error'
+                        );
+                        return;
+                    }
                     Object.entries(info).forEach(([proyecto, etapas]) => {
                         html += `<h5 class="mt-4 mb-2 text-primary">Poryecto: ${proyecto}</h5>`;
                         if (data.subproyecto) {
@@ -366,7 +373,7 @@ $(function () {
                             }
 
                             // Sumar totales de cada sección al total general
-                            totalGeneral += totalMateriales + totalServicios + totalPagos + totalManoObra;
+                            totalGeneral += totalMateriales + totalServicios + totalContratistas + totalManoObra;
                         });
                     });
 
@@ -1045,10 +1052,10 @@ $(function () {
                                     <tr>
                                         <td>${item.fecha_formateada}</td>
                                         <td class="align-middle">
-                                            ${item.origen_id && item.origen_type =="App\\Models\\Adquisicion" ? item.adquisicion.proyecto.nombre_proyecto : '-' }
+                                            ${item.origen_id && item.origen_type == "App\\Models\\Adquisicion" ? item.adquisicion.proyecto.nombre_proyecto : '-'}
                                         </td>
                                         <td class="align-middle">
-                                            ${item.origen_id ? item.adquisicion.subproyecto : '-' }
+                                            ${item.origen_id ? item.adquisicion.subproyecto : '-'}
                                         </td>
                                         <td>${item.articulo_id != null || item.producto_id != null ? (tipoReporte != 'jp_limpieza' ? item.articulo.descripcion : item.producto.nombre) : item.descripcion}</td>
                                         <td>${item.articulo_id != null || item.producto_id != null ? item.descripcion : '-'}</td>
