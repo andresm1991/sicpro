@@ -778,6 +778,8 @@ $(function () {
         });
     });
 
+
+
 });
 
 function calcularTotalProducto($cantidad, $valor, $iva) {
