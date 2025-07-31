@@ -26,6 +26,8 @@ class Proveedor extends Model
         'calificacion'
     ];
 
+    protected $appends = ['nombre_proveedor'];
+
     public function proveedor_articulos()
     {
         return $this->hasMany(ProveedorArticulo::class);
@@ -44,5 +46,16 @@ class Proveedor extends Model
     public function categoria_proveedor()
     {
         return $this->belongsTo(CatalogoDato::class, 'categoria_proveedor_id');
+    }
+
+    public function getNombreProveedorAttribute()
+    {
+        // trim() elimina espacios y si el resultado es una cadena vacía, se considera falso.
+        if (trim($this->razon_social)) {
+            return $this->razon_social;
+        }
+
+        // Concatena nombres y apellidos, eliminando espacios extra si alguno de los campos está vacío.
+        return trim($this->nombres . ' ' . $this->apellidos);
     }
 }

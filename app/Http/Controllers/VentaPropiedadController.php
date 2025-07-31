@@ -187,7 +187,7 @@ class VentaPropiedadController extends Controller
         // Eliminar la propiedad
         $propiedad->delete();
 
-        return response()->json(['status' => true, 'message' => 'La propiedad se eliminó correctamente.']);
+        return response()->json(['success' => true, 'message' => 'La propiedad se eliminó correctamente.']);
     }
 
     public function buscar(Request $request)
@@ -209,6 +209,7 @@ class VentaPropiedadController extends Controller
             $rows .= '<tr id="' . $propiedad->id . '">';
             $rows .= '<td class="align-middle">' . $propiedad->created_at_formatted . '</td>';
             $rows .= '<td class="align-middle">' . $propiedad->nombre . '</td>';
+            $rows .= '<td class="align-middle">' . $propiedad->tipo_propiedad->descripcion . '</td>';
             $rows .= '<td class="align-middle">' . $propiedad->area_formatted . '</td>';
             $rows .= '<td class="align-middle">$ ' . $propiedad->precio_venta_formatted . '</td>';
             $rows .= '<td class="align-middle">' . $propiedad->telefono . '</td>';

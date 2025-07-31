@@ -34,6 +34,7 @@
                                 <tr>
                                     <th scope="col">Fecha registro</th>
                                     <th scope="col">propiedad</th>
+                                    <th scope="col">tipo</th>
                                     <th scope="col">area</th>
                                     <th scope="col">precio venta</th>
                                     <th scope="col">telefono</th>
@@ -46,6 +47,7 @@
                                     <tr id="{{ $propiedad->id }}">
                                         <td class="align-middle">{{ $propiedad->created_at_formatted }}</td>
                                         <td class="align-middle">{{ $propiedad->nombre }}</td>
+                                        <td class="align-middle">{{ $propiedad->tipo_propiedad->descripcion }}</td>
                                         <td class="align-middle">{{ $propiedad->area_formatted }}</td>
                                         <td class="align-middle">$ {{ $propiedad->precio_venta_formatted }}</td>
                                         <td class="align-middle">{{ $propiedad->telefono }}</td>

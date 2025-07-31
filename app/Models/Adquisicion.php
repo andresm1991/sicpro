@@ -495,25 +495,47 @@ class Adquisicion extends Model
      */
     private static function sortFinalResult(array $resultado): array
     {
-        ksort($resultado, SORT_STRING); // Ordenar proyectos
+        // 1. Ordenar los proyectos (claves principales) alfabéticamente
+        ksort($resultado, SORT_STRING);
 
-        foreach ($resultado as &$etapas) {
-            ksort($etapas, SORT_STRING); // Ordenar etapas
-            foreach ($etapas as &$categorias) {
-                if (!empty($categorias['materiales_herramientas'])) {
-                    usort($categorias['materiales_herramientas'], fn($a, $b) => strnatcasecmp($a['articulo'], $b['articulo']));
-                }
-                if (!empty($categorias['servicios'])) {
-                    usort($categorias['servicios'], fn($a, $b) => strnatcasecmp($a['articulo'], $b['articulo']));
-                }
-                if (!empty($categorias['contratista'])) {
-                    usort($categorias['contratista'], function ($a, $b) {
-                        $cmp = strnatcasecmp($a['proveedor'], $b['proveedor']);
-                        return $cmp !== 0 ? $cmp : strnatcasecmp($a['categoria'], $b['categoria']);
-                    });
-                }
+        // 2. Iterar sobre cada proyecto para ordenar sus etapas
+        foreach ($resultado as &$etapas) { // Usamos '&' para modificar el array directamente
+
+            // 2.1. Ordenar las etapas (claves secundarias) alfabéticamente
+            ksort($etapas, SORT_STRING);
+
+            // 2.2. Ordenar los CONTRATISTAS por proveedor y luego por categoría
+            // Se accede directamente a la clave 'contratista' del array de la etapa.
+            if (!empty($etapas['contratista'])) {
+                usort($etapas['contratista'], function ($a, $b) {
+                    // Primero, compara por proveedor
+                    $proveedorCmp = strnatcasecmp($a['proveedor'], $b['proveedor']);
+                    if ($proveedorCmp !== 0) {
+                        return $proveedorCmp;
+                    }
+                    // Si los proveedores son iguales, compara por categoría
+                    return strnatcasecmp($a['categoria'], $b['categoria']);
+                });
+            }
+
+            // 2.3. Ordenar los MATERIALES por artículo
+            if (!empty($etapas['materiales_herramientas'])) {
+                usort($etapas['materiales_herramientas'], function ($a, $b) {
+                    return strnatcasecmp($a['articulo'], $b['articulo']);
+                });
+            }
+
+            // 2.4. Ordenar los SERVICIOS por artículo
+            if (!empty($etapas['servicios'])) {
+                usort($etapas['servicios'], function ($a, $b) {
+                    return strnatcasecmp($a['articulo'], $b['articulo']);
+                });
             }
         }
+
+        // Buenas prácticas para limpiar la referencia después del bucle
+        unset($etapas);
+
         return $resultado;
     }
 

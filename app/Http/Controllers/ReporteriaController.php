@@ -62,10 +62,11 @@ class ReporteriaController extends Controller
             $tipo_proveedor = $tipo == 'materiales_y_herramientas' ? 'meteriales.herramientas' : ($tipo == 'servicios' ? 'servicios' : ($tipo == 'contratistas' ? 'contratista' : ($tipo == 'mano_de_obra' ? 'mano.obra' : '')));
 
             /// Obtener los proveedores segun la categoria
-            $proveedores = Proveedor::whereHas('categoria_proveedor', function ($query) use ($tipo_proveedor) {
+            $proveedoresCollection = Proveedor::whereHas('categoria_proveedor', function ($query) use ($tipo_proveedor) {
                 $query->where('slug', $tipo_proveedor);
-            })->orderBy('razon_social', 'asc')
-                ->get(['id', 'razon_social']);
+            })
+                ->get(['id', 'razon_social', 'nombres', 'apellidos']);
+            $proveedores = $proveedoresCollection->sortBy('nombre_proveedor')->values();
 
             if ($tipo == 'materiales_y_herramientas' || $tipo == 'servicios' || $tipo == 'contratistas') {
                 $result['proveedores'] = $proveedores;

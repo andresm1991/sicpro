@@ -6,7 +6,7 @@
     </div>
     <div class="form-group col-md-6">
         <label for="inputDNI" class="font-weight-bold">Identificación</label>
-        {{ Form::text('identificacion', old('identificacion', $cliente->ruc), ['class' => 'form-control input-enteros', 'id' => 'inputDNI', 'placeholder' => 'Ingrese identificación', 'maxlength' => '13']) }}
+        {{ Form::text('identificacion', old('identificacion', $cliente->ruc), ['class' => 'form-control solo-numeros', 'placeholder' => 'Ingrese identificación', 'maxlength' => 13]) }}
         {!! $errors->first('identificacion', '<small class="help-block text-danger">:message</small>') !!}
     </div>
 </div>

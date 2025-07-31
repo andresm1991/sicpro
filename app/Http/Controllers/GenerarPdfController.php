@@ -467,6 +467,7 @@ class GenerarPdfController extends Controller
      */
     public function reportAdquisiciones(Request $request, $tipo_reporte)
     {
+
         $ordenado = $request->input('ordenado'); // Ejemplo: "secuencial"
         $fechas = $request->input('fechas'); // Ejemplo: "03/12/2025 - 03/30/2025"
         $estado = $request->input('estado'); // Ejemplo: null o "Completado"
@@ -482,10 +483,12 @@ class GenerarPdfController extends Controller
 
         $tipoAdquisisicon = CatalogoDato::find($tipo);
         if ($tipo_reporte == 'global') {
+            $costos_indirecto = $request->input('costos_indirectos', 0);
+            $total_general = $request->input('total_general', 0);
             $data = Adquisicion::reporteGlobalAdquisiciones($request);
             $view = 'reporte_adquisiciones_global';
 
-            $pdf = PDF::loadView('pdf.' . $view, compact('data'))->setPaper('a4', 'landscape');
+            $pdf = PDF::loadView('pdf.' . $view, compact('data', 'costos_indirecto', 'total_general'))->setPaper('a4', 'landscape');
         } else {
             if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
                 $query = Adquisicion::dataReporteAdquisiciones($request);
