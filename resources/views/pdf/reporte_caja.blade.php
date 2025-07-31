@@ -235,10 +235,20 @@
                             {{ $movimiento['fecha_formateada'] }}
                         </td>
                         <td class="align-middle">
-                            {{ isset($movimiento['origen_id']) && $movimiento['origen_type'] == 'App\Models\Adquisicion' ? $movimiento['adquisicion']['proyecto']['nombre_proyecto'] : '-' }}
+                            {{ isset($movimiento['origen_id']) &&
+                            ((isset($movimiento['origen_type']) && $movimiento['origen_type'] == 'App\Models\Adquisicion') ||
+                                (isset($movimiento['origen_type']) && $movimiento['origen_type'] == 'adquisicion_jplimpieza')) &&
+                            isset($movimiento['adquisicion']['proyecto']['nombre_proyecto']) &&
+                            !empty($movimiento['adquisicion']['proyecto']['nombre_proyecto'])
+                                ? $movimiento['adquisicion']['proyecto']['nombre_proyecto']
+                                : '-' }}
                         </td>
                         <td class="align-middle">
-                            {{ isset($movimiento['origen_id']) ? $movimiento['adquisicion']['subproyecto'] : '-' }}
+                            {{ isset($movimiento['origen_id']) &&
+                            isset($movimiento['adquisicion']['subproyecto']) &&
+                            !empty($movimiento['adquisicion']['subproyecto'])
+                                ? $movimiento['adquisicion']['subproyecto']
+                                : '-' }}
                         </td>
                         <td>
                             {{ isset($movimiento['articulo_id']) ? $movimiento['articulo']['descripcion'] : (isset($movimiento['producto_id']) ? $movimiento['producto']['nombre'] : $movimiento['descripcion']) }}
