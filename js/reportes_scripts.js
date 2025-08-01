@@ -11,7 +11,7 @@ $(function () {
         let reporte = $('select[name=tipo_reporte]').val();
 
 
-        if (tipo_reporte == '' && reporte != 'global') {
+        if (tipo_reporte == '' && reporte != 'global' && reporte != 'comparativo') {
             Swal.fire(
                 'Ups.!',
                 'Por favor seleccione un tipo de reporte.',
@@ -56,7 +56,7 @@ $(function () {
         let cargo_text = $('select[name=cargo] option:selected').text();
         let proyecto = $('select[name=proyecto]').val();
 
-        if (tipo_reporte == '' && reporte != 'global') {
+        if (tipo_reporte == '' && reporte != 'global' && reporte != 'comparativo') {
             Swal.fire(
                 'Ups.!',
                 'Por favor seleccione un tipo para continuar.',
@@ -84,12 +84,12 @@ $(function () {
                 if (!response.success || data.length == 0) {
                     Swal.fire(
                         'Ups.!',
-                        'No se encontraron resultados.',
+                        (response && typeof response.mensaje !== 'undefined' && response.mensaje) ? response.mensaje : 'No se encontraron resultados.',
                         'error'
                     )
                     return;
                 }
-                if (tipo_reporte_text.toLowerCase() == 'contratistas' && reporte != 'global') {
+                if (tipo_reporte_text.toLowerCase() == 'contratistas' && reporte != 'global' && reporte != 'comparativo') {
                     let totalPagado = 0;
                     let totalSaldo = 0;
                     $('#table-view-reporte').append(`<div class="table-responsive">
@@ -148,7 +148,7 @@ $(function () {
                         </table>
                         </div>
                         `);
-                } else if (tipo_reporte_text.toLowerCase() == 'mano de obra' && reporte != 'global') {
+                } else if (tipo_reporte_text.toLowerCase() == 'mano de obra' && reporte != 'global' && reporte != 'comparativo') {
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
                             <thead class="thead-dark">
@@ -410,6 +410,8 @@ $(function () {
                     // Usar .html() para reemplazar el contenido, no .append()
                     $('#table-view-reporte').html(html);
 
+                } else if (reporte == 'comparativo') { //* Mostrar el reporte comparativo de adquisiciones //
+                    renderizarReporteComparativo(response.result);
                 } else { //* Mostrar el reporte de adquisiciones //
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
@@ -465,7 +467,7 @@ $(function () {
                                 <td colspan="${producto != '' ? '11' : '10'}" class="text-right"><strong>Total Productos:</strong></td>
                                 <td class="text-right"><strong>${totalProductos}</strong></td>
                             </tr>` : ''}
-                            <tr>
+                               <tr>
                                 <td colspan="${producto != '' ? '11' : '10'}" class="text-right"><strong>Total General:</strong></td>
                                 <td class="text-right"><strong> ${formatearUSD(totalGeneral)}</strong></td>
                             </tr>
@@ -660,6 +662,17 @@ $(function () {
                         console.log(errors)
                 }
             });
+        }
+    });
+
+    $('#contenedor-proyecto-2').hide();
+
+    $('select[name=tipo_reporte]').on('change', function () {
+        let tipoReporte = $('select[name=tipo_reporte]').val();
+        if (tipoReporte == 'comparativo') {
+            $('#contenedor-proyecto-2').show();
+        } else {
+            $('#contenedor-proyecto-2').hide();
         }
     });
 
@@ -1162,15 +1175,293 @@ $(function () {
     });
 
     /**
- * Réplica de la función round() de PHP en JavaScript.
- * Redondea un número a una cantidad específica de decimales usando el método "round half up".
- * @param {number} value - El número a redondear.
- * @param {number} decimals - La cantidad de decimales.
- * @returns {number} El número redondeado.
- */
+     * Réplica de la función round() de PHP en JavaScript.
+     * Redondea un número a una cantidad específica de decimales usando el método "round half up".
+     * @param {number} value - El número a redondear.
+     * @param {number} decimals - La cantidad de decimales.
+     * @returns {number} El número redondeado.
+     */
     function phpRound(value, decimals) {
         // Usar notación exponencial para evitar problemas de imprecisión de punto flotante.
         // Esto mueve la coma decimal, redondea el entero y luego la devuelve a su sitio.
         return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+    }
+
+    /**
+     * Renderiza un reporte HTML comparativo entre dos proyectos a partir de una respuesta AJAX.
+     * @param {object} response El objeto JSON de la respuesta del servidor.
+     */
+    function renderizarReporteComparativo(response) {
+
+        let html = '';
+
+        // 1. Extraer las variables principales de la respuesta
+        const proyecto1 = response.proyecto1;
+        const proyecto2 = response.proyecto2;
+        const subproyecto = response.subproyecto;
+        const dataComparativa = response.data_comparativa;
+
+        // 2. Funciones auxiliares para limpieza y formato
+        const formatearMoneda = (valor) => {
+            const numero = parseFloat(valor);
+            if (isNaN(numero)) return '$0.00';
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(numero);
+        };
+
+        const formatearNumero = (valor, decimales = 2) => {
+            const numero = parseFloat(valor);
+            if (isNaN(numero)) return (0).toFixed(decimales);
+            return numero.toFixed(decimales);
+        };
+
+        const claseDiferencia = (valor) => {
+            const numero = parseFloat(valor);
+            if (isNaN(numero) || numero === 0) return 'text-muted';
+            return numero > 0 ? 'text-success font-weight-bold' : 'text-danger font-weight-bold';
+        };
+
+        // 3. Verificar si hay datos para mostrar
+        if (!dataComparativa || Object.keys(dataComparativa).length === 0) {
+            Swal.fire(
+                'Sin resultados',
+                'No se encontraron datos para los proyectos y filtros seleccionados.',
+                'info'
+            );
+            $('#table-view-reporte').html('');
+            return;
+        }
+
+        // 4. Construir la cabecera general del reporte
+        html += `<h3 class="mt-4 mb-3 text-primary">Reporte Comparativo de Proyectos</h3>`;
+        html += `<div class="row mb-3">
+                <div class="col-md-5"><h5>Proyecto 1: <strong>${proyecto1.nombre}</strong></h5></div>
+                <div class="col-md-5"><h5>Proyecto 2: <strong>${proyecto2.nombre}</strong></h5></div>
+                <div class="col-md-2 text-md-right"><h5>Diferencia (P1 - P2)</h5></div>
+             </div>`;
+        if (subproyecto) {
+            html += `<h6 class="mb-3">Filtro Subproyecto: <strong>${subproyecto}</strong></h6>`;
+        }
+
+        // Objeto para acumular los totales generales
+        let totalesGenerales = {
+            p1: { contratado: 0, mano_obra: 0, materiales: 0, servicios: 0 },
+            p2: { contratado: 0, mano_obra: 0, materiales: 0, servicios: 0 }
+        };
+
+        // 5. Iterar sobre las etapas
+        Object.entries(dataComparativa).forEach(([etapaNombre, categorias]) => {
+            html += '<hr>';
+            html += `<h5 class="mb-3" style="background-color: #e9ecef; padding: 10px; border-radius: 4px;">Etapa: <strong>${etapaNombre}</strong></h5>`;
+
+            let totalesEtapa = { p1: 0, p2: 0 };
+
+            // --- Tabla de Contratistas ---
+            if (categorias.contratista && categorias.contratista.length > 0) {
+                let subtotales = { p1: { total: 0, pagos: 0, saldo: 0 }, p2: { total: 0, pagos: 0, saldo: 0 } };
+                let tablaHtml = `<h6 class="mb-2 text-info">Contratistas</h6>
+                             <div class="table-responsive mb-4">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th rowspan="2" class="align-middle">Proveedor / Categoría</th>
+                                            <th colspan="3" class="text-center">${proyecto1.nombre}</th>
+                                            <th colspan="3" class="text-center">${proyecto2.nombre}</th>
+                                            <th colspan="3" class="text-center">Diferencia</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-right">Contratado</th><th class="text-right">Pagos</th><th class="text-right">Saldo</th>
+                                            <th class="text-right">Contratado</th><th class="text-right">Pagos</th><th class="text-right">Saldo</th>
+                                            <th class="text-right">Contratado</th><th class="text-right">Pagos</th><th class="text-right">Saldo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+
+                categorias.contratista.forEach(item => {
+                    const p1 = item.p1 || {}; const p2 = item.p2 || {}; const diff = item.diff || {};
+                    subtotales.p1.total += (p1.total_contratado || 0); subtotales.p1.pagos += (p1.pagos || 0); subtotales.p1.saldo += (p1.saldo || 0);
+                    subtotales.p2.total += (p2.total_contratado || 0); subtotales.p2.pagos += (p2.pagos || 0); subtotales.p2.saldo += (p2.saldo || 0);
+
+                    tablaHtml += `<tr>
+                                <td><strong>${item.item_base.proveedor}</strong><br><small class="text-muted">${item.item_base.categoria}</small></td>
+                                <td class="text-right">${formatearMoneda(p1.total_contratado)}</td><td class="text-right">${formatearMoneda(p1.pagos)}</td><td class="text-right">${formatearMoneda(p1.saldo)}</td>
+                                <td class="text-right">${formatearMoneda(p2.total_contratado)}</td><td class="text-right">${formatearMoneda(p2.pagos)}</td><td class="text-right">${formatearMoneda(p2.saldo)}</td>
+                                <td class="text-right ${claseDiferencia(diff.total)}">${formatearMoneda(diff.total)}</td><td class="text-right ${claseDiferencia(diff.pagos)}">${formatearMoneda(diff.pagos)}</td><td class="text-right ${claseDiferencia(diff.saldo)}">${formatearMoneda(diff.saldo)}</td>
+                             </tr>`;
+                });
+                tablaHtml += `</tbody>
+                        <tfoot class="table-secondary font-weight-bold">
+                            <tr>
+                                <td>Totales Contratista</td>
+                                <td class="text-right">${formatearMoneda(subtotales.p1.total)}</td><td class="text-right">${formatearMoneda(subtotales.p1.pagos)}</td><td class="text-right">${formatearMoneda(subtotales.p1.saldo)}</td>
+                                <td class="text-right">${formatearMoneda(subtotales.p2.total)}</td><td class="text-right">${formatearMoneda(subtotales.p2.pagos)}</td><td class="text-right">${formatearMoneda(subtotales.p2.saldo)}</td>
+                                <td class="text-right ${claseDiferencia(subtotales.p1.total - subtotales.p2.total)}">${formatearMoneda(subtotales.p1.total - subtotales.p2.total)}</td>
+                                <td class="text-right ${claseDiferencia(subtotales.p1.pagos - subtotales.p2.pagos)}">${formatearMoneda(subtotales.p1.pagos - subtotales.p2.pagos)}</td>
+                                <td class="text-right ${claseDiferencia(subtotales.p1.saldo - subtotales.p2.saldo)}">${formatearMoneda(subtotales.p1.saldo - subtotales.p2.saldo)}</td>
+                            </tr>
+                        </tfoot>
+                        </table></div>`;
+                html += tablaHtml;
+                totalesEtapa.p1 += subtotales.p1.total;
+                totalesEtapa.p2 += subtotales.p2.total;
+                totalesGenerales.p1.contratado += subtotales.p1.total;
+                totalesGenerales.p2.contratado += subtotales.p2.total;
+            }
+
+            // --- Función genérica para Materiales y Servicios ---
+            const renderizarTablaItems = (titulo, items, tipo) => {
+                if (!items || items.length === 0) return '';
+                let subtotales = { p1: { cantidad: 0, total: 0 }, p2: { cantidad: 0, total: 0 } };
+                let tablaHtml = `<h6 class="mb-2 text-info">${titulo}</h6>
+                             <div class="table-responsive mb-4">
+                                <table class="table table-bordered table-sm">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th rowspan="2" class="align-middle">Item / Unidad</th>
+                                            <th colspan="2" class="text-center">${proyecto1.nombre}</th>
+                                            <th colspan="2" class="text-center">${proyecto2.nombre}</th>
+                                            <th colspan="2" class="text-center">Diferencia</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-right">Cantidad</th><th class="text-right">Total</th>
+                                            <th class="text-right">Cantidad</th><th class="text-right">Total</th>
+                                            <th class="text-right">Cantidad</th><th class="text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>`;
+                items.forEach(item => {
+                    const p1 = item.p1 || {}; const p2 = item.p2 || {}; const diff = item.diff || {};
+                    subtotales.p1.cantidad += (p1.cantidad_total || 0); subtotales.p1.total += (p1.total || 0);
+                    subtotales.p2.cantidad += (p2.cantidad_total || 0); subtotales.p2.total += (p2.total || 0);
+
+                    tablaHtml += `<tr>
+                                <td><strong>${item.item_base.articulo}</strong><br><small class="text-muted">${item.item_base.unidad_medida}</small></td>
+                                <td class="text-right">${formatearNumero(p1.cantidad_total)}</td><td class="text-right">${formatearMoneda(p1.total)}</td>
+                                <td class="text-right">${formatearNumero(p2.cantidad_total)}</td><td class="text-right">${formatearMoneda(p2.total)}</td>
+                                <td class="text-right ${claseDiferencia(diff.cantidad)}">${formatearNumero(diff.cantidad)}</td><td class="text-right ${claseDiferencia(diff.total)}">${formatearMoneda(diff.total)}</td>
+                             </tr>`;
+                });
+                tablaHtml += `</tbody>
+                          <tfoot class="table-secondary font-weight-bold">
+                              <tr>
+                                  <td>Totales ${titulo}</td>
+                                  <td class="text-right">${formatearNumero(subtotales.p1.cantidad)}</td><td class="text-right">${formatearMoneda(subtotales.p1.total)}</td>
+                                  <td class="text-right">${formatearNumero(subtotales.p2.cantidad)}</td><td class="text-right">${formatearMoneda(subtotales.p2.total)}</td>
+                                  <td class="text-right ${claseDiferencia(subtotales.p1.cantidad - subtotales.p2.cantidad)}">${formatearNumero(subtotales.p1.cantidad - subtotales.p2.cantidad)}</td>
+                                  <td class="text-right ${claseDiferencia(subtotales.p1.total - subtotales.p2.total)}">${formatearMoneda(subtotales.p1.total - subtotales.p2.total)}</td>
+                              </tr>
+                          </tfoot>
+                          </table></div>`;
+                totalesEtapa.p1 += subtotales.p1.total;
+                totalesEtapa.p2 += subtotales.p2.total;
+                totalesGenerales.p1[tipo] += subtotales.p1.total;
+                totalesGenerales.p2[tipo] += subtotales.p2.total;
+                return tablaHtml;
+            };
+
+            html += renderizarTablaItems('Materiales y Herramientas', categorias.materiales_herramientas, 'materiales');
+            html += renderizarTablaItems('Servicios', categorias.servicios, 'servicios');
+
+            // --- Tabla de Mano de Obra ---
+            if (categorias.mano_obra && categorias.mano_obra.length > 0) {
+                let item = categorias.mano_obra[0]; // Mano de obra está consolidada
+                const p1 = item.p1 || {}; const p2 = item.p2 || {}; const diff = item.diff || {};
+
+                html += `<h6 class="mb-2 text-info">Mano de Obra</h6>
+                     <div class="table-responsive mb-4">
+                        <table class="table table-bordered table-sm">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>Concepto</th>
+                                    <th class="text-center">${proyecto1.nombre}</th>
+                                    <th class="text-center">${proyecto2.nombre}</th>
+                                    <th class="text-center">Diferencia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Total Pagado Mano de Obra</td>
+                                    <td class="text-right">${formatearMoneda(p1.total)}</td>
+                                    <td class="text-right">${formatearMoneda(p2.total)}</td>
+                                    <td class="text-right ${claseDiferencia(diff.total)}">${formatearMoneda(diff.total)}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                     </div>`;
+
+                totalesEtapa.p1 += (p1.total || 0);
+                totalesEtapa.p2 += (p2.total || 0);
+                totalesGenerales.p1.mano_obra += (p1.total || 0);
+                totalesGenerales.p2.mano_obra += (p2.total || 0);
+            }
+
+            // --- Total por Etapa ---
+            html += `<div class="text-right mb-4">
+                    <h5 class="d-inline-block p-2 rounded" style="background-color: #f8f9fa;">
+                        Total Etapa: 
+                        <span class="badge badge-light mx-2">${formatearMoneda(totalesEtapa.p1)}</span> vs 
+                        <span class="badge badge-light mx-2">${formatearMoneda(totalesEtapa.p2)}</span>
+                        <span class="badge badge-info ml-2">Diff: ${formatearMoneda(totalesEtapa.p1 - totalesEtapa.p2)}</span>
+                    </h5>
+                 </div>`;
+        });
+
+        // 6. Resumen Final Comparativo
+        const totalP1 = Object.values(totalesGenerales.p1).reduce((a, b) => a + b, 0);
+        const totalP2 = Object.values(totalesGenerales.p2).reduce((a, b) => a + b, 0);
+
+        html += `<hr class="mt-5"><div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Resumen General de Costos</h4>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover table-striped mb-0">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Concepto</th>
+                                <th class="text-right">${proyecto1.nombre}</th>
+                                <th class="text-right">${proyecto2.nombre}</th>
+                                <th class="text-right">Diferencia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contratistas</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p1.contratado)}</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p2.contratado)}</td>
+                                <td class="text-right ${claseDiferencia(totalesGenerales.p1.contratado - totalesGenerales.p2.contratado)}">${formatearMoneda(totalesGenerales.p1.contratado - totalesGenerales.p2.contratado)}</td>
+                            </tr>
+                             <tr>
+                                <td>Materiales y Herramientas</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p1.materiales)}</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p2.materiales)}</td>
+                                <td class="text-right ${claseDiferencia(totalesGenerales.p1.materiales - totalesGenerales.p2.materiales)}">${formatearMoneda(totalesGenerales.p1.materiales - totalesGenerales.p2.materiales)}</td>
+                            </tr>
+                            <tr>
+                                <td>Servicios</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p1.servicios)}</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p2.servicios)}</td>
+                                <td class="text-right ${claseDiferencia(totalesGenerales.p1.servicios - totalesGenerales.p2.servicios)}">${formatearMoneda(totalesGenerales.p1.servicios - totalesGenerales.p2.servicios)}</td>
+                            </tr>
+                             <tr>
+                                <td>Mano de Obra</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p1.mano_obra)}</td>
+                                <td class="text-right">${formatearMoneda(totalesGenerales.p2.mano_obra)}</td>
+                                <td class="text-right ${claseDiferencia(totalesGenerales.p1.mano_obra - totalesGenerales.p2.mano_obra)}">${formatearMoneda(totalesGenerales.p1.mano_obra - totalesGenerales.p2.mano_obra)}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot class="bg-light">
+                            <tr class="font-weight-bold">
+                                <td><h5>Total General</h5></td>
+                                <td class="text-right"><h5>${formatearMoneda(totalP1)}</h5></td>
+                                <td class="text-right"><h5>${formatearMoneda(totalP2)}</h5></td>
+                                <td class="text-right ${claseDiferencia(totalP1 - totalP2)}"><h5>${formatearMoneda(totalP1 - totalP2)}</h5></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>`;
+
+        // 7. Inyectar el HTML final en el contenedor de la vista
+        $('#table-view-reporte').html(html);
     }
 });
