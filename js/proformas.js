@@ -340,6 +340,106 @@ $(function () {
         $(this).closest(".list-item-input").remove();
     });
 
+    // Un contador para asegurar que las nuevas filas tengan IDs únicos en el DOM
+    let newRowCounter = 0;
+    // 1. AÑADIR FILAS
+    // ==================
+    $('.add-row-btn').on('click', function () {
+        // Encuentra la tabla más cercana a la que pertenece el botón
+        const table = $(this).prev('table');
+        const tbody = table.find('tbody');
+        const categoriaId = table.data('categoria-id');
+        newRowCounter++;
+        const newRowId = `new_${newRowCounter}`;
+
+        // Plantilla HTML para la nueva fila.
+        // Usamos atributos de input para el tipo de dato.
+        const newRow = `
+            <tr>
+                <td><input type="text" name="espacios[${newRowId}][espacio]" class="form-control form-control-sm"></td>
+                <td><input type="number" name="espacios[${newRowId}][cantidad]" class="form-control form-control-sm" value="1" min="0"></td>
+                <td><textarea name="espacios[${newRowId}][actividades]" class="form-control form-control-sm" rows="1"></textarea></td>
+                <td><textarea name="espacios[${newRowId}][mobiliario]" class="form-control form-control-sm" rows="1"></textarea></td>
+                <td><input type="number" name="espacios[${newRowId}][usuario]" class="form-control form-control-sm" min="0"></td>
+                <td><input type="number" step="0.01" name="espacios[${newRowId}][m2]" class="form-control form-control-sm m2-input" value="0.00" min="0"></td>
+                <td><textarea name="espacios[${newRowId}][observaciones]" class="form-control form-control-sm" rows="1"></textarea></td>
+                <td><textarea name="espacios[${newRowId}][link_ref]" class="form-control form-control-sm" rows="1" placeholder="Un link por línea"></textarea></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm remove-row-btn"><i class="fas fa-trash"></i></button>
+                    <input type="hidden" name="espacios[${newRowId}][categoria_id]" value="${categoriaId}">
+                </td>
+            </tr>
+        `;
+        tbody.append(newRow);
+    });
+
+    // 2. ELIMINAR FILAS
+    // ===================
+    // Se usa delegación de eventos para que funcione en filas nuevas
+    $('body').on('click', '.remove-row-btn', function () {
+        $(this).closest('tr').remove();
+        // Después de eliminar, recalcular todo
+        runAllCalculations();
+    });
+
+    // 3. CÁLCULO DE TOTALES
+    // =======================
+    // Función para calcular el subtotal de M2 para UNA tabla específica
+    function calculateSubtotal(table) {
+        let subtotal = 0;
+        table.find('tbody tr').each(function () {
+            // Busca el input de m2 en la fila actual
+            const m2Value = parseFloat($(this).find('.m2-input').val()) || 0;
+            subtotal += m2Value;
+        });
+        // Actualiza el texto en el tfoot de la tabla
+        table.find('.subtotal-m2').text(subtotal.toFixed(2));
+    }
+
+    // Función para calcular los totales generales (Interior / Exterior)
+    function calculateGrandTotals() {
+        let totalInteriores = 0;
+        let totalExteriores = 0;
+
+        $('.table-program').each(function () {
+            const table = $(this);
+            const esExterior = table.find('.category-header th').text().toUpperCase().includes('EXTERIORES');
+            let subtotal = 0;
+            table.find('.m2-input').each(function () {
+                subtotal += parseFloat($(this).val()) || 0;
+            });
+
+            if (esExterior) {
+                totalExteriores += subtotal;
+            } else {
+                totalInteriores += subtotal;
+            }
+        });
+
+        // Actualiza los totales en la sección final
+        // Asegúrate de tener estos elementos con los IDs correspondientes en tu HTML
+        $('#total-interiores-val').text(totalInteriores.toFixed(2));
+        $('#total-exteriores-val').text(totalExteriores.toFixed(2));
+    }
+
+    // Función que llama a todas las calculadoras
+    function runAllCalculations() {
+        $('.table-program').each(function () {
+            calculateSubtotal($(this));
+        });
+        calculateGrandTotals();
+    }
+
+    // Se dispara el cálculo cuando cambia un valor de M2
+    $('body').on('input', '.m2-input', function () {
+        const table = $(this).closest('table');
+        calculateSubtotal(table);
+        calculateGrandTotals();
+    });
+
+    // Ejecuta todos los cálculos al cargar la página por primera vez
+    runAllCalculations();
+
     function calcularTotales() {
         let descuento = $('#porcentaje_descuento').val() || 0;
         let iva = $('#porcentaje_iva').val() || 0;
