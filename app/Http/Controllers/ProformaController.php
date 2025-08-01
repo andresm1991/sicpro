@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\ProformaPlano;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProformaAdecentamiento;
+use App\Services\LogService;
 
 class ProformaController extends Controller
 {
@@ -121,8 +122,8 @@ class ProformaController extends Controller
             $porcentaje_iva = $request->input('porcentaje_iva', 0);
             $descuento = $request->input('descuento', 0);
             $ubicacion = $request->input('ubicacion_lote');
-            $area_lote = $request->input('area_lote');
-            $presupuesto = $request->input('presupuesto');
+            $area_lote = limpiarValor($request->input('area_lote'));
+            $presupuesto = limpiarValor($request->input('presupuesto'));
             $observaciones = $request->input('observaciones');
 
             $incluye = $request->input('incluye');
@@ -177,7 +178,10 @@ class ProformaController extends Controller
             return redirect()->route('proformas.tipo', 'diseno_planos')->with('success', 'Proforma creada exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return $e;
+            LogService::log('error', 'Error al guardar la proforma: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'exception' => $e->getMessage(),
+            ]);
             return redirect()->back()->with('error', 'Error al guardar la proforma: ' . $e->getMessage());
         }
     }
