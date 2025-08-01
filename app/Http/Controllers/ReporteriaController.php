@@ -161,6 +161,14 @@ class ReporteriaController extends Controller
                     'success' => true,
                     'result' => $query,
                 ]);
+            } elseif ($tipo_reporte == 'comparativo') {
+                $query = Adquisicion::reporteComparativoAdquisiciones($request);
+                if (isset($query['error'])) {
+                    return response()->json([
+                        'success' => false,
+                        'mensaje' => 'Error al generar el reporte: ' . $query['error'],
+                    ]);
+                }
             } else {
                 $tipoAdquisisicon = CatalogoDato::find($tipo);
                 if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {

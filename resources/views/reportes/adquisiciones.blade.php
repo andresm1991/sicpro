@@ -115,7 +115,12 @@
                             <label for="" class="col-form-label">Tipo reporte </label>
                             {{ Form::select(
                                 'tipo_reporte',
-                                ['' => ''] + ['administrativo' => 'Administrativo', 'operativo' => 'Operativo', 'global' => 'Global'],
+                                ['' => ''] + [
+                                    'administrativo' => 'Administrativo',
+                                    'operativo' => 'Operativo',
+                                    'global' => 'Global',
+                                    'comparativo' => 'Comparativo',
+                                ],
                                 '',
                                 ['class' => 'form-control', 'data-placeholder' => 'Seleccione tipo reporte', 'data-allow-clear' => 'true'],
                             ) }}
@@ -130,6 +135,11 @@
                                     <option value="{{ $index }}">{{ $nombre }}</option>
                                 @endforeach
                             </select>
+                        </div>
+
+                        <div class="form-group col-sm-4" id="contenedor-proyecto-2">
+                            <label for="" class="col-form-label">Proyecto 2 </label>
+                            {{ Form::select('proyecto_2', $proyectos, '', ['class' => 'form-control', 'data-placeholder' => 'seleccione proyecto', 'data-allow-clear' => 'true']) }}
                         </div>
                     </div>
                     <div id="table-view-reporte"></div>

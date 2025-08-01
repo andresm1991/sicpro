@@ -492,6 +492,10 @@ class GenerarPdfController extends Controller
             $view = 'reporte_adquisiciones_global';
 
             $pdf = PDF::loadView('pdf.' . $view, compact('data', 'costos_indirecto', 'total_general'))->setPaper('a4', 'landscape');
+        } elseif ($tipo_reporte == 'comparativo') { //* Reporte comparativo de adquisiciones//
+            $data = Adquisicion::reporteComparativoAdquisiciones($request);
+            $view = 'reporte_adquisiciones_comparativo';
+            $pdf = PDF::loadView('pdf.' . $view, compact('data'))->setPaper('a4', 'landscape');
         } else {
             if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
                 $query = Adquisicion::dataReporteAdquisiciones($request);

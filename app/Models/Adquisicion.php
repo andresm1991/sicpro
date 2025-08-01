@@ -225,23 +225,89 @@ class Adquisicion extends Model
     }
 
     /**
+     * Reporte comparativo de adquisiciones entre dos proyectos.
+     * Esta será nuestra nueva función principal.
+     */
+    public static function reporteComparativoAdquisiciones($request)
+    {
+        $proyectoId1 = $request->input('proyecto');
+        $proyectoId2 = $request->input('proyecto_2');
+
+        if (!$proyectoId1 || !$proyectoId2) {
+            // Opcional: puedes lanzar una excepción o devolver un error.
+            return ['error' => 'Se requieren dos proyectos para la comparación.'];
+        } elseif ($proyectoId1 == $proyectoId2) {
+            // Si ambos proyectos son iguales, devolvemos un error o un mensaje adecuado.
+            return ['error' => 'Los proyectos seleccionados son iguales. Por favor, elige dos proyectos diferentes.'];
+        }
+
+        // 1. Preparamos los filtros comunes (fechas, estado, etc.), ignorando el proyecto por ahora.
+        $commonFilters = self::prepareFilters($request);
+        unset($commonFilters['proyecto'], $commonFilters['proyectoModel'], $commonFilters['proyectoNombre']);
+
+        // 2. Generamos los datos para cada proyecto por separado
+        $datosProyecto1 = self::generarDatosParaUnProyecto($proyectoId1, $commonFilters);
+        $datosProyecto2 = self::generarDatosParaUnProyecto($proyectoId2, $commonFilters);
+
+        // 3. Combinamos los resultados en una única estructura comparativa
+        $datosCombinados = self::combinarDatosProyectos($datosProyecto1['data'], $datosProyecto2['data']);
+
+        // 4. Devolvemos todo en un formato listo para la vista
+        return [
+            'proyecto1' => [
+                'id' => $proyectoId1,
+                'nombre' => $datosProyecto1['proyecto'],
+            ],
+            'proyecto2' => [
+                'id' => $proyectoId2,
+                'nombre' => $datosProyecto2['proyecto'],
+            ],
+            'subproyecto' => $datosProyecto1['subproyecto'], // Asumimos que el subproyecto es el mismo filtro para ambos
+            'data_comparativa' => $datosCombinados,
+        ];
+    }
+
+    /**
      * Reporte global
      */
 
     public static function reporteGlobalAdquisiciones($request)
     {
-        // 1. Recopilar y validar filtros de entrada
+        // Obtenemos los filtros comunes del request
         $filters = self::prepareFilters($request);
 
-        // Si no hay un proyecto, no podemos continuar.
+        // Si no hay proyecto, no hacemos nada
         if (!$filters['proyectoModel']) {
-            return ['data' => [], 'subproyecto' => $filters['subproyecto']];
+            return ['data' => [], 'subproyecto' => null, 'proyecto' => null];
         }
+
+        // Llamamos a nuestra nueva función refactorizada
+        return self::generarDatosParaUnProyecto($filters['proyecto'], $filters);
+    }
+
+    /**
+     * NUEVA FUNCIÓN REFACTORIZADA
+     * Genera todos los datos del reporte para UN SOLO proyecto.
+     *
+     * @param int $proyectoId El ID del proyecto a procesar.
+     * @param array $filters Un array con todos los filtros aplicados (fecha, estado, etc.).
+     * @return array Los datos estructurados para el proyecto.
+     */
+    private static function generarDatosParaUnProyecto(int $proyectoId, array $filters): array
+    {
+        $proyectoModel = Proyecto::find($proyectoId);
+        if (!$proyectoModel) {
+            return ['data' => [], 'subproyecto' => $filters['subproyecto'], 'proyecto' => 'Proyecto no encontrado'];
+        }
+
+        // Preparamos los filtros específicos para esta ejecución
+        $filters['proyecto'] = $proyectoId; // ¡Importante! Aseguramos el ID del proyecto.
+        $filters['proyectoModel'] = $proyectoModel;
+        $filters['proyectoNombre'] = $proyectoModel->nombre_proyecto;
 
         $resultado = [];
 
-        // 2. Obtener datos para cada categoría (si el filtro 'tipo' lo permite)
-        // Cada función ahora devolverá datos ya agrupados por nombre de etapa.
+        // 2. Obtener datos para cada categoría (lógica sin cambios)
         if (in_array($filters['tipo_slug'], [null, 'contratista'])) {
             $contratistas = self::getContratistasData($filters);
             self::mergeResults($resultado, $contratistas, 'contratista');
@@ -537,6 +603,91 @@ class Adquisicion extends Model
         unset($etapas);
 
         return $resultado;
+    }
+
+    /**
+     * Combina los datos de dos proyectos en una estructura comparativa.
+     */
+    private static function combinarDatosProyectos(array $dataProyecto1, array $dataProyecto2): array
+    {
+        // Obtenemos todas las claves de etapa de ambos proyectos para no omitir ninguna
+        $etapasKeys = array_unique(array_merge(array_keys($dataProyecto1), array_keys($dataProyecto2)));
+        sort($etapasKeys);
+
+        $resultadoFinal = [];
+
+        foreach ($etapasKeys as $etapaNombre) {
+            $etapa1 = $dataProyecto1[$etapaNombre] ?? [];
+            $etapa2 = $dataProyecto2[$etapaNombre] ?? [];
+
+            // Combinamos cada categoría
+            $resultadoFinal[$etapaNombre] = [
+                'contratista' => self::combinarCategoria(
+                    $etapa1['contratista'] ?? [],
+                    $etapa2['contratista'] ?? [],
+                    // Función para generar una clave única para cada contratista
+                    fn($item) => $item['proveedor'] . '|' . $item['categoria']
+                ),
+                'mano_obra' => self::combinarCategoria(
+                    $etapa1['mano_obra'] ?? [],
+                    $etapa2['mano_obra'] ?? [],
+                    // Mano de obra solo tiene un registro, la clave es simple
+                    fn($item) => 'mano_de_obra_total'
+                ),
+                'materiales_herramientas' => self::combinarCategoria(
+                    $etapa1['materiales_herramientas'] ?? [],
+                    $etapa2['materiales_herramientas'] ?? [],
+                    // La clave única para un material es su ID de artículo
+                    fn($item) => $item['articulo_id']
+                ),
+                'servicios' => self::combinarCategoria(
+                    $etapa1['servicios'] ?? [],
+                    $etapa2['servicios'] ?? [],
+                    // La clave única para un servicio es su ID de artículo
+                    fn($item) => $item['articulo_id']
+                ),
+            ];
+        }
+
+        return $resultadoFinal;
+    }
+
+    /**
+     * Función auxiliar para combinar los items de una categoría específica.
+     */
+    private static function combinarCategoria(array $items1, array $items2, callable $keyGenerator): array
+    {
+        $mapaCombinado = [];
+
+        // Procesamos el primer proyecto
+        foreach ($items1 as $item) {
+            $key = $keyGenerator($item);
+            $mapaCombinado[$key]['item_base'] = $item; // Guardamos los datos base (nombre, etc.)
+            $mapaCombinado[$key]['p1'] = $item;
+        }
+
+        // Procesamos el segundo proyecto
+        foreach ($items2 as $item) {
+            $key = $keyGenerator($item);
+            if (!isset($mapaCombinado[$key])) {
+                $mapaCombinado[$key]['item_base'] = $item; // El item solo existe en el proyecto 2
+            }
+            $mapaCombinado[$key]['p2'] = $item;
+        }
+
+        // Calculamos las diferencias
+        foreach ($mapaCombinado as $key => &$value) {
+            $p1 = $value['p1'] ?? null;
+            $p2 = $value['p2'] ?? null;
+
+            // Ejemplo de cálculo de diferencias (ajusta según tus necesidades)
+            $value['diff']['cantidad'] = ($p1['cantidad'] ?? $p1['cantidad_total'] ?? 0) - ($p2['cantidad'] ?? $p2['cantidad_total'] ?? 0);
+            $value['diff']['total'] = ($p1['total'] ?? $p1['total_contratado'] ?? 0) - ($p2['total'] ?? $p2['total_contratado'] ?? 0);
+            $value['diff']['pagos'] = ($p1['pagos'] ?? 0) - ($p2['pagos'] ?? 0);
+            $value['diff']['saldo'] = ($p1['saldo'] ?? 0) - ($p2['saldo'] ?? 0);
+        }
+
+        return array_values($mapaCombinado); // Devolvemos como un array indexado
     }
 
     public function getSemanasAttribute()
