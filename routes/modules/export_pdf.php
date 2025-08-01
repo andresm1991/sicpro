@@ -25,6 +25,7 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
 
     //** PROFORMAS */
     Route::get('/proformas-pdf/{tipo}/{id}', [GenerarPdfController::class, 'proformas'])->name('proformas');
+    Route::get('/programa-arquitectonico-pdf/{programa}', [GenerarPdfController::class, 'programaArquitectonicoPDF'])->name('programa.arquitectonico');
 
     //** JPLIMPIEZA */
     Route::get('/presupuesto-jplimpieza/{proyecto}', [GenerarPdfController::class, 'presupuestoJPLimpiezaPDF'])->name('jp.limpieza.presupuesto');

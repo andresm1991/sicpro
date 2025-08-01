@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('template_prog_arq', function (Blueprint $table) {
+        Schema::create('categorias_programa', function (Blueprint $table) {
             $table->id();
-            $table->string('descripcion');
-            $table->text('datos');
-            $table->boolean('activo')->default(true);
+            $table->string('nombre')->unique();
+            $table->unsignedInteger('orden')->default(0);
+            $table->boolean('es_exterior')->default(false);
             $table->timestamps();
         });
     }
@@ -25,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('template_prog_arq');
+        Schema::dropIfExists('categorias_programa');
     }
 };

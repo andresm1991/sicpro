@@ -20,6 +20,8 @@
         "league/flysystem-aws-s3-v3": "^3.28",
         "maatwebsite/excel": "^3.1",
         "minishlink/web-push": "^9.0",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "spatie/laravel-permission": "^5.11",
         "yajra/laravel-datatables-oracle": "^10.11"
     },

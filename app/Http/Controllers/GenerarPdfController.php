@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use PDF;
 use Carbon\Carbon;
 use App\Models\Tarea;
+use setasign\Fpdi\Fpdi;
 use App\Models\Articulo;
 use App\Models\ManoObra;
 use App\Models\Proyecto;
@@ -15,6 +16,7 @@ use App\Models\Adquisicion;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
+use App\Models\ProformaPlano;
 use App\Models\MovimientoCaja;
 use App\Models\OrdenRecepcion;
 use App\Models\DetalleManoObra;
@@ -22,10 +24,11 @@ use App\Models\JPLimpieza\Caja;
 use App\Models\RubroCronograma;
 use App\Models\ReposicionTiempo;
 use App\Models\ResumenPagoSemanal;
-use App\Models\ProformaPlano;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\ProformaAdecentamiento;
+use App\Models\ProgramaArquitectonico;
 use App\Exports\ReportSolicitudesExport;
+use setasign\Fpdi\PdfParser\StreamReader;
 use App\Exports\ReportAdquisicionesExport;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Exports\ReportGasolinaCamionetaExport;
@@ -663,15 +666,115 @@ class GenerarPdfController extends Controller
     //** Proformas */
     public function  proformas($tipo, $id)
     {
-        $proforma = $tipo == 'adecentamientos' ? ProformaAdecentamiento::find($id) : ProformaPlano::find($id);
+        // Cargar la proforma con sus relaciones. Eager loading es más eficiente.
+        if ($tipo == 'adecentamientos') {
+            $proforma = ProformaAdecentamiento::find($id);
+        } else {
+            // Asumimos que ProformaPlano tiene una relación hasOne con ProgramaArquitectonico
+            $proforma = ProformaPlano::with('programaArquitectonico.espacios.categoria')->find($id);
+        }
+
         $empresa = getInfoEmpresa();
 
         if (!$proforma) {
             return back()->with('error', 'No se encontró la proforma solicitada.');
         }
 
-        $pdf = PDF::loadView('pdf.proforma', compact('proforma', 'empresa', 'tipo'));
-        //return view('pdf.proforma', compact('proforma', 'empresa', 'tipo'));
-        return $pdf->stream('proforma_' . $tipo . '_' . $proforma->numero . '.pdf');
+        // --- LÓGICA PARA INCLUIR EL PROGRAMA ARQUITECTÓNICO ---
+        $programaData = null; // Por defecto, no hay datos del programa
+
+        // Si la proforma es de tipo "planos" y tiene un programa asociado
+        if ($tipo != 'adecentamientos' && $proforma->programaArquitectonico) {
+            $programa = $proforma->programaArquitectonico;
+
+            $groupedEspacios = $programa->espacios
+                ->sortBy('categoria.orden')
+                ->groupBy('categoria.nombre');
+
+            $total_m2_interiores = $programa->espacios->where('categoria.es_exterior', false)->sum('m2');
+            $total_m2_exteriores = $programa->espacios->where('categoria.es_exterior', true)->sum('m2');
+
+            // Empaquetamos todos los datos del programa en un solo array
+            $programaData = [
+                'programa' => $programa,
+                'groupedEspacios' => $groupedEspacios,
+                'total_m2_interiores' => $total_m2_interiores,
+                'total_m2_exteriores' => $total_m2_exteriores,
+            ];
+        }
+
+        // 1. Generar el primer PDF (portrait)
+        $pdfPortrait = PDF::loadView('pdf.proforma', [
+            'proforma' => $proforma,
+            'empresa' => $empresa,
+            'tipo' => $tipo,
+            'programaData' => null // Solo la primera parte
+        ])->setPaper('a4', 'portrait')->output();
+
+        // 2. Generar el segundo PDF (landscape) solo si hay programaData
+        $pdfLandscape = null;
+        if ($programaData) {
+            $pdfLandscape = PDF::loadView('pdf.programa_arquitectonico', $programaData)
+                ->setPaper('a4', 'landscape')
+                ->output();
+        }
+
+        // 3. Unir ambos PDFs usando FPDI
+        $pdf = new Fpdi();
+
+        // Agregar el PDF portrait
+        $pageCount = $pdf->setSourceFile(StreamReader::createByString($pdfPortrait));
+        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+            $tplIdx = $pdf->importPage($pageNo);
+            $pdf->AddPage('P');
+            $pdf->useTemplate($tplIdx);
+        }
+
+        // Agregar el PDF landscape si existe
+        if ($pdfLandscape) {
+            $pageCount = $pdf->setSourceFile(StreamReader::createByString($pdfLandscape));
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                $tplIdx = $pdf->importPage($pageNo);
+                $pdf->AddPage('L');
+                $pdf->useTemplate($tplIdx);
+            }
+        }
+
+        $nombreArchivo = 'proforma_' . $tipo . '_' . $proforma->numero . '.pdf';
+
+        $pdf->SetTitle('Proforma ' . $tipo . ' ' . $proforma->numero);
+        // 4. Salida del PDF unido
+        return response($pdf->Output('S', $nombreArchivo))
+            ->header('Content-Type', 'application/pdf');
+    }
+
+    public function programaArquitectonicoPDF(ProgramaArquitectonico $programa)
+    {
+        $empresa = getInfoEmpresa();
+
+        $groupedEspacios = $programa->espacios()
+            ->with('categoria')
+            ->get()
+            ->sortBy('categoria.orden')
+            ->groupBy('categoria.nombre');
+
+        $total_m2_interiores = $programa->espacios->where('categoria.es_exterior', false)->sum('m2');
+        $total_m2_exteriores = $programa->espacios->where('categoria.es_exterior', true)->sum('m2');
+
+        // Cargar la vista específica para PDF con los datos
+        $pdf = PDF::loadView('pdf.programa_arquitectonico', compact(
+            'programa',
+            'empresa',
+            'groupedEspacios',
+            'total_m2_interiores',
+            'total_m2_exteriores'
+        ));
+
+        // Opcional: Configurar el tamaño y la orientación del papel
+        // 'landscape' es 'apaisado', ideal para tablas anchas.
+        $pdf->setPaper('a4', 'landscape');
+
+        // Devolver el PDF al navegador
+        return $pdf->stream('programa_arquitectonico_' . $programa->proforma->numero . '.pdf');
     }
 }

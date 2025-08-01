@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProformaController;
 use App\Http\Controllers\VentaPropiedadController;
+use App\Http\Controllers\ProgramaArquitectonicoController;
 
 Route::group(['prefix' => 'proformas', 'as' => 'proformas.'], function () {
     Route::get('/', function () {
@@ -24,5 +25,6 @@ Route::group(['prefix' => 'proformas', 'as' => 'proformas.'], function () {
     Route::delete('/eliminar/{tipo}/{id}', [ProformaController::class, 'destroy']);
     Route::get('/buscar/{tipo}', [ProformaController::class, 'buscar'])->name('buscar');
 
-    Route::get('/{tipo}/{id}/programa-arquitectonico', [ProformaController::class, 'buscar'])->name('programa.arquitectonico');
+    Route::get('/{tipo}/{id}/programa-arquitectonico', [ProgramaArquitectonicoController::class, 'show'])->name('programa.arquitectonico');
+    Route::post('/{tipo}/{id}/{programa}/guardar-programa-arquitectonico', [ProgramaArquitectonicoController::class, 'store'])->name('programa.arquitectonico.store');
 });

@@ -44,13 +44,13 @@
                                         <td class="align-middle">{{ $proforma->fecha_formatted }}</td>
                                         <td class="align-middle">{{ $proforma->cliente->nombre }}</td>
                                         <td class="align-middle">{{ $proforma->total_formatted }}</td>
-                                        <td class="align-middle">
+                                        <td class="align-middle text-right">
                                             <div class="btn-group dropleft">
-                                                <button type="button" class="btn btn-secondary dropdown-toggle"
-                                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <button type="button" class="btn btn-outline-dark dropdown-toggle"
+                                                    data-container="body" data-toggle="dropdown" aria-expanded="false">
                                                     Opciones
                                                 </button>
-                                                <div class="dropdown-menu">
+                                                <div class="dropdown-menu dropdown-menu-right custom-dropdown-menu">
                                                     @if ($tipo == 'diseno_planos')
                                                         <a href='{{ route('proformas.programa.arquitectonico', [$tipo, $proforma->id]) }}'
                                                             class='dropdown-item'>Prog. Arquitectónico</a>

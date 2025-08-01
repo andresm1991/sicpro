@@ -60,6 +60,11 @@ class ProformaPlano extends Model
         return $this->hasMany(DetalleProformaPlano::class);
     }
 
+    public function programaArquitectonico()
+    {
+        return $this->hasOne(ProgramaArquitectonico::class, 'proforma_id');
+    }
+
     public function getTotalIvaAttribute()
     {
         $subtotal = $this->subtotal;

@@ -177,6 +177,7 @@ class ProformaController extends Controller
             return redirect()->route('proformas.tipo', 'diseno_planos')->with('success', 'Proforma creada exitosamente.');
         } catch (\Exception $e) {
             DB::rollBack();
+            return $e;
             return redirect()->back()->with('error', 'Error al guardar la proforma: ' . $e->getMessage());
         }
     }
