@@ -82,7 +82,7 @@ $(function () {
                     ${nuevaCantidad}
                     <input type="hidden" name="cantidad[]" value="${nuevaCantidad}">
                 </td>
-                <td>
+                <td class="precio-unitario-celda">
                     $ ${valorUnitario.toFixed(2)}
                     <input type="hidden" name="precio[]" value="${valorUnitario}">
                 </td>
@@ -144,7 +144,6 @@ $(function () {
 
     $('#porcentaje_iva, #porcentaje_descuento').on('input', function () {
         calcularTotales();
-
     });
 
     /**
@@ -444,6 +443,7 @@ $(function () {
         let descuento = $('#porcentaje_descuento').val() || 0;
         let iva = $('#porcentaje_iva').val() || 0;
         let subtotal = calcularTotal('.elementos-agregados', 2);
+        console.log('Subtotal:', subtotal);
         let totalDescuento = descuento > 0 ? subtotal - (subtotal * descuento / 100) : 0;
         let totalIva = (descuento > 0 ? totalDescuento : subtotal) * iva / 100;
         let totalFinal = descuento > 0 ? (parseFloat(totalDescuento) + totalIva) : (parseFloat(subtotal) + totalIva);
