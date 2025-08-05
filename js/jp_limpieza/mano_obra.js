@@ -14,8 +14,9 @@ $(function () {
 
 
 
-    $('#tipo_plantilla').on('change', function () {
+    $('#tipo_plantilla, #acumula-beneficios').on('change', function () {
         let tipoPlantilla = $(this).val();
+        let acumulunaBeneficios = $('#acumula-beneficios').val();
 
         if (tipoPlantilla == 'ASOCIACION') {
             $('#fondos').attr('readonly', false);
@@ -26,11 +27,21 @@ $(function () {
             $('#decimo_tercero').val('');
             $('#decimo_cuarto').val('');
             $('#iess').val('');
+            $('#acumula-beneficios').attr('disabled', true);
         } else {
-            $('#fondos').attr('readonly', true);
-            $('#decimo_tercero').attr('readonly', true);
-            $('#decimo_cuarto').attr('readonly', true);
-            $('#iess').attr('readonly', true);
+            $('#acumula-beneficios').attr('disabled', false);
+            if (acumulunaBeneficios == 'si') {
+                $('#fondos').attr('readonly', false);
+                $('#decimo_tercero').attr('readonly', false);
+                $('#decimo_cuarto').attr('readonly', false);
+            } else {
+
+                $('#fondos').attr('readonly', true);
+                $('#decimo_tercero').attr('readonly', true);
+                $('#decimo_cuarto').attr('readonly', true);
+                $('#iess').attr('readonly', true);
+            }
+
         }
     });
     /// Evento de ingreso total ganado

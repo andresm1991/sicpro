@@ -114,11 +114,10 @@ $(function () {
             return;
         }
 
-
         var numeroFila = $('.elementos-agregados').length + 1;
-        precio_unitario = parseFloat(precio_unitario).toFixed(4);
-        var total = parseFloat(cantidad.replace(/,/g, '')) * parseFloat(precio_unitario.replace(/,/g, ''));
-        var formattedNumber = total.toFixed(4);//total.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+        precio_unitario = parseFloat(precio_unitario);
+        var total = parseFloat(cantidad) * precio_unitario;
+        var formattedNumber = formatoMoneda(total);//total.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
         var nuevaFila = `
             <tr class="elementos-agregados">
@@ -145,7 +144,7 @@ $(function () {
                     </div>
                 </td>
                 <td class="edit-item">
-                    <span>$ ${precio_unitario}</span>
+                    <span>${formatoMoneda(precio_unitario)}</span>
                     <div class="d-flex align-items-center hidden">
                         <input type="text" class="form-control mr-2" name="precio_unitario[]"
                             value="${precio_unitario}">
@@ -155,7 +154,8 @@ $(function () {
                                 class="fa-solid fa-xmark"></i></button>
                     </div>
                 </td>
-                <td class="total_unitario">$ ${formattedNumber}</td>
+                <td class="total_unitario"><span
+                            class="total">${formattedNumber}</span></td>
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
                         <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto" id=""><i class="fa-solid fa-trash-can"></i></a>
@@ -211,7 +211,6 @@ $(function () {
     // Botón "aceptar" para confirmar el cambio
     $(document).on('click', '.aceptar', function (event) {
         event.stopPropagation(); // Evitar que se dispare el evento del <td>
-
         // Obtener el valor del input
         var newValue = $(this).closest('.edit-item').find('input').val();
         // Actualizar el valor del span
@@ -442,9 +441,9 @@ $(function () {
 
         // Calcular el nuevo total
         var total = cantidad * precioUnitario;
-
         // Actualizar el valor del td de total con el nuevo valor calculado
         $row.find('td .total').text('$ ' + total.toFixed(4));
+        calcularTotal();
     }
 
     function formatoMoneda(numero) {
@@ -455,16 +454,24 @@ $(function () {
 
     function calcularTotal() {
         let subtotal = 0;
-
+        let nroCasa = $('#numero_casas').val() || 0;
         // Iterar por cada fila del tbody
         $('.elementos-agregados').each(function () {
             let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
-            let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+            let total = parseFloat(totalText.replace(/[^0-9.]/g, '')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
             // Sumar al subtotal
             subtotal += total;
         });
         // Actualizar el total general
-        $('#subtotal').val(subtotal.toFixed(4));
+        $('#subtotal').val(formatoMoneda(subtotal));
+
+        if (nroCasa > 0) {
+            let totalGeneral = 0;
+            totalGeneral = nroCasa * subtotal;
+
+            $('#total-general').val(formatoMoneda(totalGeneral));
+        }
+
     }
 
 });
