@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\JPLimpieza;
 
+use App\Constants\MessagesConstant;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,6 +13,7 @@ use App\Models\JPLimpieza\PresupuestoProyecto;
 use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Http\Resources\JPLimpieza\PresupuestoResource;
+use App\Services\LogService;
 
 class PresupuestoProyectoController extends Controller
 {
@@ -34,7 +36,14 @@ class PresupuestoProyectoController extends Controller
         $proyectoResource  = (new PresupuestoResource($proyecto))->toArray(request());*/
 
         // Obtener todas las plantillas padres (donde padre_id es NULL)
-        $categorias = PlantillaPresupuesto::with(['hijos', 'hijos.presupuestoProyecto'])
+        $categorias = PlantillaPresupuesto::with([
+            'hijos',
+            // Aquí está la magia: añadimos una condición a la relación anidada
+            'hijos.presupuestoProyecto' => function ($query) use ($proyecto) {
+                // Le decimos que solo traiga el presupuesto que pertenezca al proyecto actual
+                $query->where('proyecto_id', $proyecto->id);
+            }
+        ])
             ->whereNull('padre_id')
             ->where('activo', true)
             ->get();
@@ -55,6 +64,7 @@ class PresupuestoProyectoController extends Controller
         });
 
         $totalGastos = $totalAdquisiciones + $totalManoObra + $totalContratistas;
+
 
         return view('jp_limpieza.presupuesto.index', compact('categorias', 'proyecto', 'breadcrumbs', 'totalGastos'));
     }
@@ -100,7 +110,9 @@ class PresupuestoProyectoController extends Controller
             DB::commit();
             return redirect()->route('jp.limpieza.presupuesto.index', $request->proyecto)->with('success', 'Presupuesto registrado exitosamente.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Error al guardar el presupuesto: ' . $e->getMessage());
+            DB::rollBack();
+            LogService::log('error', 'Error al guardar presupuesto JP', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', MessagesConstant::CATCH_ERROR);
         }
     }
 
@@ -167,7 +179,8 @@ class PresupuestoProyectoController extends Controller
                 return response()->json(['success' => true, 'mensaje' => 'Rubro registrado correctamente']);
             } catch (\Exception $e) {
                 DB::rollBack();
-                return response()->json(['success' => false, 'mensaje' => $e->getMessage()]);
+                LogService::log('error', 'Error al guardar rubro', ['error' => $e->getMessage()]);
+                return response()->json(['success' => false, 'mensaje' => MessagesConstant::CATCH_ERROR]);
             }
         }
     }

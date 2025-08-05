@@ -19,7 +19,7 @@
             <legend class="custom-legend"><span>Agregar Personal</span></legend>
             <fieldset class="custom-fieldset">
                 <div class="row">
-                    <div class="col-sm-6 col-12">
+                    <div class="col-sm-4 col-12">
                         <div class="form-group">
                             {{ Form::label('', 'Personal', ['class' => 'col-form-label']) }}
                             {{ Form::select('', getProveedores(true, 'mano.obra'), '', ['class' => 'form-control select2-basic-single', 'id' => 'proveedor', 'data-placeholder' => 'Selecione personal']) }}
@@ -47,9 +47,15 @@
                             {{ Form::label('', '$ 0.0000', ['class' => 'form-control label-disabled', 'id' => 'total_ganado']) }}
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
+                    <div class="col-sm-2 col-12">
+                        <div class="form-group">
+                            {{ Form::label('', 'Acumula beneficios', ['class' => 'col-form-label']) }}
+                            {{ Form::select('', ['si' => 'si', 'no' => 'no'], '', ['class' => 'form-control select2-basic-single', 'id' => 'acumula-beneficios', 'data-placeholder' => 'Selecione opcion']) }}
+
+                        </div>
+                    </div>
+
                     <div class="col-sm-2 col-12">
                         <div class="form-group">
                             {{ Form::label('', 'fondos', ['class' => 'col-form-label']) }}
