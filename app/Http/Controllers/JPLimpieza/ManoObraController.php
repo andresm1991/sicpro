@@ -56,7 +56,7 @@ class ManoObraController extends Controller
             $fecha_hasta = $request->input('fecha_hasta');
             $tipo = $request->input('tipo_plantilla');
 
-            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir, $aportePatronal) {
+            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir, $aportePatronal, $acumulunaBeneficios) {
                 return [
                     'proveedor' => $proveedor,
                     'sueldo' => $sueldo,
@@ -75,8 +75,9 @@ class ManoObraController extends Controller
                     'prestamo_jp' => $prestamoJP,
                     'total_descuentos' => $totalDescuentos,
                     'total_recibir' => $totalRecibir,
+                    'acumula_beneficios' => $acumulunaBeneficios === 'si' ? true : false,
                 ];
-            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir, $request->aporte_patronal);
+            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir, $request->aporte_patronal, $request->acumula_beneficios);
 
             $mano_obra = ManoObra::create([
                 'proyecto_id' => $proyecto ? $proyecto->id : null,
@@ -106,6 +107,7 @@ class ManoObraController extends Controller
                         'prestamo_jp' => $item['prestamo_jp'],
                         'total_descuentos' => $item['total_descuentos'],
                         'total_recibir' => $item['total_recibir'],
+                        'acumula_beneficios' => $item['acumula_beneficios'],
                     ]);
                 }
                 DB::commit();
@@ -157,7 +159,7 @@ class ManoObraController extends Controller
                 DetalleManoObra::whereIn('proveedor_id', $personalEliminar)->delete();
             }
 
-            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir, $aportePatronal) {
+            $items = array_map(function ($proveedor, $sueldo, $hExtras, $totalGanado, $fondos, $dTercero, $dCuarto, $totalIngresos, $iess, $atrasos, $anticipos, $prestamoIess, $quincena, $prestamoJP, $totalDescuentos, $totalRecibir, $aportePatronal, $acumulunaBeneficios) {
                 return [
                     'proveedor' => $proveedor,
                     'sueldo' => $sueldo,
@@ -176,8 +178,9 @@ class ManoObraController extends Controller
                     'prestamo_jp' => $prestamoJP,
                     'total_descuentos' => $totalDescuentos,
                     'total_recibir' => $totalRecibir,
+                    'acumula_beneficios' => $acumulunaBeneficios === 'si' ? true : false,
                 ];
-            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir, $request->aporte_patronal);
+            }, $request->proveedor, $request->sueldo, $request->h_extras, $request->total_ganado, $request->fondos, $request->decimo_tercero, $request->decimo_cuarto, $request->total_ingresos, $request->iess, $request->atrasos_faltas, $request->anticipos, $request->prestamo_iess, $request->quincena, $request->prestamo_jp, $request->total_descuentos, $request->total_recibir, $request->aporte_patronal, $request->acumula_beneficios);
 
             $mano_obra->fecha_desde = $fecha_desde;
             $mano_obra->fecha_hasta = $fecha_hasta;
@@ -206,6 +209,7 @@ class ManoObraController extends Controller
                         'prestamo_jp' => $item['prestamo_jp'],
                         'total_descuentos' => $item['total_descuentos'],
                         'total_recibir' => $item['total_recibir'],
+                        'acumula_beneficios' => $item['acumula_beneficios'],
                     ],
                 );
             }

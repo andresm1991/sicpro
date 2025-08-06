@@ -29,6 +29,7 @@ class DetalleManoObra extends Model
         'prestamo_jp',
         'total_descuentos',
         'total_recibir',
+        'acumula_beneficios',
     ];
 
     protected $casts = [
@@ -130,5 +131,10 @@ class DetalleManoObra extends Model
     public function getTotalRecibirFormattedAttribute()
     {
         return number_format($this->total_recibir, 2);
+    }
+
+    public function getAcumulaBeneficiosFormattedAttribute()
+    {
+        return $this->attributes['acumula_beneficios'] ? 'si' : 'no';
     }
 }

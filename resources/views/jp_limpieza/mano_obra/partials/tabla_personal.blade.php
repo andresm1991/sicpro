@@ -7,6 +7,7 @@
                 <th scope="col">sueldo</th>
                 <th scope="col">horas extras</th>
                 <th scope="col">total ganado</th>
+                <th scope="col">acumula beneficios</th>
                 <th scope="col">fondos</th>
                 <th scope="col">decimo tercer sueldo</th>
                 <th scope="col">decimo cuarto sueldo</th>
@@ -41,6 +42,11 @@
                     <td>
                         <span>{{ $personal->total_ganado_formatted }}</span>
                         <input type="hidden" name="total_ganado[]" value="{{ $personal->total_ganado }}">
+                    </td>
+                    <td>
+                        <span>{{ $personal->acumula_beneficios_formatted }}</span>
+                        <input type="hidden" name="acumula_beneficios[]"
+                            value="{{ $personal->acumula_beneficios_formatted }}">
                     </td>
                     <td class="edit-item" style="cursor: pointer;">
                         <span>$ {{ $personal->fondo_formatted }}</span>

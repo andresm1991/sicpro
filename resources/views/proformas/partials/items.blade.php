@@ -23,14 +23,14 @@
         <div class="col-sm-2">
             <div class="form-group">
                 {{ Form::label('', 'V.Unit', ['class' => 'col-form-label']) }}
-                {{ Form::text('', 0, ['class' => 'form-control money', 'id' => 'valor_unitario']) }}
+                {{ Form::text('', 0, ['class' => 'form-control moneyDosDecimales', 'id' => 'valor_unitario']) }}
             </div>
         </div>
 
         <div class="col-sm-2">
             <div class="form-group">
                 {{ Form::label('', 'total', ['class' => 'col-form-label']) }}
-                {{ Form::text('', '', ['class' => 'form-control money', 'id' => 'total', 'placeholder' => '$ 0.0000', 'disabled' => true]) }}
+                {{ Form::text('', '', ['class' => 'form-control moneyDosDecimales', 'id' => 'total', 'placeholder' => '$ 0.0000', 'disabled' => true]) }}
             </div>
         </div>
 
@@ -63,13 +63,13 @@
                         <input type="hidden" name="producto[]" value="{{ $detalle->producto_id }}">
                     </td>
                     <td class="cantidad-celda">
-                        {{ $tipo == 'adecentamientos' ? $detalle->cantidad : $detalle->area }}
-                        <input type="hidden" name="cantidad[]"
-                            value="{{ $tipo == 'adecentamientos' ? $detalle->cantidad : $detalle->area }}">
+                        <input type="text" name="cantidad[]"
+                            value="{{ $tipo == 'adecentamientos' ? $detalle->cantidad : $detalle->area }}"
+                            class="form-control form-control-sm input-double-two-decimals cantidad-input">
                     </td>
                     <td class="precio-unitario-celda">
-                        {{ $detalle->precio_unitario_format }}
-                        <input type="hidden" name="precio[]" value="{{ $detalle->precio_unitario }}">
+                        <input type="text" name="precio[]" value="{{ $detalle->precio_unitario }}"
+                            class="form-control form-control-sm moneyDosDecimales precio-input">
                     </td>
                     <td class="total_unitario total-celda">
                         {{ $detalle->total_format }}

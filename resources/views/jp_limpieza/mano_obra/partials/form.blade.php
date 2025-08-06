@@ -51,7 +51,7 @@
                     <div class="col-sm-2 col-12">
                         <div class="form-group">
                             {{ Form::label('', 'Acumula beneficios', ['class' => 'col-form-label']) }}
-                            {{ Form::select('', ['si' => 'si', 'no' => 'no'], '', ['class' => 'form-control select2-basic-single', 'id' => 'acumula-beneficios', 'data-placeholder' => 'Selecione opcion']) }}
+                            {{ Form::select('', ['si' => 'si', 'no' => 'no'], 'no', ['class' => 'form-control select2-basic-single', 'id' => 'acumula-beneficios', 'data-placeholder' => 'Selecione opcion']) }}
 
                         </div>
                     </div>
