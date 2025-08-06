@@ -19,7 +19,9 @@ $(function () {
         $('#decimo_cuarto').attr('readonly', false);
         $('#iess').attr('readonly', false);
 
+        //$('#acumula-beneficios').val('no').trigger('change');
         $('#acumula-beneficios').attr('disabled', true);
+
     }
 
 
@@ -34,7 +36,10 @@ $(function () {
             $('#decimo_tercero').val('');
             $('#decimo_cuarto').val('');
             $('#iess').val('');
+
+            // $('#acumula-beneficios').val('no').trigger('change');
             $('#acumula-beneficios').attr('disabled', true);
+
         } else {
             $('#acumula-beneficios').attr('disabled', false);
             if ($('#acumula-beneficios').val() == 'si') {
@@ -137,7 +142,6 @@ $(function () {
         let totalRecibir = parsePrecio($("#total_recibir").text());
         let aportePatronal = parsePrecio($("#aporte_patronal").val()) || 0;
         let acumulunaBeneficios = $('#acumula-beneficios').val();
-
 
         var nuevaFila = `<tr class="elementos-agregados">
             <td>
