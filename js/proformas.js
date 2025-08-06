@@ -79,15 +79,13 @@ $(function () {
                     <input type="hidden" name="producto[]" value="${productoId}">
                 </td>
                 <td class="cantidad-celda">
-                    ${nuevaCantidad}
-                    <input type="hidden" name="cantidad[]" value="${nuevaCantidad}">
+                    <input type="text" name="cantidad[]" value="${nuevaCantidad}" class="form-control form-control-sm input-double-two-decimals cantidad-input">
                 </td>
                 <td class="precio-unitario-celda">
-                    $ ${valorUnitario.toFixed(2)}
-                    <input type="hidden" name="precio[]" value="${valorUnitario}">
+                    <input type="text" name="precio[]" value="${valorUnitario.toFixed(2)}" class="form-control form-control-sm moneyDosDecimales precio-input">
                 </td>
                 <td class="total-celda total_unitario">
-                   $ ${total.toFixed(2)}
+                   ${total.toFixed(2)}
                 </td>
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
@@ -109,6 +107,8 @@ $(function () {
         // Limpiar los campos del formulario de entrada
         limpiarCampos(camposAValidar);
         $('#total').val('$ 0.0000'); // Quizás quieras limpiar solo los campos de producto, no los totales
+
+        $('.moneyDosDecimales').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 2 });
     });
 
     $('#cantidad, #area_m2, #valor_unitario').on('input', function () {
@@ -443,7 +443,6 @@ $(function () {
         let descuento = $('#porcentaje_descuento').val() || 0;
         let iva = $('#porcentaje_iva').val() || 0;
         let subtotal = calcularTotal('.elementos-agregados', 2);
-        console.log('Subtotal:', subtotal);
         let totalDescuento = descuento > 0 ? subtotal - (subtotal * descuento / 100) : 0;
         let totalIva = (descuento > 0 ? totalDescuento : subtotal) * iva / 100;
         let totalFinal = descuento > 0 ? (parseFloat(totalDescuento) + totalIva) : (parseFloat(subtotal) + totalIva);
@@ -452,6 +451,26 @@ $(function () {
         $('#totales_descuento').text('$ ' + parseFloat(totalDescuento).toFixed(2));
         $('#totales_iva').text('$ ' + parseFloat(totalIva).toFixed(2));
         $('#total_proforma').text('$ ' + parseFloat(totalFinal).toFixed(2));
+
+    }
+
+    $(document).on('input', ".cantidad-input, .precio-input", function () {
+        let fila = $(this).closest('tr');
+        calcularEditarFila(fila);
+    });
+
+    // El listener CORRECTO para reaccionar a los cambios cuando se usa maskMoney (.money)
+    $(document).on('keyup blur', '.precio-input', function () {
+        let fila = $(this).closest('tr');
+        calcularEditarFila(fila);
+    });
+
+    function calcularEditarFila(fila) {
+        let cantidad = parseFloat(fila.find('.cantidad-input').val()) || 0;
+        var precioUnitario = fila.find('.precio-input').maskMoney('unmasked')[0];
+        let totalUnitario = cantidad * precioUnitario;
+        fila.find('.total_unitario').text(totalUnitario.toFixed(2));
+        calcularTotales();
     }
 });
 

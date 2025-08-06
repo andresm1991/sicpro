@@ -435,6 +435,17 @@ $(function () {
         placeholder: $('.input-double').data('placeholder')
     });
 
+    $('.input-double-two-decimals').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ".",   // Definir el punto decimal
+        groupSeparator: "",  // Separador de miles (opcional)
+        digits: 2,         // Número de dígitos decimales
+        autoGroup: true,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: false,   // Permitir números negativos
+        placeholder: $('.input-double').data('placeholder')
+    });
+
     $('.simple-double').inputmask({
         alias: 'decimal',  // Usar el alias "decimal"
         digits: 100,

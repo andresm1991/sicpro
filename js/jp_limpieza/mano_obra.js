@@ -7,16 +7,25 @@ $(function () {
     $('#decimo_cuarto').attr('readonly', true);
     $('#iess').attr('readonly', true);
 
+    var acumulunaBeneficios = $('#acumula-beneficios').val();
     var pFondos = 0.0833;
     var pIESS = 0.0945;
     var dTerceroYCuarto = 12;
     var basico = 470;
 
+    if ($('#tipo_plantilla').val() == 'ASOCIACION') {
+        $('#fondos').attr('readonly', false);
+        $('#decimo_tercero').attr('readonly', false);
+        $('#decimo_cuarto').attr('readonly', false);
+        $('#iess').attr('readonly', false);
+
+        $('#acumula-beneficios').attr('disabled', true);
+    }
 
 
     $('#tipo_plantilla, #acumula-beneficios').on('change', function () {
         let tipoPlantilla = $(this).val();
-        let acumulunaBeneficios = $('#acumula-beneficios').val();
+
 
         if (tipoPlantilla == 'ASOCIACION') {
             $('#fondos').attr('readonly', false);
@@ -35,11 +44,9 @@ $(function () {
                 $('#decimo_tercero').attr('readonly', false);
                 $('#decimo_cuarto').attr('readonly', false);
             } else {
-
                 $('#fondos').attr('readonly', true);
                 $('#decimo_tercero').attr('readonly', true);
                 $('#decimo_cuarto').attr('readonly', true);
-                $('#iess').attr('readonly', true);
             }
 
         }
@@ -51,7 +58,6 @@ $(function () {
         let totalGanado = sueldo + horasExtras;
         let iess = totalGanado * pIESS;
         let totalIngresos = totalGanado;
-
 
         if ($('#tipo_plantilla').val() == 'JPLIMPIEZA') {
             let fondos = sueldo * pFondos;
@@ -132,6 +138,7 @@ $(function () {
         let totalDescuentos = parsePrecio($("#total_descuentos").text());
         let totalRecibir = parsePrecio($("#total_recibir").text());
         let aportePatronal = parsePrecio($("#aporte_patronal").val()) || 0;
+        let acumulunaBeneficios = $('#acumula-beneficios').val();
 
 
         var nuevaFila = `<tr class="elementos-agregados">
@@ -150,6 +157,10 @@ $(function () {
             <td>
                 <span>$ ${totalGanado.toFixed(2)}</span>
                 <input type="hidden" name="total_ganado[]" value="${totalGanado}">
+            </td>
+            <td>
+                <span>${acumulunaBeneficios}</span>
+                <input type="hidden" name="acumula_beneficios[]" value="${acumulunaBeneficios}">
             </td>
             <td class="edit-item" style="cursor: pointer;">
                 <span>$ ${fondos.toFixed(2)}</span>
