@@ -25,8 +25,6 @@ $(function () {
 
     $('#tipo_plantilla, #acumula-beneficios').on('change', function () {
         let tipoPlantilla = $(this).val();
-
-
         if (tipoPlantilla == 'ASOCIACION') {
             $('#fondos').attr('readonly', false);
             $('#decimo_tercero').attr('readonly', false);
@@ -39,7 +37,7 @@ $(function () {
             $('#acumula-beneficios').attr('disabled', true);
         } else {
             $('#acumula-beneficios').attr('disabled', false);
-            if (acumulunaBeneficios == 'si') {
+            if ($('#acumula-beneficios').val() == 'si') {
                 $('#fondos').attr('readonly', false);
                 $('#decimo_tercero').attr('readonly', false);
                 $('#decimo_cuarto').attr('readonly', false);
