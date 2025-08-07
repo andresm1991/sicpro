@@ -18,6 +18,7 @@ use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\SolicitudController;
 use App\Http\Controllers\CronogramaController;
 use App\Http\Controllers\GenerarPdfController;
+use App\Http\Controllers\ImageProxyController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\ReporteriaController;
 use App\Http\Controllers\AdquisicionController;
@@ -105,4 +106,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('/no-access', function () {
         return view('errors.no-access');
     })->name('no.access');
+
+    Route::get('/storage/imagenes/{imagen}/{filename}', [ImageProxyController::class, 'getPropertyImage'])->name('imagen.proxy');
 });

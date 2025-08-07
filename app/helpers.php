@@ -49,13 +49,17 @@ if (!function_exists('explode_param')) {
 if (!function_exists('doTemporaryUrl')) {
     function doTemporaryUrl($fileName)
     {
-        // Define la duración de validez de la URL firmada
-        $expiresAt = Carbon::now()->addMinutes(5);
+        if ($fileName) {
+            // Define la duración de validez de la URL firmada
+            $expiresAt = Carbon::now()->addMinutes(5);
 
-        // Genera la URL firmada
-        $url = Storage::disk('digitalocean')->temporaryUrl($fileName, $expiresAt);
+            // Genera la URL firmada
+            $url = Storage::disk('digitalocean')->temporaryUrl($fileName, $expiresAt);
 
-        return $url;
+            return $url;
+        }
+        // Devuelve una URL por defecto o una cadena vacía si no hay imagen.
+        return 'https://upload.wikimedia.org/wikipedia/commons/0/0a/No-image-available.png';
     }
 }
 if (!function_exists('dateFormat')) {

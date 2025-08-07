@@ -237,7 +237,7 @@ class VentaPropiedadController extends Controller
             ['name' => 'Mapa de propiedades', 'url' => '']
         ];
 
-        $propiedades = VentaPropiedad::with('tipo_propiedad')->orderBy('created_at', 'desc')->get();
+        $propiedades = VentaPropiedad::with('tipo_propiedad', 'imagenes_propiedades')->orderBy('created_at', 'desc')->get();
 
         return view('gerencia.propiedades.mapa', compact('title_page', 'propiedades', 'breadcrumbs'));
     }

@@ -16,8 +16,22 @@ class ImagenPropiedad extends Model
         'path_file',
     ];
 
+    protected $appends = ['url'];
+
     public function venta_propiedades()
     {
         return $this->belongsTo(VentaPropiedad::class, 'venta_propiedad_id');
+    }
+
+    public function getUrlAttribute()
+    {
+        $fileName = $this->attributes['path_file'];
+        return doTemporaryUrl($fileName);
+    }
+
+    public function getEncodedPathAttribute()
+    {
+        // Asegurarse de que el valor no sea nulo antes de usarlo
+        return $this->attributes['path_file'] ? base64_encode($this->attributes['path_file']) : '';
     }
 }

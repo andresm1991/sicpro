@@ -109,7 +109,10 @@
                     <div class="form-group col-sm-6">
                         {{ Form::file('files[]', [
                             'class' => 'dropify',
-                            'data-default-file' => old('files', isset($file) ? doTemporaryUrl($file->path_file) : ''),
+                            'data-default-file' => old(
+                                'files',
+                                isset($file) ? route('imagen.proxy', ['imagen' => $file->id, 'filename' => $file->file_name]) : '',
+                            ),
                             'data-id' => $propiedad->id,
                             'data-tipo' => '',
                             'data-height' => '100',
@@ -121,7 +124,10 @@
                     <div class="form-group col-sm-6 position-relative">
                         {{ Form::file('files[]', [
                             'class' => 'dropify',
-                            'data-default-file' => old('files', isset($file) ? doTemporaryUrl($file->path_file) : ''),
+                            'data-default-file' => old(
+                                'files',
+                                isset($file) ? route('imagen.proxy', ['imagen' => $file->id, 'filename' => $file->file_name]) : '',
+                            ),
                             'data-id' => $propiedad->id,
                             'data-tipo' => '',
                             'data-height' => '100',
