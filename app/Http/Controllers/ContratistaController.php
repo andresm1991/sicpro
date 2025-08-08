@@ -97,7 +97,7 @@ class ContratistaController extends Controller
         $cantidad = $request->cantidad;
         $unidad_medida = $request->unidad_medida;
         $precio_unitario = $request->precio_unitario;
-        $plazo = $request->plazo_semanas;
+        $plazo = $request->input('plazo_semanas', 0);
         $nro_casas = $request->numero_casas;
         $subproyecto = $request->subproyecto;
 
@@ -143,7 +143,7 @@ class ContratistaController extends Controller
 
                 PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Contratista', 'Se registro una nueva orden de trabajo para el contratisa ' . $orden_trabajo->proveedor->razon_social, route('administrativo.index.contratistas'));
 
-                return redirect()->back()->with('success', 'Orden de trabajo contratista creada con éxito.');
+                return redirect()->route('proyecto.adquisiciones.contratista', ['tipo' => $request->route('tipo'), 'tipo_id' => $request->route('tipo_id'), 'proyecto' => $request->route('proyecto'), 'tipo_adquisicion' => $request->route('tipo_adquisicion'), 'tipo_etapa' => $request->route('tipo_etapa')])->with('success', 'Orden de trabajo contratista creada con éxito.');
             }
             throw new Exception(MessagesConstant::DEFAUL_ERROR);
         } catch (Throwable $e) {

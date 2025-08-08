@@ -36,7 +36,7 @@
     <div class="col-sm-2 col-12">
         <div class="form-group">
             {{ Form::label('', 'Plazo semanas', ['class' => 'col-form-label']) }}
-            {{ Form::text('plazo_semanas', old('plazo_semanas'), ['class' => 'form-control input-enteros']) }}
+            {{ Form::text('plazo_semanas', old('plazo_semanas'), ['class' => 'form-control input-enteros', 'id' => 'plazo_semanas']) }}
         </div>
     </div>
 
