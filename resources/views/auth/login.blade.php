@@ -49,7 +49,7 @@
                             </div>
                             <div class="my-2 d-flex justify-content-between align-items-center">
 
-                                <a href="#" class="auth-link text-black">¿Has olvidado tu contraseña?</a>
+                                {{--  <a href="#" class="auth-link text-black">¿Has olvidado tu contraseña?</a> --}}
                             </div>
                             {!! Form::close() !!}
                     </div>
