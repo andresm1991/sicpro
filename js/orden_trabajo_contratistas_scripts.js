@@ -425,6 +425,40 @@ $(function () {
         $('#text-fecha').html('Fecha. ' + resultadoFinal + ' ');
     });
 
+    //* Validar formulario antes de enviar//
+    $('#form_orden_trabajo').on('submit', function (event) {
+        let isValid = true;
+
+        const camposAValidar = [
+            { selector: '#proveedor', mensaje: 'Seleccione proveedor.' },
+            { selector: '#categoria', mensaje: 'Seleccione categoria.' },
+            { selector: '#plazo_semanas', mensaje: 'Ingrese plazo en semanas.' },
+        ];
+
+        // Validar campos
+        if (!validarCampos(camposAValidar)) {
+            isValid = false;
+        } else {
+            // Validar el campo "total"
+            let totalGeneral = $('#total-general').val().replace(/[$.]/g, '').trim(); // Eliminar el símbolo de dólar y espacios
+
+            if (totalGeneral === '' || totalGeneral <= 0) {
+                isValid = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se ha agregado ningún producto.',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        }
+
+        // Si alguna validación falla, evitar el envío del formulario
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+
     function clearInputs() {
         $('#producto').val(null).trigger('change');
         $('#unidad-medida').val(null).trigger('change');
