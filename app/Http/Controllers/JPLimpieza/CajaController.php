@@ -19,7 +19,7 @@ class CajaController extends Controller
             ['name' => 'Caja', 'url' => ''],
         ];
 
-        $movimientosAsc = Caja::orderBy('id', 'asc')->get();
+        $movimientosAsc = Caja::with(['adquisicion.proyecto', 'producto', 'proveedor'])->orderBy('id', 'asc')->get();
         $saldo = 0;
         foreach ($movimientosAsc as $movimiento) {
             if ($movimiento->tipo == 'ingreso') {
@@ -31,6 +31,7 @@ class CajaController extends Controller
         }
 
         $movimientos = $movimientosAsc->sortByDesc('id')->values();
+
         $page = request()->get('page', 1);
         $perPage = 15;
         $items = $movimientos;

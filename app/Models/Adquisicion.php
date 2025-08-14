@@ -307,15 +307,24 @@ class Adquisicion extends Model
 
         $resultado = [];
 
-        // 2. Obtener datos para cada categoría (lógica sin cambios)
-        if (in_array($filters['tipo_slug'], [null, 'contratista'])) {
-            $contratistas = self::getContratistasData($filters);
-            self::mergeResults($resultado, $contratistas, 'contratista');
+        // Creamos una variable para saber si el filtro de producto está activo.
+        $productoFilterActive = !empty($filters['producto']);
+
+        // 1. Obtener datos de Contratistas y Mano de Obra SÓLO si NO estamos filtrando por producto.
+        if (!$productoFilterActive) {
+            if (in_array($filters['tipo_slug'], [null, 'contratista'])) {
+                $contratistas = self::getContratistasData($filters);
+                self::mergeResults($resultado, $contratistas, 'contratista');
+            }
+            if (in_array($filters['tipo_slug'], [null, 'mano.obra'])) {
+                $manosDeObra = self::getManoDeObraData($filters);
+                self::mergeResults($resultado, $manosDeObra, 'mano_obra');
+            }
         }
-        if (in_array($filters['tipo_slug'], [null, 'mano.obra'])) {
-            $manosDeObra = self::getManoDeObraData($filters);
-            self::mergeResults($resultado, $manosDeObra, 'mano_obra');
-        }
+
+        // 2. Obtener datos de Adquisiciones. Esto siempre se intenta, ya que es la única
+        // sección que puede responder al filtro de producto. La lógica interna de la
+        // función getAdquisicionesData ya se encarga de aplicar el filtro si existe.
         if (in_array($filters['tipo_slug'], [null, 'meteriales.herramientas', 'servicios'])) {
             $adquisiciones = self::getAdquisicionesData($filters);
             self::mergeResults($resultado, $adquisiciones, 'adquisiciones');
@@ -483,7 +492,19 @@ class Adquisicion extends Model
 
         // Aplicar filtros
         self::applyCommonFilters($query, $filters, ['subproyecto', 'estado', 'fechas', 'etapa'], 'adquisiciones');
-        $query->when($filters['producto'], fn($q) => $q->where('adquisiciones_detalle.articulo_id', $filters['producto']));
+
+        // ===== INICIO DEL CAMBIO =====
+        $query->when($filters['producto'], function ($q, $productoValue) {
+            if (is_numeric($productoValue)) {
+                // Si el valor es numérico, se asume que es un ID y se busca por 'articulo_id'
+                $q->where('adquisiciones_detalle.articulo_id', $productoValue);
+            } else {
+                // Si el valor es un string, se realiza una búsqueda 'LIKE' en la descripción del artículo
+                $q->where('articulos.descripcion', 'like', '%' . $productoValue . '%');
+            }
+        });
+        // ===== FIN DEL CAMBIO =====
+
         $query->when($filters['necesidad'], fn($q) => $q->where('adquisiciones_detalle.necesidad', $filters['necesidad']));
         $query->when($filters['costo_directo'], fn($q) => $q->where('adquisiciones.etapa_id', $filters['costo_directo']));
         $query->when($filters['tipo_slug'], function ($q, $slug) {

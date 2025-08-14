@@ -36,6 +36,7 @@
                         <thead>
                             <tr>
                                 <th>Fecha</th>
+                                <th scope="col">proyecto</th>
                                 <th scope="col">descripcion</th>
                                 <th scope="col">necesidad</th>
                                 <th scope="col">proveedor</th>
@@ -50,6 +51,9 @@
                                 <tr id="{{ $movimiento->id }}">
                                     <td class="align-middle">
                                         {{ $movimiento->fecha_formateada }}
+                                    </td>
+                                    <td class="align-middle">
+                                        {{ isset($movimiento->adquisicion->proyecto->nombre_proyecto) ? $movimiento->adquisicion->proyecto->nombre_proyecto : '-' }}
                                     </td>
                                     <td class="align-middle">
                                         {{ isset($movimiento->producto_id) ? $movimiento->producto->nombre : $movimiento->descripcion }}

@@ -93,7 +93,7 @@
 
                         <div class="form-group col-sm-4">
                             <label for="" class="col-form-label">Productos </label>
-                            {{ Form::select('producto', [], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione producto', 'data-allow-clear' => 'true']) }}
+                            {{ Form::select('producto', [], '', ['class' => 'form-control select2-tag', 'data-placeholder' => 'seleccione o ingrese producto', 'data-allow-clear' => 'true']) }}
                         </div>
 
                         <div class="form-group col-sm-4">
