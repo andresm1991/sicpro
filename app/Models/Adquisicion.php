@@ -484,16 +484,17 @@ class Adquisicion extends Model
                 DB::raw('SUM( (adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + adquisiciones_detalle.iva/100) ) as total_con_iva')
             )
             ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
+            ->join('orden_recepciones', 'adquisiciones.id', '=', 'orden_recepciones.adquisicion_id')
             ->join('catalogo_datos as etapa_catalogo', 'adquisiciones.etapa_id', '=', 'etapa_catalogo.id')
             ->join('articulos', 'adquisiciones_detalle.articulo_id', '=', 'articulos.id')
             ->join('catalogo_datos as unidad_medida_catalogo', 'adquisiciones_detalle.unidad_medida_id', '=', 'unidad_medida_catalogo.id')
             ->join('catalogo_datos as tipo_etapa_catalogo', 'adquisiciones.tipo_etapa_id', '=', 'tipo_etapa_catalogo.id')
             ->where('adquisiciones.proyecto_id', $filters['proyecto']);
 
+        $columnOverrides = ['proveedor' => 'orden_recepciones.proveedor_id'];
         // Aplicar filtros
-        self::applyCommonFilters($query, $filters, ['subproyecto', 'estado', 'fechas', 'etapa'], 'adquisiciones');
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'estado', 'fechas', 'etapa'], 'adquisiciones', $columnOverrides);
 
-        // ===== INICIO DEL CAMBIO =====
         $query->when($filters['producto'], function ($q, $productoValue) {
             if (is_numeric($productoValue)) {
                 // Si el valor es numérico, se asume que es un ID y se busca por 'articulo_id'
@@ -503,7 +504,6 @@ class Adquisicion extends Model
                 $q->where('articulos.descripcion', 'like', '%' . $productoValue . '%');
             }
         });
-        // ===== FIN DEL CAMBIO =====
 
         $query->when($filters['necesidad'], fn($q) => $q->where('adquisiciones_detalle.necesidad', $filters['necesidad']));
         $query->when($filters['costo_directo'], fn($q) => $q->where('adquisiciones.etapa_id', $filters['costo_directo']));
@@ -548,7 +548,7 @@ class Adquisicion extends Model
     /**
      * Aplica un conjunto de filtros comunes a una consulta Eloquent.
      */
-    private static function applyCommonFilters(Builder $query, array $filters, array $applicableFilters, ?string $table = null)
+    private static function applyCommonFilters(Builder $query, array $filters, array $applicableFilters, ?string $table = null, array $columnOverrides = [])
     {
         $prefix = $table ? "{$table}." : '';
 
@@ -561,7 +561,11 @@ class Adquisicion extends Model
             $query->when($filters['subproyecto'], fn($q) => $q->where(DB::raw("TRIM(LOWER({$prefix}subproyecto))"), trim(strtolower($filters['subproyecto']))));
         }
         if (in_array('proveedor', $applicableFilters)) {
-            $query->when($filters['proveedor'], fn($q) => $q->where("{$prefix}proveedor_id", $filters['proveedor']));
+            $query->when($filters['proveedor'], function ($q) use ($filters, $prefix, $columnOverrides) {
+                // Si se especificó una columna para 'proveedor', úsala. Si no, usa la predeterminada.
+                $column = $columnOverrides['proveedor'] ?? "{$prefix}proveedor_id";
+                $q->where($column, $filters['proveedor']);
+            });
         }
         if (in_array('estado', $applicableFilters)) {
             $query->when($filters['estado'], function ($q, $estado) use ($prefix) {
