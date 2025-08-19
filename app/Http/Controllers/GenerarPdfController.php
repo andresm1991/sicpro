@@ -638,6 +638,9 @@ class GenerarPdfController extends Controller
         $categorias = PlantillaPresupuesto::with(['hijos', 'hijos.presupuestoProyecto'])
             ->whereNull('padre_id')
             ->where('activo', true)
+            ->whereHas('hijos.presupuestoProyecto', function ($query) use ($proyecto) {
+                $query->where('proyecto_id', $proyecto->id);
+            })
             ->get();
 
         $pdf = PDF::loadView('pdf.presupuesto_jplimpieza', compact('proyecto', 'categorias'))->setPaper('a4', 'landscape');

@@ -3,6 +3,7 @@
 namespace App\Models\JPLimpieza;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class PlantillaPresupuesto extends Model
 {
@@ -32,21 +33,11 @@ class PlantillaPresupuesto extends Model
         return $this->hasMany(PresupuestoProyecto::class, 'plantilla_id');
     }
 
-    public function getTotalCategoriaAttribute()
+    protected function totalCategoria(): Attribute
     {
-        // Si es una categoría padre (suma todos sus hijos)
-        if (is_null($this->padre_id)) {
-            return $this->hijos->sum(function ($hijo) {
-                return $hijo->presupuestosProyecto->sum(function ($presupuesto) {
-                    return $presupuesto->cantidad * $presupuesto->precio_unitario * $presupuesto->meses;
-                });
-            });
-        }
-
-        // Si es una categoría hijo (suma solo sus presupuestos)
-        return $this->presupuestosProyecto->sum(function ($presupuesto) {
-            return $presupuesto->cantidad * $presupuesto->precio_unitario * $presupuesto->meses;
-        });
+        return Attribute::make(
+            get: fn() => $this->hijos->sum('total_presupuesto')
+        );
     }
 
     public function getTotalGeneralAttribute()
@@ -70,8 +61,12 @@ class PlantillaPresupuesto extends Model
         });
     }
 
-    public function getTotalCategoriaFormattedAttribute()
+    protected function totalPresupuesto(): Attribute
     {
-        return number_format($this->total_categoria, 4);
+        return Attribute::make(
+            get: fn() => (optional($this->presupuestoProyecto)->cantidad ?? 0) *
+                (optional($this->presupuestoProyecto)->precio_unitario ?? 0) *
+                (optional($this->presupuestoProyecto)->meses ?? 0)
+        );
     }
 }

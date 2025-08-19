@@ -137,12 +137,7 @@
                                                 {{ Form::text('presupuesto[' . $hijo->id . '][meses]', old('meses', $hijo->presupuestoProyecto->meses ?? 0), ['class' => 'form-control form-control-sm col-auto input-enteros meses', 'data-id' => $hijo->id]) }}
                                             </td>
                                             <td class="align-middle total" data-id="{{ $hijo->id }}">
-                                                ${{ number_format(
-                                                    ($hijo->presupuestoProyecto->cantidad ?? 0) *
-                                                        ($hijo->presupuestoProyecto->precio_unitario ?? 0) *
-                                                        ($hijo->presupuestoProyecto->meses ?? 0),
-                                                    4,
-                                                ) }}
+                                                ${{ number_format($hijo->total_presupuesto, 4) }}
                                             </td>
                                         </tr>
                                         @php
@@ -155,7 +150,7 @@
                                             Total General
                                         </td>
                                         <td colspan="2" class="font-weight-bold">
-                                            {{ $categoria->total_categoria_formatted }}
+                                            ${{ number_format($categoria->hijos->sum('total_presupuesto'), 4) }}
                                         </td>
                                     </tr>
                                     <tr>

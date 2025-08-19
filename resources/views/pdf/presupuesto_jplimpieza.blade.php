@@ -211,13 +211,7 @@
                                 {{ $hijo->presupuestoProyecto->meses ?? 0 }}
                             </td>
                             <td class="align-middle">
-                                $
-                                {{ number_format(
-                                    ($hijo->presupuestoProyecto->cantidad ?? 0) *
-                                        ($hijo->presupuestoProyecto->precio_unitario ?? 0) *
-                                        ($hijo->presupuestoProyecto->meses ?? 0),
-                                    4,
-                                ) }}
+                                ${{ number_format($hijo->total_presupuesto, 4) }}
                             </td>
                         </tr>
                         @php
@@ -230,7 +224,7 @@
                             <strong>Total General</strong>
                         </td>
                         <td colspan="1" class="font-weight-bold">
-                            $ {{ $categoria->total_categoria_formatted }}
+                            ${{ number_format($categoria->hijos->sum('total_presupuesto'), 4) }}
                         </td>
                     </tr>
                     <tr>

@@ -19,7 +19,7 @@ class PresupuestoProyectoController extends Controller
 {
     public function index(Request $request)
     {
-        $proyecto = Proyecto::with(['adquisiciones', 'manoObra', 'contratistas'])->findOrFail($request->proyecto);
+        $proyecto = Proyecto::with(['adquisiciones', 'adquisiciones.detalles', 'manoObra', 'manoObra.detalles', 'contratistas', 'contratistas.detalles'])->findOrFail($request->proyecto);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],
@@ -49,14 +49,12 @@ class PresupuestoProyectoController extends Controller
             ->get();
 
         $totalAdquisiciones = $proyecto->adquisiciones->sum(function ($item) {
-            $total = calcularTotalProducto($item->cantidad, $item->precio_unitario, $item->iva);
-            return $total;
+            return $item->detalles->sum(function ($detalle) {
+                return calcularTotalProducto($detalle->cantidad, $detalle->precio_unitario, $detalle->iva);
+            });
         });
 
-        $totalManoObra = $proyecto->manoObra->sum(function ($item) {
-            $total = $item->total_recibir;
-            return $total;
-        });
+        $totalManoObra = $proyecto->manoObra->sum('total_recibir');
 
         $totalContratistas = $proyecto->contratistas->sum(function ($item) {
             $total = calcularTotalProducto($item->cantidad, $item->precio_unitario, $item->iva);
