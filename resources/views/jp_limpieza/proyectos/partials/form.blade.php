@@ -61,7 +61,22 @@
                     {!! $errors->first('tiempo_contratado', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
                 </div>
             </div>
+        </div>
 
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    {{ Form::label('', 'valor mensual', ['class' => 'col-form-label']) }}
+                    {{ Form::label('', $proyecto->valor_contratado_mensual_formatted, ['class' => 'form-control label-disabled', 'id' => 'valor_mensual']) }}
+                </div>
+            </div>
+
+            <div class="col-sm-6">
+                <div class="form-group">
+                    {{ Form::label('', 'total contratado', ['class' => 'col-form-label']) }}
+                    {{ Form::label('', $proyecto->total_contratado_formatted, ['class' => 'form-control label-disabled', 'id' => 'total_contratado']) }}
+                </div>
+            </div>
         </div>
 
         <div class="row">
