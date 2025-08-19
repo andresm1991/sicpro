@@ -965,9 +965,9 @@ function inicializarPlugins() {
     });
 }
 
-function formatearUSD(valor) {
+function formatearUSD(valor, tipo = 'currency') {
     return Intl.NumberFormat('en-US', {
-        style: 'currency',
+        style: tipo,
         currency: 'USD',
         minimumFractionDigits: 4,
         maximumFractionDigits: 4

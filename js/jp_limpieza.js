@@ -42,8 +42,24 @@ $(function () {
         }
     });
 
+    $('input[name="metraje_contratado"], input[name="precio_metro"], input[name="tiempo_contratado"]').on('keyup', function () {
+        calcularValores();
+    });
+
     function sumarMeses(fecha, meses) {
         // Usando moment.js para sumar meses
         return moment(fecha, 'DD-MM-YYYY').add(meses, 'months').format('DD-MM-YYYY');
+    }
+
+    function calcularValores() {
+        let metraje = parseFloat($('input[name="metraje_contratado"]').val()) || 0;
+        let precio = parseFloat($('input[name="precio_metro"]').val()) || 0;
+        let tiempo = parseFloat($('input[name="tiempo_contratado"]').val()) || 0;
+
+        let valorMensual = metraje * precio;
+        let totalContratado = valorMensual * tiempo;
+
+        $('#valor_mensual').text(formatearUSD(valorMensual, 'decimal'));
+        $('#total_contratado').text(formatearUSD(totalContratado, 'decimal'));
     }
 });
