@@ -30,5 +30,6 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
     //** JPLIMPIEZA */
     Route::get('/presupuesto-jplimpieza/{proyecto}', [GenerarPdfController::class, 'presupuestoJPLimpiezaPDF'])->name('jp.limpieza.presupuesto');
     Route::get('/jp-limpieza/mano-obra/{mano_obra}', [GenerarPdfController::class, 'manoObraJPLimpiezaPDF'])->name('jp.limpieza.mano.obra');
+    Route::get('/jp-limpieza/adquisicion-pdf/{adquisicion}', [GenerarPdfController::class, 'adquisicionJPLimpiezaPDF'])->name('jp.limpieza.adquisicion');
     Route::post('/jp-limpieza/reporte-caja/{tipo_reporte}', [GenerarPdfController::class, 'reportCajaJPLimpieza'])->name('reporte.jp.limpieza.caja');
 });

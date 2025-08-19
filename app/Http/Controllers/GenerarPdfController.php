@@ -35,6 +35,7 @@ use App\Exports\ReportGasolinaCamionetaExport;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
 use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
+use App\Models\JPLimpieza\Adquisicion as JPLimpiezaAdquisicion;
 
 class GenerarPdfController extends Controller
 {
@@ -652,6 +653,13 @@ class GenerarPdfController extends Controller
     {
         $pdf = PDF::loadView('pdf.mano_obra_jplimpieza', compact('mano_obra'))->setPaper('a3', 'landscape');
         return $pdf->stream('mano_obra.pdf');
+    }
+
+    //** Adquisiciones */
+    public function adquisicionJPLimpiezaPDF(JPLimpiezaAdquisicion $adquisicion)
+    {
+        $pdf = PDF::loadView('pdf.adquisicion_jplimpieza', compact('adquisicion'))->setPaper('a4', 'landscape');
+        return $pdf->stream('adquisicion.pdf');
     }
 
     private function logoBase64()

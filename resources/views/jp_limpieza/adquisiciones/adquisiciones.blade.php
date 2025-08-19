@@ -72,7 +72,7 @@
                                                 @endisset
                                                 
                                                 <a href='javascript:void(0);' class='dropdown-item eliminar-adquisicion' id='{{ $adquisicion->id }}'>Eliminar</a>
-                                                <a href='{{ route('pdf.recepcion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a> ">
+                                                <a href='{{ route('pdf.jp.limpieza.adquisicion', $adquisicion->id) }}' class='dropdown-item' target='_blank'>Generar PDF</a> ">
                                                 <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                             </button>
                                         </td>
