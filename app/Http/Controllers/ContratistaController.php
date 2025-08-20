@@ -216,12 +216,19 @@ class ContratistaController extends Controller
             $route_params = $this->getRouteParameters($request);
             DB::beginTransaction();
 
-            $productos = $request->productos;
-            $cantidad = $request->cantidad;
-            $unidad_medida = $request->unidad_medida;
-            $precio_unitario = $request->precio_unitario;
             $plazo = $request->plazo_semanas;
             $nro_casas = $request->numero_casas;
+
+            $items = array_map(function ($producto, $cantidad, $valor, $unidad_medida) {
+                $valoresLimpios = preg_replace('/[^0-9.]/', '', $valor); // Elimina $ y otros caracteres no numéricos
+
+                return [
+                    'producto' => is_numeric($producto) ? $producto : agregarProducto($producto, $valoresLimpios, 0, $unidad_medida),
+                    'cantidad' => str_replace(',', '', $cantidad),
+                    'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
+                    'valor' => $valoresLimpios
+                ];
+            }, $request->productos, $request->cantidad, $request->precio_unitario, $request->unidad_medida);
 
             $orden_trabajo = Contratista::find($request->contratista);
             $orden_trabajo->plazo_semanas = $plazo;
@@ -229,19 +236,19 @@ class ContratistaController extends Controller
             $orden_trabajo->subproyecto = $request->subproyecto;
 
             $productosExistente = DetalleContratista::where('contratista_id', $orden_trabajo->id)->pluck('articulo_id')->toArray();
-            $productosEliminar = array_diff($productosExistente, $productos);
+            $productosEliminar = array_diff($productosExistente, $request->productos);
 
             if ($orden_trabajo->save()) {
-                foreach ($productos as $index => $producto) {
+                foreach ($items as $index => $item) {
                     DetalleContratista::updateOrCreate(
                         [
                             'contratista_id' => $request->contratista,
-                            'articulo_id' => $producto,
+                            'articulo_id' => $item['producto'],
                         ],
                         [
-                            'cantidad' => $cantidad[$index],
-                            'unidad_medida_id' => $unidad_medida[$index],
-                            'valor_unitario' => str_replace(',', '', $precio_unitario[$index]),
+                            'cantidad' => $item['cantidad'],
+                            'unidad_medida_id' => $item['unidad_medida'],
+                            'valor_unitario' => $item['valor'],
                         ]
                     );
                 }
