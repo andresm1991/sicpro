@@ -228,6 +228,9 @@ class ContratistaController extends Controller
             $orden_trabajo->numero_casas = $nro_casas;
             $orden_trabajo->subproyecto = $request->subproyecto;
 
+            $productosExistente = DetalleContratista::where('contratista_id', $orden_trabajo->id)->pluck('articulo_id')->toArray();
+            $productosEliminar = array_diff($productosExistente, $productos);
+
             if ($orden_trabajo->save()) {
                 foreach ($productos as $index => $producto) {
                     DetalleContratista::updateOrCreate(
@@ -241,6 +244,11 @@ class ContratistaController extends Controller
                             'valor_unitario' => str_replace(',', '', $precio_unitario[$index]),
                         ]
                     );
+                }
+
+                if (!empty($productosEliminar)) {
+                    DetalleContratista::where('contratista_id', $orden_trabajo->id)
+                        ->whereIn('articulo_id', $productosEliminar)->delete();
                 }
 
                 DB::commit();
