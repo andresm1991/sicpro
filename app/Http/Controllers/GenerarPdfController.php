@@ -636,12 +636,16 @@ class GenerarPdfController extends Controller
     //** Presupuesto JPLimpieza */
     public function presupuestoJPLimpiezaPDF(JPLimpiezaProyecto $proyecto)
     {
-        $categorias = PlantillaPresupuesto::with(['hijos', 'hijos.presupuestoProyecto'])
+        $categorias = PlantillaPresupuesto::with([
+            'hijos',
+            // Aquí está la magia: añadimos una condición a la relación anidada
+            'hijos.presupuestoProyecto' => function ($query) use ($proyecto) {
+                // Le decimos que solo traiga el presupuesto que pertenezca al proyecto actual
+                $query->where('proyecto_id', $proyecto->id);
+            }
+        ])
             ->whereNull('padre_id')
             ->where('activo', true)
-            ->whereHas('hijos.presupuestoProyecto', function ($query) use ($proyecto) {
-                $query->where('proyecto_id', $proyecto->id);
-            })
             ->get();
 
         $pdf = PDF::loadView('pdf.presupuesto_jplimpieza', compact('proyecto', 'categorias'))->setPaper('a4', 'landscape');
