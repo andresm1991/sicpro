@@ -181,13 +181,14 @@ $(function () {
         }
 
         // Validar el campo "fecha"
-        let forma_pago = $('#forma-pago').is(':checked');
+        let forma_pago = $('.forma-pago').is(':checked');
+        console.log(forma_pago);
         if (!forma_pago) {
             isValid = false;
             $('<span>', {
                 text: 'Seleccione forma de pago.',
                 class: 'error-message'
-            }).insertAfter($('#forma-pago').closest('.select_wrapper'));
+            }).insertAfter($('.forma-pago:checked').closest('.select_wrapper'));
         }
 
         // Validar el campo "total"
