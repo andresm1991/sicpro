@@ -89,8 +89,7 @@
             <div class="select_wrapper">
                 @forelse (formasPagos() as $key => $value)
                     <label class="rounded-0 text-white">
-                        <input type="radio" name="forma_pago" class="d-none" id="forma-pago"
-                            value="{{ $key }}"
+                        <input type="radio" name="forma_pago" class="d-none forma-pago" value="{{ $key }}"
                             {{ old('forma_pago') == $key || (isset($adquisicion->forma_pago_id) && $adquisicion->forma_pago_id == $key) ? 'checked' : '' }}
                             {{ !auth()->user()->hasRole(['Administrador', 'Gerencial']) && $adquisicion->estado == 'completado'? 'disabled': '' }}>
                         <span class="text-center d-block py-3">{{ $value }}</span>
