@@ -57,113 +57,104 @@ class Adquisicion extends Model
     }
 
 
-    public static function dataReporteAdquisiciones($request, $gasolina = false)
+    /**
+     * Reporte de adquisiciones general.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param bool $gasolina
+     * @return \Illuminate\Support\Collection
+     */
+    public static function dataReporteAdquisiciones($request, bool $gasolina = false): \Illuminate\Support\Collection
     {
-        $ordenado = $request->input('ordenado');
-        $fechas = $request->input('fechas');
-        $estado = $request->input('estado');
-        $proyecto = $request->input('proyecto');
-        $etapa = $request->input('etapa');
-        $tipo = $request->input('tipo');
-        $necesidad = $request->input('necesidad');
-        $costo = $request->input('costo');
-        $proveedor = $request->input('proveedor');
-        $producto = $request->input('producto');
-        $tipo_reporte = $request->input('tipo_reporte');
-        $forma_pago = $request->input('forma_pago');
-        $subproyecto = $request->input('subproyecto');
+        $query = self::with([
+            'proyecto',
+            'etapa',
+            'tipo_etapa',
+            'orden_recepcion.forma_pago',
+            'orden_recepcion.proveedor'
+        ]);
 
-        $query = self::with(['proyecto', 'etapa', 'tipo_etapa', 'orden_recepcion', 'orden_recepcion.forma_pago', 'orden_recepcion.proveedor']);
+        // Aplicar filtros utilizando un método auxiliar
+        self::applyDataReporteFilters($query, $request, $gasolina);
 
-        if ($request->filled('proyecto')) {
-            $query->where('proyecto_id', $proyecto);
-        }
+        // Ordenar
+        self::applyDataReporteOrdering($query, $request->input('ordenado'), $gasolina);
 
-        $query->when($estado, function ($q, $estado) {
-            if ($estado == 'pendientes') {
-                $q->whereIn('estado', ['En Proceso', 'Finalizado']);
-            } else {
-                $q->where('estado', 'Completado');
-            }
-        });
+        // Mapear y calcular totales
+        return $query->get()->map(function ($adquisicion) use ($request) {
+            $productoId = $request->input('producto');
+            $detalles = $productoId
+                ? $adquisicion->adquisiciones_detalle->where('articulo_id', $productoId)
+                : $adquisicion->adquisiciones_detalle;
 
-        // Filtrar por proyecto
-        /*$query->when($proyecto, function ($q, $proyecto) {
-            $q->where('proyecto_id', $proyecto);
-        });*/
-
-        // Filtrar por etapa
-        $query->when($etapa, function ($q, $etapa) {
-            $q->where('etapa_id', $etapa);
-        });
-
-        // Filtrar por tipo_etapa
-        $query->when($tipo, function ($q, $tipo) {
-            $q->where('tipo_etapa_id', $tipo);
-        });
-
-        // Filtrar por costo (INDIRECTOS O DIRECTOS)
-        $query->when($costo, function ($q, $costo) {
-            $q->where('etapa_id', $costo);
-        });
-
-        $query->when($subproyecto, function ($q, $subproyecto) {
-            $q->where('subproyecto', $subproyecto);
-        });
-
-        // Filtrar por necesidad
-        $query->when($necesidad, function ($q, $necesidad) {
-            $q->whereHas('adquisiciones_detalle', function ($query) use ($necesidad) {
-                $query->where('necesidad', $necesidad);
-            })->with(['adquisiciones_detalle' => function ($query) use ($necesidad) {
-                $query->select('adquisicion_id', 'cantidad_solicitada', 'articulo_id')
-                    ->where('necesidad', $necesidad); // Filtrar por el producto específico
-            }]);
-        });
-
-        // Filtrar por producto y obtener la cantidad
-        $query->when($producto, function ($q, $producto) {
-            $q->whereHas('adquisiciones_detalle', function ($query) use ($producto) {
-                $query->where('articulo_id', $producto);
+            $cantidad = $detalles->sum('cantidad_solicitada');
+            $total = $detalles->sum(function ($detalle) {
+                return calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva);
             });
+            $necesidad = $detalles->pluck('necesidad')->unique()->implode(', ');
+
+            return [
+                'adquisicion' => $adquisicion,
+                'cantidad' => $cantidad,
+                'total' => '$ ' . number_format($total, 4),
+                'necesidad' => $necesidad,
+            ];
+        });
+    }
+
+    /**
+     * Aplica los filtros a la query de dataReporteAdquisiciones.
+     */
+    private static function applyDataReporteFilters(Builder $query, $request, bool $gasolina): void
+    {
+        $query->when($request->filled('proyecto'), fn($q) => $q->where('proyecto_id', $request->input('proyecto')));
+        $query->when($request->input('estado'), function ($q, $estado) {
+            $q->whereIn('estado', ($estado == 'pendientes') ? ['En Proceso', 'Finalizado'] : ['Completado']);
+        });
+        $query->when($request->input('etapa'), fn($q) => $q->where('etapa_id', $request->input('etapa')));
+        $query->when($request->input('tipo'), fn($q) => $q->where('tipo_etapa_id', $request->input('tipo')));
+        $query->when($request->input('costo'), fn($q) => $q->where('etapa_id', $request->input('costo')));
+        $query->when($request->input('subproyecto'), fn($q) => $q->where('subproyecto', $request->input('subproyecto')));
+        $query->when($request->input('tipo_reporte'), fn($q) => $q->where('tipo_adquisicion', $request->input('tipo_reporte')));
+
+        $query->when($request->input('necesidad'), function ($q, $necesidad) {
+            $q->whereHas('adquisiciones_detalle', fn($ad) => $ad->where('necesidad', $necesidad))
+                ->with(['adquisiciones_detalle' => fn($ad) => $ad->select('adquisicion_id', 'cantidad_solicitada', 'articulo_id')->where('necesidad', $necesidad)]);
         });
 
-        // Filtrar por proveedor
-        $query->when($proveedor, function ($q, $proveedor) {
-            $q->whereHas('orden_recepcion', function ($query) use ($proveedor) {
-                $query->where('proveedor_id', $proveedor);
-            });
+        $query->when($request->input('producto'), function ($q, $producto) {
+            $q->whereHas('adquisiciones_detalle', fn($ad) => $ad->where('articulo_id', $producto));
         });
 
-        // Filtrar por rango de fechas
-        $query->when($fechas, function ($q) use ($fechas) {
+        $query->when($request->input('proveedor'), function ($q, $proveedor) {
+            $q->whereHas('orden_recepcion', fn($or) => $or->where('proveedor_id', $proveedor));
+        });
+
+        $query->when($request->input('fechas'), function ($q, $fechas) {
             list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+            $q->whereBetween('fecha', [
+                Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d'),
+                Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d')
+            ]);
         });
 
-        $query->when($tipo_reporte, function ($q, $tipo_reporte) {
-            $q->where('tipo_adquisicion', $tipo_reporte);
+        $query->when($request->input('forma_pago'), function ($q, $formaPago) {
+            $q->whereHas('orden_recepcion', fn($or) => $or->where('forma_pago_id', $formaPago));
         });
 
-        // Filtrar por la forma de pago
-        $query->when($forma_pago, function ($q, $forma_pago) {
-            $q->whereHas('orden_recepcion', function ($query) use ($forma_pago) {
-                $query->where('forma_pago_id', $forma_pago);
-            });
-        });
-
-        // Filtrar por gasolina
         if ($gasolina) {
             $query->whereHas('adquisiciones_detalle', function ($q) {
-                $q->whereHas('producto', function ($query) {
-                    $query->where('descripcion', 'gasolina para camioneta');
-                })->where('kilometraje', '>', 0)->orderBy('kilometraje', 'asc'); // artículo de gasolina
+                $q->whereHas('producto', fn($p) => $p->where('descripcion', 'gasolina para camioneta'))
+                    ->where('kilometraje', '>', 0);
             });
         }
+    }
 
-        // Ordenar por secuencial u otro criterio
+    /**
+     * Aplica el ordenamiento a la query de dataReporteAdquisiciones.
+     */
+    private static function applyDataReporteOrdering(Builder $query, ?string $ordenado, bool $gasolina): void
+    {
         switch ($ordenado) {
             case 'secuencial':
                 $query->orderBy('numero', 'asc');
@@ -186,42 +177,6 @@ class Adquisicion extends Model
                 }
                 break;
         }
-
-
-        return $query->get()->map(function ($adquisicion) use ($producto, $gasolina) {
-            $necesidad = '';
-            // Si se filtra por producto, calcular el total solo para ese producto
-            if ($producto) {
-                $detalles = $adquisicion->adquisiciones_detalle->where('articulo_id', $producto);
-                $cantidad = $detalles->sum('cantidad_solicitada');
-                $total = $detalles->sum(function ($detalle) {
-                    $cantidad = $detalle->cantidad_solicitada ?? 0;
-                    $valor = $detalle->valor ?? 0;
-                    $iva = $detalle->iva ?? 0;
-                    return calcularTotalProducto($cantidad, $valor, $iva);
-                });
-                $necesidad = implode(', ', $detalles->pluck('necesidad')->toArray());
-            } else {
-                // Si no se filtra por producto, calcular el total para todos los detalles
-                $total = $adquisicion->adquisiciones_detalle->sum(function ($detalle) use ($necesidad) {
-                    $cantidad = $detalle->cantidad_solicitada ?? 0;
-                    $valor = $detalle->valor ?? 0;
-                    $iva = $detalle->iva ?? 0;
-                    return calcularTotalProducto($cantidad, $valor, $iva);
-                });
-                $cantidad =  0; // No aplica cantidad específica si no se filtra por producto
-
-
-                $necesidad = implode(', ', $adquisicion->adquisiciones_detalle()->pluck('necesidad')->toArray());
-            }
-
-            return [
-                'adquisicion' => $adquisicion,
-                'cantidad' => $cantidad,
-                'total' => '$ ' . number_format($total, 4),
-                'necesidad' => $necesidad,
-            ];
-        });
     }
 
     /**
