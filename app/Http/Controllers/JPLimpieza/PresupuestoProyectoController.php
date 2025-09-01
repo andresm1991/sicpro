@@ -54,7 +54,11 @@ class PresupuestoProyectoController extends Controller
             });
         });
 
-        $totalManoObra = $proyecto->manoObra->sum('total_recibir');
+        $totalManoObra = $proyecto->manoObra->sum(function ($item) {
+            $aporte_patronal = $item->aporte_patronal ?? 0;
+            $total_ingreso = $item->total_ingreso ?? 0;
+            return $total_ingreso + $aporte_patronal;
+        });
 
         $totalContratistas = $proyecto->contratistas->sum(function ($item) {
             $total = calcularTotalProducto($item->cantidad, $item->precio_unitario, $item->iva);
