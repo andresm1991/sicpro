@@ -103,6 +103,18 @@ class ContratistaController extends Controller
 
         try {
             DB::beginTransaction();
+
+            $items = array_map(function ($producto, $cantidad, $valor, $unidad_medida) {
+                $valoresLimpios = preg_replace('/[^0-9.]/', '', $valor); // Elimina $ y otros caracteres no numéricos
+
+                return [
+                    'producto' => is_numeric($producto) ? $producto : agregarProducto($producto, $valoresLimpios, 0, $unidad_medida),
+                    'cantidad' => str_replace(',', '', $cantidad),
+                    'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
+                    'valor' => $valoresLimpios
+                ];
+            }, $request->productos, $request->cantidad, $request->precio_unitario, $request->unidad_medida);
+
             $orden_trabajo_param = [
                 'fecha' => $fecha,
                 'plazo_semanas' => $plazo,
@@ -118,26 +130,14 @@ class ContratistaController extends Controller
             ];
 
             if ($orden_trabajo = Contratista::create($orden_trabajo_param)) {
-                foreach ($productos as $index => $producto) {
-                    $valor = str_replace(',', '', $precio_unitario[$index]);
-                    $tipo_etapa = CatalogoDato::find($request->tipo_etapa);
-
-                    $parametros = [
-                        'unidad_medida_id' => '',
+                foreach ($items as $item) {
+                    DetalleContratista::create([
                         'contratista_id' => $orden_trabajo->id,
-                        'articulo_id' => is_numeric($producto) ? $producto : registrarProducto($tipo_etapa, $producto, $valor)->id,
-                        'cantidad' => $cantidad[$index],
-                        'valor_unitario' => $valor,
-                    ];
-
-                    if (is_numeric($unidad_medida[$index])) {
-                        $parametros['unidad_medida_id'] = $unidad_medida[$index];
-                    } else {
-                        $new_unidad_medida = registrarUnidadMedida($unidad_medida[$index]);
-                        $parametros['unidad_medida_id'] = $new_unidad_medida;
-                    }
-
-                    DetalleContratista::create($parametros);
+                        'articulo_id' => $item['producto'],
+                        'cantidad' => $item['cantidad'],
+                        'unidad_medida_id' => $item['unidad_medida'],
+                        'valor_unitario' => $item['valor'],
+                    ]);
                 }
                 DB::commit();
 

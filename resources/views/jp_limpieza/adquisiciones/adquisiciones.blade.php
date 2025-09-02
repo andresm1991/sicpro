@@ -35,11 +35,15 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="table-responsive" id="table">
                         <table id="table-list-pedidos" class="table table-bordered table-hover">
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
+                                    @if ($administrativo)
+                                        <th scope="col">Proyecto</th>
+                                    @endif
                                     <th scope="col">Fecha Pedido</th>
                                     <th scope="col">Forma Pago</th>
                                     <th scope="col">Proveedor</th>
@@ -51,6 +55,11 @@
                                 @forelse ($adquisiciones as $adquisicion)
                                     <tr id="{{ $adquisicion->id }}">
                                         <td class="align-middle">{{ $adquisicion->numero }}</td>
+                                        @if ($administrativo)
+                                            <td class="align-middle">
+                                                {{ isset($adquisicion->proyecto) ? $adquisicion->proyecto->nombre : '' }}
+                                            </td>
+                                        @endif
                                         <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>
                                         <td class="align-middle">{{ $adquisicion->formaPago->descripcion }}</td>
                                         <td class="align-middle">{{ $adquisicion->proveedor->razon_social }}</td>

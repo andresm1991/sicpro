@@ -218,7 +218,7 @@ class AdquisicionController extends Controller
                 }
 
                 DB::commit();
-                if ($proyecto) {
+                if (!$request->administrativo) {
                     return redirect()->route('jp.limpieza.adquisiciones.create', [$proyecto->id, $tipoAdquisicion->slug])->with('success', 'Adquisición creada exitosamente.');
                 } else {
                     return redirect()->route('jp.limpieza.adquisiciones.administrativas.index')->with('success', 'Adquisición creada exitosamente.');
@@ -279,6 +279,10 @@ class AdquisicionController extends Controller
             $adquisicion->estado = $completado ? 'completado' : 'pendiente';
             $adquisicion->nro_factura = $factura;
             $adquisicion->forma_pago_id = $formaPago;
+
+            if ($request->administrativo) {
+                $adquisicion->proyecto_id = $request->proyecto;
+            }
 
             $items = array_map(function ($producto, $cantidad, $valor, $iva, $unidad_medida, $necesidad, $inventario) {
                 $valoresLimpios = preg_replace('/[^0-9.]/', '', $valor); // Elimina $ y otros caracteres no numéricos
@@ -366,7 +370,7 @@ class AdquisicionController extends Controller
             }
 
             DB::commit();
-            if ($proyecto) {
+            if (!$request->administrativo) {
                 return redirect()->route('jp.limpieza.adquisiciones.edit', ['proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipoAdquisicion->slug, 'adquisicion' => $adquisicion->id])->with('success', 'Adquisición actualizada exitosamente.');
             } else {
                 return redirect()->route('jp.limpieza.adquisiciones.administrativas.edit', $adquisicion->id)->with('success', 'Adquisición actualizada exitosamente.');
@@ -507,9 +511,9 @@ class AdquisicionController extends Controller
         ];
 
         $adquisiciones = Adquisicion::where('proyecto_id', null)->orderBy('created_at', 'desc')->paginate('15');
+        $administrativo = true;
 
-
-        return view('jp_limpieza.adquisiciones.adquisiciones', compact('breadcrumbs', 'adquisiciones'));
+        return view('jp_limpieza.adquisiciones.adquisiciones', compact('breadcrumbs', 'adquisiciones', 'administrativo'));
     }
 
     public function createAdministrativo()
@@ -522,9 +526,10 @@ class AdquisicionController extends Controller
 
         $numero = numeroPedido(Adquisicion::first());
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("General", 0);
 
         $adquisicion = new Adquisicion();
-        return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'tipoAdquisiciones', 'numero', 'adquisicion'));
+        return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'tipoAdquisiciones', 'numero', 'adquisicion', 'proyectos'));
     }
 
     public function editAdministrativo(Adquisicion $adquisicion)
@@ -537,7 +542,8 @@ class AdquisicionController extends Controller
         ];
 
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("General", 0);
 
-        return view('jp_limpieza.adquisiciones.edit', compact('breadcrumbs', 'tipoAdquisiciones', 'adquisicion'));
+        return view('jp_limpieza.adquisiciones.edit', compact('breadcrumbs', 'tipoAdquisiciones', 'adquisicion', 'proyectos'));
     }
 }

@@ -28,10 +28,17 @@
             </div>
         </div>
     @else
+        {{ Form::hidden('administrativo', 1) }}
+        <div class="col-sm-6 col-12">
+            <div class="form-group">
+                {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
+                {{ Form::select('proyecto', $proyectos, $adquisicion->proyecto_id, ['class' => 'form-control', 'id' => 'proyecto', 'data-placeholder' => 'selecciona proyecto']) }}
+            </div>
+        </div>
         <div class="col-sm-6 col-12">
             <div class="form-group">
                 {{ Form::label('', 'Tipo adquisición', ['class' => 'col-form-label']) }}
-                {{ Form::select('tipo_adquisicion', $tipoAdquisiciones, $adquisicion->tipo_id, ['class' => 'form-control', 'id' => 'tipo-adquisicion', 'data-placeholder' => 'selecciona o agrega la necesidad']) }}
+                {{ Form::select('tipo_adquisicion', $tipoAdquisiciones, $adquisicion->tipo_id, ['class' => 'form-control', 'id' => 'tipo-adquisicion', 'data-placeholder' => 'selecciona opción']) }}
             </div>
         </div>
     @endisset
