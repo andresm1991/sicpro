@@ -192,6 +192,19 @@ function calcularTiempoLaboral(fechaDesde, horaDesde, fechaHasta, horaHasta) {
     return `${horas}:${String(minutos).padStart(2, '0')}`;
 }
 
+
+var currencyInputMaskOptions = {
+    alias: "currency",
+    prefix: "$ ",                // Símbolo de dólar
+    groupSeparator: "",         // Separador de miles
+    autoGroup: true,             // Agrupación automática
+    digits: 4,                   // Número de decimales
+    digitsOptional: false,       // Asegura siempre dos decimales
+    placeholder: "0",            // Marcador de posición
+    clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+    unmaskAsNumber: true
+};
+
 $(function () {
     $('[data-toggle="popover"]').popover({ html: true });
     $('[data-toggle="tooltip"]').tooltip({ html: true });
@@ -885,6 +898,8 @@ function inicializarPlugins() {
         autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
     });
 
+
+
     Inputmask({
         alias: "currency",
         prefix: "$ ",                // Símbolo de dólar
@@ -896,6 +911,8 @@ function inicializarPlugins() {
         clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
         unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
     }).mask(".currency");
+
+
 
     Inputmask({
         alias: "currency",

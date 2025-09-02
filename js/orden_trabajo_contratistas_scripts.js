@@ -121,41 +121,27 @@ $(function () {
 
         var nuevaFila = `
             <tr class="elementos-agregados">
-                <td>${numeroFila}</td>
-                <td>
+                <td class="align-middle">${numeroFila}</td>
+                <td class="align-middle">
                     ${producto_name}
                     <input type="hidden" name="productos[]" value="${producto_id}">
                 </td>
-                <td class="edit-item">
-                    <span>${cantidad}</span>
-                    <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
-                            value="${cantidad}">
-                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                class="fa-solid fa-check"></i></button>
-                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                class="fa-solid fa-xmark"></i></button>
-                    </div>
+                <td class="align-middle" style="width: 1px">
+                    <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
+                        value="${cantidad}">
                 </td>
-                <td>
+                <td class="align-middle">
                     <span>${medida_name}</span>
                     <div class="d-flex align-items-center hidden">
                         <input type="hidden" name="unidad_medida[]" value="${medida_id}">
                     </div>
                 </td>
-                <td class="edit-item">
-                    <span>${formatoMoneda(precio_unitario)}</span>
-                    <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2" name="precio_unitario[]"
-                            value="${precio_unitario}">
-                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                class="fa-solid fa-check"></i></button>
-                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                class="fa-solid fa-xmark"></i></button>
-                    </div>
+                <td class="align-middle" style="width: 1px">
+                    <input type="text" class="form-control mr-2 currency" name="precio_unitario[]"
+                        value="${precio_unitario}">
                 </td>
-                <td class="total_unitario"><span
-                            class="total">${formattedNumber}</span></td>
+                <td class="align-middle total_unitario"><span
+                        class="total">${formattedNumber}</span></td>
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
                         <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto" id=""><i class="fa-solid fa-trash-can"></i></a>
@@ -169,6 +155,12 @@ $(function () {
         calcularTotal();
         // Limpiar campos 
         clearInputs();
+
+        Inputmask(currencyInputMaskOptions).mask(".currency");
+    });
+
+    $(document).on('keyup', 'input[name="cantidad[]"], input[name="precio_unitario[]"]', function () {
+        actualizarTotal($(this).closest('tr'));
     });
 
     /**
@@ -471,8 +463,7 @@ $(function () {
     function actualizarTotal($row) {
         // Obtener los valores de cantidad y precio unitario
         var cantidad = parseFloat($row.find('input[name="cantidad[]"]').val()) || 0;
-        var precioUnitario = parseFloat($row.find('input[name="precio_unitario[]"]').val()) || 0;
-
+        var precioUnitario = parseFloat($row.find('input[name="precio_unitario[]"]').val().replace(/[^0-9.-]+/g, "")) || 0;
         // Calcular el nuevo total
         var total = cantidad * precioUnitario;
         // Actualizar el valor del td de total con el nuevo valor calculado
