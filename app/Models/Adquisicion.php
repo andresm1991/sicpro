@@ -76,6 +76,7 @@ class Adquisicion extends Model
 
         // Aplicar filtros utilizando un método auxiliar
         self::applyDataReporteFilters($query, $request, $gasolina);
+        //dd($query->toSql(), $query->getBindings());
 
         // Ordenar
         self::applyDataReporteOrdering($query, $request->input('ordenado'), $gasolina);
@@ -115,7 +116,9 @@ class Adquisicion extends Model
         $query->when($request->input('tipo'), fn($q) => $q->where('tipo_etapa_id', $request->input('tipo')));
         $query->when($request->input('costo'), fn($q) => $q->where('etapa_id', $request->input('costo')));
         $query->when($request->input('subproyecto'), fn($q) => $q->where('subproyecto', $request->input('subproyecto')));
-        $query->when($request->input('tipo_reporte'), fn($q) => $q->where('tipo_adquisicion', $request->input('tipo_reporte')));
+        if ($request->input('tipo_reporte') != 'global') {
+            $query->when($request->input('tipo_reporte'), fn($q) => $q->where('tipo_adquisicion', $request->input('tipo_reporte')));
+        }
 
         $query->when($request->input('necesidad'), function ($q, $necesidad) {
             $q->whereHas('adquisiciones_detalle', fn($ad) => $ad->where('necesidad', $necesidad))
@@ -123,7 +126,24 @@ class Adquisicion extends Model
         });
 
         $query->when($request->input('producto'), function ($q, $producto) {
-            $q->whereHas('adquisiciones_detalle', fn($ad) => $ad->where('articulo_id', $producto));
+            // Filtramos las adquisiciones que TIENEN un detalle que cumple la siguiente condición.
+            $q->whereHas('adquisiciones_detalle', function ($ad) use ($producto) {
+                // Verificamos si el input 'producto' es un número (ID) o un string (nombre).
+                if (is_numeric($producto)) {
+                    // Si es numérico, filtramos directamente por la columna articulo_id en la tabla de detalles.
+                    $ad->where('articulo_id', $producto);
+                } else {
+                    // Si es un string, necesitamos buscar en la tabla de artículos relacionada.
+                    // Esto requiere un "whereHas" anidado: filtramos los detalles que TIENEN un producto
+                    // cuyo nombre coincide con la búsqueda.
+                    // ASUNCIÓN 1: La relación en el modelo AdquisicionDetalle se llama 'producto'.
+                    $ad->whereHas('producto', function ($p) use ($producto) {
+                        // ASUNCIÓN 2: La columna con el nombre/descripción del artículo se llama 'descripcion'.
+                        // Usamos LIKE para permitir búsquedas parciales.
+                        $p->where('descripcion', 'LIKE', '%' . $producto . '%');
+                    });
+                }
+            });
         });
 
         $query->when($request->input('proveedor'), function ($q, $proveedor) {

@@ -77,7 +77,9 @@ class AdquisicionController extends Controller
             ['name' => $tipoAdquisicion->descripcion, 'url' => ''],
         ];
 
-        $adquisiciones = Adquisicion::where('tipo_id', $tipoAdquisicion->id)->where('proyecto_id', $proyecto)
+        $adquisiciones = Adquisicion::where('tipo_id', $tipoAdquisicion->id)
+            ->where('proyecto_id', $proyecto)
+            ->where('administrativo', false)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
         // $adquisiciones->setPath(route('jp.limpieza.adquisiciones.tipo.adquisicion', $tipo_adquisicion));
@@ -510,7 +512,7 @@ class AdquisicionController extends Controller
             ['name' => 'Adquisiciones administrativas', 'url' => ''],
         ];
 
-        $adquisiciones = Adquisicion::where('proyecto_id', null)->orderBy('created_at', 'desc')->paginate('15');
+        $adquisiciones = Adquisicion::where('administrativo', true)->orderBy('created_at', 'desc')->paginate('15');
         $administrativo = true;
 
         return view('jp_limpieza.adquisiciones.adquisiciones', compact('breadcrumbs', 'adquisiciones', 'administrativo'));

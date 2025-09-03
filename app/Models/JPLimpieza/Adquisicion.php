@@ -21,6 +21,7 @@ class Adquisicion extends Model
         'nro_factura',
         'archivo',
         'forma_pago_id',
+        'administrativo',
     ];
 
     protected $casts = [

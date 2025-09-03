@@ -109,7 +109,7 @@
         <div class="details">
             <div class="left">
                 <strong>PROYECTO:</strong>
-                {{ isset($adquisicion->proyecto->nombre_proyecto) ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'N/A' }}<br>
+                {{ isset($adquisicion->proyecto->nombre_proyecto) ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'GENERAL' }}<br>
                 <strong>entidad:</strong>
                 {{ isset($adquisicion->proyecto->entidad) ? strtoupper($adquisicion->proyecto->entidad) : 'N/A' }}<br>
             </div>

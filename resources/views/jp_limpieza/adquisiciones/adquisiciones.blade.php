@@ -41,7 +41,7 @@
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
-                                    @if ($administrativo)
+                                    @if (isset($administrativo))
                                         <th scope="col">Proyecto</th>
                                     @endif
                                     <th scope="col">Fecha Pedido</th>
@@ -55,9 +55,9 @@
                                 @forelse ($adquisiciones as $adquisicion)
                                     <tr id="{{ $adquisicion->id }}">
                                         <td class="align-middle">{{ $adquisicion->numero }}</td>
-                                        @if ($administrativo)
+                                        @if ($adquisicion->administrativo)
                                             <td class="align-middle">
-                                                {{ isset($adquisicion->proyecto) ? $adquisicion->proyecto->nombre : '' }}
+                                                {{ isset($adquisicion->proyecto) ? $adquisicion->proyecto->nombre_proyecto : 'GENERAL' }}
                                             </td>
                                         @endif
                                         <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>

@@ -99,9 +99,25 @@ class Contratista extends Model
         $tipo_reporte = $request->input('tipo_reporte');
 
         $query = self::with(['proveedor', 'articulo', 'proyecto', 'etapa', 'tipo_etapa', 'usuario', 'estado', 'pagosOrdenTrabajoContratista']);
+
+
         $query->when($proveedor, function ($query) use ($proveedor) {
-            $query->where('proveedor_id', $proveedor);
+            // Determinar si el input es numérico (ID) o un string (nombre)
+            if (is_numeric($proveedor)) {
+                // Si es un número, filtramos directamente por el ID del proveedor en la tabla principal.
+                $query->where('proveedor_id', $proveedor);
+            } else {
+                // Si es un string, usamos whereHas para buscar en la tabla relacionada de proveedores.
+                // Esto filtra los contratistas que TIENEN un proveedor cuyo nombre coincide.
+                $query->whereHas('proveedor', function ($q) use ($proveedor) {
+                    // Asumimos que el nombre del proveedor está en la columna 'razon_social'.
+                    // Si la columna se llama 'nombre' o de otra forma, ajústalo aquí.
+                    // Usamos LIKE para una búsqueda flexible (coincidencias parciales).
+                    $q->where('razon_social', 'LIKE', '%' . $proveedor . '%');
+                });
+            }
         });
+
         $query->when($proyecto, function ($query) use ($proyecto) {
             $query->where('proyecto_id', $proyecto);
         });

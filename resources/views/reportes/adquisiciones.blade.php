@@ -148,6 +148,8 @@
             {{ Form::close() }}
         </div>
     </section>
+
+    @include('modals.detalle_reporte')
 @endsection
 
 @section('scripts')

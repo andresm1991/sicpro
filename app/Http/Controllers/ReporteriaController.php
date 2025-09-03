@@ -337,4 +337,89 @@ class ReporteriaController extends Controller
             ]);
         }
     }
+
+    /**
+     * Obtener el detalle de materiales, servicios, contratistas cuando se hace clic en un elemento.
+     * petición AJAX.
+     */
+    public function obtenerDetalle(Request $request)
+    {
+
+        try {
+            $tipo_detalle = $request->input('tipo_detalle');
+
+            $query = [];
+            $html = '';
+            switch ($tipo_detalle) {
+                case 'contratista':
+                    $query = Contratista::filtroContratista($request);
+                    $html = $this->htmlContratista($query);
+                    break;
+                // Agregar más casos según sea necesario
+                case 'materiales':
+                    $query = Adquisicion::dataReporteAdquisiciones($request);
+                    $html = $this->htmladquisiciones($query);
+                    break;
+                case 'servicios':
+                    $query = Adquisicion::dataReporteAdquisiciones($request);
+                    $html = $this->htmladquisiciones($query);
+                    break;
+            }
+
+            return response()->json([
+                'success' => true,
+                'result' => $html,
+                'data' => $query,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al obtener el detalle: ' . $th->getMessage(),
+                'error' => $th->getLine(),
+            ]);
+        }
+    }
+
+    private function htmlContratista($query)
+    {
+        $html = '<div class="table-responsive">';
+        $html .= '<table class="table table-bordered table-striped table-sm">';
+        $html .= '<thead><tr><th>Orden Nro.</th><th>Subproyecto</th><th>Etapa</th><th>Tipo</th><th>Valor contratado</th><th>Avances</th><th>Saldo</th></tr></thead>';
+        $html .= '<tbody>';
+        foreach ($query as $item) {
+            $html .= '<tr>';
+            $html .= '<td class="align-middle"><a href="' . route('pdf.orden.trabajo.contratista', $item['contratista']->id) . '" class="text-dark" target="_blank">' . numeroOrden($item['contratista'], false) . '</a></td>';
+            $html .= '<td class="align-middle">' . ($item['contratista']->subproyecto ?? '') . '</td>';
+            $html .= '<td class="align-middle">' . ($item['contratista']->etapa->descripcion ?? '') . '</td>';
+            $html .= '<td class="align-middle">' . ($item['contratista']->tipo_etapa->descripcion ?? '') . '</td>';
+            $html .= '<td class="align-middle">$ ' .  number_format($item['contratista']->total_contratistas, 2) . '</td>';
+            $html .= '<td class="align-middle">$ ' . number_format($item['contratista']->pagos_contratistas, 2) . '</td>';
+            $html .= '<td class="align-middle">$ ' . number_format($item['contratista']->total_contratistas - $item['contratista']->pagos_contratistas, 2) . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table></div>';
+
+        return $html;
+    }
+
+    private function htmladquisiciones($query)
+    {
+        $html = '<div class="table-responsive">';
+        $html .= '<table class="table table-bordered table-striped table-sm">';
+        $html .= '<thead><tr><th>Orden Nro.</th><th>Fecha Pedido</th><th>Subproyecto</th><th>Etapa</th><th>Tipo</th><th>Estado</th></tr></thead>';
+        $html .= '<tbody>';
+        foreach ($query as $item) {
+            $html .= '<tr>';
+            $html .= '<td class="align-middle"><a href="' . route('pdf.recepcion', $item['adquisicion']->id) . '" class="text-dark" target="_blank">' . numeroOrden($item['adquisicion'], false) . '</a></td>';
+            $html .= '<td class="align-middle">' . (date('d-m-Y', strtotime($item['adquisicion']->fecha)) ?? '') . '</td>';
+            $html .= '<td class="align-middle">' . ($item['adquisicion']->subproyecto ?? '') . '</td>';
+            $html .= '<td class="align-middle">' . ($item['adquisicion']->etapa->descripcion ?? '') . '</td>';
+            $html .= '<td class="align-middle">' . ($item['adquisicion']->tipo_etapa->descripcion ?? '') . '</td>';
+            $html .= '<td class="align-middle">' . ($item['adquisicion']->estado ?? '') . '</td>';
+            $html .= '</tr>';
+        }
+        $html .= '</tbody></table></div>';
+
+        return $html;
+    }
 }
