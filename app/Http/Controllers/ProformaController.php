@@ -65,16 +65,18 @@ class ProformaController extends Controller
             $plazoEntrega = $request->input('plazo_entrega');
             $observaciones = $request->input('observaciones');
 
-            $items = array_map(function ($producto, $cantidad, $precio_unitario) {
+            $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto) {
                 return [
                     'producto' => is_numeric($producto) ? $producto : agregarProductoProforma($producto, $precio_unitario, 'adecentamientos'),
                     'cantidad' => str_replace(',', '', $cantidad),
                     'valor' => limpiarValor($precio_unitario),
+                    'costo_indirecto' => $costo_indirecto,
                 ];
-            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []));
+            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []), $request->input('indirecto', []));
 
             $subtotal = array_reduce($items, function ($carry, $item) {
-                return $carry + ($item['cantidad'] * $item['valor']);
+                $precio_unitario = calcularProcentaje($item['valor'], $item['costo_indirecto']);
+                return $carry + ($item['cantidad'] * $precio_unitario);
             }, 0);
 
             $proforma = ProformaAdecentamiento::create([
@@ -99,6 +101,7 @@ class ProformaController extends Controller
                         'producto_id' => $item['producto'],
                         'cantidad' => $item['cantidad'],
                         'precio_unitario' => $item['valor'],
+                        'costo_indirecto' => $item['costo_indirecto'],
                         'total' => $item['cantidad'] * $item['valor'],
                     ]);
                 }
@@ -132,16 +135,18 @@ class ProformaController extends Controller
             $abono = $request->input('abono');
 
 
-            $items = array_map(function ($producto, $area, $precio_unitario) {
+            $items = array_map(function ($producto, $area, $precio_unitario, $costo_indirecto) {
                 return [
                     'producto' => is_numeric($producto) ? $producto : agregarProductoProforma($producto, $precio_unitario, 'planos'),
                     'area' => str_replace(',', '', $area),
                     'valor' => limpiarValor($precio_unitario),
+                    'costo_indirecto' => $costo_indirecto,
                 ];
-            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []));
+            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []), $request->input('indirecto', []));
 
             $subtotal = array_reduce($items, function ($carry, $item) {
-                return $carry + ($item['area'] * $item['valor']);
+                $precio_unitario = calcularProcentaje($item['valor'], $item['costo_indirecto']);
+                return $carry + ($item['area'] * $precio_unitario);
             }, 0);
 
             $proforma = ProformaPlano::create([
@@ -169,6 +174,7 @@ class ProformaController extends Controller
                         'producto_id' => $item['producto'],
                         'area' => $item['area'],
                         'precio_unitario' => $item['valor'],
+                        'costo_indirecto' => $item['costo_indirecto'],
                         'total' => $item['area'] * $item['valor'],
                     ]);
                 }
@@ -177,6 +183,7 @@ class ProformaController extends Controller
 
             return redirect()->route('proformas.tipo', 'diseno_planos')->with('success', 'Proforma creada exitosamente.');
         } catch (\Exception $e) {
+            return $e;
             DB::rollBack();
             LogService::log('error', 'Error al guardar la proforma: ' . $e->getMessage(), [
                 'request' => $request->all(),
@@ -222,16 +229,18 @@ class ProformaController extends Controller
             $plazoEntrega = $request->input('plazo_entrega');
             $observaciones = $request->input('observaciones');
 
-            $items = array_map(function ($producto, $cantidad, $precio_unitario) {
+            $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto) {
                 return [
                     'producto' => is_numeric($producto) ? $producto : agregarProductoProforma($producto, $precio_unitario, 'adecentamientos'),
                     'cantidad' => str_replace(',', '', $cantidad),
                     'valor' => limpiarValor($precio_unitario),
+                    'costo_indirecto' => $costo_indirecto,
                 ];
-            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []));
+            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []), $request->input('indirecto', []));
 
             $subtotal = array_reduce($items, function ($carry, $item) {
-                return $carry + ($item['cantidad'] * $item['valor']);
+                $precio_unitario = calcularProcentaje($item['valor'], $item['costo_indirecto']);
+                return $carry + ($item['cantidad'] * $precio_unitario);
             }, 0);
 
             $proforma->update([
@@ -257,6 +266,7 @@ class ProformaController extends Controller
                     [
                         'cantidad' => $item['cantidad'],
                         'precio_unitario' => $item['valor'],
+                        'costo_indirecto' => $item['costo_indirecto'],
                         'total' => $item['cantidad'] * $item['valor'],
                     ]
                 );
@@ -296,16 +306,18 @@ class ProformaController extends Controller
             $plazo_ejecucion = $request->input('plazo_ejecucion');
             $abono = $request->input('abono');
 
-            $items = array_map(function ($producto, $area, $precio_unitario) {
+            $items = array_map(function ($producto, $area, $precio_unitario, $costo_indirecto) {
                 return [
                     'producto' => is_numeric($producto) ? $producto : agregarProductoProforma($producto, $precio_unitario, 'planos'),
                     'area' => str_replace(',', '', $area),
                     'valor' => limpiarValor($precio_unitario),
+                    'costo_indirecto' => $costo_indirecto,
                 ];
-            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []));
+            }, $request->input('producto', []), $request->input('cantidad', []), $request->input('precio', []), $request->input('indirecto', []));
 
             $subtotal = array_reduce($items, function ($carry, $item) {
-                return $carry + ($item['area'] * $item['valor']);
+                $precio_unitario = calcularProcentaje($item['valor'], $item['costo_indirecto']);
+                return $carry + ($item['area'] * $precio_unitario);
             }, 0);
 
             $proforma->update([
@@ -332,6 +344,7 @@ class ProformaController extends Controller
                     [
                         'area' => $item['area'],
                         'precio_unitario' => $item['valor'],
+                        'costo_indirecto' => $item['costo_indirecto'],
                         'total' => $item['area'] * $item['valor'],
                     ]
                 );

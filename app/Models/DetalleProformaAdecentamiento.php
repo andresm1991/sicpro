@@ -15,6 +15,7 @@ class DetalleProformaAdecentamiento extends Model
         'producto_id',
         'cantidad',
         'precio_unitario',
+        'costo_indirecto',
         'total'
     ];
     public function proformaAdecentamiento()
@@ -25,9 +26,15 @@ class DetalleProformaAdecentamiento extends Model
     {
         return $this->belongsTo(ProformaProducto::class, 'producto_id');
     }
+
+    public function getValorUnitarioAttribute()
+    {
+        return calcularProcentaje($this->precio_unitario, $this->costo_indirecto);
+    }
+
     public function getTotalAttribute()
     {
-        return $this->cantidad * $this->precio_unitario;
+        return $this->cantidad * $this->valor_unitario;
     }
 
     public function getTotalFormatAttribute()
@@ -36,6 +43,6 @@ class DetalleProformaAdecentamiento extends Model
     }
     public function getPrecioUnitarioFormatAttribute()
     {
-        return number_format($this->precio_unitario, 2);
+        return number_format($this->valor_unitario, 2);
     }
 }

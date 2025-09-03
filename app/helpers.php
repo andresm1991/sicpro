@@ -844,4 +844,10 @@ if (!function_exists('palabras')) {
 
         return $total;
     }
+
+    function calcularProcentaje($valor, $porcentaje)
+    {
+        $precio = $valor / (1 - ($porcentaje / 100));
+        return round($precio, 2);
+    }
 }

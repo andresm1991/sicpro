@@ -29,6 +29,13 @@
 
         <div class="col-sm-2">
             <div class="form-group">
+                {{ Form::label('', 'Costo Indirecto', ['class' => 'col-form-label']) }}
+                {{ Form::text('', 0, ['class' => 'form-control input-enteros', 'id' => 'costo-indirecto']) }}
+            </div>
+        </div>
+
+        <div class="col-sm-2">
+            <div class="form-group">
                 {{ Form::label('', 'total', ['class' => 'col-form-label']) }}
                 {{ Form::text('', '', ['class' => 'form-control moneyDosDecimales', 'id' => 'total', 'placeholder' => '$ 0.0000', 'disabled' => true]) }}
             </div>
@@ -50,6 +57,7 @@
                 <th scope="col">Producto</th>
                 <th scope="col">{{ $tipo == 'adecentamientos' ? 'Cantidad' : 'estimado m2' }}</th>
                 <th scope="col">V.Unit</th>
+                <th scope="col">% indirecto</th>
                 <th scope="col">total</th>
                 <th class="table-actions"></th>
             </tr>
@@ -71,6 +79,10 @@
                         <input type="text" name="precio[]" value="{{ $detalle->precio_unitario }}"
                             class="form-control form-control-sm moneyDosDecimales precio-input">
                     </td>
+                    <td class="costo-indirecto-celda">
+                        <input type="text" name="indirecto[]" value="{{ $detalle->costo_indirecto }}"
+                            class="form-control form-control-sm input-enteros costo-indirecto-input">
+                    </td>
                     <td class="total_unitario total-celda">
                         {{ $detalle->total_format }}
                     </td>
@@ -85,7 +97,7 @@
 
 
             <tr id="tr-default" style="display:{{ $proforma->id ? 'none' : '' }}">
-                <td colspan="6" class="text-center">No existen elementos en la
+                <td colspan="7" class="text-center">No existen elementos en la
                     lista...</td>
             </tr>
         </tbody>
