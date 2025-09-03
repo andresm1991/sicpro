@@ -199,217 +199,7 @@ $(function () {
                         </div>
                         `);
                 } else if (reporte == 'global') { //* Mostrar el reporte global de adquisiciones //
-                    let html = '';
-                    let totalGeneral = 0;
-
-                    const result = response.result;
-                    const proyecto = result.proyecto;
-                    const subproyecto = result.subproyecto;
-                    const etapasData = result.data; // Este es el objeto con las etapas como claves
-
-
-                    // Verificar si hay datos de manera correcta (para objetos)
-                    if (Object.keys(etapasData).length === 0) {
-                        Swal.fire(
-                            'Sin resultados',
-                            'No se encontraron datos para los filtros seleccionados.',
-                            'info'
-                        );
-                        $('#table-view-reporte').html(''); // Limpiar vista anterior
-                        return;
-                    }
-
-
-                    // Construir la cabecera del reporte (fuera del bucle)
-                    html += `<h5 class="mt-4 mb-2 text-primary">Proyecto: ${proyecto}</h5>`;
-                    if (subproyecto) {
-                        html += `<h6 class="mb-2 text-primary">SubProyecto: ${subproyecto}</h6>`;
-                    }
-
-                    // 4. Iterar sobre el objeto de etapas usando Object.entries
-                    Object.entries(etapasData).forEach(([etapaNombre, categorias]) => {
-                        html += '<hr>';
-                        html += `<h6 class="mb-2" style="background-color: #e9ecef; padding: 8px; border-radius: 4px;">Etapa: <strong>${etapaNombre}</strong></h6>`;
-
-                        let totalEtapa = 0; // Para sumar el total de esta etapa específica
-
-                        // Tabla de Contratistas
-                        if (categorias.contratista && categorias.contratista.length > 0) {
-                            let totalContratistas = 0, totalPagos = 0, totalSaldos = 0;
-                            html += `<h6 class="mb-1 text-info">Contratistas</h6>
-                                <div class="table-responsive mb-3">
-                                    <table class="table table-bordered table-sm">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th>Proveedor</th>
-                                                <th>Categoría</th>
-                                                <th>Total Contratado</th>
-                                                <th>Pagos</th>
-                                                <th>Saldo</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>`;
-                            categorias.contratista.forEach(c => {
-                                html += `
-                                        <tr>
-                                            <td>${c.proveedor}</td>
-                                            <td>${c.categoria}</td>
-                                            <td class="text-right">${formatearUSD(c.total_contratado)}</td>
-                                            <td class="text-right">${formatearUSD(c.pagos)}</td>
-                                            <td class="text-right">${formatearUSD(c.saldo)}</td>
-                                        </tr>
-                                    `;
-                                totalContratistas += parseFloat(c.total_contratado);
-                                totalPagos += parseFloat(c.pagos);
-                                totalSaldos += parseFloat(c.saldo);
-                            });
-                            html += `</tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <td colspan="2" class="text-right"><strong>Totales Contratista:</strong></td>
-                                                <td class="text-right"><strong>${formatearUSD(totalContratistas)}</strong></td>
-                                                <td class="text-right"><strong>${formatearUSD(totalPagos)}</strong></td>
-                                                <td class="text-right"><strong>${formatearUSD(totalSaldos)}</strong></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>`;
-                            totalEtapa += totalContratistas;
-                        }
-
-                        // Tabla de Mano de Obra
-                        if (categorias.mano_obra && categorias.mano_obra.length > 0) {
-                            let totalManoObra = 0;
-                            html += `<h6 class="mb-1 text-info">Mano de obra</h6>
-                                <div class="table-responsive mb-3">
-                                    <table class="table table-bordered table-sm">
-                                        <thead class="thead-dark">
-                                            <tr>
-                                                <th>Semanas/Periodos</th>
-                                                <th>Total Pagado</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>`;
-                            categorias.mano_obra.forEach(m => {
-                                html += `
-                                        <tr>
-                                            <td>${m.cantidad}</td>
-                                            <td class="text-right">${formatearUSD(m.total)}</td>
-                                        </tr>
-                                    `;
-                                totalManoObra += parseFloat(m.total);
-                            });
-                            html += `</tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <td class="text-right"><strong>Total Mano de Obra:</strong></td>
-                                                <td class="text-right"><strong>${formatearUSD(totalManoObra)}</strong></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>`;
-                            totalEtapa += totalManoObra;
-                        }
-
-                        // Tabla de Materiales y Herramientas
-                        if (categorias.materiales_herramientas && categorias.materiales_herramientas.length > 0) {
-                            let totalMateriales = 0;
-                            html += `<h6 class="mb-1 text-info">Materiales y Herramientas</h6>
-                                    <div class="table-responsive mb-3">
-                                        <table class="table table-bordered table-sm">
-                                            <thead class="thead-dark">
-                                                <tr>
-                                                    <th>Item</th>
-                                                    <th>Unidad</th>
-                                                    <th>Cantidad</th>
-                                                    <th>Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>`;
-                            categorias.materiales_herramientas.forEach(mat => {
-                                html += `
-                                            <tr>
-                                                <td>${mat.articulo}</td>
-                                                <td>${mat.unidad_medida}</td>
-                                                <td>${parseFloat(mat.cantidad_total).toFixed(2)}</td>
-                                                <td class="text-right">${formatearUSD(mat.total)}</td>
-                                            </tr>
-                                        `;
-                                totalMateriales += parseFloat(mat.total);
-                            });
-                            html += `</tbody>
-                                                <tfoot>
-                                                    <tr>
-                                                        <td colspan="3" class="text-right"><strong>Total Materiales:</strong></td>
-                                                        <td class="text-right"><strong>${formatearUSD(totalMateriales)}</strong></td>
-                                                    </tr>
-                                                </tfoot>
-                                            </table>
-                                        </div>`;
-                            totalEtapa += totalMateriales;
-                        }
-
-                        // Tabla de Servicios
-                        if (categorias.servicios && categorias.servicios.length > 0) {
-                            let totalServicios = 0;
-                            html += `<h6 class="mb-1 text-info">Servicios</h6>
-                                        <div class="table-responsive mb-3">
-                                            <table class="table table-bordered table-sm">
-                                                <thead class="thead-dark">
-                                                    <tr>
-                                                        <th>Item</th>
-                                                        <th>Unidad</th>
-                                                        <th>Cantidad</th>
-                                                        <th>Total</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>`;
-                            categorias.servicios.forEach(serv => {
-                                html += `
-                                                <tr>
-                                                    <td>${serv.articulo}</td>
-                                                    <td>${serv.unidad_medida}</td>
-                                                    <td>${parseFloat(serv.cantidad_total).toFixed(2)}</td>
-                                                    <td class="text-right">${formatearUSD(serv.total)}</td>
-                                                </tr>
-                                            `;
-                                totalServicios += parseFloat(serv.total);
-                            });
-                            html += `</tbody>
-                                                <tfoot>
-                                                    <tr>
-                                                        <td colspan="3" class="text-right"><strong>Total Servicios:</strong></td>
-                                                        <td class="text-right"><strong>${formatearUSD(totalServicios)}</strong></td>
-                                                    </tr>
-                                                </tfoot>
-                                            </table>
-                                        </div>`;
-                            totalEtapa += totalServicios;
-                        }
-
-                        // Total por Etapa
-                        html += `<div class="text-right mb-4">
-                                            <h5>Total Etapa ${etapaNombre}: <span class="badge badge-success">${formatearUSD(totalEtapa)}</span></h5>
-                                        </div>`;
-
-                        totalGeneral += totalEtapa; // Sumar el total de esta etapa al total general
-                    });
-
-                    // Mostrar el Total General del Proyecto al final
-                    html += `<hr><div class="text-right mb-4">
-                                    <h3>Total General Proyecto: <span class="badge badge-primary" id="total-general-proyecto">${formatearUSD(totalGeneral)}</span></h3>
-                                </div>`;
-                    html += `<div class="text-right mb-4">
-                                <h3>Costos indirectos %: <input type="text" id="costos-indirectos" name="costos_indirectos" class="form-control d-inline-block w-auto solo-numeros" placeholder="0%"></h3>
-                            </div>`;
-                    html += `<div class="text-right mb-4">
-                                <h3>Total General: <span class="badge badge-primary" id="total-general">${formatearUSD(totalGeneral)}</span></h3>
-                                <input type="hidden" id="total-general-hidden" name="total_general" value="${totalGeneral}">
-                            </div>`;
-
-                    // Usar .html() para reemplazar el contenido, no .append()
-                    $('#table-view-reporte').html(html);
-
+                    reporteGlobal(response.result);
                 } else if (reporte == 'comparativo') { //* Mostrar el reporte comparativo de adquisiciones //
                     renderizarReporteComparativo(response.result);
                 } else { //* Mostrar el reporte de adquisiciones //
@@ -1463,5 +1253,302 @@ $(function () {
 
         // 7. Inyectar el HTML final en el contenedor de la vista
         $('#table-view-reporte').html(html);
+    }
+
+
+    $(document).on('click', '.detalle', function () {
+        const tipo = $(this).data('tipo');
+        const proveedor = $(this).data('proveedor');
+        const articulo = $(this).data('articulo');
+        const formaData = getFormData($('#form-reporte'));
+
+        // Aquí puedes manejar el evento de clic y mostrar la información detallada
+        console.log(`Tipo: ${tipo}, Proveedor: ${proveedor}, Artículo: ${articulo}, Proyecto: ${formaData.proyecto}`);
+
+        $.ajax({
+            url: 'obtener_detalle',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: {
+                tipo_detalle: tipo,
+                proveedor: proveedor,
+                producto: articulo,
+                ...formaData
+            },
+            beforeSend: function () {
+                // $('#loading').addClass('show');
+            },
+            success: function (response) {
+                const data = response.result;
+
+                $('#modal-detalle .modal-title').text(`Detalle de ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}: ${tipo == 'contratista' ? proveedor : articulo}`);
+                $('#modal-detalle .modal-body').html(data);
+                $('#modal-detalle').modal('show');
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+
+    });
+
+
+    /**
+     * Mostrar el reporte global
+     * @param {*} result 
+     * @returns 
+     */
+    function reporteGlobal(result) {
+        let html = '';
+        let totalGeneral = 0;
+        let totalProductos = 0;
+        let producto = $('select[name=producto]').val();
+
+
+        const proyecto = result.proyecto;
+        const subproyecto = result.subproyecto;
+        const etapasData = result.data; // Este es el objeto con las etapas como claves
+
+
+        // Verificar si hay datos de manera correcta (para objetos)
+        if (Object.keys(etapasData).length === 0) {
+            Swal.fire(
+                'Sin resultados',
+                'No se encontraron datos para los filtros seleccionados.',
+                'info'
+            );
+            $('#table-view-reporte').html(''); // Limpiar vista anterior
+            return;
+        }
+
+
+        // Construir la cabecera del reporte (fuera del bucle)
+        html += `<h5 class="mt-4 mb-2 text-primary">Proyecto: ${proyecto}</h5>`;
+        if (subproyecto) {
+            html += `<h6 class="mb-2 text-primary">SubProyecto: ${subproyecto}</h6>`;
+        }
+
+        // 4. Iterar sobre el objeto de etapas usando Object.entries
+        Object.entries(etapasData).forEach(([etapaNombre, categorias]) => {
+            html += '<hr>';
+            html += `<h6 class="mb-2" style="background-color: #e9ecef; padding: 8px; border-radius: 4px;">Etapa: <strong>${etapaNombre}</strong></h6>`;
+
+            let totalEtapa = 0; // Para sumar el total de esta etapa específica
+
+            // Tabla de Contratistas
+            if (categorias.contratista && categorias.contratista.length > 0) {
+                let totalContratistas = 0, totalPagos = 0, totalSaldos = 0;
+                html += `<h6 class="mb-1 text-info">Contratistas</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Proveedor</th>
+                                        <th>Categoría</th>
+                                        <th>Total Contratado</th>
+                                        <th>Pagos</th>
+                                        <th>Saldo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                categorias.contratista.forEach(c => {
+                    html += `
+                            <tr>
+                                <td>
+                                    <a href="javascript:void(0);" class="text-dark detalle" data-tipo="contratista" data-proveedor="${c.proveedor}">${c.proveedor}</a>
+                                </td>
+                                <td>${c.categoria}</td>
+                                <td class="text-right">${formatearUSD(c.total_contratado)}</td>
+                                <td class="text-right">${formatearUSD(c.pagos)}</td>
+                                <td class="text-right">${formatearUSD(c.saldo)}</td>
+                            </tr>
+                        `;
+                    totalContratistas += parseFloat(c.total_contratado);
+                    totalPagos += parseFloat(c.pagos);
+                    totalSaldos += parseFloat(c.saldo);
+                });
+                html += `</tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="text-right"><strong>Totales Contratista:</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(totalContratistas)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(totalPagos)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(totalSaldos)}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>`;
+                totalEtapa += totalContratistas;
+            }
+
+            // Tabla de Mano de Obra
+            if (categorias.mano_obra && categorias.mano_obra.length > 0) {
+                let totalManoObra = 0;
+                html += `<h6 class="mb-1 text-info">Mano de obra</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Semanas/Periodos</th>
+                                        <th>Total Pagado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                categorias.mano_obra.forEach(m => {
+                    html += `
+                            <tr>
+                                <td>${m.cantidad}</td>
+                                <td class="text-right">${formatearUSD(m.total)}</td>
+                            </tr>
+                        `;
+                    totalManoObra += parseFloat(m.total);
+                });
+                html += `</tbody>
+                        <tfoot>
+                            <tr>
+                                <td class="text-right"><strong>Total Mano de Obra:</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(totalManoObra)}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>`;
+                totalEtapa += totalManoObra;
+            }
+
+            // Tabla de Materiales y Herramientas
+            if (categorias.materiales_herramientas && categorias.materiales_herramientas.length > 0) {
+                let totalMateriales = 0;
+                html += `<h6 class="mb-1 text-info">Materiales y Herramientas</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Unidad</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                categorias.materiales_herramientas.forEach(mat => {
+                    html += `
+                            <tr>
+                                <td>
+                                <a href="javascript:void(0);" class="text-dark detalle" data-tipo="materiales" data-articulo="${mat.articulo}">${mat.articulo}</a>
+                                </td>
+                                <td>${mat.unidad_medida}</td>
+                                <td>${parseFloat(mat.cantidad_total).toFixed(2)}</td>
+                                <td class="text-right">${formatearUSD(mat.total)}</td>
+                            </tr>
+                        `;
+                    totalMateriales += parseFloat(mat.total);
+                    totalProductos += parseFloat(mat.cantidad_total);
+                });
+                html += `</tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right"><strong>Total Materiales:</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(totalMateriales)}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>`;
+                totalEtapa += totalMateriales;
+            }
+
+            // Tabla de Servicios
+            if (categorias.servicios && categorias.servicios.length > 0) {
+                let totalServicios = 0;
+                html += `<h6 class="mb-1 text-info">Servicios</h6>
+                        <div class="table-responsive mb-3">
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Unidad</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+                categorias.servicios.forEach(serv => {
+                    html += `
+                            <tr>
+                                <td>
+                                    <a href="javascript:void(0);" class="text-dark detalle" data-tipo="servicios" data-articulo="${serv.articulo}">${serv.articulo}</a>
+                                </td>
+                                <td>${serv.unidad_medida}</td>
+                                <td>${parseFloat(serv.cantidad_total).toFixed(2)}</td>
+                                <td class="text-right">${formatearUSD(serv.total)}</td>
+                            </tr>
+                        `;
+                    totalServicios += parseFloat(serv.total);
+                    totalProductos += parseFloat(serv.cantidad_total);
+                });
+                html += `</tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-right"><strong>Total Servicios:</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(totalServicios)}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>`;
+                totalEtapa += totalServicios;
+            }
+
+            // Total por Etapa
+            html += `<div class="text-right mb-4">
+                        <h5>Total Etapa ${etapaNombre}: <span class="badge badge-success">${formatearUSD(totalEtapa)}</span></h5>
+                    </div>`;
+
+            totalGeneral += totalEtapa; // Sumar el total de esta etapa al total general
+
+        });
+
+        html += '<hr>';
+        // Mostrar total de productos
+        if (producto != null) {
+            html += `<div class="text-right mb-4">
+                        <h5>Total Productos: <span class="badge badge-info">${parseFloat(totalProductos)}</span></h5>
+                    </div>`;
+        }
+        // Mostrar el Total General del Proyecto al final
+        html += `<div class="text-right mb-4">
+                    <h3>Total General Proyecto: <span class="badge badge-primary" id="total-general-proyecto">${formatearUSD(totalGeneral)}</span></h3>
+                </div>`;
+        html += `<div class="text-right mb-4">
+                    <h3>Costos indirectos %: <input type="text" id="costos-indirectos" name="costos_indirectos" class="form-control d-inline-block w-auto solo-numeros" placeholder="0%"></h3>
+                </div>`;
+        html += `<div class="text-right mb-4">
+                    <h3>Total General: <span class="badge badge-primary" id="total-general">${formatearUSD(totalGeneral)}</span></h3>
+                    <input type="hidden" id="total-general-hidden" name="total_general" value="${totalGeneral}">
+                </div>`;
+
+        // Usar .html() para reemplazar el contenido, no .append()
+        $('#table-view-reporte').html(html);
+
     }
 });
