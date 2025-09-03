@@ -11,6 +11,7 @@ $(function () {
         let productoTexto = $('#producto option:selected').text();
         let nuevaCantidad = parseFloat(tipoProforma == 'adecentamientos' ? $('#cantidad').val() : $('#area_m2').val()); // Convertir a número
         let valorUnitario = parseFloat($('#valor_unitario').val()); // Convertir a número
+        let costoIndirecto = $('#costo-indirecto').val();
         var valid = true;
 
         const camposAValidar = [
@@ -42,13 +43,14 @@ $(function () {
             // 3. Actualizamos también el precio unitario en el input oculto correspondiente
             let celdaPrecio = filaExistente.find('.precio-unitario-celda'); // Necesitamos añadir esta clase a la celda de precio
             celdaPrecio.html(`
-            ${valorUnitario.toFixed(2)}
-            <input type="hidden" name="precio[]" value="${valorUnitario}">
-        `);
+                ${valorUnitario.toFixed(2)}
+                <input type="hidden" name="precio[]" value="${valorUnitario}">
+            `);
 
-
+            // calcular el % indirecto
+            var valorCostoUnitario = calcularPorcentaje(valorUnitario.toFixed(2), costoIndirecto);
             // 3. Recalcular el total para esa fila
-            let nuevoTotalFila = cantidadTotal * valorUnitario;
+            let nuevoTotalFila = cantidadTotal * valorCostoUnitario.toFixed(2);
 
             // 4. Actualizar los valores en la tabla (tanto el texto visible como el input oculto)
             celdaCantidad.html(`
@@ -68,7 +70,8 @@ $(function () {
         } else {
             // --- SI EL PRODUCTO NO EXISTE, LO AGREGAMOS (tu código original) ---
 
-            let total = nuevaCantidad * valorUnitario;
+            var valorCostoIndirecto = calcularPorcentaje(valorUnitario.toFixed(2), costoIndirecto);
+            let total = nuevaCantidad * valorCostoIndirecto.toFixed(2);
             let numeroFila = $('.elementos-agregados').length + 1;
 
             var nuevaFila = `
@@ -83,6 +86,9 @@ $(function () {
                 </td>
                 <td class="precio-unitario-celda">
                     <input type="text" name="precio[]" value="${valorUnitario.toFixed(2)}" class="form-control form-control-sm moneyDosDecimales precio-input">
+                </td>
+                <td class="costo-indirecto-celda">
+                    <input type="text" name="indirecto[]" value="${costoIndirecto}" class="form-control form-control-sm input-enteros costo-indirecto-input">
                 </td>
                 <td class="total-celda total_unitario">
                    ${total.toFixed(2)}
@@ -106,17 +112,24 @@ $(function () {
 
         // Limpiar los campos del formulario de entrada
         limpiarCampos(camposAValidar);
+        $('#costo-indirecto').val(0);
         $('#total').val('$ 0.0000'); // Quizás quieras limpiar solo los campos de producto, no los totales
 
         $('.moneyDosDecimales').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 2 });
+
+        Inputmask(numericInputMaskOptions).mask(".input-enteros");
+        Inputmask(twoDecimalsInputMaskOptions).mask(".input-double-two-decimals");
     });
 
-    $('#cantidad, #area_m2, #valor_unitario').on('input', function () {
+    $('#cantidad, #area_m2').on('input', function () {
         let cantidad = tipoProforma == 'adecentamientos' ? $('#cantidad').val() : $('#area_m2').val();
-        let valorUnitario = $('#valor_unitario').val() || 0;
+        let valorUnitario = parseFloat($('#valor_unitario').val()) || 0;
+        let costoIndirecto = $('#costo-indirecto').val() || 0;
+        valorUnitario = calcularPorcentaje(valorUnitario.toFixed(2), costoIndirecto);
         // calcular el total
-        let total = cantidad * valorUnitario;
+        let total = cantidad * valorUnitario.toFixed(2);
         $('#total').val('$ ' + total.toFixed(2));
+
     });
 
     // El listener CORRECTO para reaccionar a los cambios cuando se usa maskMoney (.money)
@@ -126,8 +139,11 @@ $(function () {
         // Esto te devolverá un número, por ejemplo: 1234.50
         var valorUnitario = $(this).maskMoney('unmasked')[0];
         let cantidad = tipoProforma == 'adecentamientos' ? $('#cantidad').val() : $('#area_m2').val();
-        let total = cantidad * valorUnitario;
+        let costoIndirecto = $('#costo-indirecto').val() || 0;
+        valorUnitario = calcularPorcentaje(valorUnitario.toFixed(2), costoIndirecto);
+        let total = cantidad * valorUnitario.toFixed(2);
         $('#total').val('$ ' + total.toFixed(2));
+
 
         // Para obtener el valor FORMATEADO (el que ve el usuario)
         // Simplemente usas .val()
@@ -140,6 +156,21 @@ $(function () {
         */
         // Aquí ya puedes hacer lo que necesites con el valor,
         // como realizar cálculos, actualizar otros campos, etc.
+    });
+
+    /**
+     * Calcular el porcentaje del costo indirecto para cada ariculo de la proforma
+     */
+    $('#costo-indirecto').on('input', function () {
+        let costoIndirecto = $(this).val() || 0;
+        let valorUnitario = $('#valor_unitario').val() || 0;
+        let cantidad = tipoProforma == 'adecentamientos' ? $('#cantidad').val() : $('#area_m2').val();
+        valorUnitario = $('#valor_unitario').maskMoney('unmasked')[0];
+
+        valorUnitario = calcularPorcentaje(valorUnitario.toFixed(2), costoIndirecto);
+
+        var totalGeneral = cantidad * valorUnitario.toFixed(2);
+        $('#total').val(totalGeneral.toFixed(2));
     });
 
     $('#porcentaje_iva, #porcentaje_descuento').on('input', function () {
@@ -454,13 +485,8 @@ $(function () {
 
     }
 
-    $(document).on('input', ".cantidad-input, .precio-input", function () {
-        let fila = $(this).closest('tr');
-        calcularEditarFila(fila);
-    });
-
     // El listener CORRECTO para reaccionar a los cambios cuando se usa maskMoney (.money)
-    $(document).on('keyup blur', '.precio-input', function () {
+    $(document).on('keyup blur', '.cantidad-input, .precio-input, .costo-indirecto-input', function () {
         let fila = $(this).closest('tr');
         calcularEditarFila(fila);
     });
@@ -468,7 +494,10 @@ $(function () {
     function calcularEditarFila(fila) {
         let cantidad = parseFloat(fila.find('.cantidad-input').val()) || 0;
         var precioUnitario = fila.find('.precio-input').maskMoney('unmasked')[0];
-        let totalUnitario = cantidad * precioUnitario;
+        let costoIndirecto = parseFloat(fila.find('.costo-indirecto-input').val()) || 0;
+        precioUnitario = calcularPorcentaje(precioUnitario, costoIndirecto);
+        let totalUnitario = cantidad * precioUnitario.toFixed(2);
+
         fila.find('.total_unitario').text(totalUnitario.toFixed(2));
         calcularTotales();
     }

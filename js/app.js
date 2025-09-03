@@ -205,6 +205,28 @@ var currencyInputMaskOptions = {
     unmaskAsNumber: true
 };
 
+
+var numericInputMaskOptions = {
+    alias: 'numeric',
+    rightAlign: false,      // No alinear a la derecha
+    allowMinus: false,      // No permitir números negativos
+    digits: 0,              // No permitir decimales
+    min: 0,                 // Valor mínimo (0 o positivo)
+    placeholder: $('.input-enteros').data('placeholder'),         // Dejar vacío el placeholder si lo deseas
+    autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
+};
+
+var twoDecimalsInputMaskOptions = {
+    alias: 'decimal',  // Usar el alias "decimal"
+    radixPoint: ".",   // Definir el punto decimal
+    groupSeparator: "",  // Separador de miles (opcional)
+    digits: 2,         // Número de dígitos decimales
+    autoGroup: true,   // Agrupar los miles
+    rightAlign: false, // Alinear a la izquierda
+    allowMinus: false,   // Permitir números negativos
+    placeholder: $('.input-double').data('placeholder')
+};
+
 $(function () {
     $('[data-toggle="popover"]').popover({ html: true });
     $('[data-toggle="tooltip"]').tooltip({ html: true });
@@ -805,6 +827,10 @@ $(function () {
 
 
 });
+
+function calcularPorcentaje(total, porcentaje) {
+    return total / (1 - (porcentaje / 100));
+}
 
 function calcularTotalProducto($cantidad, $valor, $iva) {
     console.log($cantidad);
