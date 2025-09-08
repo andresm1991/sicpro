@@ -559,6 +559,7 @@ class AdministrativoController extends Controller
             ['name' => 'Contratistas', 'url' => '']
         ];
 
+
         $orden_trabajos_pendientes = Contratista::with(['estado'])
             ->WhereHas('estado', function ($q) {
                 $q->where('slug', 'estados.contratistas.proceso');
@@ -666,9 +667,11 @@ class AdministrativoController extends Controller
             try {
                 DB::beginTransaction();
                 $pago->pagado = true;
+
                 if ($pago->save()) {
                     $contratista = Contratista::find($pago->contratista_id);
-                    $total_pagado = $pago::where('pagado', true)->sum('valor');
+                    $total_pagado = $pago::where('contratista_id', $pago->contratista_id)->where('pagado', true)->sum('valor');
+
                     if ($contratista->total_contratistas == $total_pagado) {
                         $estado_id = CatalogoDato::getIdCatalogo('estados.contratistas.pagado');
                         $contratista->estado_id = $estado_id;

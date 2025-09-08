@@ -346,6 +346,11 @@ class ContratistaController extends Controller
             ];
 
             if (PagoOrdenTrabajoContratista::create($pago)) {
+                if ($pagos == $total_pagar) {
+                    $orden_trabajo->estado_id = CatalogoDato::getIdCatalogo('estados.contratistas.pagado'); // Pagado
+                    $orden_trabajo->save();
+                }
+
                 DB::commit();
                 PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Pago contratista', 'Se genero un nuevo pago para el contratisa ' . $orden_trabajo->proveedor->razon_social, route('administrativo.index.contratistas'));
                 LogService::log('success', 'Pago orden de trabajo contratista registrado', ['user_id' => auth()->id(), 'action' => 'create']);

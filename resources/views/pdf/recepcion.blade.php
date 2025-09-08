@@ -149,6 +149,7 @@
                             <th>Valor unitario</th>
                             @if (strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                                 <th>Iva</th>
+                                <th>indirecto</th>
                             @endif
                             <th>Total</th>
                         @endif
@@ -170,6 +171,7 @@
                                 <td>${{ number_format($item['valor'], 4) }}</td>
                                 @if (strtoupper($orden['estado_pedido']) == strtoupper('Completado'))
                                     <td>{{ $item['iva'] }}</td>
+                                    <td>{{ $item['costo_indirecto'] }}</td>
                                 @endif
                                 <td>${{ number_format($item['total'], 4) }}</td>
                             @endif

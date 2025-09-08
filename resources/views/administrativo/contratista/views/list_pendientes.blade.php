@@ -55,7 +55,8 @@
                                 <button type="button" class="btn btn-outline-dark" data-container="body"
                                     data-toggle="popover" data-placement="left" data-trigger="focus"
                                     data-content ="<a href='{{ route('administrativo.contratista.editar', $orden_trabajo->id) }}' class='dropdown-item'>Editar</a>
-                                    <a href='{{ route('administrativo.contratista.detalle', $orden_trabajo->id) }}' class='dropdown-item'>Pagos</a> ">
+                                    <a href='{{ route('administrativo.contratista.detalle', $orden_trabajo->id) }}' class='dropdown-item'>Pagos</a>
+                                    <a href='{{ route('pdf.orden.trabajo.contratista', $orden_trabajo->id) }}' class='dropdown-item' target='_blank'>PDF</a> ">
                                     <i class="fas fa-caret-left font-weight-normal"></i> Opciones
                                 </button>
                             </td>

@@ -122,9 +122,10 @@ class GenerarPdfController extends Controller
         foreach ($pedido->adquisiciones_detalle as $key => $detalle) {
 
             $iva = $detalle->iva ?? 0;
-            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
+            $valor_unitario = calcularProcentaje($detalle->valor, $detalle->costo_indirecto ?? 0, 4);
+            $total = calcularTotalProducto($detalle->cantidad_solicitada, $valor_unitario, $iva);
 
-            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva) : $total;
+            $total_orden += $pedido->estado == 'Completado' ? calcularTotalProducto($detalle->cantidad_solicitada, $valor_unitario, $iva) : $total;
 
             $items[] = [
                 'producto' => $detalle->producto->descripcion,
@@ -136,6 +137,7 @@ class GenerarPdfController extends Controller
                 'total' => $total,
                 'necesidad' => $detalle->necesidad,
                 'kilometraje' => $detalle->kilometraje,
+                'costo_indirecto' => $detalle->costo_indirecto ?? 0,
             ];
         }
 
@@ -305,6 +307,7 @@ class GenerarPdfController extends Controller
                 'cantidad' => $detalle->cantidad,
                 'unidad_medida' => $detalle->unidad_medida->descripcion,
                 'valor_unitario' => number_format($detalle->valor_unitario, 2),
+                'costo_indirecto' => $detalle->costo_indirecto ?? 0,
                 'total' => number_format(($detalle->cantidad * $detalle->valor_unitario), 2)
             ];
         }

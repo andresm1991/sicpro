@@ -59,16 +59,19 @@ class Contratista extends Model
 
     public function getTotalContratistasAttribute()
     {
-        $nro_casas = $this->numero_casas;
-        /* $total = $this->detalle_contratistas->sum(function ($detalle) {
+        $totalDetalles = $this->detalle_contratistas->sum(function ($detalle) {
+            // Usamos 0 como valor por defecto para evitar errores si los campos son nulos
             $cantidad = $detalle->cantidad ?? 0;
-            $valor_unitario = $detalle->valor_unitario ?? 0;
-            $valor_unitario = calcularProcentaje($valor_unitario, $detalle->costo_indirecto, 4);
-            return $cantidad * $valor_unitario;
-        });
-        return $total * $nro_casas;*/
+            $valorUnitario = $detalle->valor_unitario ?? 0;
 
-        return $this->detalle_contratistas()->selectRaw('SUM(cantidad * valor_unitario) as total')->pluck('total')->first() * $nro_casas;
+            // Si tienes una lógica de cálculo de porcentaje, puedes aplicarla aquí
+            // $valor_unitario = calcularProcentaje($valor_unitario, $detalle->costo_indirecto, 4);
+
+            return $cantidad * $valorUnitario;
+        });
+
+        // Multiplica el total sumado por el número de casas
+        return $totalDetalles * ($this->numero_casas ?? 1);
     }
 
     public function getPagosContratistasAttribute()
