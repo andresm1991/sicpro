@@ -61,14 +61,14 @@
                                         {{ $orden_trabajo->articulo->descripcion }}
                                     </td>
                                     <td class="align-middle">
-                                        $ {{ number_format($orden_trabajo->total_contratistas, 2) }}
+                                        $ {{ number_format($orden_trabajo->total_contratistas, 4) }}
                                     </td>
                                     <td class="align-middle">
-                                        $ {{ number_format($orden_trabajo->pagos_contratistas, 2) }}
+                                        $ {{ number_format($orden_trabajo->pagos_contratistas, 4) }}
                                     </td>
                                     <td class="align-middle">
                                         $
-                                        {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 2) }}
+                                        {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 4) }}
                                     </td>
                                     <td class="align-middle">
                                         <span

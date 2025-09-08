@@ -41,20 +41,23 @@
                                 {{ $orden_trabajo->articulo->descripcion }}
                             </td>
                             <td class="align-middle">
-                                $ {{ number_format($orden_trabajo->total_contratistas, 2) }}
+                                $ {{ number_format($orden_trabajo->total_contratistas, 4) }}
                             </td>
                             <td class="align-middle">
-                                $ {{ number_format($orden_trabajo->pagos_contratistas, 2) }}
+                                $ {{ number_format($orden_trabajo->pagos_contratistas, 4) }}
                             </td>
                             <td class="align-middle">
                                 $
-                                {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 2) }}
+                                {{ number_format($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas, 4) }}
                             </td>
 
-                            <td class="align-middle text-right text-truncate">
-                                <a href="{{ route('administrativo.contratista.detalle', $orden_trabajo->id) }}"
-                                    class="btn btn-outline-dark">Ver Detalle
-                                </a>
+                            <td class="align-middle align-middle text-right text-truncate">
+                                <button type="button" class="btn btn-outline-dark" data-container="body"
+                                    data-toggle="popover" data-placement="left" data-trigger="focus"
+                                    data-content ="<a href='{{ route('administrativo.contratista.editar', $orden_trabajo->id) }}' class='dropdown-item'>Editar</a>
+                                    <a href='{{ route('administrativo.contratista.detalle', $orden_trabajo->id) }}' class='dropdown-item'>Pagos</a> ">
+                                    <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                                </button>
                             </td>
                         </tr>
                     @empty

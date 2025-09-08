@@ -7,8 +7,13 @@
                 <th scope="col">Cantidad</th>
                 <th scope="col">Unidad</th>
                 <th scope="col">Precio Unitario</th>
+                @if (isset($administrativo))
+                    <th scope="col">costo Indirecto</th>
+                @endif
                 <th scope="col">Total</th>
-                <th class="table-actions"></th>
+                @if (!isset($administrativo))
+                    <th class="table-actions"></th>
+                @endif
             </tr>
         </thead>
         <tbody>
@@ -31,15 +36,24 @@
                         <input type="text" class="form-control mr-2 currency" name="precio_unitario[]"
                             value="{{ $detalle->valor_unitario }}">
                     </td>
+                    @if (isset($administrativo))
+                        <td class="align-middle" style="width: 1px">
+                            <input type="text" class="form-control mr-2 input-double" name="costo_indirecto[]"
+                                value="{{ $detalle->costo_indirecto }}">
+                        </td>
+                    @endif
                     <td class="align-middle total_unitario"><span class="total">$
-                            {{ number_format($detalle->valor_unitario * $detalle->cantidad, 4) }}</span>
+                            {{ $detalle->total_items_formatter }}</span>
                     </td>
-                    <td class="align-middle table-actions">
-                        <div class="action-buttons">
-                            <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
-                                id=""><i class="fa-solid fa-trash-can"></i></a>
-                        </div>
-                    </td>
+                    @if (!isset($administrativo))
+                        <td class="align-middle table-actions">
+                            <div class="action-buttons">
+                                <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                    id=""><i class="fa-solid fa-trash-can"></i></a>
+                            </div>
+                        </td>
+                    @endif
+
                 </tr>
             @endforeach
             <tr id="tr-default" style="display:{{ $orden_trabajo->detalle_contratistas->isEmpty() ? '' : 'none' }}">

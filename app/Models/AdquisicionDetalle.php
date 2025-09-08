@@ -9,7 +9,7 @@ class AdquisicionDetalle extends Model
 {
     use HasFactory;
     protected $table = 'adquisiciones_detalle';
-    protected $fillable = ['adquisicion_id', 'articulo_id', 'cantidad_solicitada', 'cantidad_recibida', 'unidad_medida_id', 'valor', 'iva', 'necesidad', 'kilometraje'];
+    protected $fillable = ['adquisicion_id', 'articulo_id', 'cantidad_solicitada', 'cantidad_recibida', 'unidad_medida_id', 'valor', 'iva', 'necesidad', 'kilometraje', 'costo_indirecto'];
 
     function adquisicion()
     {

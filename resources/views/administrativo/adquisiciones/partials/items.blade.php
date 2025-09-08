@@ -12,6 +12,7 @@
                 <th scope="col" class="text-center">Unidad Medida</th>
                 <th scope="col">Valor Unitario</th>
                 <th scope="col">% IVA</th>
+                <th scope="col">% indirecto</th>
                 <th scope="col">Total</th>
                 <th scope="col">Necesidad</th>
                 @if ($tipo == 'administrativo')
@@ -63,8 +64,16 @@
                             '<small class="help-block text-danger error_mensajes">:message</small>',
                         ) !!}
                     </td>
+                    <td class="align-middle col-md-1 col-12">
+                        {{ Form::text('indirecto[' . $index . ']', old('indirecto.' . $index, $detalle->costo_indirecto), ['class' => 'form-control col-sm-12 input-enteros costo-indirecto', 'placeholder' => '0', 'data-index' => $index]) }}
+
+                        {!! $errors->first(
+                            'indirecto.' . $index,
+                            '<small class="help-block text-danger error_mensajes">:message</small>',
+                        ) !!}
+                    </td>
                     <td class="align-middle calculo-total" data-index="{{ $index }}">$
-                        {{ number_format(calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva), 4) }}
+                        {{ number_format(calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva, $detalle->costo_indirecto), 4) }}
                     </td>
                     <td class="align-middle">
                         {{ $detalle->necesidad }}

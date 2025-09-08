@@ -616,7 +616,7 @@ class Adquisicion extends Model
     {
         // Obtenemos todas las claves de etapa de ambos proyectos para no omitir ninguna
         $etapasKeys = array_unique(array_merge(array_keys($dataProyecto1), array_keys($dataProyecto2)));
-        sort($etapasKeys);
+        sort($etapasKeys, SORT_STRING); // Aseguramos que las etapas estén ordenadas
 
         $resultadoFinal = [];
 
@@ -624,38 +624,65 @@ class Adquisicion extends Model
             $etapa1 = $dataProyecto1[$etapaNombre] ?? [];
             $etapa2 = $dataProyecto2[$etapaNombre] ?? [];
 
-            // Combinamos cada categoría
+            // --- INICIO DE LA CORRECCIÓN ---
+
+            // 1. Combinar Contratistas y LUEGO ordenarlos
+            $contratistasCombinados = self::combinarCategoria(
+                $etapa1['contratista'] ?? [],
+                $etapa2['contratista'] ?? [],
+                fn($item) => $item['proveedor'] . '|' . $item['categoria']
+            );
+            // Aplicamos el mismo ordenamiento de `sortFinalResult`
+            usort($contratistasCombinados, function ($a, $b) {
+                $proveedorCmp = strnatcasecmp($a['item_base']['proveedor'], $b['item_base']['proveedor']);
+                if ($proveedorCmp !== 0) {
+                    return $proveedorCmp;
+                }
+                return strnatcasecmp($a['item_base']['categoria'], $b['item_base']['categoria']);
+            });
+
+            // 2. Combinar Mano de Obra (generalmente no necesita ordenarse si solo hay una fila)
+            $manoObraCombinada = self::combinarCategoria(
+                $etapa1['mano_obra'] ?? [],
+                $etapa2['mano_obra'] ?? [],
+                fn($item) => 'mano_de_obra_total'
+            );
+
+            // 3. Combinar Materiales y LUEGO ordenarlos
+            $materialesCombinados = self::combinarCategoria(
+                $etapa1['materiales_herramientas'] ?? [],
+                $etapa2['materiales_herramientas'] ?? [],
+                fn($item) => $item['articulo_id']
+            );
+            // Aplicamos el ordenamiento por nombre de artículo
+            usort($materialesCombinados, function ($a, $b) {
+                return strnatcasecmp($a['item_base']['articulo'], $b['item_base']['articulo']);
+            });
+
+            // 4. Combinar Servicios y LUEGO ordenarlos
+            $serviciosCombinados = self::combinarCategoria(
+                $etapa1['servicios'] ?? [],
+                $etapa2['servicios'] ?? [],
+                fn($item) => $item['articulo_id']
+            );
+            // Aplicamos el ordenamiento por nombre de artículo
+            usort($serviciosCombinados, function ($a, $b) {
+                return strnatcasecmp($a['item_base']['articulo'], $b['item_base']['articulo']);
+            });
+
+            // Asignamos los resultados ya ordenados a la estructura final
             $resultadoFinal[$etapaNombre] = [
-                'contratista' => self::combinarCategoria(
-                    $etapa1['contratista'] ?? [],
-                    $etapa2['contratista'] ?? [],
-                    // Función para generar una clave única para cada contratista
-                    fn($item) => $item['proveedor'] . '|' . $item['categoria']
-                ),
-                'mano_obra' => self::combinarCategoria(
-                    $etapa1['mano_obra'] ?? [],
-                    $etapa2['mano_obra'] ?? [],
-                    // Mano de obra solo tiene un registro, la clave es simple
-                    fn($item) => 'mano_de_obra_total'
-                ),
-                'materiales_herramientas' => self::combinarCategoria(
-                    $etapa1['materiales_herramientas'] ?? [],
-                    $etapa2['materiales_herramientas'] ?? [],
-                    // La clave única para un material es su ID de artículo
-                    fn($item) => $item['articulo_id']
-                ),
-                'servicios' => self::combinarCategoria(
-                    $etapa1['servicios'] ?? [],
-                    $etapa2['servicios'] ?? [],
-                    // La clave única para un servicio es su ID de artículo
-                    fn($item) => $item['articulo_id']
-                ),
+                'contratista'             => $contratistasCombinados,
+                'mano_obra'               => $manoObraCombinada,
+                'materiales_herramientas' => $materialesCombinados,
+                'servicios'               => $serviciosCombinados,
             ];
+
+            // --- FIN DE LA CORRECCIÓN ---
         }
 
         return $resultadoFinal;
     }
-
     /**
      * Función auxiliar para combinar los items de una categoría específica.
      */

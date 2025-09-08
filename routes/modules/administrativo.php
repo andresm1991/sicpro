@@ -26,6 +26,8 @@ Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function
 
 
     Route::get('/contratistas', [AdministrativoController::class, 'indexContratistas'])->name('index.contratistas');
+    Route::get('/contratistas/{contratista}/editar', [AdministrativoController::class, 'editarContratista'])->name('contratista.editar');
+    Route::put('/contratistas/{contratista}', [AdministrativoController::class, 'actualizarContratista'])->name('contratista.update');
     Route::get('/contratistas/detalle/{contratista}', [AdministrativoController::class, 'detalleContratistas'])->name('contratista.detalle');
     Route::get('/buscar-orden-trabajo', [AdministrativoController::class, 'buscarOrdenTrabajo']);
     /** MANO DE OBRA ADMINSTRATIVO */

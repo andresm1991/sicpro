@@ -56,9 +56,18 @@ class Contratista extends Model
     {
         return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
+
     public function getTotalContratistasAttribute()
     {
         $nro_casas = $this->numero_casas;
+        /* $total = $this->detalle_contratistas->sum(function ($detalle) {
+            $cantidad = $detalle->cantidad ?? 0;
+            $valor_unitario = $detalle->valor_unitario ?? 0;
+            $valor_unitario = calcularProcentaje($valor_unitario, $detalle->costo_indirecto, 4);
+            return $cantidad * $valor_unitario;
+        });
+        return $total * $nro_casas;*/
+
         return $this->detalle_contratistas()->selectRaw('SUM(cantidad * valor_unitario) as total')->pluck('total')->first() * $nro_casas;
     }
 

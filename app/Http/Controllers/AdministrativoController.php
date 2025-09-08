@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\PushNotificationsEnum;
 use Exception;
 use Throwable;
 use App\Models\Articulo;
@@ -17,15 +16,17 @@ use App\Models\PagoManoObra;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
+use App\Models\MovimientoCaja;
 use App\Models\OrdenRecepcion;
 use App\Models\AdquisicionDetalle;
+use App\Models\DetalleContratista;
 use Illuminate\Support\Facades\DB;
+use App\Enums\PushNotificationsEnum;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Http\Requests\RecepcionAdquisicionAdministrativoRequest;
-use App\Models\MovimientoCaja;
 
 class AdministrativoController extends Controller
 {
@@ -92,7 +93,8 @@ class AdministrativoController extends Controller
 
         $totalGeneral = $adquisicion->adquisiciones_detalle->sum(function ($detalle) {
             $iva = $detalle->iva ?? 0;
-            $total = calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $iva);
+            $valor = calcularProcentaje($detalle->valor, $detalle->costo_indirecto, 4);
+            $total = calcularTotalProducto($detalle->cantidad_solicitada, $valor, $iva);
             return $total;
         });
 
@@ -187,33 +189,36 @@ class AdministrativoController extends Controller
         try {
             DB::beginTransaction();
 
-            foreach ($array_productos as $index => $producto) {
-                $id = is_numeric($array_unidad_medida[$index]) ? $array_unidad_medida[$index] : registrarUnidadMedida($array_unidad_medida[$index]);
-                $valor = $array_valor_unidatrio[$index];
+            $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $costo_indirecto, $kilometraje) {
+                return [
+                    'producto' => $producto,
+                    'cantidad' => str_replace(',', '', $cantidad),
+                    'valor' => limpiarValor($precio_unitario),
+                    'costo_indirecto' => $costo_indirecto,
+                    'iva' => $iva,
+                    'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
+                    'kilometraje' => $kilometraje,
+                ];
+            }, $request->input('productos', []), $request->input('cantidad', []), $request->input('valor', []), $request->input('iva_producto', []), $request->input('unidad_medida', []), $request->input('indirecto', []), $request->input('kilometraje', []));
 
-                $articulo_id = is_numeric($producto) ? $producto : registrarProducto($adquisicion->tipo_etapa, $producto, $valor, $array_iva_producto[$index])->id;
-
+            foreach ($items as $item) {
                 AdquisicionDetalle::updateOrCreate(
-                    ['adquisicion_id' => $adquisicion->id, 'articulo_id' => $articulo_id],
+                    ['adquisicion_id' => $adquisicion->id, 'articulo_id' => $item['producto']],
                     [
-                        'cantidad_solicitada' => str_replace(',', '', $array_cantidad[$index]),
-                        'unidad_medida_id' => $id,
-                        'valor' => $valor,
-                        'iva' => $array_iva_producto[$index],
-                        'necesidad' => $array_necesidad[$index],
-                        'kilometraje' => $request->kilometraje ? $request->kilometraje[$index] : null,
+                        'cantidad_solicitada' => $item['cantidad'],
+                        'unidad_medida_id' => $item['unidad_medida'],
+                        'valor' => $item['valor'],
+                        'costo_indirecto' => $item['costo_indirecto'],
+                        'iva' => $item['iva'],
+                        'kilometraje' => $item['kilometraje'],
                     ]
                 );
 
-                if (is_numeric($producto)) {
-                    // registrar precio unitario del producto y el iva
-                    $articulo = Articulo::find($producto);
-                    $articulo->valor_unitario = $array_valor_unidatrio[$index];
-                    $articulo->iva = $array_iva_producto[$index];
-                    $articulo->save();
-                }
-                // Agregar palabras a la tabla de palabras
-                agregarPalabra($array_necesidad[$index]);
+                // registrar precio unitario del producto y el iva
+                $articulo = Articulo::find($item['producto']);
+                $articulo->valor_unitario = $item['valor'];
+                $articulo->iva = $item['iva'];
+                $articulo->save();
             }
 
             $adquisicion->factura = $request->numero_factura;
@@ -257,6 +262,7 @@ class AdministrativoController extends Controller
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();
+            return $e;
             LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
@@ -569,6 +575,73 @@ class AdministrativoController extends Controller
 
         $route_params = ['orden_trabajos_pendientes' => $orden_trabajos_pendientes, 'orden_trabajos_completas' => $orden_trabajos_completas, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
         return view('administrativo.contratista.index', $route_params);
+    }
+
+    public function editarContratista(Contratista $contratista)
+    {
+        $title_page = 'Editar Contratista';
+
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Contratistas', 'url' => route('administrativo.index.contratistas')],
+            ['name' => 'Editar', 'url' => '']
+        ];
+
+        $orden_trabajo = $contratista;
+        $proyecto = Proyecto::findOrFail($contratista->proyecto_id);
+        $subproyectos = $proyecto->subproyectos_unicos;
+        $unidades_medidas = CatalogoDato::getChildrenCatalogo('unidades.medida');
+        $articulos = Articulo::where('activo', true)->pluck('descripcion', 'id');
+        $subTotal = $orden_trabajo->detalle_contratistas->sum(function ($detalle) {
+            $valor_unitario = calcularProcentaje($detalle->valor_unitario, $detalle->costo_indirecto, 4);
+            return $valor_unitario * $detalle->cantidad;
+        });
+        $totalGeneral = $orden_trabajo->numero_casas * $subTotal;
+        $administrativo = true;
+
+        return view('administrativo.contratista.edit', compact('orden_trabajo', 'subproyectos', 'title_page', 'breadcrumbs', 'articulos', 'unidades_medidas', 'administrativo', 'subTotal', 'totalGeneral'));
+    }
+
+    public function actualizarContratista(Request $request, Contratista $contratista)
+    {
+        try {
+            DB::beginTransaction();
+
+            $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto, $unidad_medida) {
+                return [
+                    'producto' => $producto,
+                    'cantidad' => str_replace(',', '', $cantidad),
+                    'valor_unitario' => limpiarValor($precio_unitario),
+                    'costo_indirecto' => $costo_indirecto,
+                    'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida)
+                ];
+            }, $request->input('productos', []), $request->input('cantidad', []), $request->input('precio_unitario', []), $request->input('costo_indirecto', []), $request->input('unidad_medida', []));
+
+            foreach ($items as $item) {
+                DetalleContratista::updateOrCreate(
+                    ['contratista_id' => $contratista->id, 'articulo_id' => $item['producto']],
+                    [
+                        'cantidad' => $item['cantidad'],
+                        'unidad_medida_id' => $item['unidad_medida'],
+                        'valor_unitario' => $item['valor_unitario'],
+                        'costo_indirecto' => $item['costo_indirecto'],
+                    ]
+                );
+
+                // registrar precio unitario del producto y el iva
+                $articulo = Articulo::find($item['producto']);
+                $articulo->valor_unitario = $item['valor_unitario'];
+                $articulo->save();
+            }
+
+            DB::commit();
+            LogService::log('info', 'Actualizacion la informacion del contratista #' . $contratista->id, ['user_id' => auth()->id(), 'action' => 'update']);
+            return redirect()->route('administrativo.contratista.editar', $contratista->id)->with('success', 'Se actualizó la información del contratista con éxito.');
+        } catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('error', 'Error al actualizar la inforacion del contratista #' . $contratista->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+            return redirect()->route('administrativo.contratista.editar', $contratista->id)->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
+        }
     }
 
     public function detalleContratistas(Contratista $contratista)

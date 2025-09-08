@@ -394,14 +394,16 @@ if (!function_exists('registrarProducto')) {
         return $iva_productos;
     }
 
-    function calcularTotalProducto($cantidad, $valor, $iva)
+    function calcularTotalProducto($cantidad, $valor, $iva, $costo_indirecto = 0)
     {
+        $valor = calcularProcentaje($valor, $costo_indirecto, 4);
         $subTotal = $cantidad * $valor;
         $iva = $iva ?? 0;
         $iva = ($subTotal * $iva) / 100;
         $total = $subTotal + $iva;
         return  $total;
     }
+
 
     /**
      * La tasa de interés semanal se calcula dividiendo la tasa anual por 52 semanas.
@@ -845,9 +847,13 @@ if (!function_exists('palabras')) {
         return $total;
     }
 
-    function calcularProcentaje($valor, $porcentaje)
+    /**
+     * Calcular el porcentaje del costo indirecto del precio unitario
+     * @param float valor
+     */
+    function calcularProcentaje($valor, $porcentaje, $presicion = 2)
     {
         $precio = $valor / (1 - ($porcentaje / 100));
-        return round($precio, 2);
+        return round($precio, $presicion);
     }
 }
