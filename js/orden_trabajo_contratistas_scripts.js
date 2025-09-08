@@ -159,7 +159,7 @@ $(function () {
         Inputmask(currencyInputMaskOptions).mask(".currency");
     });
 
-    $(document).on('keyup', 'input[name="cantidad[]"], input[name="precio_unitario[]"]', function () {
+    $(document).on('keyup', 'input[name="cantidad[]"], input[name="precio_unitario[]"], input[name="costo_indirecto[]"]', function () {
         actualizarTotal($(this).closest('tr'));
     });
 
@@ -464,7 +464,9 @@ $(function () {
         // Obtener los valores de cantidad y precio unitario
         var cantidad = parseFloat($row.find('input[name="cantidad[]"]').val()) || 0;
         var precioUnitario = parseFloat($row.find('input[name="precio_unitario[]"]').val().replace(/[^0-9.-]+/g, "")) || 0;
+        var costoIndirecto = parseFloat($row.find('input[name="costo_indirecto[]"]').val().replace(/[^0-9.-]+/g, "")) || 0;
         // Calcular el nuevo total
+        precioUnitario = calcularPorcentaje(precioUnitario, costoIndirecto);
         var total = cantidad * precioUnitario;
         // Actualizar el valor del td de total con el nuevo valor calculado
         $row.find('td .total').text('$ ' + total.toFixed(4));

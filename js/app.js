@@ -662,7 +662,7 @@ $(function () {
     /**
      * Calculpo entre valor unitario y cantidad
      */
-    $(document).on('input', '#table-adquisiciones', '.cantidad input, .iva-producto, .precio-unitario', function () {
+    $(document).on('input', '#table-adquisiciones', '.cantidad input, .iva-producto, .precio-unitario, .costo-indirecto', function () {
         calcularTotalFilasYGeneral();
     });
 
@@ -858,7 +858,10 @@ function calcularTotalFilasYGeneral() {
         }
 
         let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
-        let totalFila = cantidad * precioUnitario;
+        let costoIndirecto = parseFloat($(`.costo-indirecto[data-index='${index}']`).val().replace(/[^0-9.]/g, '')) || 0;
+
+        precioUnitario = calcularPorcentaje(precioUnitario, costoIndirecto);
+        let totalFila = cantidad * precioUnitario.toFixed(4);
         let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
         let iva = (totalFila * porcentaje_iva) / 100;
         let total = totalFila + iva;

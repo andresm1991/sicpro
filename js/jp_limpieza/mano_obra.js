@@ -6,12 +6,14 @@ $(function () {
     $('#decimo_tercero').attr('readonly', true);
     $('#decimo_cuarto').attr('readonly', true);
     $('#iess').attr('readonly', true);
+    $("#aporte_patronal").attr('readonly', true);
 
     var acumulunaBeneficios = $('#acumula-beneficios').val();
     var pFondos = 0.0833;
     var pIESS = 0.0945;
     var dTerceroYCuarto = 12;
     var basico = 470;
+    var aportePatronal = (12.15 / 100); // 12.15%
 
     if ($('#tipo_plantilla').val() == 'ASOCIACION') {
         $('#fondos').attr('readonly', false);
@@ -32,16 +34,21 @@ $(function () {
             $('#decimo_tercero').attr('readonly', false);
             $('#decimo_cuarto').attr('readonly', false);
             $('#iess').attr('readonly', false);
+            $("#aporte_patronal").attr('readonly', false);
+
             $('#fondos').val('');
             $('#decimo_tercero').val('');
             $('#decimo_cuarto').val('');
             $('#iess').val('');
+            $("#aporte_patronal").val('');
 
             // $('#acumula-beneficios').val('no').trigger('change');
             $('#acumula-beneficios').attr('disabled', true);
 
         } else {
             $('#acumula-beneficios').attr('disabled', false);
+            $("#aporte_patronal").attr('readonly', true);
+
             if ($('#acumula-beneficios').val() == 'si') {
                 $('#fondos').attr('readonly', false);
                 $('#decimo_tercero').attr('readonly', false);
@@ -72,6 +79,8 @@ $(function () {
             $("#fondos").val(fondos.toFixed(2));
             $("#decimo_tercero").val(decimoTercero.toFixed(2));
             $("#decimo_cuarto").val(decimoCuarto.toFixed(2));
+
+            CalcularAportePatronal();
         }
 
         $("#iess").val(iess.toFixed(2));
@@ -440,6 +449,12 @@ $(function () {
         let totalDescuentos = parsePrecio($("#total_descuentos").text()) || 0;
         let totalRecibir = totalIngresos - totalDescuentos;
         $("#total_recibir").text("$ " + totalRecibir.toFixed(2));
+    }
+
+    function CalcularAportePatronal() {
+        let sueldo = parsePrecio($('#sueldo').val()) || 0;
+        let total = sueldo * aportePatronal;
+        $("#aporte_patronal").val(total.toFixed(2));
     }
 
 });
