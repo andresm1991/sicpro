@@ -327,7 +327,7 @@
         </div>
         @if ($costos_indirecto > 0)
             <div style="text-align:right; font-size: 14px; margin-top: 10px;">
-                <strong>Costos Indirectos: {{ $costos_indirecto }}%</strong>
+                <strong>Costos Indirectos: ${{ number_format($costos_indirecto - $totalGeneralProyecto, 4) }}</strong>
             </div>
             <div style="text-align:right; font-size: 14px; margin-top: 10px;">
                 <strong>Total general:

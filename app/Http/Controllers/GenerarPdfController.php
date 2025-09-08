@@ -294,9 +294,9 @@ class GenerarPdfController extends Controller
             'plazo' => $fecha_final,
             'contratista' => strtoupper($orden_trabajo->proveedor->razon_social),
             'categoria' => strtoupper($orden_trabajo->articulo->descripcion),
-            'valor_contratado' => number_format($orden_trabajo->total_contratistas, 2),
-            'avance' => number_format($orden_trabajo->pagos_contratistas, 2),
-            'saldo' => number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas), 2),
+            'valor_contratado' => number_format($orden_trabajo->total_contratistas, 4),
+            'avance' => number_format($orden_trabajo->pagos_contratistas, 4),
+            'saldo' => number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas), 4),
             'estado' => $orden_trabajo->tipo_pago_contratista ? ($orden_trabajo->tipo_pago_contratista == "Completado" ? "Completado" : "En Proceso") : 'NUEVO',
             'detalle' => []
         ];
@@ -306,9 +306,9 @@ class GenerarPdfController extends Controller
                 'producto' => $detalle->articulo->descripcion,
                 'cantidad' => $detalle->cantidad,
                 'unidad_medida' => $detalle->unidad_medida->descripcion,
-                'valor_unitario' => number_format($detalle->valor_unitario, 2),
+                'valor_unitario' => number_format($detalle->valor_unitario, 4),
                 'costo_indirecto' => $detalle->costo_indirecto ?? 0,
-                'total' => number_format(($detalle->cantidad * $detalle->valor_unitario), 2)
+                'total' => number_format(($detalle->cantidad * $detalle->valor_unitario), 4)
             ];
         }
 
@@ -474,7 +474,6 @@ class GenerarPdfController extends Controller
      */
     public function reportAdquisiciones(Request $request, $tipo_reporte)
     {
-
         $ordenado = $request->input('ordenado'); // Ejemplo: "secuencial"
         $fechas = $request->input('fechas'); // Ejemplo: "03/12/2025 - 03/30/2025"
         $estado = $request->input('estado'); // Ejemplo: null o "Completado"
@@ -490,8 +489,8 @@ class GenerarPdfController extends Controller
 
         $tipoAdquisisicon = CatalogoDato::find($tipo);
         if ($tipo_reporte == 'global') {
-            $costos_indirecto = $request->input('costos_indirectos', 0);
             $total_general = $request->input('total_general', 0);
+            $costos_indirecto = calcularProcentaje($total_general, $request->input('costos_indirecto', 0), 4);
             $data = Adquisicion::reporteGlobalAdquisiciones($request);
             $view = 'reporte_adquisiciones_global';
 

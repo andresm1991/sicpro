@@ -715,6 +715,10 @@ class AdministrativoController extends Controller
                 ->get();
 
             foreach ($orden_trabajos as $orden_trabajo) {
+                $editar = "<a href='" . route('administrativo.contratista.editar', $orden_trabajo->id) . "' class='dropdown-item'>Editar</a>";
+                $pagos = "<a href='" . route('administrativo.contratista.detalle', $orden_trabajo->id) . "' class='dropdown-item'>Pagos</a>";
+                $pdf = "<a href='" . route('pdf.orden.trabajo.contratista', $orden_trabajo->id) . "' class='dropdown-item' target='_blank'>PDF orden trabajo</a>";
+
                 $output .= '<tr id="' . $orden_trabajo->id . '">' .
                     '<td class="align-middle">' . numeroOrden($orden_trabajo, false) . '</td>' .
                     '<td class="align-middle text-uppercase">' . $orden_trabajo->proveedor->razon_social . '</td>' .
@@ -722,8 +726,8 @@ class AdministrativoController extends Controller
                     '<td class="align-middle">$' . number_format($orden_trabajo->total_contratistas, 2) . '</td>' .
                     '<td class="align-middle">$' . number_format($orden_trabajo->pagos_contratistas, 2) . '</td>' .
                     '<td class="align-middle">$ ' . number_format(($orden_trabajo->total_contratistas - $orden_trabajo->pagos_contratistas), 2) . '</td>' .
-                    '<td class="align-middle text-right text-truncate">' .
-                    '<a href="' . route('administrativo.contratista.detalle', $orden_trabajo->id) . '" class="btn btn-outline-dark">Ver Detalle</a>' .
+                    '<td class="align-middle align-middle text-right text-truncate">' .
+                    '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar . $pagos . $pdf . ' "> <i class="fas fa-caret-left font-weight-normal"></i> Opciones </button>' .
                     '</td>' .
                     '</tr>';
             }
