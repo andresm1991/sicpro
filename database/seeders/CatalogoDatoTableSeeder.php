@@ -755,7 +755,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
+        
 
         $padre = CatalogoDato::create([
             'descripcion' => 'Tipo de proformas',
@@ -776,6 +776,45 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Diseño de Planos',
             'detalle' => '',
             'slug' => 'tipo.proformas.diseno.planos',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados proformas',
+            'detalle' => '',
+            'slug' => 'estados.proformas',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Pendiente',
+            'detalle' => '',
+            'slug' => 'estados.proformas.pendiente',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Aprobado',
+            'detalle' => '',
+            'slug' => 'estados.proformas.aprobado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Ejecutado',
+            'detalle' => '',
+            'slug' => 'estados.proformas.ejecutado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        CatalogoDato::create([
+            'descripcion' => 'Rechazado',
+            'detalle' => '',
+            'slug' => 'estados.proformas.rechazado',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

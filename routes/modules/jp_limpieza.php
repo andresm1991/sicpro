@@ -111,9 +111,10 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
         Route::get('/', [ReporteController::class, 'index'])->name('index');
         Route::get('/caja', [ReporteController::class, 'caja'])->name('caja');
-        Route::POST('/visulizar-reporte-caja', [ReporteController::class, 'visualizarReporteCaja']);
+        Route::post('/visulizar-reporte-caja', [ReporteController::class, 'visualizarReporteCaja']);
 
         //** ADQUISICIONES */
         Route::get('/adquisiciones', [ReporteController::class, 'adquisiciones'])->name('adquisiciones');
+        Route::post('/visualizar-reporte-adquisiciones', [ReporteController::class, 'visualizarReporteAdquisiciones']);
     });
 });

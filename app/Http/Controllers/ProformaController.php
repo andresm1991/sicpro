@@ -64,6 +64,7 @@ class ProformaController extends Controller
             $formaPago = $request->input('forma_pago');
             $plazoEntrega = $request->input('plazo_entrega');
             $observaciones = $request->input('observaciones');
+            $estado = $request->input('estado');
 
             $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto) {
                 return [
@@ -85,7 +86,7 @@ class ProformaController extends Controller
                 'cliente_id' => $clienteId,
                 'observaciones' => $observaciones,
                 'notas' => $nota,
-                'estado_id' => CatalogoDato::getIdCatalogo('estados.solicitud.pendiente'), // Estado por defecto
+                'estado_id' => $estado,
                 'validez' => $validez,
                 'forma_pago' => $formaPago,
                 'plazo_entrega' => $plazoEntrega,
@@ -128,6 +129,7 @@ class ProformaController extends Controller
             $area_lote = limpiarValor($request->input('area_lote'));
             $presupuesto = limpiarValor($request->input('presupuesto'));
             $observaciones = $request->input('observaciones');
+            $estado = $request->input('estado');
 
             $incluye = $request->input('incluye');
             $formaPago = $request->input('forma_pago');
@@ -159,7 +161,7 @@ class ProformaController extends Controller
                 'presupuesto' => $presupuesto,
                 'incluye' => $incluye,
                 'plazo_ejecucion' => $plazo_ejecucion,
-                'estado_id' => CatalogoDato::getIdCatalogo('estados.solicitud.pendiente'), // Estado por defecto
+                'estado_id' => $estado,
                 'forma_pago' => $formaPago,
                 'abono' => $abono,
                 'subtotal' => $subtotal,
@@ -228,6 +230,7 @@ class ProformaController extends Controller
             $formaPago = $request->input('forma_pago');
             $plazoEntrega = $request->input('plazo_entrega');
             $observaciones = $request->input('observaciones');
+            $estado = $request->input('estado');
 
             $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto) {
                 return [
@@ -255,6 +258,7 @@ class ProformaController extends Controller
                 'descuento' => $descuento,
                 'iva' => $porcentaje_iva,
                 'total' => calcularTotalProforma($subtotal, $porcentaje_iva, $descuento),
+                'estado_id' => $estado,
             ]);
 
 
@@ -305,6 +309,7 @@ class ProformaController extends Controller
             $formaPago = $request->input('forma_pago');
             $plazo_ejecucion = $request->input('plazo_ejecucion');
             $abono = $request->input('abono');
+            $estado = $request->input('estado');
 
             $items = array_map(function ($producto, $area, $precio_unitario, $costo_indirecto) {
                 return [
@@ -335,6 +340,7 @@ class ProformaController extends Controller
                 'descuento' => $descuento,
                 'iva' => $porcentaje_iva,
                 'total' => calcularTotalProforma($subtotal, $porcentaje_iva, $descuento),
+                'estado_id' => $estado,
             ]);
 
             // Actualizar o crear los detalles de la proforma
@@ -401,9 +407,10 @@ class ProformaController extends Controller
                         <td class='align-middle'>{$proforma->fecha_formatted}</td>
                         <td class='align-middle'>{$proforma->cliente->nombre}</td>
                         <td class='align-middle'>{$proforma->total_formatted}</td>
+                        <td class='align-middle'>{$proforma->estado->descripcion}</td>
                         <td class='align-middle'>
                             <div class='btn-group dropleft'>
-                                <button type='button' class='btn btn-secondary dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+                                <button type='button' class='btn btn-outline-dark dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
                                     Opciones
                                 </button>
                                 <div class='dropdown-menu'>

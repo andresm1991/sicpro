@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\JPLimpieza;
 
 use App\Http\Controllers\Controller;
+use App\Models\JPLimpieza\Adquisicion;
 use App\Models\JPLimpieza\Caja;
 use Illuminate\Http\Request;
 
@@ -33,6 +34,31 @@ class ReporteController extends Controller
         ];
 
         return view('jp_limpieza.reportes.adquisiciones', compact('title_page', 'breadcrumbs'));
+    }
+
+    /**
+     * Visualizar reporte de adquisiciones
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function visualizarReporteAdquisiciones(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                $query = Adquisicion::dataReporteAdquisiciones($request);
+                // return $result;
+                return response()->json([
+                    'success' => true,
+                    'result' => $query,
+                ]);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
+                    'error' => $th->getLine(),
+                ]);
+            }
+        }
     }
 
     //** Reporte de caja (Flujo de efectivo) */

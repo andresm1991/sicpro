@@ -2,6 +2,7 @@
 
 namespace App\Models\JPLimpieza;
 
+use Carbon\Carbon;
 use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use Illuminate\Database\Eloquent\Model;
@@ -64,5 +65,40 @@ class Adquisicion extends Model
     public function getFechaFormateadaAttribute()
     {
         return $this->fecha ? $this->fecha->format('Y-m-d') : null;
+    }
+
+    /**
+     * Datos para el reporte de adquisiciones
+     * @param Request $request
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public static function dataReporteAdquisiciones($request)
+    {
+        $query = self::with(['proyecto', 'proveedor', 'tipo', 'formaPago', 'detalles'])
+            ->when($request->input('fechas'), function ($q) use ($request) {
+                list($fechaInicio, $fechaFin) = explode(' - ', $request->input('fechas'));
+                $q->whereBetween('fecha', [
+                    Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d'),
+                    Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d')
+                ]);
+            })
+            ->when($request->input('proyecto'), function ($q) use ($request) {
+                $q->where('proyecto_id', $request->input('proyecto'));
+            })
+            ->when($request->input('tipo'), function ($q) use ($request) {
+                $q->where('tipo_id', $request->input('tipo'));
+            })
+            ->when($request->input('proveedor'), function ($q) use ($request) {
+                $q->where('proveedor_id', $request->input('proveedor'));
+            })
+            ->when($request->input('estado'), function ($q) use ($request) {
+                $q->where('estado', $request->input('estado'));
+            })
+            ->when($request->input('forma_pago'), function ($q) use ($request) {
+                $q->where('forma_pago_id', $request->input('forma_pago'));
+            })
+            ->orderBy('fecha', 'desc');
+
+        return $query->get();
     }
 }

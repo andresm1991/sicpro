@@ -24,7 +24,7 @@
                             <h5 class="col card-title"></h5>
                             <div class="col-auto ">
                                 <button type="button" class="btn btn-dark form-group"
-                                    id="generar-reporte-caja">Generar</button>
+                                    id="generar-reporte-adquisicion">Generar</button>
                                 <button type="button" class="btn btn-dark form-group generar-reporte"
                                     data-action="pdf">Exportar a pdf</button>
                             </div>
@@ -123,5 +123,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/jp_limpiza/reportes_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset('js/jp_limpieza/reportes_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
 @endsection

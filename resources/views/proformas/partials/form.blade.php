@@ -9,6 +9,12 @@
         <label class="col-form-label">Cliente</label>
         {{ Form::select('cliente', getClientes(), $proforma->cliente_id ?? null, ['class' => 'form-control select2', 'id' => 'cliente', 'data-placeholder' => 'Seleccione un cliente']) }}
     </div>
+
+    <div class="form-group col-md-2 col-12">
+        <label class="col-form-label">Estado</label>
+        {{ Form::select('estado', getEstados(), $proforma->estado_id ?? null, ['class' => 'form-control select2', 'id' => 'estado', 'data-placeholder' => 'Seleccione un estado']) }}
+    </div>
+
     @if ($tipo == 'diseno_planos')
         <div class="form-group col-md-5 col-12">
             <label class="col-form-label">Ubicación del lote</label>

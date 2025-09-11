@@ -109,10 +109,10 @@ class AdquisicionController extends Controller
 
     public function store(Request $request)
     {
-
         try {
             DB::beginTransaction();
 
+            $administrativo = $request->administrativo ?? false;
             $proyectoId = $request->proyecto;
             $tipo_adquisicion = $request->tipo_adquisicion;
             $proyecto = Proyecto::find($proyectoId);
@@ -159,6 +159,7 @@ class AdquisicionController extends Controller
                 'nro_factura' => $factura,
                 'archivo' => $archivo ? Storage::disk('digitalocean')->put($this->path_files, $archivo) : null,
                 'forma_pago_id' => $formaPago,
+                'administrativo' => $administrativo,
             ]);
 
             if ($adquisicion) {

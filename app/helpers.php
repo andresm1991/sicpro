@@ -871,4 +871,11 @@ if (!function_exists('palabras')) {
         $precio = $valor / (1 - ($porcentaje / 100));
         return round($precio, $presicion);
     }
+
+    function getEstados()
+    {
+        $estados = CatalogoDato::getChildrenCatalogo('estados.proformas')->pluck('descripcion', 'id');
+        $estados->prepend('', '');
+        return $estados;
+    }
 }
