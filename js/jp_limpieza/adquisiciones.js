@@ -5,7 +5,7 @@ $(function () {
     $('#agregar-producto').on('click', function () {
         let producto = $('#producto').val();
         let cantidad = $('#cantidad').val();
-        let valorUnitario = $('#valor_unitario').val();
+        let valorUnitario = parseFloat($('#valor_unitario').val());
         let iva = $('#iva').val();
         let unidadMedida = $('#unidad_medida').val();
         let necesidad = $('#necesidad').val();
@@ -130,16 +130,11 @@ $(function () {
     });
 
     $('#cantidad, #valor_unitario, #iva').on('input', function () {
-        let cantidad = $('#cantidad').val();
-        let valorUnitario = $('#valor_unitario').val();
-        let iva = $('#iva').val();
+        calcularTotalFila();
+    });
 
-        // calcular el total
-        let total = cantidad * valorUnitario;
-        let totalIva = (total * iva) / 100;
-        let totalFinal = total + totalIva;
-
-        $('#total').val('$ ' + totalFinal.toFixed(4));
+    $('#valor_unitario').on('keyup', function () {
+        calcularTotalFila();
     });
 
     /**
@@ -309,5 +304,18 @@ $(function () {
         $('#unidad_medida').val(null).trigger('change');
         $('#necesidad').val(null).trigger('change');
         $('#total').val(null);
+    }
+
+    function calcularTotalFila() {
+        let cantidad = $('#cantidad').val();
+        let valorUnitario = parsePrecio($('#valor_unitario').val());
+        let iva = $('#iva').val();
+
+        // calcular el total
+        let total = cantidad * valorUnitario;
+        let totalIva = (total * iva) / 100;
+        let totalFinal = total + totalIva;
+
+        $('#total').val(formatearUSD(totalFinal.toFixed(4)));
     }
 });
