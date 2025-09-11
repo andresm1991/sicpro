@@ -20,6 +20,21 @@ class ReporteController extends Controller
         return view('jp_limpieza.reportes.index', compact('title_page', 'breadcrumbs'));
     }
 
+    /**
+     * Reporte Adquisiciones
+     */
+    public function adquisiciones()
+    {
+        $title_page = 'Reporte Adquisiciones';
+        $breadcrumbs = [
+            ['name' => 'Inicio', 'url' => route('home')],
+            ['name' => 'Reportes', 'url' => route('jp.limpieza.reporte.index')],
+            ['name' => 'Adquisiciones', 'url' => ''],
+        ];
+
+        return view('jp_limpieza.reportes.adquisiciones', compact('title_page', 'breadcrumbs'));
+    }
+
     //** Reporte de caja (Flujo de efectivo) */
     public function caja()
     {

@@ -18,6 +18,7 @@ use App\Models\DetalleResumenPagoSemanal;
 use App\Models\JPLimpieza\DetalleAdquisicion;
 use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
+use App\Models\JPLimpieza\Proyecto as ProyectoJPLimpieza;
 use App\Models\ProformaProducto;
 
 if (!function_exists('encrypted_route')) {
@@ -741,6 +742,20 @@ if (!function_exists('palabras')) {
         $productos = Producto::where('activo', true)->pluck('nombre', 'id');
         $productos->prepend('', '');
         return $productos;
+    }
+
+    function getProyectosJPLimpieza()
+    {
+        $proyectos = ProyectoJPLimpieza::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
+        $proyectos->prepend('general', 'general');
+        $proyectos->prepend('', '');
+        return $proyectos;
+    }
+
+    function getTipoAdquisiciones()
+    {
+        $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->where('slug', '!=', 'profecionales')->pluck('descripcion', 'id')->prepend('', '');
+        return $tipoAdquisiciones;
     }
 
     /**
