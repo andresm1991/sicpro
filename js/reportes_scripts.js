@@ -1146,7 +1146,7 @@ $(function () {
                                 <table class="table table-bordered table-sm">
                                     <thead class="thead-dark">
                                         <tr>
-                                            <th rowspan="2" class="align-middle">Proveedor / Categoría</th>
+                                            <th rowspan="2" class="align-middle">Categoría</th>
                                             <th colspan="3" class="text-center">${proyecto1.nombre}</th>
                                             <th colspan="3" class="text-center">${proyecto2.nombre}</th>
                                             <th colspan="3" class="text-center">Diferencia</th>
@@ -1165,7 +1165,8 @@ $(function () {
                     subtotales.p2.total += (p2.total_contratado || 0); subtotales.p2.pagos += (p2.pagos || 0); subtotales.p2.saldo += (p2.saldo || 0);
 
                     tablaHtml += `<tr>
-                                <td><strong>${item.item_base.proveedor}</strong><br><small class="text-muted">${item.item_base.categoria}</small></td>
+                                <!--<td><strong>${item.item_base.proveedor}</strong><br><small class="text-muted">${item.item_base.categoria}</small></td>-->
+                                <td><strong>${item.item_base.categoria}</strong></td>
                                 <td class="text-right">${formatearMoneda(p1.total_contratado)}</td><td class="text-right">${formatearMoneda(p1.pagos)}</td><td class="text-right">${formatearMoneda(p1.saldo)}</td>
                                 <td class="text-right">${formatearMoneda(p2.total_contratado)}</td><td class="text-right">${formatearMoneda(p2.pagos)}</td><td class="text-right">${formatearMoneda(p2.saldo)}</td>
                                 <td class="text-right ${claseDiferencia(diff.total)}">${formatearMoneda(diff.total)}</td><td class="text-right ${claseDiferencia(diff.pagos)}">${formatearMoneda(diff.pagos)}</td><td class="text-right ${claseDiferencia(diff.saldo)}">${formatearMoneda(diff.saldo)}</td>
