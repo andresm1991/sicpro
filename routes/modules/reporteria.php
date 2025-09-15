@@ -18,6 +18,7 @@ Route::group(['prefix' => 'reportes', 'as' => 'reporte.'], function () {
 
     Route::get('/flujo-de-efectivo', [ReporteriaController::class, 'reporteCaja'])->name('caja');
     Route::post('/visulizar-reporte-caja', [ReporteriaController::class, 'visualizarReporteCaja']);
+    Route::post('/guardar-revision-caja', [ReporteriaController::class, 'guardarRevisionCaja']);
 
     Route::post('obtener_detalle', [ReporteriaController::class, 'obtenerDetalle']);
 });

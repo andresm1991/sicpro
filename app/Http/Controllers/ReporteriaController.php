@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use App\Models\DiccionarioPalabra;
 use App\Models\MovimientoCaja;
 use App\Models\ReposicionTiempo;
+use App\Models\RevisionCaja;
 use App\Models\Solicitud;
 use App\Models\User;
 use Carbon\Carbon;
@@ -317,7 +318,10 @@ class ReporteriaController extends Controller
             ['name' => 'Caja', 'url' => ''],
         ];
 
-        return view('reportes.caja', compact('title_page', 'breadcrumbs'));
+        $ultima_revision_caja = RevisionCaja::latest()->first();
+
+
+        return view('reportes.caja', compact('title_page', 'breadcrumbs', 'ultima_revision_caja'));
     }
 
     public function visualizarReporteCaja(Request $request)
@@ -333,6 +337,39 @@ class ReporteriaController extends Controller
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
+                'error' => $th->getLine(),
+            ]);
+        }
+    }
+
+    public function guardarRevisionCaja(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'fechas' => 'required',
+                'fechas.*' => 'required|date',
+            ]);
+
+            list($fechaInicio, $fechaFin) = explode(' - ', $request->fechas);
+
+            $data = [
+                'fecha_revision_inicio' => $fechaInicio,
+                'fecha_revision_fin' => $fechaFin,
+                'usuario_id' => auth()->id(),
+                'observaciones' => $request->observaciones,
+            ];
+
+            RevisionCaja::create($data);
+
+            return response()->json([
+                'success' => true,
+                'mensaje' => 'Revisión de caja guardada exitosamente.',
+                'data' => $data,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al guardar la revisión de caja: ' . $th->getMessage(),
                 'error' => $th->getLine(),
             ]);
         }

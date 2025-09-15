@@ -110,6 +110,13 @@ class AdquisicionController extends Controller
     public function store(Request $request)
     {
         try {
+            $request->validate([
+                'numero' => 'required|string|unique:mysql_jp_limpieza.adquisiciones,numero',
+            ], [
+                'numero.unique' => 'El número de adquisición ya existe. Por favor, ingrese un número diferente.',
+            ]);
+
+            return 'paso';
             DB::beginTransaction();
 
             $administrativo = $request->administrativo ?? false;
