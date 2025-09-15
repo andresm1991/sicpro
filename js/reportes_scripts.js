@@ -105,7 +105,7 @@ $(function () {
                                     <th scope="col">estado</th>
                                     <th scope="col">total</th>
                                     <th scope="col">abonado</th>
-                                    <th scope="col">sando</th>
+                                    <th scope="col">saldo</th>
                                 </tr>
                             </thead>
                         <tbody>
@@ -950,6 +950,99 @@ $(function () {
                         'error'
                     )
                     console.log(errors)
+            }
+        });
+    });
+
+    /**
+     * Guardar revisión de caja
+     */
+
+    $('#guardar-revision-caja').on('click', function () {
+        var form = $("#form-reporte");
+        var data = getFormData(form);
+
+        if (!data.fechas) {
+            Swal.fire(
+                'Ups.!',
+                'Por favor ingrese la fecha del reporte.',
+                'error'
+            );
+            return;
+        } else if ($('#table-view-reporte').html().trim() == '') {
+            Swal.fire(
+                'Ups.!',
+                'Por favor genere el reporte antes de finalizar la revisión.',
+                'error'
+            );
+            return;
+        }
+
+        Swal.fire({
+            text: "Ingrese una descripción para la revisión de caja",
+            input: 'text',
+            showCancelButton: true,
+            confirmButtonText: 'Guardar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: 'guardar-revision-caja',
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'POST',
+                    data: {
+                        observaciones: result.value,
+                        ...data
+                    },
+                    beforeSend: function () {
+                        $('#loading').addClass('show');
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            Swal.fire(
+                                'Guardado!',
+                                'La revisión de caja se ha guardado correctamente.',
+                                'success'
+                            );
+
+                            $('#ultima-revision').val(response.data.fecha_revision_inicio + ' - ' + response.data.fecha_revision_fin);
+                        } else {
+                            Swal.fire(
+                                'Ups.!',
+                                'No se pudo guardar la revisión de caja, por favor intente nuevamente.',
+                                'error'
+                            );
+                        }
+                    },
+                    complete: function () {
+                        $('#loading').removeClass('show');
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    switch (jqXHR.status) {
+                        case 422: // ERROR INPUT VALIDATE
+                            var errors = jqXHR.responseJSON.errors;
+                            var errorMessages = Object.values(errors).map(function (messages) {
+                                return messages.join(' ');
+                            }).join('<br>');
+                            Swal.fire(
+                                'Ups.!',
+                                errorMessages,
+                                'error'
+                            );
+                            break;
+                        case 419: // ERROR EXPIRATE SESSION
+                            window.location = '/';
+                            break;
+                        default:
+                            var errors = JSON.parse(jqXHR.responseText);
+                            Swal.fire(
+                                'Ups.!',
+                                'Algo salió mal, por favor vuelva a intentarlo.',
+                                'error'
+                            );
+                            console.log(errors);
+                    }
+                });
             }
         });
     });

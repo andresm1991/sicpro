@@ -12,6 +12,10 @@ $(function () {
             data: data,
             success: function (response) {
                 console.log(response);
+                if (response.success) {
+                    $('#table-view-reporte').html(response.html);
+
+                }
             },
             error: function (xhr, status, error) {
                 console.error(error);
