@@ -226,7 +226,6 @@ class Adquisicion extends Model
 
         // 3. Combinamos los resultados en una única estructura comparativa
         $datosCombinados = self::combinarDatosProyectos($datosProyecto1['data'], $datosProyecto2['data']);
-
         // 4. Devolvemos todo en un formato listo para la vista
         return [
             'proyecto1' => [
@@ -624,48 +623,46 @@ class Adquisicion extends Model
             $etapa1 = $dataProyecto1[$etapaNombre] ?? [];
             $etapa2 = $dataProyecto2[$etapaNombre] ?? [];
 
-            // --- INICIO DE LA CORRECCIÓN ---
+            // --- INICIO DE LA MODIFICACIÓN ---
 
-            // 1. Combinar Contratistas y LUEGO ordenarlos
+            // 1. Combinar Contratistas por CATEGORÍA y LUEGO ordenarlos
             $contratistasCombinados = self::combinarCategoria(
                 $etapa1['contratista'] ?? [],
                 $etapa2['contratista'] ?? [],
-                fn($item) => $item['proveedor'] . '|' . $item['categoria']
+                // CAMBIO 1: La clave para agrupar ahora es únicamente la 'categoria'.
+                // Antes era: fn($item) => $item['proveedor'] . '|' . $item['categoria']
+                fn($item) => $item['categoria']
             );
-            // Aplicamos el mismo ordenamiento de `sortFinalResult`
+
+            // CAMBIO 2: El ordenamiento ahora es por 'categoria', que es nuestro nuevo agrupador principal.
+            // Se elimina el ordenamiento por 'proveedor' ya que no es relevante para la agrupación.
             usort($contratistasCombinados, function ($a, $b) {
-                $proveedorCmp = strnatcasecmp($a['item_base']['proveedor'], $b['item_base']['proveedor']);
-                if ($proveedorCmp !== 0) {
-                    return $proveedorCmp;
-                }
                 return strnatcasecmp($a['item_base']['categoria'], $b['item_base']['categoria']);
             });
 
-            // 2. Combinar Mano de Obra (generalmente no necesita ordenarse si solo hay una fila)
+            // 2. Combinar Mano de Obra (sin cambios)
             $manoObraCombinada = self::combinarCategoria(
                 $etapa1['mano_obra'] ?? [],
                 $etapa2['mano_obra'] ?? [],
                 fn($item) => 'mano_de_obra_total'
             );
 
-            // 3. Combinar Materiales y LUEGO ordenarlos
+            // 3. Combinar Materiales y LUEGO ordenarlos (sin cambios)
             $materialesCombinados = self::combinarCategoria(
                 $etapa1['materiales_herramientas'] ?? [],
                 $etapa2['materiales_herramientas'] ?? [],
                 fn($item) => $item['articulo_id']
             );
-            // Aplicamos el ordenamiento por nombre de artículo
             usort($materialesCombinados, function ($a, $b) {
                 return strnatcasecmp($a['item_base']['articulo'], $b['item_base']['articulo']);
             });
 
-            // 4. Combinar Servicios y LUEGO ordenarlos
+            // 4. Combinar Servicios y LUEGO ordenarlos (sin cambios)
             $serviciosCombinados = self::combinarCategoria(
                 $etapa1['servicios'] ?? [],
                 $etapa2['servicios'] ?? [],
                 fn($item) => $item['articulo_id']
             );
-            // Aplicamos el ordenamiento por nombre de artículo
             usort($serviciosCombinados, function ($a, $b) {
                 return strnatcasecmp($a['item_base']['articulo'], $b['item_base']['articulo']);
             });
@@ -678,7 +675,7 @@ class Adquisicion extends Model
                 'servicios'               => $serviciosCombinados,
             ];
 
-            // --- FIN DE LA CORRECCIÓN ---
+            // --- FIN DE LA MODIFICACIÓN ---
         }
 
         return $resultadoFinal;

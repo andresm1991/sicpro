@@ -323,7 +323,7 @@
 
         <hr>
         <div style="text-align:right; font-size: 14px; margin-top: 10px;">
-            <strong>Total General del proyecto: ${{ number_format($totalGeneralProyecto, 4) }}</strong>
+            <strong>SubTotal del proyecto: ${{ number_format($totalGeneralProyecto, 4) }}</strong>
         </div>
         @if ($costos_indirecto > 0)
             <div style="text-align:right; font-size: 14px; margin-top: 10px;">

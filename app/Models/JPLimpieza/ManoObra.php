@@ -22,6 +22,8 @@ class ManoObra extends Model
         'fecha_hasta' => 'date',
     ];
 
+    protected $appends = ['total_recibir_formatted', 'total_recibir'];
+
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');

@@ -69,6 +69,7 @@ class ReporteController extends Controller
                 return response()->json([
                     'success' => true,
                     'html' => $html,
+                    'result' => $reportData,
                 ]);
             } catch (\Throwable $th) {
                 return response()->json([

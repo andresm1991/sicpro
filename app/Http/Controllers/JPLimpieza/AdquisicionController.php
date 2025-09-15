@@ -100,8 +100,7 @@ class AdquisicionController extends Controller
             ['name' => $tipoAdquisicion->descripcion, 'url' => route('jp.limpieza.adquisiciones.tipo.adquisicion', [$proyecto->id, $tipoAdquisicion->slug])],
             ['name' => 'Nuevo', 'url' => ''],
         ];
-
-        $numero = numeroPedido(Adquisicion::where('tipo_id', $tipoAdquisicion->id)->first());
+        $numero = numeroPedido(Adquisicion::latest()->first());
         $adquisicion = new Adquisicion();
 
         return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'proyecto', 'tipoAdquisicion', 'numero', 'adquisicion'));
@@ -116,7 +115,6 @@ class AdquisicionController extends Controller
                 'numero.unique' => 'El número de adquisición ya existe. Por favor, ingrese un número diferente.',
             ]);
 
-            return 'paso';
             DB::beginTransaction();
 
             $administrativo = $request->administrativo ?? false;
@@ -534,7 +532,7 @@ class AdquisicionController extends Controller
             ['name' => 'Nuevo', 'url' => ''],
         ];
 
-        $numero = numeroPedido(Adquisicion::first());
+        $numero = numeroPedido(Adquisicion::latest()->first());
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
         $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("General", 0);
 

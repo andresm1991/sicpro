@@ -352,7 +352,7 @@ class ContratistaController extends Controller
                 }
 
                 DB::commit();
-                PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Pago contratista', 'Se genero un nuevo pago para el contratisa ' . $orden_trabajo->proveedor->razon_social, route('administrativo.index.contratistas'));
+                PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Pago contratista', 'Se genero un nuevo pago para el contratista ' . $orden_trabajo->proveedor->razon_social, route('administrativo.contratista.detalle', $orden_trabajo->id));
                 LogService::log('success', 'Pago orden de trabajo contratista registrado', ['user_id' => auth()->id(), 'action' => 'create']);
 
                 return redirect()->route('proyecto.adquisiciones.contratista.nuevo.pago.orden.trabajo', $route_params)->with('success', 'Pago a la Orden de trabajo contratista registrado con éxito.');

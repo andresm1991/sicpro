@@ -20,7 +20,7 @@
                             <th>Factura</th>
                             <th>Forma Pago</th>
                             <th>Necesidades</th>
-                            <th class="text-right">Total</th>
+                            <th>Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -53,7 +53,7 @@
                             <th>Tipo</th>
                             <th>Fecha Desde</th>
                             <th>Fecha Hasta</th>
-                            <th class="text-right">Costo</th>
+                            <th class="text-right">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,14 +63,14 @@
                                 <td>{{ $item['tipo'] }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha_desde'])->format('d/m/Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha_hasta'])->format('d/m/Y') }}</td>
-                                <td class="text-right">$ {{ number_format($item['costo'], 4) }}</td>
+                                <td class="text-right">$ {{ $item['total_recibir_formatted'] }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                     <tfoot class="font-weight-bold">
                         <tr>
                             <td colspan="4" class="text-right">total {{ $categoria }}:</td>
-                            <td class="text-right">$ {{ number_format(collect($items)->sum('costo'), 4) }}</td>
+                            <td class="text-right">$ {{ number_format(collect($items)->sum('total_recibir'), 4) }}</td>
                         </tr>
                     </tfoot>
 
@@ -79,8 +79,11 @@
                     <thead class="thead-dark">
                         <tr>
                             <th>Proyecto</th>
-                            <th>Empresa/Contratista</th>
-                            <th>Fecha</th>
+                            <th>Proveedor</th>
+                            <th>Categoría</th>
+                            <th>Total Contratado</th>
+                            <th>Total Pagado</th>
+                            <th>Saldo</th>
                             <th class="text-right">Monto</th>
                         </tr>
                     </thead>
@@ -88,10 +91,11 @@
                         @foreach ($items as $item)
                             <tr>
                                 <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'N/A' }}</td>
-                                <td>{{ $item['empresa'] }}</td> {{-- Ajusta 'empresa' al nombre correcto del campo --}}
-                                <td>{{ \Carbon\Carbon::parse($item['fecha'])->format('d/m/Y') }}</td>
-                                <td class="text-right">$ {{ number_format($item['monto'], 4) }}</td>
-                                {{-- Ajusta 'monto' al nombre correcto del campo --}}
+                                <td>{{ $item['proveedor']['razon_social'] ?? 'N/A' }}</td>
+                                <td>{{ $item['categoria_proveedor']['descripcion'] ?? 'N/A' }}</td>
+                                <td class="text-right">$ {{ number_format($item['total_contratado'], 4) }}</td>
+                                <td class="text-right">$ {{ number_format($item['total_pagado'], 4) }}</td>
+                                <td class="text-right">$ {{ number_format($item['total_pendiente'], 4) }}</td>
                             </tr>
                         @endforeach
                     </tbody>

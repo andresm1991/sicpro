@@ -26,6 +26,18 @@ class Contratista extends Model
         'fecha' => 'date',
     ];
 
+    protected $appends = [
+        'total_contratado_formatted',
+        'total_pagado_formatted',
+        'total_pendiente_formatted',
+        'total_contratado',
+        'total_pagado',
+        'total_pendiente',
+        'total_pagos_registrados_formatted',
+        'total_pagos_registrados',
+        'fecha_formateada'
+    ];
+
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
