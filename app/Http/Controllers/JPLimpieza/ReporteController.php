@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\JPLimpieza\Caja;
 use App\Http\Controllers\Controller;
 use App\Models\JPLimpieza\Adquisicion;
+use App\Models\JPLimpieza\Producto;
 use App\Models\JPLimpieza\RevisionCaja;
 
 class ReporteController extends Controller
@@ -153,6 +154,44 @@ class ReporteController extends Controller
                 'mensaje' => 'Error al guardar la revisión de caja: ' . $th->getMessage(),
                 'error' => $th->getLine(),
             ]);
+        }
+    }
+
+    public function filtroReporteAdquisiciones(Request $request)
+    {
+        if ($request->ajax()) {
+            try {
+                $tipo = $request->input('tipo');
+                $proveedores = [];
+
+                switch ($tipo) {
+                    case 'mano_de_obra':
+                        $cargos = Producto::where('activo', true)->whereHas('categoria_articulo', function ($query) {
+                            $query->where('slug', 'tipo.adquisiciones.servicios');
+                        })->orderBy('descripcion', 'asc')->get(['id', 'descripcion']);
+                        $result['cargos'] = $cargos;
+                        break;
+                    case 'contratistas':
+                        // Si necesitas cargar datos específicos para contratistas, hazlo aquí
+                        break;
+                    default:
+                        // Manejo para tipos no reconocidos
+                        break;
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'proveedores' => $proveedores,
+                    'productos' => $productos,
+                    'cargos' => $cargos,
+                ]);
+            } catch (\Throwable $th) {
+                return response()->json([
+                    'success' => false,
+                    'mensaje' => 'Error al filtrar los datos: ' . $th->getMessage(),
+                    'error' => $th->getLine(),
+                ]);
+            }
         }
     }
 }

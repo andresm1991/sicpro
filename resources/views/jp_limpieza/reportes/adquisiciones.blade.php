@@ -84,9 +84,9 @@
                             {{ Form::select(
                                 'tipo_reporte',
                                 ['' => ''] + [
-                                    'mensual' => 'mensual',
-                                    'anual' => 'anual',
+                                    'balance' => 'Balance',
                                     'global' => 'Global',
+                                    'operativo' => 'Operativo',
                                 ],
                                 '',
                                 ['class' => 'form-control', 'data-placeholder' => 'Seleccione tipo reporte', 'data-allow-clear' => 'true'],
