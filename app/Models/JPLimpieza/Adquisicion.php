@@ -88,6 +88,7 @@ class Adquisicion extends Model
 
         // Guardamos el valor del proyecto para reutilizar la lógica
         $proyectoInput = $request->input('proyecto');
+        $proveedor = $request->input('proveedor');
 
         // 1. OBTENER LAS ADQUISICIONES
         // ===============================================
@@ -103,12 +104,12 @@ class Adquisicion extends Model
                     $q->whereNull('proyecto_id');
                 }
             })
-            // ... (resto de when para adquisiciones sin cambios)
+
             ->when($request->input('tipo'), function ($q) use ($request) {
                 $q->where('tipo_id', $request->input('tipo'));
             })
-            ->when($request->input('proveedor'), function ($q) use ($request) {
-                $q->where('proveedor_id', $request->input('proveedor'));
+            ->when($proveedor, function ($q) use ($proveedor) {
+                $q->where('proveedor_id', $proveedor);
             })
             ->when($request->input('estado'), function ($q) use ($request) {
                 $q->where('estado', $request->input('estado'));
@@ -133,7 +134,6 @@ class Adquisicion extends Model
                             ->where('fecha_hasta', '>=', $fechaInicioF);
                     });
                 })
-                // ============= CORRECCIÓN APLICADA AQUÍ =============
                 ->when($proyectoInput, function ($q) use ($proyectoInput) {
                     if (is_numeric($proyectoInput)) {
                         $q->where('proyecto_id', $proyectoInput);
@@ -142,7 +142,11 @@ class Adquisicion extends Model
                         $q->whereNull('proyecto_id');
                     }
                 })
-                // ======================================================
+                ->when($proveedor, function ($q) use ($proveedor) {
+                    $q->whereHas('detalles', function ($d) use ($proveedor) {
+                        $d->where('proveedor_id', $proveedor);
+                    });
+                })
                 ->orderBy('fecha_desde', 'desc')
                 ->get();
 
@@ -156,7 +160,6 @@ class Adquisicion extends Model
                     // Asumiendo que Contratista usa una sola 'fecha'
                     $q->whereBetween('fecha', [$fechaInicioF, $fechaFinF]);
                 })
-                // ============= CORRECCIÓN APLICADA AQUÍ =============
                 ->when($proyectoInput, function ($q) use ($proyectoInput) {
                     if (is_numeric($proyectoInput)) {
                         $q->where('proyecto_id', $proyectoInput);
@@ -165,7 +168,9 @@ class Adquisicion extends Model
                         $q->whereNull('proyecto_id');
                     }
                 })
-                // ======================================================
+                ->when($proveedor, function ($q) use ($proveedor) {
+                    $q->where('proveedor_id', $proveedor);
+                })
                 ->orderBy('fecha', 'desc')
                 ->get();
 

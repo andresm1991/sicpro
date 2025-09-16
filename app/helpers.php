@@ -714,12 +714,18 @@ if (!function_exists('palabras')) {
             if ($categoria_proveedor) {
                 $proveedores = Proveedor::where('categoria_proveedor_id', CatalogoDato::getIdCatalogo($categoria_proveedor))->pluck('razon_social', 'id');
             } else {
-                $proveedores = Proveedor::pluck('razon_social', 'id');
+                $proveedores = Proveedor::orderBy('razon_social', 'asc')->pluck('razon_social', 'id');
             }
             $proveedores->prepend('', '');
         } else {
             $proveedores = Proveedor::get();
         }
+        return $proveedores;
+    }
+
+    function getProveedoresModelo()
+    {
+        $proveedores = Proveedor::orderBy('razon_social', 'asc')->get();
         return $proveedores;
     }
 

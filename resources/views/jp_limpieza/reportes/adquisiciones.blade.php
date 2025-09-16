@@ -76,7 +76,10 @@
 
                         <div class="form-group col-sm-4">
                             <label for="" class="col-form-label">Proveedores </label>
-                            {{ Form::select('proveedor', [], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione proveedor', 'data-allow-clear' => 'true']) }}
+                            <select name="proveedor" id="proveedor-select-ajax" class="form-control"
+                                data-placeholder="seleccione proveedor" data-allow-clear="true"
+                                style="width: 100%;"></select>
+
                         </div>
 
                         <div class="form-group col-sm-4">

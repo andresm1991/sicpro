@@ -117,6 +117,5 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
         //** ADQUISICIONES */
         Route::get('/adquisiciones', [ReporteController::class, 'adquisiciones'])->name('adquisiciones');
         Route::post('/visualizar-reporte-adquisiciones', [ReporteController::class, 'visualizarReporteAdquisiciones']);
-        Route::get('/filtro-reporte-adquisiciones', [ReporteController::class, 'filtroReporteAdquisiciones']);
     });
 });

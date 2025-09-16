@@ -15,6 +15,7 @@
                         <tr>
                             <th>Fecha</th>
                             <th>Número</th>
+                            <th>Proyecto</th>
                             <th>Proveedor</th>
                             <th>Estado</th>
                             <th>Factura</th>
@@ -28,6 +29,7 @@
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha'])->format('d/m/Y') }}</td>
                                 <td>{{ $item['numero'] }}</td>
+                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'N/A' }}</td>
                                 <td>{{ $item['proveedor']['razon_social'] ?? 'N/A' }}</td>
                                 <td>{{ $item['estado'] }}</td>
                                 <td>{{ $item['nro_factura'] ?? 'N/A' }}</td>
@@ -40,7 +42,7 @@
                     </tbody>
                     <tfoot class="font-weight-bold">
                         <tr>
-                            <td colspan="7" class="text-right">total {{ $categoria }}:</td>
+                            <td colspan="8" class="text-right">total {{ $categoria }}:</td>
                             <td class="text-right">$ {{ number_format(collect($items)->sum('total_general'), 4) }}</td>
                         </tr>
                     </tfoot>

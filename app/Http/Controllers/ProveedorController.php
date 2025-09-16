@@ -277,4 +277,37 @@ class ProveedorController extends Controller
             return response()->json(['proveedores' => $proveedores, 'estados' => $estados]);
         }
     }
+
+    public function ajaxProveedores(Request $request)
+    {
+        $searchTerm = $request->query('q', ''); // 'q' es el término de búsqueda que envía Select2
+        $proveedores = Proveedor::with('categoria_proveedor')
+            ->where(function ($query) use ($searchTerm) {
+                // Busca en la tabla principal (proveedores)
+                $query->where('razon_social', 'LIKE', "%{$searchTerm}%")
+                    ->orWhere('documento', 'LIKE', "%{$searchTerm}%"); // Puedes añadir más campos aquí
+
+                // ¡LA MAGIA OCURRE AQUÍ!
+                // Busca también en la descripción de la categoría relacionada
+                $query->orWhereHas('categoria_proveedor', function ($subQuery) use ($searchTerm) {
+                    $subQuery->where('descripcion', 'LIKE', "%{$searchTerm}%");
+                });
+            })
+            ->limit(50)
+            ->get();
+
+        // Formateamos los resultados para que Select2 los entienda
+        $resultados = $proveedores->map(function ($proveedor) {
+            return [
+                'id' => $proveedor->id,
+                'text' => $proveedor->razon_social,
+                'categoria_descripcion' => $proveedor->categoria_proveedor->descripcion ?? 'Sin categoría' // Pasamos el dato extra
+            ];
+        });
+
+        // Select2 espera un objeto con una clave "results"
+        return response()->json([
+            'results' => $resultados
+        ]);
+    }
 }

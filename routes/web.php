@@ -108,4 +108,6 @@ Route::group(['middleware' => ['auth']], function () {
     })->name('no.access');
 
     Route::get('/storage/imagenes/{imagen}/{filename}', [ImageProxyController::class, 'getPropertyImage'])->name('imagen.proxy');
+
+    Route::get('/api/proveedores', [ProveedorController::class, 'ajaxProveedores'])->name('api.proveedores.buscar');
 });
