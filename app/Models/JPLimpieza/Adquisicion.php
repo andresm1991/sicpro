@@ -76,19 +76,16 @@ class Adquisicion extends Model
      */
     public static function dataReporteAdquisiciones($request)
     {
-        // --- PREPARACIÓN DE VARIABLES ---
-        // Preparamos las fechas una sola vez para reutilizarlas
         $fechaInicioF = null;
         $fechaFinF = null;
+        $proyectoInput = $request->input('proyecto');
+        $proveedor = $request->input('proveedor');
+
         if ($request->filled('fechas')) { // Usar filled() es más robusto
             list($inicio, $fin) = explode(' - ', $request->input('fechas'));
             $fechaInicioF = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
             $fechaFinF = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
         }
-
-        // Guardamos el valor del proyecto para reutilizar la lógica
-        $proyectoInput = $request->input('proyecto');
-        $proveedor = $request->input('proveedor');
 
         // 1. OBTENER LAS ADQUISICIONES
         // ===============================================
@@ -100,11 +97,9 @@ class Adquisicion extends Model
                 if (is_numeric($proyectoInput)) {
                     $q->where('proyecto_id', $proyectoInput);
                 } else {
-                    // Esta lógica ya estaba correcta aquí
                     $q->whereNull('proyecto_id');
                 }
             })
-
             ->when($request->input('tipo'), function ($q) use ($request) {
                 $q->where('tipo_id', $request->input('tipo'));
             })
