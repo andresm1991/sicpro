@@ -10,7 +10,6 @@ $(function () {
         let tipo_reporte = $('select[name=tipo]').val();
         let reporte = $('select[name=tipo_reporte]').val();
 
-
         if (tipo_reporte == '' && reporte != 'global' && reporte != 'comparativo') {
             Swal.fire(
                 'Ups.!',
