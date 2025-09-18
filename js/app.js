@@ -829,7 +829,7 @@ $(function () {
 });
 
 function calcularPorcentaje(total, porcentaje) {
-    return total / (1 - (porcentaje / 100));
+    return parseFloat(total) / (1 - (porcentaje / 100));
 }
 
 function calcularTotalProducto($cantidad, $valor, $iva) {
@@ -845,7 +845,7 @@ function calcularTotalProducto($cantidad, $valor, $iva) {
 // Función para calcular el total de cada fila y el total general
 function calcularTotalFilasYGeneral() {
     let totalGeneral = 0;
-
+    // Itera sobre cada fila de productos
     $('.precio-unitario').each(function () {
         let index = $(this).data('index');
         let cantidad;
@@ -860,7 +860,8 @@ function calcularTotalFilasYGeneral() {
         let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
         let costoIndirecto = parseFloat($(`.costo-indirecto[data-index='${index}']`).val().replace(/[^0-9.]/g, '')) || 0;
 
-        precioUnitario = calcularPorcentaje(precioUnitario, costoIndirecto);
+        precioUnitario = calcularPorcentaje(precioUnitario.toFixed(4), costoIndirecto);
+
         let totalFila = cantidad * precioUnitario.toFixed(4);
         let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
         let iva = (totalFila * porcentaje_iva) / 100;

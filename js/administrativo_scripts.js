@@ -595,6 +595,9 @@ $(function () {
                 <td class="align-middle col-md-1 col-12">
                     <input type="text" class="form-control col-sm-12 input-enteros iva-producto" name="iva_producto[${numeroFila - 1}]" value="${data.iva}" placeholder="0" data-index = "${numeroFila - 1}">
                 </td>
+                <td class="align-middle col-md-1 col-12">
+                    <input type="text" class="form-control col-sm-12 input-enteros costo-indirecto" name="indirecto[${numeroFila - 1}]" value="${data.indirecto}" placeholder="0" data-index = "${numeroFila - 1}">
+                </td>
                 <td class="align-middle calculo-total" data-index="${numeroFila - 1}">
                      $ ${totalConIva.toFixed(4)}
                 </td>

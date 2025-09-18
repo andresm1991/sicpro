@@ -114,7 +114,7 @@ $(function () {
     /**
      * Agregar elementos a la tabla de pedidos
      */
-    $('#add-producto-adquisicion').on('click', function () {
+    $("#add-producto-adquisicion").on('click', function () {
         var producto_id = $('#productos').val();
         var producto = $('#productos option:selected').text();
         var cantidad = $('#cantidad').val();
