@@ -149,8 +149,8 @@ class AdministrativoController extends Controller
             'unidad_medida.*' => 'required',
             'valor' => 'required|array',
             'valor.*' => 'required|numeric',
-            'iva_producto' => 'required|array',
-            'iva_producto.*' => 'required|numeric',
+            'iva_producto' => 'nullable|array',
+            'iva_producto.*' => 'nullable|numeric',
         ];
 
         $messages = [
@@ -162,8 +162,6 @@ class AdministrativoController extends Controller
             'cantidad_recibida.required' => 'Ingrese al menos un valor de cantidad recibida.',
             'cantidad_recibida.*.required' => 'Ingrese el valor de cantidad recibida.',
             'cantidad_recibida.*.numeric' => 'El valor de cada cantidad recibida debe ser numérico.',
-            'iva_producto.required' => 'Ingrese el valor.',
-            'iva_producto.*.required' => 'Ingrese el valor .',
             'iva_producto.*.numeric' => 'El valor de debe ser numérico.',
         ];
 
@@ -176,11 +174,6 @@ class AdministrativoController extends Controller
         $request->validate($rules, $messages);
 
         $estado = $request->orden_completa;
-        $array_unidad_medida = $request->unidad_medida;
-        $array_valor_unidatrio = $request->valor;
-        $array_iva_producto = $request->iva_producto;
-        $array_cantidad = $request->cantidad;
-        $array_necesidad = $request->necesidad;
         $array_productos = $request->productos;
 
         $adquisicionesActuales = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->pluck('articulo_id')->toArray();
@@ -189,17 +182,18 @@ class AdministrativoController extends Controller
         try {
             DB::beginTransaction();
 
-            $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $costo_indirecto, $kilometraje) {
+            $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $costo_indirecto, $kilometraje, $necesidad) {
                 return [
                     'producto' => $producto,
                     'cantidad' => str_replace(',', '', $cantidad),
                     'valor' => limpiarValor($precio_unitario),
                     'costo_indirecto' => $costo_indirecto,
-                    'iva' => $iva,
+                    'iva' => $iva ?? 0,
                     'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
                     'kilometraje' => $kilometraje,
+                    'necesidad' => $necesidad
                 ];
-            }, $request->input('productos', []), $request->input('cantidad', []), $request->input('valor', []), $request->input('iva_producto', []), $request->input('unidad_medida', []), $request->input('indirecto', []), $request->input('kilometraje', []));
+            }, $request->input('productos', []), $request->input('cantidad', []), $request->input('valor', []), $request->input('iva_producto', []), $request->input('unidad_medida', []), $request->input('indirecto', []), $request->input('kilometraje', []), $request->input('necesidad', []));
 
             foreach ($items as $item) {
                 AdquisicionDetalle::updateOrCreate(
@@ -211,6 +205,7 @@ class AdministrativoController extends Controller
                         'costo_indirecto' => $item['costo_indirecto'],
                         'iva' => $item['iva'],
                         'kilometraje' => $item['kilometraje'],
+                        'necesidad' => $item['necesidad'],
                     ]
                 );
 
