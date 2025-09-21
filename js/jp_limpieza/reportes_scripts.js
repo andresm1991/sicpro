@@ -18,12 +18,17 @@ $(function () {
             url: 'visualizar-reporte-adquisiciones',
             type: 'POST',
             data: data,
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
             success: function (response) {
-                console.log(response);
                 if (response.success) {
                     $('#table-view-reporte').html(response.html);
 
                 }
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
             },
             error: function (xhr, status, error) {
                 console.error(error);
@@ -77,5 +82,39 @@ $(function () {
         minimumInputLength: 2, // El usuario debe escribir al menos 2 caracteres para buscar
         templateResult: formatProveedorAjax,
         templateSelection: formatProveedorSelectionAjax,
+    });
+
+    /**
+     * Genera el reporte submit del formulario.
+     */
+    $('.generar-reporte').on('click', function () {
+        const $form = $('#form-reporte');
+        let data = getFormData($form);
+        const action = $(this).data('action'); // Obtener el valor de data-action
+
+
+        if (data.tipo_reporte == '') {
+            Swal.fire(
+                'Ups.!',
+                'Por favor seleccione un tipo de reporte.',
+                'error'
+            )
+            return false;
+        } else if (data.tipo_reporte == 'global' && action == 'excel') {
+            Swal.fire(
+                'Ups.!',
+                'Lo sentimos no es posile generar el excel de este reporte. Genera el pdf.',
+                'info'
+            )
+            return false;
+        }
+
+        // Agregar el valor de tipo_reporte como parámetro en la URL
+        $form.attr('action', `/exportar-reporte/${action}`);
+
+
+
+        // Enviar el formulario
+        $form.submit();
     });
 });
