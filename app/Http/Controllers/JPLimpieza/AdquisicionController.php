@@ -534,7 +534,7 @@ class AdquisicionController extends Controller
 
         $numero = numeroPedido(Adquisicion::latest()->first());
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
-        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("General", 0);
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("", "");
 
         $adquisicion = new Adquisicion();
         return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'tipoAdquisiciones', 'numero', 'adquisicion', 'proyectos'));
@@ -550,7 +550,7 @@ class AdquisicionController extends Controller
         ];
 
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
-        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("General", 0);
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("", "");
 
         return view('jp_limpieza.adquisiciones.edit', compact('breadcrumbs', 'tipoAdquisiciones', 'adquisicion', 'proyectos'));
     }

@@ -798,4 +798,108 @@ class GenerarPdfController extends Controller
         // Devolver el PDF al navegador
         return $pdf->stream('programa_arquitectonico_' . $programa->proforma->numero . '.pdf');
     }
+
+    public function exportarReporteJPLimpieza(Request $request, $export)
+    {
+
+        $tipo_reporte = $request->tipo_reporte;
+        if ($tipo_reporte == 'operativo') {
+            return $this->reporteAdquisicionesOperativo($request, $export);
+        } elseif ($tipo_reporte == 'global') {
+            return $this->reporteAdquisicionesGlobal($request, $export);
+        } elseif ($tipo_reporte == 'balance') {
+            return $this->reporteAdquisicionesFinanciero($request, $export);
+        }
+    }
+
+    private function reporteAdquisicionesOperativo($request, $export, $tipo = 'operativo')
+    {
+        $reportData = JPLimpiezaAdquisicion::dataReporteAdquisiciones($request);
+        $proyecto = JPLimpiezaProyecto::find($request->proyecto);
+
+        $fechaReporte = now()->format('d/m/Y');
+
+        if ($request->filled('fechas')) {
+            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
+            $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
+            $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+
+            $fechaReporte = $inicio . ' hasta ' . $fin;
+        } else {
+            $fechaInicio = null;
+            $fechaFin = null;
+        }
+        // Calcula el gran total
+        $grandTotal = 0;
+        foreach ($reportData as $categoria => $items) {
+            if ($categoria === 'Mano de Obra') {
+                // Asegúrate de que el campo 'costo' existe y es numérico
+                $grandTotal += collect($items)->sum('total_recibir');
+            } elseif ($categoria === 'Contratistas') {
+                // Asegúrate de que el campo 'monto total' existe y es numérico
+                $grandTotal += collect($items)->sum('total_contratado');
+            } else {
+                // Para Adquisiciones, asumiendo que tienes un campo numérico como 'total_general'
+                // ¡IMPORTANTE! No sumes el campo formateado ('total_general_formatted')
+                $grandTotal += collect($items)->sum('total_general_formatted');
+            }
+        }
+
+        if ($export == 'pdf') {
+            $pdf = PDF::loadView('pdf.jp_limpieza.adquisiciones', compact('reportData', 'grandTotal', 'tipo', 'proyecto', 'fechaReporte'))->setPaper('a4', 'landscape');
+            return $pdf->stream('reportes.pdf');
+        }
+    }
+
+    private function reporteAdquisicionesGlobal($request, $export, $tipo = 'global')
+    {
+        $reportData = JPLimpiezaAdquisicion::dataReportePorArticulo($request);
+        $grandTotal = collect($reportData)->flatten(1)->sum('monto_total');
+        $proyecto = JPLimpiezaProyecto::find($request->proyecto);
+        $fechaReporte = now()->format('d/m/Y');
+
+        if ($request->filled('fechas')) {
+            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
+            $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
+            $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+
+            $fechaReporte = $inicio . ' hasta ' . $fin;
+        } else {
+            $fechaInicio = null;
+            $fechaFin = null;
+        }
+
+        if ($export == 'pdf') {
+            $pdf = PDF::loadView('pdf.jp_limpieza.adquisiciones', compact('reportData', 'grandTotal', 'tipo', 'proyecto', 'fechaReporte'))->setPaper('a4', 'landscape');
+            return $pdf->stream('reportes.pdf');
+        }
+    }
+
+    private function reporteAdquisicionesFinanciero($request, $export, $tipo = 'balance')
+    {
+        $reportData = JPLimpiezaProyecto::dataReporteBalance($request);
+        $totalIngresosGeneral = $reportData->sum('total_ingresos');
+        $totalGastosGeneral = $reportData->sum('total_gastos');
+        $utilidadGeneral = $reportData->sum('utilidad');
+
+        $proyecto = JPLimpiezaProyecto::find($request->proyecto);
+        $fechaReporte = now()->format('d/m/Y');
+
+        if ($request->filled('fechas')) {
+            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
+            $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
+            $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+
+            $fechaReporte = $inicio . ' hasta ' . $fin;
+        } else {
+            $fechaInicio = null;
+            $fechaFin = null;
+        }
+
+
+        if ($export == 'pdf') {
+            $pdf = PDF::loadView('pdf.jp_limpieza.adquisiciones', compact('reportData', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral', 'tipo', 'proyecto', 'fechaReporte'))->setPaper('a4', 'landscape');
+            return $pdf->stream('reportes.pdf');
+        }
+    }
 }

@@ -2,6 +2,9 @@
 
 namespace App\Models\JPLimpieza;
 
+use Carbon\Carbon;
+use AWS\CRT\HTTP\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Proyecto extends Model
@@ -67,5 +70,110 @@ class Proyecto extends Model
     public function getTotalContratadoFormattedAttribute()
     {
         return number_format($this->total_contratado, 4);
+    }
+
+    public static function dataReporteBalance($request)
+    {
+        // --- 1. PREPARACIÓN DE FILTROS ---
+        $fechaInicioF = null;
+        $fechaFinF = null;
+        $proyectoInput = $request->input('proyecto');
+
+        if ($request->filled('fechas')) {
+            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
+            $fechaInicioF = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
+            $fechaFinF = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+        }
+
+        // --- 2. PRE-CÁLCULO DE GASTOS POR PROYECTO ---
+
+        // Gasto A: Adquisiciones
+        $gastosAdquisiciones = DB::connection('mysql_jp_limpieza')->table('detalle_adquisiciones')
+            ->join('adquisiciones', 'detalle_adquisiciones.adquisicion_id', '=', 'adquisiciones.id')
+            ->select('adquisiciones.proyecto_id', DB::raw('SUM((detalle_adquisiciones.cantidad * detalle_adquisiciones.precio_unitario) * (1 + (detalle_adquisiciones.iva / 100))) as total'))
+            ->when($fechaInicioF && $fechaFinF, fn($q) => $q->whereBetween('adquisiciones.fecha', [$fechaInicioF, $fechaFinF]))
+            ->whereNotNull('adquisiciones.proyecto_id') // Solo gastos asignados a proyectos
+            ->groupBy('adquisiciones.proyecto_id')
+            ->pluck('total', 'proyecto_id');
+
+        // Gasto B: Contratistas
+        $gastosContratistas = DB::connection('mysql_jp_limpieza')->table('contratistas')
+            ->join('detalle_contratista', 'contratistas.id', '=', 'detalle_contratista.contratista_id')
+            ->select('contratistas.proyecto_id', DB::raw('SUM(detalle_contratista.total) as total'))
+            ->when($fechaInicioF && $fechaFinF, fn($q) => $q->whereBetween('contratistas.fecha', [$fechaInicioF, $fechaFinF]))
+            ->whereNotNull('contratistas.proyecto_id')
+            ->groupBy('contratistas.proyecto_id')
+            ->pluck('total', 'proyecto_id');
+
+        // Gasto C: Mano de Obra
+        $gastosManoObra = DB::connection('mysql_jp_limpieza')->table('mano_obra')
+            ->join('detalle_mano_obra', 'mano_obra.id', '=', 'detalle_mano_obra.mano_obra_id')
+            ->select('mano_obra.proyecto_id', DB::raw('SUM(detalle_mano_obra.total_recibir + detalle_mano_obra.aporte_patronal) as total'))
+            ->when($fechaInicioF && $fechaFinF, function ($q) use ($fechaInicioF, $fechaFinF) {
+                $q->where(fn($q) => $q->where('mano_obra.fecha_desde', '<=', $fechaFinF)->where('mano_obra.fecha_hasta', '>=', $fechaInicioF));
+            })
+            ->whereNotNull('mano_obra.proyecto_id')
+            ->groupBy('mano_obra.proyecto_id')
+            ->pluck('total', 'proyecto_id');
+
+        // --- 3. PRE-CÁLCULO DE GASTOS ADMINISTRATIVOS (SIN PROYECTO) ---
+
+        $gastoAdminAdquisiciones = DB::connection('mysql_jp_limpieza')->table('detalle_adquisiciones')
+            ->join('adquisiciones', 'detalle_adquisiciones.adquisicion_id', '=', 'adquisiciones.id')
+            ->when($fechaInicioF && $fechaFinF, fn($q) => $q->whereBetween('adquisiciones.fecha', [$fechaInicioF, $fechaFinF]))
+            ->where('adquisiciones.administrativo', true) // La clave está aquí
+            // Opcionalmente, puedes usar whereNull('proyecto_id') si es más seguro
+            ->whereNull('adquisiciones.proyecto_id')
+            ->sum(DB::raw('(detalle_adquisiciones.cantidad * detalle_adquisiciones.precio_unitario) * (1 + (detalle_adquisiciones.iva / 100))'));
+
+        // Nota: Si Contratistas o Mano de Obra también pueden ser administrativos, añade sus sumas aquí.
+        // Por ahora, asumimos que solo Adquisiciones lo son, según tu descripción.
+        $gastoAdministrativoTotal = $gastoAdminAdquisiciones;
+
+
+        // --- 4. OBTENER PROYECTOS Y CONSOLIDAR DATOS ---
+        $proyectosQuery = self::query()
+            ->when($proyectoInput, function ($q) use ($proyectoInput) {
+                $q->where('id', $proyectoInput);
+            });
+
+        // Si se pide un proyecto específico, no mostramos los gastos administrativos
+        // para no confundir al usuario.
+        if ($proyectoInput) {
+            $gastoAdministrativoTotal = 0;
+        }
+
+        $proyectos = $proyectosQuery->get();
+
+        $balance = $proyectos->map(function ($proyecto) use ($gastosAdquisiciones, $gastosContratistas, $gastosManoObra) {
+            $totalIngresos = $proyecto->total_contratado;
+            $gastoA = $gastosAdquisiciones->get($proyecto->id, 0);
+            $gastoB = $gastosContratistas->get($proyecto->id, 0);
+            $gastoC = $gastosManoObra->get($proyecto->id, 0);
+
+            $totalGastos = $gastoA + $gastoB + $gastoC;
+            $utilidad = $totalIngresos - $totalGastos;
+
+            return [
+                'proyecto_id' => $proyecto->id,
+                'proyecto_nombre' => $proyecto->nombre_proyecto,
+                'total_ingresos' => $totalIngresos,
+                'total_gastos' => $totalGastos,
+                'utilidad' => $utilidad,
+            ];
+        });
+
+        // --- 5. AÑADIR LA FILA DE GASTOS ADMINISTRATIVOS AL REPORTE ---
+        if ($gastoAdministrativoTotal > 0) {
+            $balance->push([
+                'proyecto_id' => 'admin', // Un identificador único
+                'proyecto_nombre' => 'Gastos Administrativos (sin proyecto)',
+                'total_ingresos' => 0,
+                'total_gastos' => $gastoAdministrativoTotal,
+                'utilidad' => -$gastoAdministrativoTotal, // La utilidad es una pérdida
+            ]);
+        }
+
+        return $balance;
     }
 }
