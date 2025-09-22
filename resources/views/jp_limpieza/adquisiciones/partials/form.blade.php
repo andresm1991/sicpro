@@ -43,7 +43,6 @@
         </div>
     @endisset
 
-
     <div class="col-md-6 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proveedor', ['class' => 'col-form-label']) }}

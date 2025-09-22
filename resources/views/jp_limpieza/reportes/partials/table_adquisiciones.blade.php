@@ -29,7 +29,8 @@
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha'])->format('d/m/Y') }}</td>
                                 <td>{{ $item['numero'] }}</td>
-                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'N/A' }}</td>
+                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'Gastos Administrativos (sin proyecto)' }}
+                                </td>
                                 <td>{{ $item['proveedor']['razon_social'] ?? 'N/A' }}</td>
                                 <td>{{ $item['estado'] }}</td>
                                 <td>{{ $item['nro_factura'] ?? 'N/A' }}</td>
@@ -61,7 +62,8 @@
                     <tbody>
                         @foreach ($items as $item)
                             <tr>
-                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'N/A' }}</td>
+                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'Gastos Administrativos (sin proyecto)' }}
+                                </td>
                                 <td>{{ $item['tipo'] }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha_desde'])->format('d/m/Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha_hasta'])->format('d/m/Y') }}</td>
@@ -92,7 +94,8 @@
                     <tbody>
                         @foreach ($items as $item)
                             <tr>
-                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'N/A' }}</td>
+                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'Gastos Administrativos (sin proyecto)' }}
+                                </td>
                                 <td>{{ $item['proveedor']['razon_social'] ?? 'N/A' }}</td>
                                 <td>{{ $item['categoria_proveedor']['descripcion'] ?? 'N/A' }}</td>
                                 <td class="text-right">$ {{ number_format($item['total_contratado'], 4) }}</td>

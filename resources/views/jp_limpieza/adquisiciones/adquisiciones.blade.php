@@ -57,7 +57,7 @@
                                         <td class="align-middle">{{ $adquisicion->numero }}</td>
                                         @if ($adquisicion->administrativo)
                                             <td class="align-middle">
-                                                {{ isset($adquisicion->proyecto) ? $adquisicion->proyecto->nombre_proyecto : 'n/a' }}
+                                                {{ isset($adquisicion->proyecto) ? $adquisicion->proyecto->nombre_proyecto : 'Gastos Administrativos (sin proyecto)' }}
                                             </td>
                                         @endif
                                         <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>

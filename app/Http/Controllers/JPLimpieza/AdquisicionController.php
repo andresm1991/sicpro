@@ -260,6 +260,7 @@ class AdquisicionController extends Controller
     {
         $proyecto = Proyecto::find($request->proyecto);
         $adquisicion = Adquisicion::find($request->adquisicion);
+
         try {
             DB::beginTransaction();
 
@@ -289,7 +290,7 @@ class AdquisicionController extends Controller
             $adquisicion->forma_pago_id = $formaPago;
 
             if ($request->administrativo) {
-                $adquisicion->proyecto_id = $request->proyecto;
+                $adquisicion->proyecto_id = $request->proyecto && $request->proyecto != "null" ? $request->proyecto : null;
             }
 
             $items = array_map(function ($producto, $cantidad, $valor, $iva, $unidad_medida, $necesidad, $inventario) {
@@ -534,7 +535,7 @@ class AdquisicionController extends Controller
 
         $numero = numeroPedido(Adquisicion::latest()->first());
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
-        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("", "");
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("Gastos Administrativos (sin proyecto)", "null");
 
         $adquisicion = new Adquisicion();
         return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'tipoAdquisiciones', 'numero', 'adquisicion', 'proyectos'));
@@ -550,7 +551,7 @@ class AdquisicionController extends Controller
         ];
 
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
-        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("", "");
+        $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("Gastos Administrativos (sin proyecto)", "null");
 
         return view('jp_limpieza.adquisiciones.edit', compact('breadcrumbs', 'tipoAdquisiciones', 'adquisicion', 'proyectos'));
     }
