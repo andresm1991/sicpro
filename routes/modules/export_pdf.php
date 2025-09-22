@@ -34,4 +34,4 @@ Route::group(['prefix' => 'generar-pdf', 'as' => 'pdf.'], function () {
     Route::post('/jp-limpieza/reporte-caja/{tipo_reporte}', [GenerarPdfController::class, 'reportCajaJPLimpieza'])->name('reporte.jp.limpieza.caja');
 });
 
-Route::post('/exportar-reporte/{tipo_reporte}', [GenerarPdfController::class, 'exportarReporteJPLimpieza']);
+Route::post('/exportar-reporte/{tipo_reporte}', [GenerarPdfController::class, 'exportarReporteJPLimpieza'])->name('export.reporte.jp.limpieza');

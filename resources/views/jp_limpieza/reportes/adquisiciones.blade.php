@@ -20,7 +20,8 @@
                                     <button type="button" class="btn btn-dark form-group"
                                         id="generar-reporte-adquisicion">Generar</button>
                                     <button type="button" class="btn btn-dark form-group generar-reporte"
-                                        data-action="pdf">Exportar a pdf</button>
+                                        data-action="{{ route('export.reporte.jp.limpieza', 'pdf') }}">Exportar a
+                                        pdf</button>
                                 </div>
                             </div>
                         </li>
