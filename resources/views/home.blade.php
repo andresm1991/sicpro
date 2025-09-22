@@ -27,7 +27,7 @@
                     </a>
                 </div>
                 <div class="col-sm-3 col-12">
-                    <a href="#" class="nodo" id="marketing">
+                    <a href="{{ route('marketing.index') }}" class="nodo" id="marketing">
                         <img src="{{ asset('images/svg/marketing.svg') }}" alt="Marketing">
                         <span>Marketing</span>
                     </a>

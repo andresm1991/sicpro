@@ -108,7 +108,7 @@ class Proyecto extends Model
         // Gasto C: Mano de Obra
         $gastosManoObra = DB::connection('mysql_jp_limpieza')->table('mano_obra')
             ->join('detalle_mano_obra', 'mano_obra.id', '=', 'detalle_mano_obra.mano_obra_id')
-            ->select('mano_obra.proyecto_id', DB::raw('SUM(detalle_mano_obra.total_recibir + detalle_mano_obra.aporte_patronal) as total'))
+            ->select('mano_obra.proyecto_id', DB::raw('SUM(detalle_mano_obra.total_ingreso + detalle_mano_obra.aporte_patronal) as total'))
             ->when($fechaInicioF && $fechaFinF, function ($q) use ($fechaInicioF, $fechaFinF) {
                 $q->where(fn($q) => $q->where('mano_obra.fecha_desde', '<=', $fechaFinF)->where('mano_obra.fecha_hasta', '>=', $fechaInicioF));
             })

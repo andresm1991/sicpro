@@ -356,7 +356,7 @@ class Adquisicion extends Model
                     'proyectos.nombre_proyecto as articulo',
                     DB::raw("'Mano de Obra' as categoria"),
                     DB::raw("COUNT(DISTINCT detalle_mano_obra.mano_obra_id) as cantidad_total"),
-                    DB::raw('SUM(detalle_mano_obra.total_recibir) as monto_total') // Esto es correcto
+                    DB::raw('SUM(detalle_mano_obra.total_ingreso + detalle_mano_obra.aporte_patronal) as monto_total') // Esto es correcto
                 )
                 ->join("{$dbJpLimpieza}.proyectos", "{$dbJpLimpieza}.mano_obra.proyecto_id", '=', "{$dbJpLimpieza}.proyectos.id")
                 ->join("{$dbJpLimpieza}.detalle_mano_obra", "{$dbJpLimpieza}.mano_obra.id", '=', "{$dbJpLimpieza}.detalle_mano_obra.mano_obra_id")
