@@ -110,7 +110,7 @@ $(function () {
         }
 
         // Agregar el valor de tipo_reporte como parámetro en la URL
-        $form.attr('action', `/exportar-reporte/${action}`);
+        $form.attr('action', `${action}`);
 
 
 
