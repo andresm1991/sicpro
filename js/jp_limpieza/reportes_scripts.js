@@ -63,7 +63,7 @@ $(function () {
 
     $('#proveedor-select-ajax').select2({
         ajax: {
-            url: "/api/proveedores", // La ruta que creamos
+            url: base_url + "/api/proveedores", // La ruta que creamos
             dataType: 'json',
             delay: 250, // Espera 250ms después de que el usuario deja de escribir
             data: function (params) {
