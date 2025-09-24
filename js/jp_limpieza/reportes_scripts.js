@@ -90,8 +90,8 @@ $(function () {
     $('.generar-reporte').on('click', function () {
         const $form = $('#form-reporte');
         let data = getFormData($form);
-        const action = $(this).data('action'); // Obtener el valor de data-action
-
+        const action = $(this).data('action');
+        let tipo = $(this).attr('id');
 
         if (data.tipo_reporte == '') {
             Swal.fire(
@@ -100,7 +100,7 @@ $(function () {
                 'error'
             )
             return false;
-        } else if (data.tipo_reporte == 'global' && action == 'excel') {
+        } else if ((data.tipo_reporte == 'global' || data.tipo_reporte == 'balance') && tipo == 'excel') {
             Swal.fire(
                 'Ups.!',
                 'Lo sentimos no es posile generar el excel de este reporte. Genera el pdf.',
