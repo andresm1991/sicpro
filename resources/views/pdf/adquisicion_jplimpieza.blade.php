@@ -142,7 +142,7 @@
                     @foreach ($adquisicion->detalles as $index => $detalle)
                         <tr>
                             <td>{{ $index + 1 }}</td>
-                            <td>{{ strtoupper($detalle->producto->descripcion) }}</td>
+                            <td>{{ strtoupper($detalle->producto->nombre) }}</td>
                             <td>{{ $detalle->cantidad }}</td>
                             <td>{{ strtoupper($detalle->unidadMedida->descripcion) }}</td>
                             <td>${{ number_format($detalle->precio_unitario, 4) }}</td>

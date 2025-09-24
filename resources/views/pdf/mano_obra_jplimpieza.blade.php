@@ -197,15 +197,16 @@
 </head>
 
 <body>
-    <!-- Marca de agua -->
-    <div class="watermark">
-        <img src="{{ logoBase64() }}" />
+    <div class="header">
+        <img src="{{ logoBase64('jp') }}" alt="Logo">
+        <div class="order-number">
+            <h1 class="text-center">Mano de obra</h1>
+        </div>
     </div>
 
     <div class="content">
 
         <div class="header">
-            <h1 class="text-center">Mano de obra</h1>
             <p>
                 <span class="text-titulo">Proyecto: </span>
                 <span

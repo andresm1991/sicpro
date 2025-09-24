@@ -28,7 +28,8 @@
                         @foreach ($items as $item)
                             <tr>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha'])->format('d/m/Y') }}</td>
-                                <td>{{ $item['numero'] }}</td>
+                                <td><a href="{{ route('pdf.jp.limpieza.adquisicion', $item['id']) }}" target="__blanck">
+                                        {{ $item['numero'] }}</a></td>
                                 <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'Gastos Administrativos (sin proyecto)' }}
                                 </td>
                                 <td>{{ $item['proveedor']['razon_social'] ?? 'N/A' }}</td>
@@ -62,8 +63,10 @@
                     <tbody>
                         @foreach ($items as $item)
                             <tr>
-                                <td>{{ $item['proyecto']['nombre_proyecto'] ?? 'Gastos Administrativos (sin proyecto)' }}
-                                </td>
+                                <td><a href="{{ route('pdf.jp.limpieza.mano.obra', $item['id']) }}" target="_blank"
+                                        rel="noopener noreferrer">
+                                        {{ $item['proyecto']['nombre_proyecto'] ?? 'Gastos Administrativos (sin proyecto)' }}
+                                </td></a>
                                 <td>{{ $item['tipo'] }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha_desde'])->format('d/m/Y') }}</td>
                                 <td>{{ \Carbon\Carbon::parse($item['fecha_hasta'])->format('d/m/Y') }}</td>

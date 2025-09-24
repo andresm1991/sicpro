@@ -30,6 +30,7 @@ use App\Models\ProgramaArquitectonico;
 use App\Exports\ReportSolicitudesExport;
 use setasign\Fpdi\PdfParser\StreamReader;
 use App\Exports\ReportAdquisicionesExport;
+use App\Exports\ReporteAdquisicionesOperativoJPExport;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Exports\ReportGasolinaCamionetaExport;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
@@ -848,6 +849,9 @@ class GenerarPdfController extends Controller
         if ($export == 'pdf') {
             $pdf = PDF::loadView('pdf.jp_limpieza.adquisiciones', compact('reportData', 'grandTotal', 'tipo', 'proyecto', 'fechaReporte'))->setPaper('a4', 'landscape');
             return $pdf->stream('reportes.pdf');
+        } elseif ($export == 'excel') {
+            $fileName = 'reporte-adquisiciones-' . now()->format('Y-m-d') . '.xlsx';
+            return Excel::download(new ReporteAdquisicionesOperativoJPExport($reportData, $grandTotal), $fileName);
         }
     }
 

@@ -19,10 +19,14 @@
                                 <div class="col-auto ">
                                     <button type="button" class="btn btn-dark form-group"
                                         id="generar-reporte-adquisicion">Generar</button>
-                                    <button type="button" class="btn btn-dark form-group generar-reporte"
+                                    <button type="button" class="btn btn-dark form-group generar-reporte" id="pdf"
                                         data-action="{{ route('export.reporte.jp.limpieza', 'pdf') }}">Exportar a
                                         pdf</button>
+                                    <button type="button" class="btn btn-dark form-group generar-reporte" id="excel"
+                                        data-action="{{ route('export.reporte.jp.limpieza', 'excel') }}">Exportar a
+                                        excel</button>
                                 </div>
+
                             </div>
                         </li>
                     </ul>
