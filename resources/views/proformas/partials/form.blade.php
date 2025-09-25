@@ -15,6 +15,11 @@
         {{ Form::select('estado', getEstados(), $proforma->estado_id ?? null, ['class' => 'form-control select2', 'id' => 'estado', 'data-placeholder' => 'Seleccione un estado']) }}
     </div>
 
+    <div class="form-group col-12">
+        <label class="col-form-label">Descripción</label>
+        {{ Form::text('descripcion', old('descripcion', $proforma->descripcion), ['class' => 'form-control', 'id' => 'descripcion', 'placeholder' => 'Ingrese descripción']) }}
+    </div>
+
     @if ($tipo == 'diseno_planos')
         <div class="form-group col-md-5 col-12">
             <label class="col-form-label">Ubicación del lote</label>

@@ -65,6 +65,7 @@ class ProformaController extends Controller
             $plazoEntrega = $request->input('plazo_entrega');
             $observaciones = $request->input('observaciones');
             $estado = $request->input('estado');
+            $descripcion = $request->input('descripcion');
 
             $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto) {
                 return [
@@ -84,6 +85,7 @@ class ProformaController extends Controller
                 'numero' => $numero,
                 'fecha' => $fecha,
                 'cliente_id' => $clienteId,
+                'descripcion' => $descripcion,
                 'observaciones' => $observaciones,
                 'notas' => $nota,
                 'estado_id' => $estado,
@@ -130,6 +132,7 @@ class ProformaController extends Controller
             $presupuesto = limpiarValor($request->input('presupuesto'));
             $observaciones = $request->input('observaciones');
             $estado = $request->input('estado');
+            $descripcion = $request->input('descripcion');
 
             $incluye = $request->input('incluye');
             $formaPago = $request->input('forma_pago');
@@ -155,6 +158,7 @@ class ProformaController extends Controller
                 'numero' => $numero,
                 'fecha' => $fecha,
                 'cliente_id' => $clienteId,
+                'descripcion' => $descripcion,
                 'observaciones' => $observaciones,
                 'ubicacion_lote' => $ubicacion,
                 'area_lote' => $area_lote,
@@ -231,6 +235,7 @@ class ProformaController extends Controller
             $plazoEntrega = $request->input('plazo_entrega');
             $observaciones = $request->input('observaciones');
             $estado = $request->input('estado');
+            $descripcion = $request->input('descripcion');
 
             $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto) {
                 return [
@@ -259,6 +264,7 @@ class ProformaController extends Controller
                 'iva' => $porcentaje_iva,
                 'total' => calcularTotalProforma($subtotal, $porcentaje_iva, $descuento),
                 'estado_id' => $estado,
+                'descripcion' => $descripcion,
             ]);
 
 
@@ -310,6 +316,7 @@ class ProformaController extends Controller
             $plazo_ejecucion = $request->input('plazo_ejecucion');
             $abono = $request->input('abono');
             $estado = $request->input('estado');
+            $descripcion = $request->input('descripcion');
 
             $items = array_map(function ($producto, $area, $precio_unitario, $costo_indirecto) {
                 return [
@@ -341,6 +348,7 @@ class ProformaController extends Controller
                 'iva' => $porcentaje_iva,
                 'total' => calcularTotalProforma($subtotal, $porcentaje_iva, $descuento),
                 'estado_id' => $estado,
+                'descripcion' => $descripcion,
             ]);
 
             // Actualizar o crear los detalles de la proforma

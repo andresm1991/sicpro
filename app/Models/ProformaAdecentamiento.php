@@ -13,6 +13,7 @@ class ProformaAdecentamiento extends Model
         'numero',
         'fecha',
         'cliente_id',
+        'descripcion',
         'observaciones',
         'notas',
         'estado_id',

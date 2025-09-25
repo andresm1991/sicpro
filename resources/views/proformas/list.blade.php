@@ -33,6 +33,7 @@
                                     <th scope="col">#</th>
                                     <th scope="col">fecha</th>
                                     <th scope="col">Cliente</th>
+                                    <th scope="col">Descripción</th>
                                     <th scope="col">total</th>
                                     <th scope="col">estado</th>
                                     <th class="table-actions"></th>
@@ -44,6 +45,7 @@
                                         <td class="align-middle">{{ $proforma->numero }}</td>
                                         <td class="align-middle">{{ $proforma->fecha_formatted }}</td>
                                         <td class="align-middle">{{ $proforma->cliente->nombre }}</td>
+                                        <td class="align-middle">{{ $proforma->descripcion }}</td>
                                         <td class="align-middle">{{ $proforma->total_formatted }}</td>
                                         <td class="align-middle">{{ $proforma->estado->descripcion }}</td>
                                         <td class="align-middle text-right">

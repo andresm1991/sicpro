@@ -14,6 +14,7 @@ class ProformaPlano extends Model
         'numero',
         'fecha',
         'cliente_id',
+        'descripcion',
         'ubicacion_lote',
         'area_lote',
         'presupuesto',
