@@ -1,3 +1,4 @@
+
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     var urlActual = window.location.href;
@@ -501,6 +502,111 @@ $(function () {
         fila.find('.total_unitario').text(totalUnitario.toFixed(2));
         calcularTotales();
     }
+
+    /**
+     * Seccion para editar el texto de las opciones del select2 de productos
+     */
+    // Variable para guardar el ID mientras editamos
+    let idParaEditar = null;
+    $('#producto').on('select2:select', function (e) {
+        $('#btnEditar').show();
+    });
+    $('#producto').on('select2:unselect', function (e) {
+        $('#btnEditar').hide();
+    });
+
+    $('#btnEditar').on('click', function () {
+        const seleccion = $('#producto').select2('data')[0];
+        if (!seleccion || !seleccion.id) {
+            Swal.fire(
+                'Ups!',
+                'Por favor, selecciona una opción para editar.',
+                'info'
+            );
+            return;
+        }
+
+        idParaEditar = seleccion.id;
+        const textoActual = seleccion.text;
+
+        // Preparar el modo edición
+        $('#inputTextEditar').val(textoActual);
+        $('#select-container').hide();
+        $('#edit-container').show();
+        $('#inputTextEditar').focus();
+    });
+
+    $('#btnGuardar').on('click', function () {
+        const nuevoTexto = $('#inputTextEditar').val().trim();
+
+        if (nuevoTexto === "") {
+            Swal.fire(
+                'Ups!',
+                'El texto no puede estar vacío.',
+                'info'
+            );
+            return;
+        }
+
+        // --- Petición AJAX a Laravel ---
+        $.ajax({
+            url: base_url + '/proformas/productos/actualizar-texto',
+            headers: {
+                'X-CSRF-TOKEN': csrf
+            },
+            method: 'PUT',
+            data: {
+                id: idParaEditar,
+                texto: nuevoTexto
+            },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                // Actualizar el texto en la opción del <select> original
+                const $opcionAActualizar = $('#producto').find(`option[value="${idParaEditar}"]`);
+                $opcionAActualizar.text(nuevoTexto);
+
+                // Refrescar Select2 para que muestre el nuevo texto
+                $('#producto').trigger('change').select2(
+                    {
+                        width: '100%',
+                    }
+                );
+
+                // Volver a la vista normal
+                $('#edit-container').hide();
+                $('#select-container').show();
+
+                // Mostrar mensaje de éxito
+                Toast.fire({
+                    icon: 'success',
+                    text: `El producto actualizado con éxito.`,
+                });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (xhr) {
+                // Manejar errores (por ej. de validación)
+                let errorMsg = 'Ocurrió un error inesperado.';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMsg = xhr.responseJSON.message;
+                }
+                Swal.fire(
+                    'Error!',
+                    errorMsg,
+                    'error'
+                );
+            }
+        });
+    });
+
+    $('#btnCancelar').on('click', function () {
+        $('#edit-container').hide();
+        $('#select-container').show();
+        idParaEditar = null; // Limpiar el ID
+    });
 });
 
 /*

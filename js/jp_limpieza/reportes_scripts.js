@@ -117,4 +117,70 @@ $(function () {
         // Enviar el formulario
         $form.submit();
     });
+
+    $(document).on('click', '.detalle', function () {
+        const tipo = $(this).data('tipo');
+        const proveedor = $(this).data('proveedor');
+        const articulo = $(this).data('articulo');
+        const formaData = getFormData($('#form-reporte'));
+
+        let valorEncontrado = $("#tipo-adquisicion option").filter(function () {
+            return $(this).text().toLowerCase() === tipo.toLowerCase();
+        }).val();
+
+        $.ajax({
+            url: 'detalle-reporte-adquisiciones',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: {
+                ...formaData,
+                tipo: valorEncontrado,
+                tipo_detalle: tipo,
+                proveedor: proveedor,
+                producto: articulo,
+
+            },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                const data = response.result;
+
+                $('#modal-detalle .modal-title').text(`Detalle de ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}: ${tipo == 'contratista' ? proveedor : articulo}`);
+                $('#modal-detalle .modal-body').html(data);
+                $('#modal-detalle').modal('show');
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+
+    });
+
+    $(document).on('click', 'tbody .mano-obra', function () {
+        const urlDestino = $(this).data('url');
+        window.open(urlDestino, '_blank');
+    });
 });

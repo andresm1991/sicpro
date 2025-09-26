@@ -2512,7 +2512,12 @@ a[href="javascript:void(0);"] {
 }
 
 
-
+.fila-clicable:hover {
+    cursor: pointer;
+    /* Muestra una mano al pasar el ratón */
+    background-color: #f2f2f2;
+    /* Resalta la fila al pasar el ratón */
+}
 
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
