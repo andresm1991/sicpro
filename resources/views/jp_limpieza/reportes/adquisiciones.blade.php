@@ -70,7 +70,7 @@
 
                             <div class="form-group col-sm-4">
                                 <label for="" class="col-form-label">Tipo adquisicion </label>
-                                {{ Form::select('tipo', getTipoAdquisiciones(), '', ['class' => 'form-control', 'data-placeholder' => 'seleccione tipo', 'data-allow-clear' => 'true']) }}
+                                {{ Form::select('tipo', getTipoAdquisiciones(), '', ['class' => 'form-control', 'data-placeholder' => 'seleccione tipo', 'data-allow-clear' => 'true', 'id' => 'tipo-adquisicion']) }}
                             </div>
 
                             <div class="form-group col-sm-4">

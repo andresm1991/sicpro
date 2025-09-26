@@ -4,10 +4,12 @@ namespace App\Http\Controllers\JPLimpieza;
 
 use Illuminate\Http\Request;
 use App\Models\JPLimpieza\Caja;
-use App\Http\Controllers\Controller;
-use App\Models\JPLimpieza\Adquisicion;
 use App\Models\JPLimpieza\Producto;
 use App\Models\JPLimpieza\Proyecto;
+use App\Http\Controllers\Controller;
+use App\Models\JPLimpieza\Adquisicion;
+use App\Models\JPLimpieza\Contratista;
+use App\Models\JPLimpieza\ManoObra;
 use App\Models\JPLimpieza\RevisionCaja;
 
 class ReporteController extends Controller
@@ -172,6 +174,40 @@ class ReporteController extends Controller
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Error al guardar la revisión de caja: ' . $th->getMessage(),
+                'error' => $th->getLine(),
+            ]);
+        }
+    }
+
+    /**
+     * Detalle del reporte de adquisiciones
+     */
+    public function detalleReporteAdquisiciones(Request $request)
+    {
+        try {
+            $categoria = strtolower(str_replace(' ', '_', $request->input('tipo_detalle')));
+            $query = [];
+            $html = '';
+
+            if (in_array($categoria, ['materiales_y_herramientas', 'servicios'])) {
+                $query = Adquisicion::dataReporteAdquisiciones($request);
+                $html = view('jp_limpieza.reportes.partials.listar_adquisiciones_modal', compact('query'))->render();
+            } elseif ($categoria === 'contratistas') {
+                $query = []; //Contratista::dataReporteContratistas($request);
+            } elseif ($categoria === 'mano_de_obra') {
+                $query = ManoObra::dataReporteManoObra($request);
+                $html = view('jp_limpieza.reportes.partials.listar_mano_obra_modal', compact('query'))->render();
+            }
+
+            return response()->json([
+                'success' => true,
+                'result' => $html,
+                'data' => $query,
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'success' => false,
+                'mensaje' => 'Error al obtener el detalle: ' . $th->getMessage(),
                 'error' => $th->getLine(),
             ]);
         }

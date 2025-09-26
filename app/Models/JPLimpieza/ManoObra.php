@@ -224,4 +224,16 @@ class ManoObra extends Model
     {
         return $this->fecha_hasta ? $this->fecha_hasta->format('Y-m-d') : null;
     }
+
+    public static function dataReporteManoObra($request)
+    {
+        $query = self::with('proyecto')
+            ->when($request->proyecto, function ($q) use ($request) {
+                $q->where('proyecto_id', $request->proyecto);
+            })
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return $query;
+    }
 }

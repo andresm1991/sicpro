@@ -24,7 +24,8 @@
         <tbody>
             @foreach ($items as $item)
                 <tr>
-                    <td>{{ $item['articulo'] }}</td>
+                    <td><a href="javascript:void(0);" class="detalle" data-tipo="{{ $categoria }}"
+                            data-articulo="{{ $item['articulo'] }}">{{ $item['articulo'] }}</a></td>
                     <td class="text-right">
                         {{-- Formateamos como entero si no es un artículo con decimales --}}
                         @if (in_array($categoria, ['Contratistas', 'Mano de Obra']))
@@ -62,3 +63,6 @@
         </h3>
     </div>
 @endif
+
+
+@include('modals.detalle_reporte')

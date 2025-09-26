@@ -1,11 +1,26 @@
 <legend class="custom-legend"><span>Agregar Productos</span></legend>
 <fieldset class="custom-fieldset">
     <div class="row">
-        <div class="col-sm-4">
+        <div class="col-sm-8">
             <div class="form-group">
                 {{ Form::label('', 'Productos', ['class' => 'col-form-label']) }}
-                {{ Form::select('', getProdutosProformas($tipo), '', ['class' => 'form-control select2-tag', 'data-placeholder' => 'selecciona producto', 'id' => 'producto']) }}
+                <div id="select-container">
+                    {{ Form::select('', getProdutosProformas($tipo), '', ['class' => 'form-control select2-tag', 'data-placeholder' => 'selecciona producto', 'id' => 'producto']) }}
+                    <div class="mt-2"></div>
+                    <button type="button" id="btnEditar" class="btn btn-secondary" style="display: none;">Editar
+                        producto</button>
+                </div>
+
+                <!-- Contenedor para el modo edición (oculto por defecto) -->
+                <div id="edit-container" style="display: none;">
+                    <input type="text" id="inputTextEditar" class="form-control" style="width: 100%;">
+                    <div class="mt-2"></div>
+                    <button type="button" id="btnGuardar" class="btn btn-dark">Guardar</button>
+                    <button type="button" id="btnCancelar" class="btn btn-secondary">Cancelar</button>
+                </div>
             </div>
+
+
         </div>
         <div class="col-sm-2">
             <div class="form-group">

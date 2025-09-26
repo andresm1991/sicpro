@@ -3,11 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\CatalogoDato;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use App\Models\ProformaPlano;
+use App\Models\ProformaProducto;
 use Illuminate\Support\Facades\DB;
 use App\Models\ProformaAdecentamiento;
-use App\Services\LogService;
 
 class ProformaController extends Controller
 {
@@ -441,6 +442,29 @@ class ProformaController extends Controller
             }
 
             return Response($output);
+        }
+    }
+
+    public function updateProductoTexto(Request $request)
+    {
+        $validated = $request->validate([
+            'id' => 'required|integer|exists:proforma_productos,id',
+            'texto' => 'required|string|max:255',
+        ]);
+
+        try {
+            $producto = ProformaProducto::findOrFail($validated['id']);
+            $producto->nombre = $validated['texto'];
+            $producto->save();
+
+            return response()->json(['message' => 'Producto actualizado con éxito.'], 200);
+        } catch (\Exception $e) {
+            LogService::log('error', 'Error al actualizar el nombre del producto de proformas: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'exception' => $e->getMessage(),
+            ]);
+
+            return response()->json(['message' => 'Ocurrió un error al actualizar el producto.'], 500);
         }
     }
 }

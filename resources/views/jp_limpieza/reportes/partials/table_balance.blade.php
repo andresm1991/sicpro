@@ -11,7 +11,14 @@
         <tbody>
             @forelse ($reportData as $item)
                 <tr>
-                    <td>{{ $item['proyecto_nombre'] }}</td>
+                    <td>
+                        @if (isset($item['proyecto_id']) && is_numeric($item['proyecto_id']))
+                            <a href="{{ route('jp.limpieza.proyectos.edit', $item['proyecto_id']) }}" target="_blank"
+                                rel="noopener noreferrer">{{ $item['proyecto_nombre'] }}</a>
+                        @else
+                            {{ $item['proyecto_nombre'] }}
+                        @endif
+                    </td>
                     <td class="text-right">$ {{ number_format($item['total_ingresos'], 4) }}</td>
                     <td class="text-right">$ {{ number_format($item['total_gastos'], 4) }}</td>
                     <td class="text-right @if ($item['utilidad'] < 0) text-danger font-weight-bold @endif">

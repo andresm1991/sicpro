@@ -81,6 +81,7 @@ class Adquisicion extends Model
         $fechaFinF = null;
         $proyectoInput = $request->input('proyecto');
         $proveedor = $request->input('proveedor');
+        $producto = $request->input('producto');
 
         if ($request->filled('fechas')) { // Usar filled() es más robusto
             list($inicio, $fin) = explode(' - ', $request->input('fechas'));
@@ -113,6 +114,26 @@ class Adquisicion extends Model
             ->when($request->input('forma_pago'), function ($q) use ($request) {
                 $q->where('forma_pago_id', $request->input('forma_pago'));
             })
+            ->when($producto, function ($q, $producto) {
+                // Filtramos las adquisiciones que TIENEN un detalle que cumple la siguiente condición.
+                $q->whereHas('detalles', function ($ad) use ($producto) {
+                    // Verificamos si el input 'producto' es un número (ID) o un string (nombre).
+                    if (is_numeric($producto)) {
+                        // Si es numérico, filtramos directamente por la columna producto_id en la tabla de detalles.
+                        $ad->where('producto_id', $producto);
+                    } else {
+                        // Si es un string, necesitamos buscar en la tabla de artículos relacionada.
+                        // Esto requiere un "whereHas" anidado: filtramos los detalles que TIENEN un producto
+                        // cuyo nombre coincide con la búsqueda.
+                        // ASUNCIÓN 1: La relación en el modelo AdquisicionDetalle se llama 'producto'.
+                        $ad->whereHas('producto', function ($p) use ($producto) {
+                            // ASUNCIÓN 2: La columna con el nombre/descripción del artículo se llama 'descripcion'.
+                            // Usamos LIKE para permitir búsquedas parciales.
+                            $p->where('nombre', 'LIKE', '%' . $producto . '%');
+                        });
+                    }
+                });
+            })
             ->orderBy('fecha', 'desc');
 
         $adquisicionesAgrupadas = $adquisicionesQuery->get()->groupBy('tipo.descripcion');
@@ -143,6 +164,7 @@ class Adquisicion extends Model
                         $d->where('proveedor_id', $proveedor);
                     });
                 })
+
                 ->orderBy('fecha_desde', 'desc')
                 ->get();
 
