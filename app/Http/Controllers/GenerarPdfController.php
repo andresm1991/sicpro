@@ -454,7 +454,7 @@ class GenerarPdfController extends Controller
         $info_cronograma_dias = [
             'proyecto' => $proyecto->nombre_proyecto,
             'semana' => $semana,
-            'fecha_semana' => $fecha_semanas[$semana],
+            'fecha_semana' => $fecha_semanas[$semana - 1],
             'tablaDatos' => $tablaDatos,
             'diasSemana' => $diasSemana,
         ];

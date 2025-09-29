@@ -14,4 +14,6 @@ Route::group(['prefix' => 'marketing', 'as' => 'marketing.'], function () {
     })->name('index');
 
     Route::get('/seguimiento-ventas', [SeguimientoVentaController::class, 'index'])->name('seguimiento.ventas.index');
+    Route::get('/seguimiento-ventas/create', [SeguimientoVentaController::class, 'create'])->name('seguimiento.ventas.create');
+    Route::post('/seguimiento-ventas', [SeguimientoVentaController::class, 'store'])->name('seguimiento.ventas.store');
 });
