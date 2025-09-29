@@ -145,8 +145,25 @@ class Proyecto extends Model
 
         $proyectos = $proyectosQuery->get();
 
-        $balance = $proyectos->map(function ($proyecto) use ($gastosAdquisiciones, $gastosContratistas, $gastosManoObra) {
+        $balance = $proyectos->map(function ($proyecto) use ($gastosAdquisiciones, $gastosContratistas, $gastosManoObra, $fechaInicioF, $fechaFinF) {
             $totalIngresos = $proyecto->total_contratado;
+
+            // Si SÍ se proporcionó un rango de fechas, lo evaluamos.
+            if ($fechaInicioF && $fechaFinF) {
+                // Creamos instancias de Carbon para una comparación segura y fácil.
+                $inicio = Carbon::parse($fechaInicioF);
+                $fin = Carbon::parse($fechaFinF);
+
+                // Calculamos la diferencia en días.
+                $diferenciaEnDias = $inicio->diffInDays($fin);
+
+                // Si la diferencia es menor a un año (365 días), usamos el valor mensual.
+                if ($diferenciaEnDias < 365) {
+                    // Laravel llamará automáticamente a tu accesor getValorContratadoMensualAttribute()
+                    $totalIngresos = $proyecto->valor_contratado_mensual;
+                }
+            }
+            // Obtener los gastos pre-calculados, o 0 si no hay registros
             $gastoA = $gastosAdquisiciones->get($proyecto->id, 0);
             $gastoB = $gastosContratistas->get($proyecto->id, 0);
             $gastoC = $gastosManoObra->get($proyecto->id, 0);
