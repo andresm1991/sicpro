@@ -884,4 +884,10 @@ if (!function_exists('palabras')) {
         $estados->prepend('', '');
         return $estados;
     }
+
+    function getEstadoProyectoOptions()
+    {
+        $estados = CatalogoDato::getChildrenCatalogo('estados.proyectos')->pluck('descripcion', 'id');
+        return $estados;
+    }
 }

@@ -779,7 +779,7 @@ class CatalogoDatoTableSeeder extends Seeder
             'padre_id' => $padre->id,
             'activo' => true,
         ]);
-        */
+        
 
         $padre = CatalogoDato::create([
             'descripcion' => 'Estados proformas',
@@ -815,6 +815,31 @@ class CatalogoDatoTableSeeder extends Seeder
             'descripcion' => 'Rechazado',
             'detalle' => '',
             'slug' => 'estados.proformas.rechazado',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+        */
+
+        $padre = CatalogoDato::create([
+            'descripcion' => 'Estados proyectos',
+            'detalle' => '',
+            'slug' => 'estados.proyectos',
+            'padre_id' => null,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Pendiente',
+            'detalle' => '',
+            'slug' => 'estados.proyectos.pendiente',
+            'padre_id' => $padre->id,
+            'activo' => true,
+        ]);
+
+        CatalogoDato::create([
+            'descripcion' => 'Ejecución',
+            'detalle' => '',
+            'slug' => 'estados.proyectos.ejecucion',
             'padre_id' => $padre->id,
             'activo' => true,
         ]);

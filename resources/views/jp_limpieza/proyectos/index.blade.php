@@ -22,7 +22,7 @@
                             <div class="card-body">
                                 <div class="card-title">
                                     <h5 class="text-truncate text-capitalize">{{ $proyecto->nombre_proyecto }}</h5>
-                                    <small class="badge badge-warning">{{ $proyecto->estado }}</small>
+                                    <small class="badge badge-warning">{{ $proyecto->estado->descripcion }}</small>
                                 </div>
                                 <h6 class="card-text text-truncate-max-line-1 no-margin-bottom">
                                     Entidad:

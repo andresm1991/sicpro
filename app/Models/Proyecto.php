@@ -31,6 +31,7 @@ class Proyecto extends Model
         'observacion',
         'portada',
         'costo_indirecto',
+        'estado_id',
     ];
 
     public function tipo_proyecto()
@@ -71,6 +72,10 @@ class Proyecto extends Model
     public function contratista()
     {
         return $this->hasMany(Contratista::class);
+    }
+    public function estado()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 
     public static function presupuestoValorado($proyectoId)

@@ -128,12 +128,13 @@ class ProyectoController extends Controller
                 'numero_unidades' => $request->numero_unidades,
                 'area_lote_unidad' => $request->area_lote_unidad,
                 'area_construccion_unidad' => $request->area_construccion_unidad,
-                'presupuesto_total' => str_replace(',','',$request->presupuesto),
-                'presupuesto_unidad' => str_replace(',','',$request->presupuesto_unidad),
+                'presupuesto_total' => str_replace(',', '', $request->presupuesto),
+                'presupuesto_unidad' => str_replace(',', '', $request->presupuesto_unidad),
                 'fecha_inicio' => $fecha_inicio,
                 'fecha_finalizacion' => $fecha_fin,
                 'observacion' => $request->observaciones,
                 'portada' => $path_portada,
+                'estado_id' => $request->estado_proyecto,
             ];
 
             if ($proyecto = Proyecto::create($param)) {
@@ -217,6 +218,7 @@ class ProyectoController extends Controller
             $proyecto->fecha_inicio = $fecha_inicio;
             $proyecto->fecha_finalizacion = $fecha_fin;
             $proyecto->observacion = $request->observaciones;
+            $proyecto->estado_id = $request->estado_proyecto;
 
             $archivos_combinados = [];
 

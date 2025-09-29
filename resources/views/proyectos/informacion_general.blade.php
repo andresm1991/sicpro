@@ -63,7 +63,7 @@
                                                 <div class="col-md-6 col-12">
                                                     <div class="form-group">
                                                         <label class="col-form-label">Ubicación</label>
-                                                        {{ Form::label('ubicacion_proyecto', $proyecto->ubicacion, ['class' => 'form-control']) }}
+                                                        {{ Form::text('', $proyecto->ubicacion, ['class' => 'form-control', 'disabled']) }}
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6 col-12">
@@ -165,6 +165,14 @@
                                                 </div>
                                             </div>
 
+                                            <div class="row">
+                                                <div class="col-md-6 col-12">
+                                                    <div class="form-group">
+                                                        <label class="col-form-label">Estado del proyecto </label>
+                                                        {{ Form::label('', $proyecto->estado->descripcion, ['class' => 'form-control']) }}
+                                                    </div>
+                                                </div>
+                                            </div>
                                             <div class="form-group">
                                                 <label class="col-form-label">Observaciones</label>
                                                 {{ Form::textarea('observaciones', $proyecto->observacion, ['class' => 'form-control', 'disabled', 'rows' => '5', 'style' => 'background-color:transparent']) }}

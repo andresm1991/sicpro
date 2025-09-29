@@ -96,6 +96,14 @@
                     {!! $errors->first('fecha_fin', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
                 </div>
             </div>
+
+            <div class="col-md-6 col-12">
+                <div class="form-group">
+                    <label class="col-form-label font-weight-bold">Estado proyecto</label>
+                    {{ Form::select('estado_proyecto', getEstadoProyectoOptions(), old('estado_proyecto', $proyecto->estado_id), ['class' => 'form-control', 'data-placeholder' => 'Seleccione estado']) }}
+                    {!! $errors->first('estado', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
+                </div>
+            </div>
         </div>
 
         <div class="form-group">

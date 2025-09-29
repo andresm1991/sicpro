@@ -62,7 +62,7 @@
                                 <div class="form-group">
                                     <label class="col-form-label font-weight-bold">Tipo de proyecto <i
                                             class="fa-regular fa-asterisk fa-2xs"></i></label>
-                                    {{ Form::select('tipo_proyecto', $tipo_proyectos, old('tipo_proyecto', $proyecto->tipo_proyecto_id), ['class' => 'selectpicker show-tick show-menu-arrow form-control border', 'data-live-search' => 'true', 'data-style' => '', 'title' => 'Seleccione el opción', 'data-header' => 'Seleccione opción']) }}
+                                    {{ Form::select('tipo_proyecto', $tipo_proyectos, old('tipo_proyecto', $proyecto->tipo_proyecto_id), ['class' => 'form-control', 'data-placeholder' => 'Seleccione opción']) }}
                                     {!! $errors->first('tipo_proyecto', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
                                 </div>
                             </div>
@@ -167,6 +167,15 @@
                                             class="fa-regular fa-asterisk fa-2xs"></i></label>
                                     {{ Form::text('fecha_fin', old('fecha_fin', dateFormat('Y-m-d', 'd-m-Y', $proyecto->fecha_finalizacion)), ['class' => 'form-control datepicker', 'placeholder' => 'Ingrese la decha de finalización']) }}
                                     {!! $errors->first('fecha_fin', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 col-12">
+                                <div class="form-group">
+                                    <label class="col-form-label">Estado del proyecto </label>
+                                    {{ Form::select('estado_proyecto', getEstadoProyectoOptions(), $proyecto->estado->id, ['class' => 'form-control']) }}
                                 </div>
                             </div>
                         </div>

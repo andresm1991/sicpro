@@ -79,7 +79,7 @@ class ProyectoController extends Controller
                 'fecha_finalizacion' => $fecha_finalizacion,
                 'observacion' => $observaciones,
                 'telefono' => $telefono,
-                'estado' => 'nuevo',
+                'estado_id' => $request->input('estado_proyecto'),
                 'archivo_portada' => $file_portada ? Storage::disk('digitalocean')->put($path_files, $file_portada) : null,
                 'archivo_orden_compra' => $file_orden_compra ? Storage::disk('digitalocean')->put($path_files, $file_orden_compra) : null,
                 'archivo_acta_final' => $file_acta_final ? Storage::disk('digitalocean')->put($path_files, $file_acta_final) : null,
@@ -155,6 +155,7 @@ class ProyectoController extends Controller
             $proyecto->fecha_finalizacion = $fecha_finalizacion;
             $proyecto->observacion = $observaciones;
             $proyecto->telefono = $telefono;
+            $proyecto->estado_id = $request->input('estado_proyecto');
 
             // Eliminar archivos antiguos si se suben nuevos
             if ($file_portada) {

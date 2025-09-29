@@ -4,6 +4,7 @@ namespace App\Models\JPLimpieza;
 
 use Carbon\Carbon;
 use AWS\CRT\HTTP\Request;
+use App\Models\CatalogoDato;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,7 +26,7 @@ class Proyecto extends Model
         'fecha_finalizacion',
         'observacion',
         'telefono',
-        'estado',
+        'estado_id',
     ];
 
     protected $casts = [
@@ -51,6 +52,11 @@ class Proyecto extends Model
     public function contratistas()
     {
         return $this->hasMany(Contratista::class, 'proyecto_id');
+    }
+
+    public function estado()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'estado_id');
     }
 
 
@@ -130,6 +136,9 @@ class Proyecto extends Model
         // Por ahora, asumimos que solo Adquisiciones lo son, según tu descripción.
         $gastoAdministrativoTotal = $gastoAdminAdquisiciones;
 
+        // Hacemos una consulta rápida a la otra DB para obtener el ID que necesitamos.
+        // Usamos `value('id')` para obtener solo el valor del ID, es muy eficiente.
+        $estadoEjecutadoId = CatalogoDato::where('slug', 'estados.proyectos.ejecucion')->value('id');
 
         // --- 4. OBTENER PROYECTOS Y CONSOLIDAR DATOS ---
         $proyectosQuery = self::query()
@@ -137,6 +146,10 @@ class Proyecto extends Model
                 $q->where('id', $proyectoInput);
             });
 
+        // Solo proyectos en estado "Ejecutado"
+        if ($estadoEjecutadoId) {
+            $proyectosQuery->where('estado_id', $estadoEjecutadoId);
+        }
         // Si se pide un proyecto específico, no mostramos los gastos administrativos
         // para no confundir al usuario.
         if ($proyectoInput) {
