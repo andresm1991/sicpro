@@ -234,6 +234,43 @@ $(function () {
         container: 'body' // Forzar que el menú se renderice en el body
     });
 
+    $('#summernote').summernote({
+        placeholder: 'Escribe el contenido del contrato aquí...',
+        tabsize: 2,
+        height: 300, // Altura del editor
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ]
+    });
+
+    /**
+     * evento para obetener el nombre del archivo seleccionado y mostralo en el file input de boostrap
+     */
+    $('.custom-file-input').on('change', function (event) {
+        // Obtenemos la referencia al label asociado con este input
+        var label = $(this).next('.custom-file-label');
+
+        // Guardamos el texto por defecto del label por si lo necesitamos
+        // Para este caso, lo escribimos directamente, pero podría leerse del label.
+        var defaultLabelText = 'Seleccionar archivo...';
+
+        // Comprobamos si el usuario ha seleccionado algún archivo
+        if (event.target.files.length > 0) {
+            // Si SÍ seleccionó, mostramos el nombre del primer archivo
+            var fileName = event.target.files[0].name;
+            label.html(fileName);
+        } else {
+            // Si NO seleccionó (canceló), volvemos al texto original
+            label.html(defaultLabelText);
+        }
+    });
+
     $("#show_hide_password a").on('click', function (event) {
         event.preventDefault();
         if ($('#show_hide_password input').attr("type") == "text") {
