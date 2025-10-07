@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Marketing\SeguimientoVenta\StoreReservaRequest;
 use App\Models\Marketing\ClienteVenta;
 use App\Models\Marketing\ProcesoVenta;
 
@@ -41,22 +42,8 @@ class SeguimientoVentaController extends Controller
         return view('marketing.seguimiento_ventas.create', compact('title_page', 'breadcrumbs', 'clienteVenta', 'plantillaContenido'));
     }
 
-    public function store(Request $request)
+    public function storeEtapaReserva(StoreReservaRequest $request)
     {
-        return $request->all();
-        $request->validate([
-            'nombre' => 'required|string|max:255',
-            'documento' => 'required|string|max:100|unique:clientes_ventas,documento',
-            'direccion' => 'nullable|string|max:255',
-            'telefono' => 'nullable|string|max:50',
-            'email' => 'nullable|email|max:100',
-            'ciudad' => 'nullable|string|max:100',
-            'valor_reserva' => 'nullable|numeric|min:0',
-            'file_contrato_firmado' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_cedulas.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-            'file_comprobante_reserva' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
-        ]);
-
         try {
             DB::beginTransaction();
 
