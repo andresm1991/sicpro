@@ -19,4 +19,9 @@ class ClienteVenta extends Model
         'activo',
         'observaciones',
     ];
+
+    public function procesosVenta()
+    {
+        return $this->hasMany(ProcesoVenta::class);
+    }
 }
