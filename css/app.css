@@ -2676,6 +2676,16 @@ a[href="javascript:void(0);"] {
     transform: scale(1);
 }
 
+/* Esta es la regla que cambia el texto del botón "Browse" */
+.custom-file-label::after {
+    content: "buscar...";
+    /* Puedes poner el texto que desees */
+    /* Opcional: Cambiar el color de fondo del botón */
+    /* background-color: #28a745; */
+    /* border-left: 1px solid #1e7e34; */
+    /* color: white; */
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
