@@ -1,106 +1,124 @@
-<div class="row">
-    <div class="col-md-8 col-12">
-        <legend class="custom-legend"><span>
-                Información General
-            </span>
-        </legend>
-        <fieldset class="custom-fieldset">
-            <div class="row">
-                <div class="col-md-4 col-12">
-                    <div class="form-group">
-                        {!! Form::label('nombre', 'Nombre del Cliente') !!}
-                        {!! Form::text('nombre', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el nombre del cliente']) !!}
+<form id="form_reserva" autocomplete="off" enctype="multipart/form-data">
+    <div class="row">
+        <div class="col-md-12 d-flex justify-content-end mb-3">
+            <button type="button" class="btn btn-dark btn-block col-sm-2" id="guardar-info-reserva">Guardar</button>
+        </div>
+        <div class="col-md-8 col-12">
+            <legend class="custom-legend"><span>
+                    Información General
+                </span>
+            </legend>
+            <fieldset class="custom-fieldset">
+                <div class="row">
+                    <div class="col-md-4 col-12">
+                        <div class="form-group">
+                            {!! Form::label('nombre', 'Nombre del Cliente *') !!}
+                            {!! Form::text('nombre', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el nombre del cliente']) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="form-group">
+                            {!! Form::label('documentacion_inicial', 'Documento de identidad *') !!}
+                            {!! Form::text('documentacion_inicial', null, [
+                                'class' => 'form-control solo-numeros',
+                                'placeholder' => 'Ingrese el número de documento',
+                            ]) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="form-group">
+                            {!! Form::label('telefono', 'Teléfono') !!}
+                            {!! Form::text('telefono', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el teléfono']) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="form-group">
+                            {!! Form::label('email', 'Email') !!}
+                            {!! Form::email('email', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el email']) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="form-group">
+                            {!! Form::label('direccion', 'Dirección') !!}
+                            {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => 'Ingrese la dirección']) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-4 col-12">
+                        <div class="form-group">
+                            {!! Form::label('valor_reserva', 'Valor de Reserva *') !!}
+                            {!! Form::text('valor_reserva', null, [
+                                'class' => 'form-control moneyDosDecimales',
+                                'placeholder' => '$ 0.00',
+                            ]) !!}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group">
+                            {!! Form::label('observaciones', 'Observaciones') !!}
+                            {!! Form::textarea('observaciones', null, [
+                                'class' => 'form-control',
+                                'placeholder' => 'Ingrese las observaciones',
+                                'rows' => 3,
+                            ]) !!}
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 col-12">
-                    <div class="form-group">
-                        {!! Form::label('documentacion_inicial', 'Documento de identidad') !!}
-                        {!! Form::text('documentacion_inicial', null, [
-                            'class' => 'form-control solo-numeros',
-                            'placeholder' => 'Ingrese el número de documento',
-                        ]) !!}
-                    </div>
-                </div>
-                <div class="col-md-4 col-12">
-                    <div class="form-group">
-                        {!! Form::label('telefono', 'Teléfono') !!}
-                        {!! Form::text('telefono', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el teléfono']) !!}
-                    </div>
-                </div>
-                <div class="col-md-4 col-12">
-                    <div class="form-group">
-                        {!! Form::label('email', 'Email') !!}
-                        {!! Form::email('email', null, ['class' => 'form-control', 'placeholder' => 'Ingrese el email']) !!}
-                    </div>
-                </div>
-                <div class="col-md-4 col-12">
-                    <div class="form-group">
-                        {!! Form::label('direccion', 'Dirección') !!}
-                        {!! Form::text('direccion', null, ['class' => 'form-control', 'placeholder' => 'Ingrese la dirección']) !!}
-                    </div>
-                </div>
-                <div class="col-md-4 col-12">
-                    <div class="form-group">
-                        {!! Form::label('valor_reserva', 'Valor de Reserva') !!}
-                        {!! Form::text('valor_reserva', null, [
-                            'class' => 'form-control moneyDosDecimales',
-                            'placeholder' => 'Ingrese el valor de reserva',
-                        ]) !!}
-                    </div>
-                </div>
-                <div class="col-12">
-                    <div class="form-group">
-                        {!! Form::label('observaciones', 'Observaciones') !!}
-                        {!! Form::textarea('observaciones', null, [
-                            'class' => 'form-control',
-                            'placeholder' => 'Ingrese las observaciones',
-                            'rows' => 3,
-                        ]) !!}
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-    </div>
+            </fieldset>
+        </div>
 
-    <div class="col-md-4 col-12">
-        <legend class="custom-legend"><span>
-                Archivos
-            </span>
-        </legend>
-        <fieldset class="custom-fieldset">
+        <div class="col-md-4 col-12">
+            <legend class="custom-legend"><span>
+                    Archivos
+                </span>
+            </legend>
+            <fieldset class="custom-fieldset">
 
-            <div class="row">
-                <div class="form-group col-12">
-                    {!! Form::label('contrato', 'Contrato firmado') !!}
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="contrato" lang="es">
-                        <label class="custom-file-label" for="contrato">Seleccionar archivo...</label>
+                <div class="row">
+                    <div class="form-group col-12">
+                        {!! Form::label('contrato', 'Contrato firmado') !!}
+                        <div class="custom-file">
+                            <input type="file" name="file_contrato_firmado" class="custom-file-input" id="contrato"
+                                lang="es">
+                            <label class="custom-file-label" for="contrato">Seleccionar archivo...</label>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group col-12">
-                    {!! Form::label('comprobante_reserva', 'Comprobante de Reserva') !!}
-                    <div class="custom-file">
-                        <input type="file" class="custom-file-input" id="comprobante_reserva" lang="es">
-                        <label class="custom-file-label" for="comprobante_reserva">Seleccionar archivo...</label>
+                    <div class="form-group col-12">
+                        {!! Form::label('comprobante_reserva', 'Comprobante de Reserva') !!}
+                        <div class="custom-file">
+                            <input type="file" name="fila_comprobante_pago_reserva" class="custom-file-input"
+                                id="comprobante_reserva" lang="es">
+                            <label class="custom-file-label" for="comprobante_reserva">Seleccionar archivo...</label>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group col-12">
-                    {!! Form::label('documento_identidad', 'Documento de Identidad') !!}
-                    <div class="custom-file">
-                        <input name="documento_identidad[]" type="file" class="custom-file-input"
-                            id="documento_identidad" lang="es" multiple>
-                        <label class="custom-file-label" for="documento_identidad">Seleccionar archivo...</label>
+                    <div class="form-group col-12">
+                        {!! Form::label('documento_identidad', 'Documento de Identidad') !!}
+                        <div class="custom-file">
+                            <input name="documentos_identidad[]" type="file" class="custom-file-input"
+                                id="documento_identidad" lang="es" multiple>
+                            <label class="custom-file-label" for="documento_identidad">Seleccionar archivo...</label>
+                        </div>
                     </div>
+
+
                 </div>
+                <div class="form-group">
 
+                    <small class="form-text text-muted">Tipos de archivo permitidos: pdf, doc, docx, jpg, jpeg,
+                        png.</small>
+                </div>
+            </fieldset>
+        </div>
 
-            </div>
+        <div class="col-12">
             <div class="form-group">
-
-                <small class="form-text text-muted">Tipos de archivo permitidos: pdf, doc, docx, jpg, jpeg, png.</small>
+                <label for="contenido" class="col-form-label">Contenido del Contrato</label>
+                {{-- Precargamos el textarea con el HTML de nuestra plantilla --}}
+                <textarea id="summernote" name="contenido">
+        {!! $plantillaContenido !!}
+    </textarea>
             </div>
-        </fieldset>
+        </div>
     </div>
-</div>
+</form>

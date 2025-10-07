@@ -36,6 +36,8 @@
     <link href="{{ asset('css/app.css?v=' . config('app.version', '')) }}" rel="stylesheet">
     <!-- Dropify-->
     {!! Html::style('plugins/dropify/css/dropify.min.css') !!}
+    <!-- Summernote -->
+    <link href="{{ asset('plugins/summernote/summernote-bs4.min.css') }}" rel="stylesheet">
 
     @yield('styles')
 </head>
@@ -83,7 +85,7 @@
 {!! Html::script('plugins/dropify/js/dropify.min.js') !!}
 <script src="{{ asset('js/app.js?v=' . config('app.version', '')) }}"></script>
 <script src="{{ asset('plugins/dataTables/datatables.min.js') }}"></script>
-{{-- <script src=" asset('js/datatables.js') "></script> "></script> --}}
+<script src="{{ asset('plugins/summernote/summernote-bs4.min.js') }}"></script>
 
 @yield('scripts')
 

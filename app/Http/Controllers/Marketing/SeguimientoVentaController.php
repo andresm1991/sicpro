@@ -33,11 +33,17 @@ class SeguimientoVentaController extends Controller
         ];
 
         $clienteVenta = new ClienteVenta();
-        return view('marketing.seguimiento_ventas.create', compact('title_page', 'breadcrumbs', 'clienteVenta'));
+        $cliente = $clienteVenta;
+
+        // AQUÍ ESTÁ LA MAGIA: Renderizamos la plantilla de Blade a una cadena de HTML
+        $plantillaContenido = view('templates.contratos.contrato_reserva', compact('cliente'))->render();
+
+        return view('marketing.seguimiento_ventas.create', compact('title_page', 'breadcrumbs', 'clienteVenta', 'plantillaContenido'));
     }
 
     public function store(Request $request)
     {
+        return $request->all();
         $request->validate([
             'nombre' => 'required|string|max:255',
             'documento' => 'required|string|max:100|unique:clientes_ventas,documento',
