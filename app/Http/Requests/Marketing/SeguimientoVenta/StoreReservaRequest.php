@@ -54,7 +54,8 @@ class StoreReservaRequest extends FormRequest
     {
         return [
             'nombre.required' => 'Ingrese nombre.',
-            'documento_identidad.required' => 'Ingrese numero de documento.'
+            'documento_identidad.required' => 'Ingrese numero de documento.',
+            'documento_identidad.unique' => 'El documento de identidad ya se encuentra registrado.'
         ];
     }
 }

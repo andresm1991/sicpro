@@ -4,6 +4,7 @@ namespace App\Models\Marketing;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Ramsey\Uuid\Type\Decimal;
 
 class ProcesoVenta extends Model
 {
@@ -12,7 +13,7 @@ class ProcesoVenta extends Model
     protected $table = 'proceso_ventas';
 
     protected $fillable = [
-        'client_id',
+        'cliente_id',
         'etapa_actual',
         'valor_reserva',
         'contrato_firmado_path',
@@ -46,5 +47,18 @@ class ProcesoVenta extends Model
     public function escrituracionItems()
     {
         return $this->hasMany(EscrituracionItem::class);
+    }
+
+    public function contrato()
+    {
+        return $this->hasOne(Contrato::class);
+    }
+
+    /**
+     * Asesores
+     */
+    public function getFechaAttribute()
+    {
+        return $this->created_at ? $this->created_at->format('d-m-Y') : null;
     }
 }

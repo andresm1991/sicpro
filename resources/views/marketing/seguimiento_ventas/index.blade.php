@@ -38,15 +38,12 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($seguimientos as $seguimiento)
-                                    {{--  
+                                @forelse ($seguimientos as $index => $seguimiento)
                                     <tr id="{{ $seguimiento->id }}">
-                                        <td class="align-middle">{{ $seguimiento->numero }}</td>
-                                        <td class="align-middle">{{ $seguimiento->fecha_formatted }}</td>
+                                        <td class="align-middle">{{ $index + 1 }}</td>
+                                        <td class="align-middle">{{ $seguimiento->fecha }}</td>
                                         <td class="align-middle">{{ $seguimiento->cliente->nombre }}</td>
-                                        <td class="align-middle">{{ $seguimiento->estado->descripcion }}</td>
-                                        <td class="align-middle">{{ $seguimiento->total_formatted }}</td>
-                                        <td class="align-middle">{{ $seguimiento->estado->descripcion }}</td>
+                                        <td class="align-middle">{{ $seguimiento->etapa_actual }}</td>
                                         <td class="align-middle text-right">
                                             <div class="btn-group dropleft">
                                                 <button type="button" class="btn btn-outline-dark dropdown-toggle"
@@ -54,21 +51,15 @@
                                                     Opciones
                                                 </button>
                                                 <div class="dropdown-menu dropdown-menu-right custom-dropdown-menu">
-                                                    @if ($tipo == 'diseno_planos')
-                                                        <a href='{{ route('proformas.programa.arquitectonico', [$tipo, $proforma->id]) }}'
-                                                            class='dropdown-item'>Prog. Arquitectónico</a>
-                                                    @endif
-                                                    <a href='{{ route('proformas.edit', [$tipo, $proforma->id]) }}'
+                                                    <a href='{{ route('marketing.seguimiento.ventas.edit', $seguimiento->id) }}'
                                                         class='dropdown-item'>Editar</a>
                                                     <a href='javascript:void(0);' class='dropdown-item eliminar'
-                                                        id='{{ $proforma->id }}'>Eliminar</a>
-                                                    <a href='{{ route('pdf.proformas', [$tipo, $proforma->id]) }}'
-                                                        class='dropdown-item' target="_blank">generar pdf</a>
+                                                        id='{{ $seguimiento->id }}'>Eliminar</a>
                                                 </div>
                                             </div>
                                         </td>
                                     </tr>
-                                    --}}
+
                                 @empty
                                     <tr>
                                         <td colspan="5" class="text-center text-danger">No se encontraron datos para

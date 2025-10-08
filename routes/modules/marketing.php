@@ -13,7 +13,12 @@ Route::group(['prefix' => 'marketing', 'as' => 'marketing.'], function () {
         return view('marketing.index', compact('title_page', 'breadcrumbs'));
     })->name('index');
 
-    Route::get('/seguimiento-ventas', [SeguimientoVentaController::class, 'index'])->name('seguimiento.ventas.index');
-    Route::get('/seguimiento-ventas/create', [SeguimientoVentaController::class, 'create'])->name('seguimiento.ventas.create');
-    Route::post('/seguimiento-ventas/etapa-reserva', [SeguimientoVentaController::class, 'storeEtapaReserva']);
+    Route::group(['prefix' => 'seguimiento-ventas', 'as' => 'seguimiento.ventas.'], function () {
+        Route::get('/', [SeguimientoVentaController::class, 'index'])->name('index');
+        Route::get('/create', [SeguimientoVentaController::class, 'create'])->name('create');
+        Route::post('/etapa-reserva', [SeguimientoVentaController::class, 'storeEtapaReserva']);
+        Route::post('/verificar-documento-identidad', [SeguimientoVentaController::class, 'verificarDocumentoIdentidad']);
+        Route::get('/editar/{seguimiento}', [SeguimientoVentaController::class, 'editar'])->name('edit');
+        Route::put('/actualizar-etapa-reserva/{seguimiento}', [SeguimientoVentaController::class, 'actualizarEtapaReserva']);
+    });
 });
