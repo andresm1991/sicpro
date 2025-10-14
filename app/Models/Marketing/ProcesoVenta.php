@@ -4,13 +4,20 @@ namespace App\Models\Marketing;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Ramsey\Uuid\Type\Decimal;
 
 class ProcesoVenta extends Model
 {
     use HasFactory;
 
     protected $table = 'proceso_ventas';
+
+    public const ETAPAS = [
+        'Reserva',
+        'Documentación inicial',
+        'Peritaje y aprobación de crédito',
+        'Escrituración',
+        'Desembolso',
+    ];
 
     protected $fillable = [
         'cliente_id',
@@ -21,6 +28,7 @@ class ProcesoVenta extends Model
         'comprobante_pago_reserva_path',
         'visita_perito',
         'aprobacion_credito',
+        'observaciones_peritaje',
         'monto_desembolsado',
         'observaciones_desembolso',
     ];

@@ -890,4 +890,20 @@ if (!function_exists('palabras')) {
         $estados = CatalogoDato::getChildrenCatalogo('estados.proyectos')->pluck('descripcion', 'id');
         return $estados;
     }
+    /**
+     * Subir un archivo a DigitalOcean Spaces
+     * @param string $cliente
+     * @param \Illuminate\Http\UploadedFile $file
+     * @param string $name
+     * @return string $path_file
+     */
+    function subirArchivo($carpetaDestino, $nombreArchivo, $archivo)
+    {
+        // Obtener la extensión original del archivo
+        $extension = $archivo->getClientOriginalExtension();
+        // Subir el archivo al disco 'digitalocean'
+        $path_file = Storage::disk('digitalocean')->putFileAs($carpetaDestino, $archivo, $nombreArchivo . '.' . $extension);
+        // Retornar la ruta del archivo subido
+        return $path_file;
+    }
 }

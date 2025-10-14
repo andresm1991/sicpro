@@ -749,7 +749,6 @@ class AdquisicionController extends Controller
      */
     public function buscarAdquisicionAdministrativo(Request $request, $tipo)
     {
-
         if ($request->ajax()) {
             $buscar = $request->buscar;
             $tipo_busqueda  = $request->tipo == 'pendientes' ? 'Finalizado' : 'Completado';
@@ -768,9 +767,10 @@ class AdquisicionController extends Controller
             foreach ($adquisiciones as $index => $adquisicion) {
                 $opciones_boton = '';
                 if ($tipo == 'operativo') {
-                    $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Detalle</a>";
+                    $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
+                    $eliminar = "<a href='#' class='dropdown-item eliminar-adquisicion' id='" . $adquisicion->id . "'>Eliminar</a>";
                     $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
-                    $opciones_boton .= $editar . $pdf;
+                    $opciones_boton .= $editar . (auth()->user()->hasRole(['Administrador', 'Gerencial']) ? $eliminar : '') . $pdf;
                 } else {
                     $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar Pedido</a>";
                     $recepcion = "<a href='" . route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Recepción</a>";
@@ -787,11 +787,7 @@ class AdquisicionController extends Controller
                     '<td class="align-middle">' . strtoupper($adquisicion->etapa->descripcion) . '</td>' .
                     '<td class="align-middle">' . strtoupper($adquisicion->tipo_etapa->descripcion) . '</td>' .
                     '<td class="align-middle align-middle text-right text-truncate">' .
-                    '<button type="button" class="btn btn-outline-dark" data-container="body"
-                                        data-toggle="popover" data-placement="left" data-trigger="focus"
-                                        data-content ="' . $opciones_boton . '">
-                                        <i class="fas fa-caret-left font-weight-normal"></i> Opciones
-                                    </button>' .
+                    '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $opciones_boton . '"> <i class="fas fa-caret-left font-weight-normal"></i> Opciones </button>' .
                     '</td>' .
                     '</tr>';
             }

@@ -1,42 +1,58 @@
 <div class="row">
     <div class="col-12">
-        <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">Reserva</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab">Documentación inicial</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab">Peritaje y aprobación de crédito</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabs-4" role="tab">Escrituración</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#tabs-5" role="tab">Desembolso</a>
-            </li>
+        <ul class="nav nav-tabs" id="etapasTab" role="tablist">
+            @foreach (App\Models\Marketing\ProcesoVenta::ETAPAS as $etapa)
+                @php $slug = Str::slug($etapa); @endphp
+                <li class="nav-item">
+                    {{-- Añadimos la clase 'active' si la etapa del bucle
+                        coincide con la etapa_actual del seguimientoVenta. --}}
+                    <a class="nav-link {{ $seguimientoVenta->etapa_actual == $etapa || (empty($seguimientoVenta->etapa_actual) && $loop->first) ? 'active' : '' }}"
+                        id="tab-{{ $slug }}" data-toggle="tab" href="#pane-{{ $slug }}" role="tab"
+                        data-etapa-slug="{{ $slug }}">
+                        {{ $etapa }}
+                        <i class="fas fa-lock ml-2 d-none"></i>
+                    </a>
+                </li>
+            @endforeach
         </ul><!--.ul-->
         <div class="tab-content">
-            <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                @include('marketing.seguimiento_ventas.partials.form_reserva')
-            </div>
-            <div class="tab-pane" id="tabs-2" role="tabpanel">
-                @include('marketing.seguimiento_ventas.partials.form_documentacion_inicial')
-            </div>
-            <div class="tab-pane" id="tabs-3" role="tabpanel">
-                @include('marketing.seguimiento_ventas.partials.form_peritaje_aprobacion')
-            </div>
-            <div class="tab-pane" id="tabs-4" role="tabpanel">
-                @include('marketing.seguimiento_ventas.partials.form_escrituracion')
-            </div>
-            <div class="tab-pane" id="tabs-5" role="tabpanel">
-                @include('marketing.seguimiento_ventas.partials.form_desembolso')
-            </div>
+            @php
+                $partials = [
+                    'Reserva' => 'marketing.seguimiento_ventas.partials.form_reserva',
+                    'Documentación inicial' => 'marketing.seguimiento_ventas.partials.form_documentacion_inicial',
+                    'Peritaje y aprobación de crédito' =>
+                        'marketing.seguimiento_ventas.partials.form_peritaje_aprobacion',
+                    'Escrituración' => 'marketing.seguimiento_ventas.partials.form_escrituracion',
+                    'Desembolso' => 'marketing.seguimiento_ventas.partials.form_desembolso',
+                ];
+            @endphp
+            @foreach (App\Models\Marketing\ProcesoVenta::ETAPAS as $etapa)
+                @php $slug = Str::slug($etapa); @endphp
+                {{--
+            CONDICIÓN ACTUALIZADA PARA EL PANEL:
+            Misma lógica que para el enlace de la pestaña.
+        --}}
+                <div class="tab-pane {{ $seguimientoVenta->etapa_actual == $etapa || (empty($seguimientoVenta->etapa_actual) && $loop->first) ? 'active show' : '' }}"
+                    id="pane-{{ $slug }}" role="tabpanel">
+                    @if (isset($partials[$etapa]))
+                        @include($partials[$etapa])
+                    @else
+                        <p>Contenido para la etapa: {{ $etapa }}</p>
+                    @endif
+                </div>
+            @endforeach
         </div><!--.tab-content-->
     </div> <!--.col-12-->
 
 </div><!--.row-->
+
+<div class="row">
+    <div class="col-12">
+        @include('marketing.seguimiento_ventas.modals.edit_item_modal')
+    </div>
+</div>
+
+
 
 @section('scripts')
     <script src="{{ asset('js/proceso_ventas.js?v=' . config('app.version', '')) }}" type="module"></script>

@@ -1,8 +1,19 @@
 <form id="form_reserva" autocomplete="off" enctype="multipart/form-data">
     <div class="row">
-        <div class="col-md-12 d-flex justify-content-end mb-3">
+        <div class="col-sm-6 col-12 d-flex justify-content-start align-items-center mb-3">
+            {{-- Botón para guardar la información de la reserva --}}
+            {{-- Este botón no envía el formulario automáticamente, sino que se maneja con JavaScript --}}
             <button type="button" class="btn btn-dark btn-block col-sm-2" id="guardar-info-reserva">Guardar</button>
         </div>
+        <div class="col-sm-6 col-12 d-flex justify-content-end align-items-center">
+            <label for="forCheckbox" class="col-form-label mr-3">Etapa completada</label>
+            <div class="checkbox-wrapper-8">
+                <input class="tgl tgl-skewed" name="etapa_reserva_completa" id="etapa-reserva-completa"
+                    type="checkbox" />
+                <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="etapa-reserva-completa"></label>
+            </div>
+        </div>
+
         <div class="col-md-8 col-12">
             <legend class="custom-legend"><span>
                     Información General
@@ -96,32 +107,51 @@
 
                 <div class="row">
                     <div class="form-group col-12">
-                        {!! Form::label('contrato', 'Contrato firmado') !!}
+                        <label for="contrato">Contrato firmado
+                            @isset($seguimientoVenta->contrato_firmado_path)
+                                <a href="{{ doTemporaryUrl($seguimientoVenta->contrato_firmado_path) }}" target="_blank"
+                                    class="badge badge-success"><i class="fa-solid fa-eye"></i></a>
+                            @endisset
+                        </label>
+
                         <div class="custom-file">
                             <input type="file" name="file_contrato_firmado" class="custom-file-input" id="contrato"
                                 lang="es">
-                            <label class="custom-file-label" for="contrato">Seleccionar archivo...</label>
+                            <label class="custom-file-label"
+                                for="contrato">{{ $seguimientoVenta->contrato_firmado_path ? basename($seguimientoVenta->contrato_firmado_path) : 'Seleccionar archivo...' }}</label>
                         </div>
                     </div>
 
                     <div class="form-group col-12">
-                        {!! Form::label('comprobante_reserva', 'Comprobante de Reserva') !!}
+                        <label for="comprobante_reserva">Comprobante de Reserva
+                            @isset($seguimientoVenta->comprobante_pago_reserva_path)
+                                <a href="{{ doTemporaryUrl($seguimientoVenta->comprobante_pago_reserva_path) }}"
+                                    target="_blank" class="badge badge-success"><i class="fa-solid fa-eye"></i></a>
+                            @endisset
+                        </label>
+
                         <div class="custom-file">
                             <input type="file" name="fila_comprobante_pago_reserva" class="custom-file-input"
                                 id="comprobante_reserva" lang="es">
-                            <label class="custom-file-label" for="comprobante_reserva">Seleccionar archivo...</label>
+                            <label class="custom-file-label"
+                                for="comprobante_reserva">{{ $seguimientoVenta->comprobante_pago_reserva_path ? basename($seguimientoVenta->comprobante_pago_reserva_path) : 'Seleccionar archivo...' }}</label>
                         </div>
                     </div>
 
                     <div class="form-group col-12">
-                        {!! Form::label('documento_identidad', 'Documento de Identidad') !!}
+                        <label for="documento_identidad">Documento de Identidad
+                            @isset($seguimientoVenta->cedulas_path)
+                                <a href="{{ doTemporaryUrl($seguimientoVenta->cedulas_path) }}" target="_blank"
+                                    class="badge badge-success"><i class="fa-solid fa-eye"></i></a>
+                            @endisset
+                        </label>
                         <div class="custom-file">
-                            <input name="documentos_identidad[]" type="file" class="custom-file-input"
-                                id="documento_identidad" lang="es" multiple>
-                            <label class="custom-file-label" for="documento_identidad">Seleccionar archivo...</label>
+                            <input name="documento_identidad" type="file" class="custom-file-input"
+                                id="documento_identidad" lang="es">
+                            <label class="custom-file-label"
+                                for="documento_identidad">{{ $seguimientoVenta->cedulas_path ? basename($seguimientoVenta->cedulas_path) : 'Seleccionar archivo...' }}</label>
                         </div>
                     </div>
-
 
                 </div>
                 <div class="form-group">
@@ -134,7 +164,16 @@
 
         <div class="col-12">
             <div class="form-group">
-                <label for="contenido" class="col-form-label">Contenido del Contrato</label>
+                <label for="contenido" class="col-form-label">Contenido del Contrato
+                    @isset($seguimientoVenta->contrato)
+                        <br>
+                        <a href="{{ route('marketing.seguimiento.ventas.contrato.preview', $seguimientoVenta->contrato->id) }}"
+                            class="btn btn-sm btn-dark " target="_blank">
+                            <i class="fa-solid fa-eye mr-2"></i> Vista Previa
+                        </a>
+                    @endisset
+                </label>
+
                 {{-- Precargamos el textarea con el HTML de nuestra plantilla --}}
                 <textarea id="summernote" name="contenido">
         {!! $plantillaContenido !!}

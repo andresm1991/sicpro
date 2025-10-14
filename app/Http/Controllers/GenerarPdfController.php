@@ -23,6 +23,7 @@ use App\Models\DetalleManoObra;
 use App\Models\JPLimpieza\Caja;
 use App\Models\RubroCronograma;
 use App\Models\ReposicionTiempo;
+use App\Models\Marketing\Contrato;
 use App\Models\ResumenPagoSemanal;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Models\ProformaAdecentamiento;
@@ -30,10 +31,10 @@ use App\Models\ProgramaArquitectonico;
 use App\Exports\ReportSolicitudesExport;
 use setasign\Fpdi\PdfParser\StreamReader;
 use App\Exports\ReportAdquisicionesExport;
-use App\Exports\ReporteAdquisicionesOperativoJPExport;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Exports\ReportGasolinaCamionetaExport;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
+use App\Exports\ReporteAdquisicionesOperativoJPExport;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
 use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
 use App\Models\JPLimpieza\Adquisicion as JPLimpiezaAdquisicion;
@@ -905,5 +906,13 @@ class GenerarPdfController extends Controller
             $pdf = PDF::loadView('pdf.jp_limpieza.adquisiciones', compact('reportData', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral', 'tipo', 'proyecto', 'fechaReporte'))->setPaper('a4', 'landscape');
             return $pdf->stream('reportes.pdf');
         }
+    }
+
+    public function previewContratoReserva(Contrato $contrato)
+    {
+        $cliente = $contrato->procesoVenta->cliente;
+        $htmlDelContrato = $contrato->contenido;
+        $pdf = PDF::loadHTML($htmlDelContrato)->setPaper('a4', 'portrait');
+        return $pdf->stream('contrato_reserva.pdf');
     }
 }
