@@ -2686,6 +2686,12 @@ a[href="javascript:void(0);"] {
     /* color: white; */
 }
 
+#summernote+.note-editor .note-editable,
+#summernote+.note-editor .note-editable * {
+    /* El '*' aplica la regla a todo lo que esté dentro (párrafos, spans, etc.) */
+    text-transform: none !important;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
