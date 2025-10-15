@@ -912,7 +912,27 @@ class GenerarPdfController extends Controller
     {
         $cliente = $contrato->procesoVenta->cliente;
         $htmlDelContrato = $contrato->contenido;
-        $pdf = PDF::loadHTML($htmlDelContrato)->setPaper('a4', 'portrait');
+
+        $buscar = [
+            'border: 1px solid #ddd;',
+            'box-shadow: 0 0 10px rgba(0,0,0,0.05);',
+            'margin: 20px auto;',
+            'max-height: 70px;',
+            asset('images/prime_doc.png')
+        ];
+
+        $reemplazarPor = [
+            'border: none;',
+            '',
+            'margin: 0;',
+            'max-height: 60px;',
+            public_path('images/prime_doc.png')
+        ];
+
+        $htmlParaPdf = str_replace($buscar, $reemplazarPor, $htmlDelContrato);
+
+
+        $pdf = PDF::loadHTML($htmlParaPdf)->setPaper('a4', 'portrait');
         return $pdf->stream('contrato_reserva.pdf');
     }
 }
