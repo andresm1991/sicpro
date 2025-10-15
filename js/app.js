@@ -237,7 +237,7 @@ $(function () {
     $('#summernote').summernote({
         placeholder: 'Escribe el contenido del contrato aquí...',
         tabsize: 2,
-        height: 300, // Altura del editor
+        height: 900, // Altura del editor
         toolbar: [
             ['style', ['style']],
             ['font', ['bold', 'underline', 'clear']],
