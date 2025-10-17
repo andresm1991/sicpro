@@ -1,8 +1,8 @@
-import { getFormData } from './helpers.js';
 
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     var listId = '';
+
     $('#documento-identidad').on('input', function () {
         let valor = $(this).val();
 
@@ -97,6 +97,8 @@ $(function () {
                         text: response.message,
                     });
                     form[0].reset();
+                    $('select[name=proyecto]').val(null).trigger('change');
+
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -613,6 +615,131 @@ $(function () {
                 }
             }
 
+        });
+    });
+
+    $('input[name=valor_saldo_reserva]').on('change', function () {
+        var valor = $(this).maskMoney('unmasked')[0];
+        var procesoVentaId = $('input[name=proceso_venta_id]').val()
+        if (valor === '') return;
+
+        $.ajax({
+            url: base_url + '/marketing/seguimiento-ventas/guardar-valor-saldo-reserva',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            method: 'POST',
+            data: { 'valor': valor, 'proceso': procesoVentaId },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                if (response.success) {
+                    Toast.fire({
+                        icon: 'success',
+                        text: response.message,
+                    });
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        text: 'Ocurrió un error al intentar guardar el valor de saldo reserva.',
+                    });
+                }
+
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire(
+                            'Error!',
+                            errorMsg,
+                            'error',
+                        );
+                }
+            }
+        });
+    });
+
+    $('#monto-acreditato-banco').on('keyup blur', function () {
+        var valorAcreditadoBanco = $(this).maskMoney('unmasked')[0];
+        var valorReserva = $('input[name=valor_reserva]').val() || 0;
+        var valorSaldoReserva = $('input[name=valor_saldo_reserva]').val() || '0';
+
+        let total = parseFloat(valorReserva) + parseFloat(valorSaldoReserva) + parseFloat(valorAcreditadoBanco);
+        $('#total-acreditado').text(formatearUSD(total));
+    });
+
+    $('.completar-etapa').on('change', function () {
+        var valor = $(this).prop('checked');
+        var etapa = $(this).attr('id');
+        var procesoVentaId = $('input[name=proceso_venta_id]').val()
+
+        $.ajax({
+            url: base_url + '/marketing/seguimiento-ventas/actualizar-etapa/' + procesoVentaId,
+            headers: { 'X-CSRF-TOKEN': csrf },
+            method: 'PATCH',
+            data: { 'valor': valor, 'etapa': etapa },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+            },
+            success: function (response) {
+                if (response.success) {
+                    Toast.fire({
+                        icon: 'success',
+                        text: response.message,
+                    });
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        text: 'Ocurrió un error al intentar guardar el valor de saldo reserva.',
+                    });
+                }
+
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire(
+                            'Error!',
+                            errorMsg,
+                            'error',
+                        );
+                }
+            }
         });
     });
 });
