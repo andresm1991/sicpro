@@ -20,6 +20,7 @@ use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Models\JPLimpieza\Proyecto as ProyectoJPLimpieza;
 use App\Models\ProformaProducto;
+use App\Models\Proyecto;
 
 if (!function_exists('encrypted_route')) {
     function encrypted_route($name, $parameters = [], $absolute = true)
@@ -754,6 +755,13 @@ if (!function_exists('palabras')) {
     {
         $proyectos = ProyectoJPLimpieza::orderBy('nombre_proyecto', 'desc')->pluck('nombre_proyecto', 'id');
         $proyectos->prepend('general', 'general');
+        $proyectos->prepend('', '');
+        return $proyectos;
+    }
+
+    function getProyectos()
+    {
+        $proyectos = Proyecto::orderBy('nombre_proyecto', 'asc')->pluck('nombre_proyecto', 'id');
         $proyectos->prepend('', '');
         return $proyectos;
     }

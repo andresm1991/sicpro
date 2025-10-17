@@ -28,5 +28,8 @@ Route::group(['prefix' => 'marketing', 'as' => 'marketing.'], function () {
         Route::delete('/escrituracion-items/{item}', [SeguimientoVentaController::class, 'destroyEscrituracionItem'])->name('escrituracion.items.destroy');
         Route::post('/etapa-peritaje-aprobacion/{proceso}', [SeguimientoVentaController::class, 'storeEtapaPeritajeAprobacion'])->name('etapa.peritaje.aprobacion');
         Route::post('/etapa-desembolso/{proceso}', [SeguimientoVentaController::class, 'storeEtapaDesembolso'])->name('etapa.desembolso');
+
+        Route::post('/guardar-valor-saldo-reserva', [SeguimientoVentaController::class, 'storeValorSaldoReserva']);
+        Route::patch('/actualizar-etapa/{proceso}', [SeguimientoVentaController::class, 'actualizaEtapa']);
     });
 });

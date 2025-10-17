@@ -8,7 +8,7 @@
         <div class="col-sm-6 col-12 d-flex justify-content-end align-items-center">
             <label for="forCheckbox" class="col-form-label mr-3">Etapa completada</label>
             <div class="checkbox-wrapper-8">
-                <input class="tgl tgl-skewed" name="etapa_reserva_completa" id="etapa-reserva-completa"
+                <input class="tgl tgl-skewed completar-etapa" name="etapa_reserva_completa" id="etapa-reserva-completa"
                     type="checkbox" />
                 <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="etapa-reserva-completa"></label>
             </div>
@@ -21,6 +21,41 @@
             </legend>
             <fieldset class="custom-fieldset">
                 <div class="row">
+                    <div class="col-md-8 col-12">
+                        <div class="form-group">
+                            {!! Form::label('proyecto', 'Proyecto *') !!}
+                            {!! Form::select(
+                                'proyecto',
+                                getProyectos(),
+                                isset($seguimientoVenta->proyecto_id) ? $seguimientoVenta->proyecto_id : '',
+                                [
+                                    'class' => 'form-control',
+                                    'id' => 'proyecto',
+                                    'data-placeholder' => 'Seleccione proyecto',
+                                ],
+                            ) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-12">
+                        <div class="form-group">
+                            {!! Form::label('numero-unidad', 'unidad *') !!}
+                            {!! Form::text('unidad', isset($seguimientoVenta->unidad) ? $seguimientoVenta->unidad : '', [
+                                'class' => 'form-control solo-numeros',
+                                'id' => 'numero-unidad',
+                                'placeholder' => '0',
+                            ]) !!}
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-12">
+                        <div class="form-group">
+                            {!! Form::label('valor-venta', 'Valor venta *') !!}
+                            {!! Form::text('valor_venta', $seguimientoVenta->valor_venta, [
+                                'class' => 'form-control moneyDosDecimales',
+                                'placeholder' => '$ 0.00',
+                            ]) !!}
+                        </div>
+                    </div>
+
                     <div class="col-md-4 col-12">
                         <div class="form-group">
                             {!! Form::label('documentacion_inicial', 'Documento de identidad *') !!}

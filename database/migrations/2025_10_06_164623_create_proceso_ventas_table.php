@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('proceso_ventas', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('proyecto_id')->references('id')->on('proyectos')->onDelete('cascade');
+            $table->smallInteger('unidad');
+            $table->decimal('valor_venta', 10, 2);
             $table->foreignId('cliente_id')->references('id')->on('clientes_ventas')->onDelete('cascade');
 
             // Etapa Actual del Proceso
@@ -21,12 +24,18 @@ return new class extends Migration
             // --- ETAPA 1: RESERVA ---
             $table->decimal('valor_reserva', 10, 2);
             $table->string('contrato_firmado_path')->nullable();
-            $table->json('cedulas_path')->nullable(); // JSON para guardar rutas de múltiples archivos
+            //$table->json('cedulas_path')->nullable(); // JSON para guardar rutas de múltiples archivos
+            $table->string('cedula_path')->nullable();
             $table->string('comprobante_pago_reserva_path')->nullable();
 
-            // --- ETAPA 2: DOCUMENTACIÓN INICIAL ---
+            // --- ETAPA 3: PERITAJE Y APROBACION DE CREDITO ---
             $table->boolean('visita_perito')->default(false);
             $table->boolean('aprobacion_credito')->default(false);
+            $table->string('observaciones_peritaje')->nullable();
+
+            // --- ETAPA 4: ESCRITURACION ---
+            $table->decimal('valor_saldo_reserva', 10, 2)->nullable();
+            $table->string('comprobante_pago_saldo_reserva_path')->nullable();
 
             // --- ETAPA 4: DESEMBOLSO ---
             $table->decimal('monto_desembolsado', 10, 2)->nullable();

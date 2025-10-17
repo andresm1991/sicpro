@@ -19,16 +19,59 @@
 
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div class="col-sm-10 col-12">
-                        <span class="font-weight-bold">Dinero acreditado</span>
+                        <span class="font-weight-bold">valor reserva</span>
                         <small class="text-muted d-block"></small>
                     </div>
 
                     <div class="col-sm-2 col-12 d-flex justify-content-end">
 
                         <div class="form-group mb-0">
-                            <input type="text" name="valor"
+                            <input type="text" value="{{ number_format($seguimientoVenta->valor_reserva, 2) }}"
+                                readonly class="form-control moneyDosDecimales" placeholder="$ 0.00">
+                        </div>
+                    </div>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="col-sm-10 col-12">
+                        <span class="font-weight-bold">valor saldo reserva</span>
+                        <small class="text-muted d-block"></small>
+                    </div>
+
+                    <div class="col-sm-2 col-12 d-flex justify-content-end">
+
+                        <div class="form-group mb-0">
+                            <input type="text" value="{{ number_format($seguimientoVenta->valor_saldo_reserva, 2) }}"
+                                readonly class="form-control moneyDosDecimales" placeholder="$ 0.00">
+                        </div>
+                    </div>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="col-sm-10 col-12">
+                        <span class="font-weight-bold">Dinero acreditado por el banco</span>
+                        <small class="text-muted d-block"></small>
+                    </div>
+
+                    <div class="col-sm-2 col-12 d-flex justify-content-end">
+
+                        <div class="form-group mb-0">
+                            <input type="text" name="valor" id="monto-acreditato-banco"
                                 value="{{ number_format($seguimientoVenta->monto_desembolsado, 2) }}"
                                 class="form-control moneyDosDecimales" placeholder="$ 0.00">
+                        </div>
+                    </div>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="col-sm-10 col-12">
+                        <span class="font-weight-bold">Total</span>
+                    </div>
+
+                    <div class="col-sm-2 col-12 ">
+                        <div class="form-group mb-0">
+                            <span class="col-form-label" id="total-acreditado">$
+                                {{ number_format($seguimientoVenta->total_acreditado, 2) }}</span>
                         </div>
                     </div>
                 </li>

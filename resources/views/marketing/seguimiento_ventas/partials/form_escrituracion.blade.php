@@ -9,6 +9,15 @@
         </div>
     </div>
 
+    <div class="col-md-2 col-12">
+        <div class="form-group">
+            {!! Form::label('saldo-reserva', 'Valor saldo reserva *') !!}
+            {!! Form::text('valor_saldo_reserva', $seguimientoVenta->valor_saldo_reserva, [
+                'class' => 'form-control moneyDosDecimales',
+                'placeholder' => '$ 0.00',
+            ]) !!}
+        </div>
+    </div>
     <div class="col-12">
         <ul class="list-group mb-3" id="lista-escrituracion">
             @forelse($seguimientoVenta->escrituracionItems as $item)

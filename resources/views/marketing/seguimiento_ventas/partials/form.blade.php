@@ -2,15 +2,15 @@
     <div class="col-12">
         <ul class="nav nav-tabs" id="etapasTab" role="tablist">
             @foreach (App\Models\Marketing\ProcesoVenta::ETAPAS as $etapa)
-                @php $slug = Str::slug($etapa); @endphp
                 <li class="nav-item">
                     {{-- Añadimos la clase 'active' si la etapa del bucle
                         coincide con la etapa_actual del seguimientoVenta. --}}
-                    <a class="nav-link {{ $seguimientoVenta->etapa_actual == $etapa || (empty($seguimientoVenta->etapa_actual) && $loop->first) ? 'active' : '' }}"
-                        id="tab-{{ $slug }}" data-toggle="tab" href="#pane-{{ $slug }}" role="tab"
-                        data-etapa-slug="{{ $slug }}">
+                    <a class="nav-link {{ $seguimientoVenta->etapa_actual == $etapa || (empty($seguimientoVenta->etapa_actual) && $loop->first) ? 'active' : ($seguimientoVenta->etapa_actual ? '' : 'disabled') }}"
+                        id="tab-{{ Str::slug($etapa) }}" data-toggle="tab" href="#pane-{{ Str::slug($etapa) }}"
+                        role="tab" data-etapa-slug="{{ Str::slug($etapa) }}">
                         {{ $etapa }}
-                        <i class="fas fa-lock ml-2 d-none"></i>
+                        <i
+                            class="fas fa-lock ml-2 {{ $seguimientoVenta->etapa_actual == $etapa || (empty($seguimientoVenta->etapa_actual) && $loop->first) ? ' d-none' : ($seguimientoVenta->etapa_actual ? 'd-none' : '') }}"></i>
                     </a>
                 </li>
             @endforeach
@@ -27,13 +27,8 @@
                 ];
             @endphp
             @foreach (App\Models\Marketing\ProcesoVenta::ETAPAS as $etapa)
-                @php $slug = Str::slug($etapa); @endphp
-                {{--
-            CONDICIÓN ACTUALIZADA PARA EL PANEL:
-            Misma lógica que para el enlace de la pestaña.
-        --}}
                 <div class="tab-pane {{ $seguimientoVenta->etapa_actual == $etapa || (empty($seguimientoVenta->etapa_actual) && $loop->first) ? 'active show' : '' }}"
-                    id="pane-{{ $slug }}" role="tabpanel">
+                    id="pane-{{ Str::slug($etapa) }}" role="tabpanel">
                     @if (isset($partials[$etapa]))
                         @include($partials[$etapa])
                     @else

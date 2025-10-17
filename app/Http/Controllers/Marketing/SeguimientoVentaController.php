@@ -83,6 +83,9 @@ class SeguimientoVentaController extends Controller
 
             // Crear el proceso de venta asociado al cliente
             $procesoVentaData = [
+                'proyecto_id' => $request->input('proyecto'),
+                'unidad' => $request->input('unidad'),
+                'valor_venta' => $request->input('valor_venta'),
                 'cliente_id' => $clienteVenta->id,
                 'etapa_actual' => 'Reserva',
                 'valor_reserva' => $request->input('valor_reserva'),
@@ -104,7 +107,7 @@ class SeguimientoVentaController extends Controller
 
             if ($request->hasFile('file_cedulas')) {
                 $path_archivo = subirArchivo($carpetaDestino, 'cedula', $request->file('file_cedulas'));
-                $procesoVentaData['cedulas_path'] = $path_archivo;
+                $procesoVentaData['cedula_path'] = $path_archivo;
             }
 
             // Crear el proceso de venta
@@ -402,5 +405,29 @@ class SeguimientoVentaController extends Controller
             LogService::log('ERROR', 'Seguimiento ventas', ['message' => 'Ocurrió un error al actualizar la etapa de desembolso: ' . $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Ocurrió un error al actualizar la etapa de desembolso']);
         }
+    }
+
+    public function storeValorSaldoReserva(Request $request)
+    {
+        try {
+            DB::beginTransaction();
+            $proceso = ProcesoVenta::find($request->input('proceso'));
+            $proceso->valor_saldo_reserva = limpiarValor($request->valor);
+
+            $proceso->save();
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'valor saldo reserva ingresado exitosamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            LogService::log('ERROR', 'Seguimiento ventas', ['message' => 'Ocurrió un error al actualizar la etapa de desembolso: ' . $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Ocurrió un error al actualizar la etapa de desembolso']);
+        }
+    }
+
+    public function actualizaEtapa(Request $request, ProcesoVenta $proceso)
+    {
+        return $request->all();
     }
 }

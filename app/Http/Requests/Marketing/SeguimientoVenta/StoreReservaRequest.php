@@ -17,15 +17,17 @@ class StoreReservaRequest extends FormRequest
     protected function prepareForValidation()
     {
         // Verificamos si el campo 'valor_reserva' existe y no está vacío
-        if ($this->has('valor_reserva')) {
+        if ($this->has('valor_reserva') && $this->has('valor_venta')) {
             // Reemplazamos todas las comas (separadores de miles) por nada
             // Y nos aseguramos de que los decimales (si los hay) usen un punto.
             // Esto transforma '1,111,111.11' en '1111111.11'
-            $valorLimpio = str_replace(',', '', $this->input('valor_reserva'));
+            $valorLimpioReserva = str_replace(',', '', $this->input('valor_reserva'));
+            $valorLimpioVenta = str_replace(',', '', $this->input('valor_venta'));
 
             // Actualizamos el valor en el request
             $this->merge([
-                'valor_reserva' => $valorLimpio,
+                'valor_reserva' => $valorLimpioReserva,
+                'valor_venta' =>  $valorLimpioVenta,
             ]);
         }
     }
@@ -38,8 +40,10 @@ class StoreReservaRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'proyecto' => 'required',
+            'unidad' => 'required',
+            'valor_venta' => 'required|numeric',
             'nombre' => 'required|string|max:255',
-            'documento_identidad' => 'required|string|max:13|unique:clientes_ventas,documento',
             'direccion' => 'nullable|string|max:255',
             'telefono' => 'nullable|string|max:50',
             'email' => 'nullable|email|max:100',
@@ -53,6 +57,9 @@ class StoreReservaRequest extends FormRequest
     public function messages()
     {
         return [
+            'proyecto.required' => 'Seleccione proyecto.',
+            'unidad.required' => 'ingrese valor.',
+            'valor_venta.required' => 'ingrese valor.',
             'nombre.required' => 'Ingrese nombre.',
             'documento_identidad.required' => 'Ingrese numero de documento.',
             'documento_identidad.unique' => 'El documento de identidad ya se encuentra registrado.'
