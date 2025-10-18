@@ -38,7 +38,7 @@
                     </div>
                     <div class="col-md-2 col-12">
                         <div class="form-group">
-                            {!! Form::label('numero-unidad', 'unidad *') !!}
+                            {!! Form::label('numero-unidad', 'nro. casa *') !!}
                             {!! Form::text('unidad', isset($seguimientoVenta->unidad) ? $seguimientoVenta->unidad : '', [
                                 'class' => 'form-control solo-numeros',
                                 'id' => 'numero-unidad',
