@@ -22,6 +22,7 @@ class Adquisicion extends Model
         'estado',
         'tipo_adquisicion',
         'factura',
+        'nro_proforma',
         'archivo',
         'subproyecto',
     ];

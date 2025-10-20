@@ -28,4 +28,5 @@ Route::group(['prefix' => 'proformas', 'as' => 'proformas.'], function () {
     Route::get('/{tipo}/{id}/programa-arquitectonico', [ProgramaArquitectonicoController::class, 'show'])->name('programa.arquitectonico');
     Route::post('/{tipo}/{id}/{programa}/guardar-programa-arquitectonico', [ProgramaArquitectonicoController::class, 'store'])->name('programa.arquitectonico.store');
     Route::put('/productos/actualizar-texto', [ProformaController::class, 'updateProductoTexto']);
+    Route::post('/validar-nro-proforma', [ProformaController::class, 'validarNroProforma']);
 });

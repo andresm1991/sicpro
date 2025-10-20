@@ -8,7 +8,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'SubProyecto', ['class' => 'col-form-label']) }}
-            {{ Form::label('', $adquisicion->proyecto_id > 0 ? $adquisicion->subproyecto ?? 'subproyecto' : 'Otros', ['class' => 'form-control text-uppercase label-disabled']) }}
+            {{ Form::text('subproyecto', $adquisicion->proyecto_id > 0 ? $adquisicion->subproyecto ?? '---' : 'Otros', ['class' => 'form-control', 'disabled', 'id' => $adquisicion->subproyecto]) }}
         </div>
     </div>
     <div class="col-md-4 col-12">
@@ -24,6 +24,15 @@
             {{ Form::label('', $adquisicion->tipo_etapa->descripcion, ['class' => 'form-control text-uppercase label-disabled']) }}
         </div>
     </div>
+
+    @if ($adquisicion->subproyecto)
+        <div class="col-md-4 col-12">
+            <div class="form-group">
+                {{ Form::label('', 'Nro. Proforma', ['class' => 'col-form-label']) }}
+                {{ Form::text('nro_proforma', $adquisicion->nro_proforma, ['class' => 'form-control', 'placeholder' => 'ingrese numero de proforma']) }}
+            </div>
+        </div>
+    @endif
 </div>
 <div class="row">
     <div class="col-md-4 col-12">

@@ -467,4 +467,19 @@ class ProformaController extends Controller
             return response()->json(['message' => 'Ocurrió un error al actualizar el producto.'], 500);
         }
     }
+
+    public function validarNroProforma(Request $request)
+    {
+        if ($request->ajax()) {
+            $numero = $request->nro_proforma;
+
+            $exists = ProformaAdecentamiento::where('numero', $numero)->exists();
+
+            if (!$exists) {
+                return response()->json(['status' => false, 'message' => 'El numero ingresado no existe, verificar que es el correcto.']);
+            }
+            return response()->json(['status' => true, 'message' => '']);
+        }
+        abort(404);
+    }
 }

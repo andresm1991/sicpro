@@ -171,6 +171,7 @@ class AdministrativoController extends Controller
                 'cantidad_recibida.*' => 'required|numeric'
             ]);
         }
+
         $request->validate($rules, $messages);
 
         $estado = $request->orden_completa;
@@ -217,6 +218,8 @@ class AdministrativoController extends Controller
             }
 
             $adquisicion->factura = $request->numero_factura;
+            $adquisicion->nro_proforma = $request->nro_proforma;
+
             if ($estado) {
                 $adquisicion->estado = "Completado";
 
