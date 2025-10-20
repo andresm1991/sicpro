@@ -400,6 +400,13 @@ $(function () {
             $('select[name=proyecto]').next('.select2-container').find('.select2-selection').addClass('error-border');
             $('select[name=proyecto]').parent().append('<span class="error-message">Seleccione proyecto.</span>');
         }
+
+        if ($('select[name=proyecto]').val() == "") {
+            var valid = false;
+            $('select[name=proyecto]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=proyecto]').parent().append('<span class="error-message">Seleccione proyecto.</span>');
+        }
+
         if ($('select[name=etapa]').val() == "") {
             var valid = false;
             $('select[name=etapa]').next('.select2-container').find('.select2-selection').addClass('error-border');
@@ -437,6 +444,19 @@ $(function () {
 
         // Enviar formulario si todo está bien
         this.submit();
+    });
+
+    $("#form_order_recepcion").on("submit", function (event) {
+
+        $(".input_errors").remove();
+
+        let subproyecto = $('input[name=subproyecto]').attr('id');
+        let nroProforma = $('input[name=nro_proforma]').val().trim();
+        if (subproyecto != '' && nroProforma == '') {
+            event.preventDefault();
+            $('input[name=nro_proforma]').after($('<small class="input_errors" style="color: red;">campo requerido.</small>'));
+        }
+
     });
 
     $(document).on('click', '.eliminar-adquisicion', function () {
@@ -627,6 +647,55 @@ $(function () {
         Toast.fire({
             icon: 'success',
             title: 'Producto agregado correctamente.',
+        });
+    });
+
+    $('input[name=nro_proforma]').on('change', function () {
+        var input = $(this);
+        var nro_proforma = input.val();
+        $.ajax({
+            url: base_url + '/proformas/validar-nro-proforma',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            method: 'POST',
+            data: { 'nro_proforma': nro_proforma },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+                $('.input_errors').remove();
+            },
+            success: function (response) {
+                if (!response.success) {
+                    input.after($('<small class="input_errors" style="color: red;">' + response.message + '</small>'));
+                }
+
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire(
+                            'Error!',
+                            errorMsg,
+                            'error',
+                        );
+                }
+            }
         });
     });
 

@@ -2692,6 +2692,11 @@ a[href="javascript:void(0);"] {
     text-transform: none !important;
 }
 
+.input_errors {
+    color: red;
+    font-size: 10px;
+}
+
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
 /* mobile devices */
