@@ -401,12 +401,6 @@ $(function () {
             $('select[name=proyecto]').parent().append('<span class="error-message">Seleccione proyecto.</span>');
         }
 
-        if ($('select[name=proyecto]').val() == "") {
-            var valid = false;
-            $('select[name=proyecto]').next('.select2-container').find('.select2-selection').addClass('error-border');
-            $('select[name=proyecto]').parent().append('<span class="error-message">Seleccione proyecto.</span>');
-        }
-
         if ($('select[name=etapa]').val() == "") {
             var valid = false;
             $('select[name=etapa]').next('.select2-container').find('.select2-selection').addClass('error-border');
@@ -418,6 +412,14 @@ $(function () {
             $('select[name=actividad]').next('.select2-container').find('.select2-selection').addClass('error-border');
             $('select[name=actividad]').parent().append('<span class="error-message">Seleccione tipo.</span>');
         }
+
+        if ($('select[name=tipo_costo]').val() == "") {
+            var valid = false;
+            $('select[name=tipo_costo]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=tipo_costo]').parent().append('<span class="error-message">Seleccione tipo de costo.</span>');
+        }
+
+
         if ($('select[name=proveedor]').val() == "") {
             var valid = false;
             $('select[name=proveedor]').next('.select2-container').find('.select2-selection').addClass('error-border');
@@ -699,9 +701,73 @@ $(function () {
         });
     });
 
-    $('select[name=proyeto]').on('change', function () {
+    $('select[name=proyecto]').on('change', function () {
         var proyectoId = $(this).val();
-        console.log(proyectoId)
+
+        $.ajax({
+            url: base_url + '/administrativo/subproyectos-por-proyecto',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            method: 'POST',
+            data: { 'proyecto_id': proyectoId },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+                $('.input_errors').remove();
+                // Limpiar el select de subproyectos
+                $('select[name=subproyecto]').empty();
+            },
+            success: function (response) {
+                var subproyectos = response.subproyectos;
+                var subproyectoSelect = $('select[name=subproyecto]');
+                $.each(subproyectos, function (id, nombre) {
+                    subproyectoSelect.append($('<option>', { value: id, text: nombre }));
+                });
+                // Inicializar Select2 después de agregar las opciones
+                subproyectoSelect.trigger('change');
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire(
+                            'Error!',
+                            errorMsg,
+                            'error',
+                        );
+                }
+            }
+        });
+    });
+
+    $('select[name=subproyecto]').on('change', function () {
+        var subproyectoId = $(this).val();
+        if (subproyectoId) {
+            $(".contenedor-nro-proforma").addClass('col-md-4 col-12').html(`
+                <div class="form-group">
+                    <label for="nro_proforma">Nro. Proforma *</label>
+                    <input type="text" name="nro_proforma" id="nro_proforma" class="form-control" placeholder="Ingrese Nro. de Proforma" >
+                </div>
+            `);
+        } else {
+            $(".contenedor-nro-proforma").html('');
+            $(".contenedor-nro-proforma").removeClass('col-md-4 col-12');
+        }
     });
 
 
