@@ -699,6 +699,11 @@ $(function () {
         });
     });
 
+    $('select[name=proyeto]').on('change', function () {
+        var proyectoId = $(this).val();
+        console.log(proyectoId)
+    });
+
 
     function calcularTotal() {
         let subtotal = 0;
