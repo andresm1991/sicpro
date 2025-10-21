@@ -14,36 +14,43 @@
             {!! $errors->first('proyecto', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
         </div>
     </div>
+
+    <div class="col-md-4 col-12">
+        <div class="form-group">
+            {{ Form::label('', 'subProyecto', ['class' => 'col-form-label']) }}
+            <select name="subproyecto" class="form-control select2-basic-single"
+                data-placeholder="selecciona proyecto para cargar">
+                <option></option>
+            </select>
+            {!! $errors->first('proyecto', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+        </div>
+    </div>
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
-            <select name="etapa" class="form-control select2-basic-single" data-placeholder="selecciona opción">
-                <option></option>
-                @foreach ($etapa as $id => $nombre)
-                    <option value="{{ $id }}" {{ $adquisicion->etapa_id == $id ? 'selected' : '' }}>
-                        {{ $nombre }}</option>
-                @endforeach
-            </select>
+            {{ Form::select('etapa', getEtapasProyecto(), $adquisicion->etapa_id, ['class' => 'form-control select2-basic-single', 'data-placeholder' => 'seleccione opción']) }}
+
             {!! $errors->first('etapa', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
         </div>
     </div>
 
     <div class="col-md-4 col-12">
         <div class="form-group">
-            {{ Form::label('', 'Tipo', ['class' => 'col-form-label']) }}
-            <select name="actividad" class="form-control select2-basic-single" data-placeholder="selecciona etapa">
-                <option></option>
-                @foreach ($actividad as $id => $nombre)
-                    <option value="{{ $id }}" {{ $adquisicion->tipo_etapa_id == $id ? 'selected' : '' }}>
-                        {{ $nombre }}</option>
-                @endforeach
-            </select>
+            {{ Form::label('', 'Tipo etapa', ['class' => 'col-form-label']) }}
+            {{ Form::select('actividad', getTipoEtapasProyecto(), $adquisicion->tipo_etapa_id, ['class' => 'form-control select2-basic-single', 'data-placeholder' => 'seleccione opción']) }}
+
             {!! $errors->first('actividad', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
         </div>
     </div>
-</div>
+    <div class="col-md-4 col-12">
+        <div class="form-group">
+            {{ Form::label('', 'Tipo costos', ['class' => 'col-form-label']) }}
+            {{ Form::select('tipo_costo', getTipoCostosProyecto(), $adquisicion->tipo_costo_id, ['class' => 'form-control select2-basic-single', 'data-placeholder' => 'seleccione opción']) }}
 
-<div class="row">
+            {!! $errors->first('tipo_costo', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
+        </div>
+    </div>
+
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proveedor', ['class' => 'col-form-label']) }}
@@ -66,6 +73,7 @@
         </div>
     </div>
 </div>
+
 
 <legend class="custom-legend"><span>Agregar Productos</span></legend>
 <fieldset class="custom-fieldset">

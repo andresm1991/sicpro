@@ -18,6 +18,7 @@
                 <th scope="col">#</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Proyecto</th>
+                <th scope="col">SubProyecto</th>
                 <th scope="col">Etapa</th>
                 <th scope="col">Tipo</th>
                 <th class="col-accion"></th>
@@ -30,6 +31,9 @@
                     <td class="align-middle">{{ date('d-m-Y', strtotime($adquisicion->fecha)) }}</td>
                     <td class="align-middle">
                         {{ $adquisicion->proyecto_id > 0 ? strtoupper($adquisicion->proyecto->nombre_proyecto) : 'GENERAL' }}
+                    </td>
+                    <td class="align-middle">
+                        {{ $adquisicion->proyecto_id > 0 && $adquisicion->subproyecto ? $adquisicion->subproyecto : '---' }}
                     </td>
                     <td class="align-middle">{{ strtoupper($adquisicion->etapa->descripcion) }}</td>
                     <td class="align-middle">{{ strtoupper($adquisicion->tipo_etapa->descripcion) }}</td>

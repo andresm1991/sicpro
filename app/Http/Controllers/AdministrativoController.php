@@ -135,6 +135,11 @@ class AdministrativoController extends Controller
                     $adquisicion->save();
                     LogService::log('info', 'Actualizacion factura de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
                     return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la factura con éxito.');
+                } elseif (is_null($adquisicion->nro_proforma) && !empty($adquisicion->subproyecto) && !empty($request->nro_proforma)) {
+                    $adquisicion->nro_proforma = $request->nro_proforma;
+                    $adquisicion->save();
+                    LogService::log('info', 'Actualizacion adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'mensaje' => 'se actualizo adquisicion']);
+                    return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
                 }
                 return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible actualizar la información de una adquisición que está completada, si desea modificar los datos comuníquese con el administrador del sistema.');
             }
@@ -557,20 +562,19 @@ class AdministrativoController extends Controller
             ['name' => 'Contratistas', 'url' => '']
         ];
 
-
-        $orden_trabajos_pendientes = Contratista::with(['estado'])
-            ->WhereHas('estado', function ($q) {
-                $q->where('slug', 'estados.contratistas.proceso');
-            })
+        // --- Obtener Contratos Pendientes ---
+        $orden_trabajos_pendientes = Contratista::with(['proveedor', 'proyecto']) // Carga las relaciones necesarias
+            ->withTotals()        // 1. Añade las columnas calculadas
+            ->pendientes()        // 2. Filtra por los pendientes
             ->orderBy('fecha', 'asc')
-            ->paginate(15);
+            ->paginate(15, ['*'], 'pendientes_page');
 
-        $orden_trabajos_completas = Contratista::with(['estado'])
-            ->WhereHas('estado', function ($q) {
-                $q->where('slug', 'estados.contratistas.pagado');
-            })
+        // --- Obtener Contratos Completos ---
+        $orden_trabajos_completas = Contratista::with(['proveedor', 'proyecto'])
+            ->withTotals()        // 1. Añade las columnas calculadas
+            ->completos()         // 2. Filtra por los completos
             ->orderBy('fecha', 'asc')
-            ->paginate(15);
+            ->paginate(15, ['*'], 'completas_page');
 
         $route_params = ['orden_trabajos_pendientes' => $orden_trabajos_pendientes, 'orden_trabajos_completas' => $orden_trabajos_completas, 'breadcrumbs' => $breadcrumbs, 'title_page' => $title_page];
         return view('administrativo.contratista.index', $route_params);
@@ -698,26 +702,38 @@ class AdministrativoController extends Controller
             $output = "";
             $buscar = $request->buscar;
             $tipo = $request->tipo;
-            $orden_trabajos = Contratista::with(['proveedor', 'estado'])
-                ->whereHas('estado', function ($q) use ($tipo) {
-                    $q->where('slug', 'estados.contratistas.' . $tipo);
-                })
-                ->where(function ($query) use ($buscar) {
-                    $query->whereRaw("CONCAT(DATE_FORMAT(fecha, '%Y%m%d'), '-', LPAD(id, 3, '0')) LIKE ?", ['%' . $buscar . '%'])
-                        ->orWhere('fecha', 'LIKE', '%' . $buscar . '%')
-                        ->orWhereHas('proveedor', function ($q) use ($buscar) {
-                            $q->where('razon_social', 'LIKE', '%' . $buscar . '%');
+            $query = Contratista::with(['proveedor', 'proyecto'])
+                ->withTotals();
+
+            if ($tipo === 'proceso') {
+                $query->pendientes();
+            } elseif ($tipo === 'pagado') {
+                $query->completos();
+            }
+
+            $query->when($buscar, function ($q, $busqueda) {
+                $q->where(function ($subQuery) use ($busqueda) {
+                    // Búsqueda por ID formateado (Ej: 20231128-001)
+                    $subQuery->whereRaw("CONCAT(DATE_FORMAT(fecha, '%Y%m%d'), '-', LPAD(id, 3, '0')) LIKE ?", ['%' . $busqueda . '%'])
+                        // Búsqueda por fecha
+                        ->orWhere('fecha', 'LIKE', '%' . $busqueda . '%')
+                        // Búsqueda en la relación del proveedor
+                        ->orWhereHas('proveedor', function ($proveedorQuery) use ($busqueda) {
+                            $proveedorQuery->where('razon_social', 'LIKE', '%' . $busqueda . '%');
                         });
-                })
-                ->orderBy('fecha', 'asc')
-                ->get();
+                });
+            });
+
+            // 4. Aplicar el ordenamiento.
+            $query->orderBy('fecha', 'asc');
+            $orden_trabajos = $query->get();
 
             foreach ($orden_trabajos as $orden_trabajo) {
                 $editar = "<a href='" . route('administrativo.contratista.editar', $orden_trabajo->id) . "' class='dropdown-item'>Editar</a>";
                 $pagos = "<a href='" . route('administrativo.contratista.detalle', $orden_trabajo->id) . "' class='dropdown-item'>Pagos</a>";
                 $pdf = "<a href='" . route('pdf.orden.trabajo.contratista', $orden_trabajo->id) . "' class='dropdown-item' target='_blank'>PDF orden trabajo</a>";
 
-                $output .= '<tr id="' . $orden_trabajo->id . '">' .
+                $output .= '<tr id="' . $orden_trabajo->id . '" class="' . ($orden_trabajo->pagosOrdenTrabajoContratista->contains('pagado', false) ? 'table-warning' : 'clase-no-existe') . '">' .
                     '<td class="align-middle">' . numeroOrden($orden_trabajo, false) . '</td>' .
                     '<td class="align-middle text-uppercase">' . $orden_trabajo->proveedor->razon_social . '</td>' .
                     '<td class="align-middle text-uppercase">' . $orden_trabajo->articulo->descripcion . '</td>' .

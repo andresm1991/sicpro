@@ -914,4 +914,23 @@ if (!function_exists('palabras')) {
         // Retornar la ruta del archivo subido
         return $path_file;
     }
+
+    function getEtapasProyecto()
+    {
+        $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id');
+        $etapas->prepend('', '');
+        return $etapas;
+    }
+    function getTipoEtapasProyecto()
+    {
+        $tipoEtapas = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
+        $tipoEtapas->prepend('', '');
+        return $tipoEtapas;
+    }
+    function getTipoCostosProyecto()
+    {
+        $tipoCostos = CatalogoDato::getChildrenCatalogo('tipo.costos')->pluck('descripcion', 'id');
+        $tipoCostos->prepend('', '');
+        return $tipoCostos;
+    }
 }

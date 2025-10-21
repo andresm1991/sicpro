@@ -3,7 +3,9 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Contratista extends Model
@@ -189,5 +191,56 @@ class Contratista extends Model
                 'saldo' => '$ ' . number_format($saldo, 4),
             ];
         });
+    }
+
+
+    /**
+     * Scope para añadir columnas calculadas de totales a la consulta.
+     * Esto nos permite reutilizar los cálculos sin repetir las subconsultas.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeWithTotals(Builder $query)
+    {
+        return $query->select('contratistas.*') // Siempre empezar con las columnas originales
+            ->selectSub(function ($subQuery) {
+                // Calcula el valor total del contrato
+                $subQuery->from('detalle_contratistas')
+                    ->selectRaw('COALESCE(SUM(cantidad * valor_unitario), 0) * contratistas.numero_casas')
+                    ->whereColumn('contratista_id', 'contratistas.id');
+            }, 'total_contrato_calculado')
+            ->selectSub(function ($subQuery) {
+                // Calcula la suma de los pagos CONFIRMADOS
+                $subQuery->from('pagos_orden_trabajo_contratista')
+                    ->selectRaw('COALESCE(SUM(valor), 0)')
+                    ->whereColumn('contratista_id', 'contratistas.id')
+                    ->where('pagado', true);
+            }, 'total_pagado_confirmado');
+    }
+
+    /**
+     * Scope para filtrar solo los contratistas con saldo pendiente.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopePendientes(Builder $query)
+    {
+        // Un contrato es pendiente si el total es mayor que lo pagado.
+        // Usamos una tolerancia para evitar problemas con decimales.
+        return $query->havingRaw('total_contrato_calculado - total_pagado_confirmado > 0.001');
+    }
+
+    /**
+     * Scope para filtrar solo los contratistas completamente pagados.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeCompletos(Builder $query)
+    {
+        // Un contrato está completo si la diferencia es casi cero o negativa.
+        return $query->havingRaw('total_contrato_calculado - total_pagado_confirmado <= 0.001');
     }
 }

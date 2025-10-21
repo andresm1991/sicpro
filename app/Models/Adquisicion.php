@@ -18,6 +18,7 @@ class Adquisicion extends Model
         'proyecto_id',
         'etapa_id',
         'tipo_etapa_id',
+        'tipo_costo_id',
         'usuario_id',
         'estado',
         'tipo_adquisicion',
@@ -40,6 +41,11 @@ class Adquisicion extends Model
     public function tipo_etapa()
     {
         return $this->belongsTo(CatalogoDato::class, 'tipo_etapa_id');
+    }
+
+    public function tipo_costo()
+    {
+        return $this->belongsTo(CatalogoDato::class, 'tipo_costo_id');
     }
 
     public function usuario()
