@@ -855,8 +855,10 @@ class AdquisicionController extends Controller
         $proyecto_id = $request->proyecto;
         $adquisicion_id = $request->actividad;
         $etapa_id = $request->etapa;
+        $tipo_costo = $request->tipo_costo;
         $proveedor = $request->proveedor;
         $numero_factura = $request->numero_factura;
+        $nro_proforma = $request->nro_proforma;
 
         $productos = $request->productos;
         $cantidad = $request->cantidad;
@@ -878,10 +880,12 @@ class AdquisicionController extends Controller
                 'proyecto_id' => $proyecto_id,
                 'etapa_id' => $etapa_id,
                 'tipo_etapa_id' => $adquisicion_id,
+                'tipo_costo_id' => $tipo_costo,
                 'usuario_id' => Auth::user()->id,
                 'tipo_adquisicion' => $tipo,
                 'estado' => $estado,
                 'factura' => $numero_factura,
+                'nro_proforma' => $nro_proforma,
             ]);
 
             if ($adquisicion) {

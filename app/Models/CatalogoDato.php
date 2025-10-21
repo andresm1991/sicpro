@@ -33,10 +33,12 @@ class CatalogoDato extends Model
         return CatalogoDato::where('slug', $value)->first();
     }
 
-    public static function getChildrenCatalogo($value)
+    public static function getChildrenCatalogo($value, $slugsADescartar = [])
     {
         $catalogo = CatalogoDato::where('slug', $value)->first();
-        return CatalogoDato::where('padre_id', $catalogo->id)->get();
+        return CatalogoDato::where('padre_id', $catalogo->id)
+            ->whereNotIn('slug', $slugsADescartar)
+            ->get();
     }
 
     public static function getEstadoInventarioId($slug)

@@ -36,6 +36,7 @@ Route::group(['prefix' => 'administrativo', 'as' => 'administrativo.'], function
     Route::post('/mano-de-obra/registrar-pago', [AdministrativoController::class, 'registrarPagoManoObra'])->name('mano.obra.registrar.pago');
     Route::get('/buscar-mano-obra', [AdministrativoController::class, 'buscarManoObra']);
 
+    Route::post('/subproyectos-por-proyecto', [AdministrativoController::class, 'subproyectosPorProyecto']);
 
     //**RUTAS PRESTAMOS **
     Route::group(['prefix' => 'prestamos', 'as' => 'prestamos.'], function () {

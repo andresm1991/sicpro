@@ -274,8 +274,7 @@ class AdministrativoController extends Controller
     private function actualizarAdquisicionAdministrativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
         try {
-
-            if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->completado) {
+            if (!auth()->user()->hasRole(['Administrador', 'Gerencial']) && $adquisicion->orden_recepcion && $adquisicion->orden_recepcion->completado) {
                 return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
             }
             $orden_completa = $request->has('orden_completa') ? true : false;
@@ -299,6 +298,11 @@ class AdministrativoController extends Controller
             $adquisicion->proyecto_id = $request->proyecto;
             $adquisicion->etapa_id = $request->etapa;
             $adquisicion->tipo_etapa_id = $request->actividad;
+            $adquisicion->nro_proforma = $request->nro_proforma;
+            $adquisicion->factura = $request->numero_factura;
+            $adquisicion->subproyecto = $request->subproyecto;
+            $adquisicion->tipo_costo_id = $request->tipo_costo;
+
             if ($orden_completa) {
                 $adquisicion->estado = 'Completado';
             }
@@ -464,6 +468,7 @@ class AdministrativoController extends Controller
                     $adquisicion->estado = 'Completado';
                 }
                 $adquisicion->factura = $request->numero_factura;
+                $adquisicion->nro_proforma = $request->nro_proforma;
                 $adquisicion->save();
                 // Actualiza la cantidad recibiba en el detalle del pedido
                 foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
@@ -881,6 +886,16 @@ class AdministrativoController extends Controller
                     '</tr>';
             }
             return Response($output);
+        }
+    }
+
+    public function subproyectosPorProyecto(Request $request)
+    {
+        if ($request->ajax()) {
+            $proyecto_id = $request->proyecto_id;
+            $subproyectos = Proyecto::find($proyecto_id)->subproyectos_unicos;
+
+            return response()->json(['subproyectos' => $subproyectos]);
         }
     }
 }

@@ -37,7 +37,7 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Tipo etapa', ['class' => 'col-form-label']) }}
-            {{ Form::select('actividad', getTipoEtapasProyecto(), $adquisicion->tipo_etapa_id, ['class' => 'form-control select2-basic-single', 'data-placeholder' => 'seleccione opción']) }}
+            {{ Form::select('actividad', getTipoEtapasProyecto(['contratista', 'mano.obra', 'profecionales']), $adquisicion->tipo_etapa_id, ['class' => 'form-control select2-basic-single', 'data-placeholder' => 'seleccione opción']) }}
 
             {!! $errors->first('actividad', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
         </div>
@@ -72,6 +72,18 @@
             {{ Form::text('numero_factura', $adquisicion->factura, ['class' => 'form-control', 'id' => 'nro_factura', 'placeholder' => 'Ingrese el número de factura']) }}
         </div>
     </div>
+    <div class="contenedor-nro-proforma">
+        @if ($adquisicion->subproyecto)
+            <div class="col-md-4 col-12">
+                <div class="form-group">
+                    {{ Form::label('', 'Nro. proforma *', ['class' => 'col-form-label']) }}
+                    {{ Form::text('nro_proforma', $adquisicion->nro_proforma, ['class' => 'form-control', 'id' => 'nro_proforma', 'placeholder' => 'Ingrese el número de proforma']) }}
+                </div>
+            </div>
+        @endif
+    </div>
+
+
 </div>
 
 

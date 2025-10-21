@@ -915,15 +915,15 @@ if (!function_exists('palabras')) {
         return $path_file;
     }
 
-    function getEtapasProyecto()
+    function getEtapasProyecto($slugsADescartar = [])
     {
-        $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id');
+        $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones', $slugsADescartar)->pluck('descripcion', 'id');
         $etapas->prepend('', '');
         return $etapas;
     }
-    function getTipoEtapasProyecto()
+    function getTipoEtapasProyecto($slugsADescartar = [])
     {
-        $tipoEtapas = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id');
+        $tipoEtapas = CatalogoDato::getChildrenCatalogo('proveedor', $slugsADescartar)->pluck('descripcion', 'id');
         $tipoEtapas->prepend('', '');
         return $tipoEtapas;
     }
