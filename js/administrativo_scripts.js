@@ -103,7 +103,7 @@ $(function () {
         var $tipo = $(this).attr('id');
 
         $.ajax({
-            url: '/administrativo/buscar-orden-trabajo',
+            url: base_url + '/administrativo/buscar-orden-trabajo',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'buscar': $value, 'tipo': $tipo },
@@ -127,7 +127,7 @@ $(function () {
         var $tipo = $(this).attr('id');
 
         $.ajax({
-            url: '/administrativo/buscar-mano-obra',
+            url: base_url + '/administrativo/buscar-mano-obra',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'buscar': $value, 'tipo': $tipo },
