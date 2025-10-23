@@ -703,7 +703,11 @@ $(function () {
 
     $('select[name=proyecto]').on('change', function () {
         var proyectoId = $(this).val();
-
+        // Limpiar el select de subproyectos
+        $('select[name=subproyecto]').empty();
+        if (proyectoId <= 0) {
+            return;
+        }
         $.ajax({
             url: base_url + '/administrativo/subproyectos-por-proyecto',
             headers: { 'X-CSRF-TOKEN': csrf },
@@ -712,8 +716,6 @@ $(function () {
             beforeSend: function () {
                 $('#loading').addClass('show');
                 $('.input_errors').remove();
-                // Limpiar el select de subproyectos
-                $('select[name=subproyecto]').empty();
             },
             success: function (response) {
                 var subproyectos = response.subproyectos;
