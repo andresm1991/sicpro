@@ -432,6 +432,12 @@ $(function () {
             $('input:text[name=numero_factura]').parent().append('<span class="error-message">Ingrese factura.</span>');
         }
 
+        if ($('select[name=subproyecto]').val() != "" && $('input[name=nro_proforma]').val() == "" && completo) {
+            var valid = false;
+            $('input:text[name=nro_proforma]').addClass('error-border');
+            $('input:text[name=nro_proforma]').parent().append('<span class="error-message">Ingrese proforma.</span>');
+        }
+
         if (!forma_pago) {
             var valid = false;
             $('<span>', {
@@ -706,6 +712,8 @@ $(function () {
         // Limpiar el select de subproyectos
         $('select[name=subproyecto]').empty();
         if (proyectoId <= 0) {
+            $(".contenedor-nro-proforma").html('');
+            $(".contenedor-nro-proforma").removeClass('col-md-4 col-12');
             return;
         }
         $.ajax({
