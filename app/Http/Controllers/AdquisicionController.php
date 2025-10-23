@@ -39,7 +39,7 @@ class AdquisicionController extends Controller
     public function  index($tipo, $tipo_id, Proyecto $proyecto)
     {
         $title_page = $proyecto->nombre_proyecto . ' - Aquisiciones';
-        $menu_adquisiciones = CatalogoDato::getChildrenCatalogo('menu.adquisiciones');
+        $menu_adquisiciones = CatalogoDato::getChildrenCatalogo('menu.adquisiciones', ['menu.adquisciones.proceso.ventas', 'menu.adquisciones.general']);
 
         $breadcrumbs = [
             ['name' => 'Inicio', 'url' => route('home')],

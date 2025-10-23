@@ -36,7 +36,7 @@
 
     <div class="col-md-4 col-12">
         <div class="form-group">
-            {{ Form::label('', 'Tipo etapa', ['class' => 'col-form-label']) }}
+            {{ Form::label('', 'Tipo adquisición', ['class' => 'col-form-label']) }}
             {{ Form::select('actividad', getTipoEtapasProyecto(['contratista', 'mano.obra', 'profecionales']), $adquisicion->tipo_etapa_id, ['class' => 'form-control select2-basic-single', 'data-placeholder' => 'seleccione opción']) }}
 
             {!! $errors->first('actividad', '<small class="help-block text-danger error_mensajes">:message</small>') !!}
