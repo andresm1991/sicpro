@@ -234,7 +234,7 @@ $(function () {
         container: 'body' // Forzar que el menú se renderice en el body
     });
 
-    $('#summernote').summernote({
+    $('.summernote').summernote({
         placeholder: 'Escribe el contenido del contrato aquí...',
         tabsize: 2,
         height: 900, // Altura del editor

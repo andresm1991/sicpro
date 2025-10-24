@@ -618,6 +618,61 @@ $(function () {
         });
     });
 
+    // -- MANEJADOR PARA ENVIAR EL FORMULARIO DE ENTREGA ---
+    $('#form_acta_entrega').on('submit', function (e) {
+        e.preventDefault();
+        let form = $(this);
+        let url = form.attr('action');
+        let data = form.serialize();
+
+        $.ajax({
+            url: url,
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: "POST",
+            data: data,
+            beforeSend: function () {
+                $('#loading').addClass('show');
+                $('.input_errors').remove();
+            },
+            success: function (response) {
+                Toast.fire({
+                    icon: response.success ? 'success' : 'error',
+                    text: response.message,
+                });
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red; font-size: 10px;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Ocurrió un error. Inténtalo de nuevo.',
+                            confirmButtonText: 'Aceptar'
+                        });
+                }
+            }
+
+        });
+    });
+
     $('input[name=valor_saldo_reserva]').on('change', function () {
         var valor = $(this).maskMoney('unmasked')[0];
         var procesoVentaId = $('input[name=proceso_venta_id]').val()
