@@ -87,28 +87,27 @@ class ContratistaController extends Controller
 
     public function storeOrdenTrabajo(Request $request)
     {
+
         $proyecto = $request->proyecto_id;
         $tipo_adquisicion = $request->tipo_adquisicion;
         $tipo_etapa = $request->tipo_etapa;
         $fecha = $request->fecha;
         $proveedor = $request->proveedor;
         $categoria = $request->categoria;
-        $productos = $request->productos;
-        $cantidad = $request->cantidad;
-        $unidad_medida = $request->unidad_medida;
-        $precio_unitario = $request->precio_unitario;
         $plazo = $request->input('plazo_semanas', 0);
         $nro_casas = $request->numero_casas;
         $subproyecto = $request->subproyecto;
 
+        $tipoEtapa = CatalogoDato::find($tipo_etapa);
+
         try {
             DB::beginTransaction();
 
-            $items = array_map(function ($producto, $cantidad, $valor, $unidad_medida) {
+            $items = array_map(function ($producto, $cantidad, $valor, $unidad_medida) use ($tipoEtapa) {
                 $valoresLimpios = preg_replace('/[^0-9.]/', '', $valor); // Elimina $ y otros caracteres no numéricos
 
                 return [
-                    'producto' => is_numeric($producto) ? $producto : agregarProducto($producto, $valoresLimpios, 0, $unidad_medida),
+                    'producto' => is_numeric($producto) ? $producto : registrarProducto($tipoEtapa, $producto, $valoresLimpios)->id,
                     'cantidad' => str_replace(',', '', $cantidad),
                     'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
                     'valor' => $valoresLimpios
@@ -218,12 +217,13 @@ class ContratistaController extends Controller
 
             $plazo = $request->plazo_semanas;
             $nro_casas = $request->numero_casas;
+            $tipoEtapa = CatalogoDato::find($request->tipo_etapa);
 
-            $items = array_map(function ($producto, $cantidad, $valor, $unidad_medida) {
+            $items = array_map(function ($producto, $cantidad, $valor, $unidad_medida) use ($tipoEtapa) {
                 $valoresLimpios = preg_replace('/[^0-9.]/', '', $valor); // Elimina $ y otros caracteres no numéricos
 
                 return [
-                    'producto' => is_numeric($producto) ? $producto : agregarProducto($producto, $valoresLimpios, 0, $unidad_medida),
+                    'producto' => is_numeric($producto) ? $producto : registrarProducto($tipoEtapa, $producto, $valoresLimpios)->id,
                     'cantidad' => str_replace(',', '', $cantidad),
                     'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
                     'valor' => $valoresLimpios
