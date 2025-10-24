@@ -24,6 +24,7 @@
                         'marketing.seguimiento_ventas.partials.form_peritaje_aprobacion',
                     'Escrituración' => 'marketing.seguimiento_ventas.partials.form_escrituracion',
                     'Desembolso' => 'marketing.seguimiento_ventas.partials.form_desembolso',
+                    'Entrega' => 'marketing.seguimiento_ventas.partials.form_acta_entrega',
                 ];
             @endphp
             @foreach (App\Models\Marketing\ProcesoVenta::ETAPAS as $etapa)

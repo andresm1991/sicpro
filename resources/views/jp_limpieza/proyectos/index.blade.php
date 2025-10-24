@@ -23,7 +23,7 @@
                                 <div class="card-title">
                                     <h5 class="text-truncate text-capitalize">{{ $proyecto->nombre_proyecto }}</h5>
                                     <small
-                                        class="badge badge-warning">{{ $proyecto->estado->descripcion ?? 'Sin estado' }}</small>
+                                        class="badge {{ $proyecto->estado->slug == 'estados.proyectos.finalizado' ? 'badge-success' : ($proyecto->estado->slug == 'estados.proyectos.pendiente' ? 'badge-info' : 'badge-warning') }}">{{ $proyecto->estado->descripcion ?? 'Sin estado' }}</small>
                                 </div>
                                 <h6 class="card-text text-truncate-max-line-1 no-margin-bottom">
                                     Entidad:

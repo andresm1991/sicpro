@@ -43,7 +43,9 @@
                                         <td class="align-middle">{{ $index + 1 }}</td>
                                         <td class="align-middle">{{ $seguimiento->fecha }}</td>
                                         <td class="align-middle">{{ $seguimiento->cliente->nombre }}</td>
-                                        <td class="align-middle">{{ $seguimiento->etapa_actual }}</td>
+                                        <td class="align-middle">
+                                            {{ $seguimiento->etapa_actual == 'Entrega' ? 'Finalizado' : $seguimiento->etapa_actual }}
+                                        </td>
                                         <td class="align-middle text-right">
                                             <div class="btn-group dropleft">
                                                 <button type="button" class="btn btn-outline-dark dropdown-toggle"

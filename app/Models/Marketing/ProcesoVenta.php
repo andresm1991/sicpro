@@ -18,6 +18,7 @@ class ProcesoVenta extends Model
         'Peritaje y aprobación de crédito',
         'Escrituración',
         'Desembolso',
+        'Entrega',
     ];
 
     protected $fillable = [
@@ -69,7 +70,7 @@ class ProcesoVenta extends Model
 
     public function contrato()
     {
-        return $this->hasOne(Contrato::class);
+        return $this->hasMany(Contrato::class);
     }
 
     /**
@@ -83,5 +84,22 @@ class ProcesoVenta extends Model
     public function getTotalAcreditadoAttribute()
     {
         return $this->valor_reserva + $this->valor_saldo_reserva + $this->monto_desembolsado;
+    }
+
+    public function isEtapaCompleta(string $etapa): bool
+    {
+        // Buscamos el índice (la posición) de la etapa actual del proceso
+        $indiceActual = array_search($this->etapa_actual, self::ETAPAS);
+
+        // Buscamos el índice de la etapa que queremos comparar
+        $indiceAComparar = array_search($etapa, self::ETAPAS);
+
+        // Si alguna de las etapas no se encuentra en la lista, devolvemos false para evitar errores
+        if ($indiceActual === false || $indiceAComparar === false) {
+            return false;
+        }
+
+        // La etapa está completa si el índice actual es mayor o igual al índice a comparar
+        return $indiceActual >= $indiceAComparar;
     }
 }

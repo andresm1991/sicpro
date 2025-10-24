@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Marketing;
 
+use Carbon\Carbon;
 use App\Models\Cliente;
 use Illuminate\Support\Str;
 use App\Services\LogService;
@@ -13,8 +14,8 @@ use App\Models\Marketing\ClienteVenta;
 use App\Models\Marketing\ProcesoVenta;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Marketing\DocumentacionItem;
-use App\Http\Requests\Marketing\SeguimientoVenta\StoreReservaRequest;
 use App\Models\Marketing\EscrituracionItem;
+use App\Http\Requests\Marketing\SeguimientoVenta\StoreReservaRequest;
 
 class SeguimientoVentaController extends Controller
 {
@@ -151,12 +152,22 @@ class SeguimientoVentaController extends Controller
         ];
 
         $seguimientoVenta = $seguimiento;
-
         // AQUÍ ESTÁ LA MAGIA: Renderizamos la plantilla de Blade a una cadena de HTML
-        $plantillaContenido = $seguimiento->contrato->contenido;
+        $plantillaContenido = $seguimiento->contrato->where('titulo', 'contrato reserva')->first()->contenido;
+
+        if ($seguimiento->contrato->where('titulo', 'acta de entrega')->first()) {
+            $plantillaActaEntrega = $seguimiento->contrato->where('titulo', 'acta de entrega')->first()->contenido;
+        } else {
+            $proceso = $seguimiento;
+            $cliente = $seguimientoVenta->cliente;
+
+            $fecha_entrega = Carbon::now();
+            $fecha_reserva = $seguimiento->created_at;
+            $plantillaActaEntrega = view('templates.contratos.acta_entrega', compact('cliente', 'proceso', 'fecha_entrega', 'fecha_reserva'))->render();
+        }
 
 
-        return view('marketing.seguimiento_ventas.edit', compact('title_page', 'breadcrumbs', 'seguimientoVenta', 'plantillaContenido'));
+        return view('marketing.seguimiento_ventas.edit', compact('title_page', 'breadcrumbs', 'seguimientoVenta', 'plantillaContenido', 'plantillaActaEntrega'));
     }
 
     public function actualizarEtapaReserva(Request $request, ProcesoVenta $seguimiento)
@@ -407,6 +418,45 @@ class SeguimientoVentaController extends Controller
         }
     }
 
+    public function storeEtapaEntrega(Request $request, ProcesoVenta $proceso)
+    {
+        try {
+            DB::beginTransaction();
+            $etapa_completa = $request->has('etapa_entrega_completa') && $request->input('etapa_entrega_completa');
+            if ($etapa_completa) {
+                $proceso->etapa_actual = 'Entrega';
+            }
+
+            $proceso->contrato()->updateOrCreate(
+                ['titulo' => 'acta de entrega'],
+                ['contenido' => $request->input('contenido_acta_entrega')]
+            );
+
+            $carpetaDestino = $this->path_files . 'entrega/' . date('Y-m-d') . '/' .  Str::slug($proceso->cliente->nombre, '_');
+            $old_file_path = '';
+            // Manejar las subidas de archivos
+            if ($request->hasFile('file_contrato_entrega_firmado')) {
+                $path_archivo = subirArchivo($carpetaDestino, 'contrato_entrega_firmado', $request->file('file_contrato_entrega_firmado'));
+
+                $old_file_path  = $proceso->contrato_entrega_firmado_path;
+                $proceso->contrato_entrega_firmado_path = $path_archivo;
+            }
+
+            $proceso->save();
+
+            DB::commit();
+            if ($old_file_path && Storage::disk('digitalocean')->exists($old_file_path)) {
+                Storage::disk('digitalocean')->delete($old_file_path);
+                LogService::log('INFO', 'Seguimiento ventas', ['message' => 'Archivo antiguo eliminado: ' . $old_file_path]);
+            }
+            return response()->json(['success' => true, 'message' => 'Etapa de Entrega actualizada exitosamente.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            LogService::log('ERROR', 'Seguimiento ventas', ['message' => 'Ocurrió un error al actualizar la etapa de entrega: ' . $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Ocurrió un error al actualizar la etapa de entrega']);
+        }
+    }
+
     public function storeValorSaldoReserva(Request $request)
     {
         try {
@@ -428,6 +478,42 @@ class SeguimientoVentaController extends Controller
 
     public function actualizaEtapa(Request $request, ProcesoVenta $proceso)
     {
-        return $request->all();
+        if ($request->ajax()) {
+            $isChecked = $request->input('valor');
+
+            try {
+                DB::beginTransaction();
+                switch ($request->input('etapa')) {
+                    case 'etapa-documentacion-completa':
+                        if ($isChecked) {
+                            $proceso->etapa_actual = 'Documentación inicial';
+                        } else {
+                            $proceso->etapa_actual = 'Reserva';
+                        }
+                        break;
+                    case 'etapa-escrituracion-completa':
+                        if ($isChecked) {
+                            $proceso->etapa_actual = 'Escrituración';
+                        } else {
+                            $proceso->etapa_actual = 'Documentación inicial';
+                        }
+                        break;
+                    default:
+                        return response()->json(['success' => false, 'message' => 'Etapa no reconocida.']);
+                        break;
+                }
+
+                $proceso->save();
+
+                DB::commit();
+
+                return response()->json(['success' => true, 'message' => 'Etapa actualizada exitosamente.']);
+            } catch (\Exception $e) {
+                DB::rollBack();
+                LogService::log('ERROR', 'Seguimiento ventas', ['message' => 'Ocurrió un error al actualizar la etapa: ' . $e->getMessage()]);
+                return response()->json(['success' => false, 'message' => 'Ocurrió un error al actualizar la etapa']);
+            }
+        }
+        abort(404);
     }
 }

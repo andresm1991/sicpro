@@ -8,8 +8,8 @@
         <div class="col-sm-6 col-12 d-flex justify-content-end align-items-center">
             <label for="forCheckbox" class="col-form-label mr-3">Etapa completada</label>
             <div class="checkbox-wrapper-8">
-                <input class="tgl tgl-skewed completar-etapa" name="etapa_reserva_completa" id="etapa-reserva-completa"
-                    type="checkbox" />
+                <input class="tgl tgl-skewed" name="etapa_reserva_completa" id="etapa-reserva-completa" type="checkbox"
+                    @checked($seguimientoVenta->isEtapaCompleta('Reserva')) />
                 <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="etapa-reserva-completa"></label>
             </div>
         </div>
@@ -29,7 +29,7 @@
                                 getProyectos(),
                                 isset($seguimientoVenta->proyecto_id) ? $seguimientoVenta->proyecto_id : '',
                                 [
-                                    'class' => 'form-control',
+                                    'class' => 'form-control select2-basic-single',
                                     'id' => 'proyecto',
                                     'data-placeholder' => 'Seleccione proyecto',
                                 ],
@@ -202,7 +202,7 @@
                 <label for="contenido" class="col-form-label">Contenido del Contrato
                     @isset($seguimientoVenta->contrato)
                         <br>
-                        <a href="{{ route('marketing.seguimiento.ventas.contrato.preview', $seguimientoVenta->contrato->id) }}"
+                        <a href="{{ route('marketing.seguimiento.ventas.contrato.preview', $seguimientoVenta->contrato->where('titulo', 'contrato reserva')->first()->id) }}"
                             class="btn btn-sm btn-dark " target="_blank">
                             <i class="fa-solid fa-eye mr-2"></i> Vista Previa
                         </a>
@@ -210,7 +210,7 @@
                 </label>
 
                 {{-- Precargamos el textarea con el HTML de nuestra plantilla --}}
-                <textarea id="summernote" name="contenido">
+                <textarea class="summernote" id="summernote" name="contenido">
         {!! $plantillaContenido !!}
     </textarea>
             </div>

@@ -9,7 +9,7 @@
             <label for="forCheckbox" class="col-form-label mr-3">Etapa completada</label>
             <div class="checkbox-wrapper-8">
                 <input class="tgl tgl-skewed" name="etapa_peritaje_completa" id="etapa-peritaje-completa"
-                    type="checkbox" value="1" />
+                    type="checkbox" value="1" @checked($seguimientoVenta->isEtapaCompleta('Peritaje y aprobación de crédito')) />
                 <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="etapa-peritaje-completa"></label>
             </div>
         </div>

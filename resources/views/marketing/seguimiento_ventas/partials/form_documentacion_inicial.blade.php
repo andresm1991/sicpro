@@ -3,8 +3,8 @@
     <div class="col-sm-6 col-12  d-flex justify-content-end align-items-center">
         <label for="forCheckbox" class="col-form-label mr-3">Etapa completada</label>
         <div class="checkbox-wrapper-8">
-            <input class="tgl tgl-skewed" name="etapa_documentacion_completa" id="etapa-documentacion-completa"
-                type="checkbox" value="0" />
+            <input class="tgl tgl-skewed completar-etapa" name="etapa_documentacion_completa"
+                id="etapa-documentacion-completa" type="checkbox" value="1" @checked($seguimientoVenta->isEtapaCompleta('Documentación inicial')) />
             <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI" for="etapa-documentacion-completa"></label>
         </div>
     </div>
