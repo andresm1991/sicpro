@@ -615,6 +615,9 @@ class AdministrativoController extends Controller
         try {
             DB::beginTransaction();
 
+            $contratista->nro_proforma = $request->nro_proforma;
+            $contratista->save();
+
             $items = array_map(function ($producto, $cantidad, $precio_unitario, $costo_indirecto, $unidad_medida) {
                 return [
                     'producto' => $producto,

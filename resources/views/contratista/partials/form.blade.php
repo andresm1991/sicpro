@@ -46,6 +46,17 @@
             {{ Form::select('subproyecto', $subproyectos, old('subproyecto', $orden_trabajo->subproyecto), ['class' => 'form-control select2-tag', 'data-placeholder' => 'subproyecto', 'data-allow-clear' => 'true']) }}
         </div>
     </div>
+    @if (isset($administrativo))
+        @if ($orden_trabajo->subproyecto)
+            <div class="col-sm-4 col-12">
+                <div class="form-group">
+                    {{ Form::label('', 'Nro Proforma', ['class' => 'col-form-label']) }}
+                    {{ Form::text('nro_proforma', $orden_trabajo->nro_proforma, ['class' => 'form-control', 'placeholder' => 'Nro Proforma']) }}
+                </div>
+            </div>
+        @endif
+
+    @endif
 </div>
 
 @if (!isset($administrativo))
