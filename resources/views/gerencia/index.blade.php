@@ -11,6 +11,11 @@
                     <img src="{{ asset('images/svg/terrenos-en-venta.svg') }}">
                     <span style="margin-right: 10px;margin-left: 10px;">Propiedades en venta</span>
                 </a>
+
+                <a href="{{ route('gerencia.reporte.balance') }}" class="nodo">
+                    <img src="{{ asset('images/svg/analitica.svg') }}">
+                    <span style="margin-right: 10px;margin-left: 10px;">Reporte Balance</span>
+                </a>
             </div>
         </div>
     </section>

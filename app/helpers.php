@@ -933,4 +933,22 @@ if (!function_exists('palabras')) {
         $tipoCostos->prepend('', '');
         return $tipoCostos;
     }
+
+    function getAnios()
+    {
+        // Encuentra el primer (más antiguo) registro.
+        $oldestPost = Proyecto::oldest('created_at')->first();
+
+        // Obtiene el año más antiguo. Si no hay registros, usa el año actual como fallback.
+        $startYear = $oldestPost ? $oldestPost->created_at->year : Carbon::now()->year;
+
+        // Obtiene el año actual.
+        $currentYear = Carbon::now()->year;
+
+        // Crea un array de años para el selector.
+        $years = range($currentYear, $startYear);
+        $yearsAssoc = array_combine($years, $years);
+
+        return $yearsAssoc;
+    }
 }

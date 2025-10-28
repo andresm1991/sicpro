@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Gerencia;
 
-use App\Http\Requests\PropiedadesVentaStoreRequest;
-use App\Http\Requests\PropiedadesVentaUpdateRequest;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\VentaPropiedad;
 use App\Models\ImagenPropiedad;

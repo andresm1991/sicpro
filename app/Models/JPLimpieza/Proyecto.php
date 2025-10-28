@@ -138,7 +138,7 @@ class Proyecto extends Model
 
         // Hacemos una consulta rápida a la otra DB para obtener el ID que necesitamos.
         // Usamos `value('id')` para obtener solo el valor del ID, es muy eficiente.
-        $estadoEjecutadoId = CatalogoDato::where('slug', 'estados.proyectos.ejecucion')->value('id');
+        $estadosEjecutadosIds = CatalogoDato::whereIn('slug', ['estados.proyectos.ejecucion', 'estados.proyectos.finalizado'])->pluck('id');
 
         // --- 4. OBTENER PROYECTOS Y CONSOLIDAR DATOS ---
         $proyectosQuery = self::query()
@@ -146,9 +146,9 @@ class Proyecto extends Model
                 $q->where('id', $proyectoInput);
             });
 
-        // Solo proyectos en estado "Ejecutado"
-        if ($estadoEjecutadoId) {
-            $proyectosQuery->where('estado_id', $estadoEjecutadoId);
+        // Solo proyectos en estado "Ejecutado o Finalizado"
+        if ($estadosEjecutadosIds->isNotEmpty()) {
+            $proyectosQuery->whereIn('estado_id', $estadosEjecutadosIds);
         }
         // Si se pide un proyecto específico, no mostramos los gastos administrativos
         // para no confundir al usuario.

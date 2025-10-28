@@ -1,7 +1,8 @@
 <?php
 
-use App\Http\Controllers\VentaPropiedadController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Gerencia\VentaPropiedadController;
+use App\Http\Controllers\Gerencia\ReporteGerencialController;
 
 Route::group(['prefix' => 'gerencia', 'as' => 'gerencia.'], function () {
     Route::get('/', function () {
@@ -24,5 +25,10 @@ Route::group(['prefix' => 'gerencia', 'as' => 'gerencia.'], function () {
         Route::delete('/eliminar-propiedad/{propiedad}', [VentaPropiedadController::class, 'destroy'])->name('destroy');
         Route::get('/buscar-propiedad', [VentaPropiedadController::class, 'buscar']);
         Route::get('/mapa-de-propiedades', [VentaPropiedadController::class, 'mapa'])->name('mapa');
+    });
+
+    Route::group(['prefix' => 'reporte', 'as' => 'reporte.'], function () {
+        Route::get('/balance', [ReporteGerencialController::class, 'reporteBalance'])->name('balance');
+        Route::post('/generar-reporte-balance', [ReporteGerencialController::class, 'generarReporteBalance']);
     });
 });
