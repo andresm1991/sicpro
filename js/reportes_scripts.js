@@ -1407,7 +1407,6 @@ $(function () {
 
     });
 
-
     /**
      * Mostrar el reporte global
      * @param {*} result 
