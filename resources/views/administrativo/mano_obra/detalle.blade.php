@@ -33,11 +33,12 @@
                                         'enctype' => 'multipart/form-data',
                                     ]) !!}
 
+                                    <input type="hidden" name="estado" value="{{ $tipo }}">
                                     <input type="hidden" name="pago_ids" value="{{ $pagoIds }}">
                                     <input type="hidden" name="mano_obra" value="{{ $mano_obra->id }}">
                                     <input type="hidden" name="nroProforma" value="{{ $mano_obra->nro_proforma }}">
-                                    <button class="btn btn-dark btn-options btn-block">Generar
-                                        Pago</button>
+                                    <button
+                                        class="btn btn-dark btn-options btn-block">{{ $tipo == 'completado' ? 'Actualizar' : 'Generar Pago' }}</button>
                                     {{ Form::close() }}
                                 @else
                                 @endif

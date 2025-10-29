@@ -38,7 +38,7 @@
                         <button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover"
                             data-placement="left" data-trigger="focus"
                             data-content ="
-                            <a href='{{ route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'pendiente']) }}'  class='dropdown-item' target='__blank'> Editar </a>
+                            <a href='{{ route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'completado']) }}'  class='dropdown-item' target='__blank'> Editar </a>
                             <a href='{{ route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) }}'
                             class='dropdown-item' target='__blank'> PDF </a>
                             ">

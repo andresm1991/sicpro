@@ -812,6 +812,7 @@ class AdministrativoController extends Controller
         $pagoIds = json_decode($request->input('pago_ids'), true);
         $mano_obra_id = $request->mano_obra;
         $nroProforma = $request->nroProforma;
+        $estado = $request->estado;
 
         try {
             $manoObra = ManoObra::find($mano_obra_id);
@@ -822,6 +823,16 @@ class AdministrativoController extends Controller
             }
 
             DB::beginTransaction();
+
+            if ($estado == 'completado') {
+                $manoObra->nro_proforma = $nroProforma;
+                $manoObra->save();
+                DB::commit();
+                return redirect()->route('administrativo.index.mano.obra')->with('success', 'Se actualizó la información con éxito.');
+            }
+
+            $manoObra->nro_proforma = $nroProforma;
+            $manoObra->save();
 
             // Insertar registros en la tabla `pago_mano_obras`
             if (!empty($pagoIds)) {
