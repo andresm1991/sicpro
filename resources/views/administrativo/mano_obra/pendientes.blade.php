@@ -13,6 +13,7 @@
             <tr>
                 <th style="width: 1px">Semana</th>
                 <th scope="col">Proyecto</th>
+                <th scope="col">SubProyecto</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Etapa</th>
                 <th scope="col">Tipo proyecto</th>
@@ -24,13 +25,15 @@
                 <tr id="{{ $mano_obra->id }}">
                     <td class="align-middle">{{ $mano_obra->semana }}</td>
                     <td class="align-middle">{{ strtoupper($mano_obra->proyecto->nombre_proyecto) }}</td>
+                    <td class="align-middle">{{ $mano_obra->subproyecto ?? '---' }}</td>
                     <td class="align-middle">
-                        {{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}</td>
+                        {{ dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) }}
+                    </td>
                     <td class="align-middle">
                         {{ $mano_obra->etapa->descripcion }}</td>
                     <td class="align-middle">
                         {{ $mano_obra->proyecto->tipo_proyecto->descripcion }}</td>
-                    <td class="align-middle align-middle text-right text-truncate">
+                    <td class="align-middle text-right text-truncate">
                         <a href="{{ route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'pendiente']) }}"
                             class="btn btn-outline-dark">
                             Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>

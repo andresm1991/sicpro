@@ -2,7 +2,10 @@
     <div class="col-md-4 col-12">
         <div class="form-group">
             {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
-            {{ Form::label('', $adquisicion->proyecto_id > 0 ? $adquisicion->proyecto->nombre_proyecto : 'Otros', ['class' => 'form-control text-uppercase label-disabled']) }}
+            <span class="form-control label-disabled" id="proyecto"
+                data-proyecto="{{ $adquisicion->proyecto_id > 0 ? $adquisicion->proyecto->nombre_proyecto : 'Otros' }}">
+                {{ $adquisicion->proyecto_id > 0 ? $adquisicion->proyecto->nombre_proyecto : 'Otros' }}
+            </span>
         </div>
     </div>
     <div class="col-md-4 col-12">
@@ -25,7 +28,7 @@
         </div>
     </div>
 
-    @if ($adquisicion->subproyecto)
+    @if ($adquisicion->subproyecto && strtolower($adquisicion->proyecto->nombre_proyecto) == 'adecentamientos')
         <div class="col-md-4 col-12">
             <div class="form-group">
                 {{ Form::label('', 'Nro. Proforma', ['class' => 'col-form-label']) }}

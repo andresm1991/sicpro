@@ -13,6 +13,7 @@
             <tr>
                 <th style="width: 1px">Semana</th>
                 <th scope="col">Proyecto</th>
+                <th scope="col">SubProyecto</th>
                 <th scope="col">Fecha</th>
                 <th scope="col">Etapa</th>
                 <th scope="col">Tipo proyecto</th>
@@ -24,6 +25,7 @@
                 <tr id="{{ $mano_obra->id }}">
                     <td class="align-middle">{{ $mano_obra->semana }}</td>
                     <td class="align-middle">{{ strtoupper($mano_obra->proyecto->nombre_proyecto) }}</td>
+                    <td class="align-middle">{{ $mano_obra->subproyecto ?? '---' }}</td>
                     <td class="align-middle editar-fecha-planificacion" style="cursor: pointer"
                         data-fecha-inicio = "{{ $mano_obra->fecha_inicio }}"
                         data-fecha-fin = "{{ $mano_obra->fecha_fin }}">
@@ -32,10 +34,16 @@
                     <td class="align-middle">
                         {{ $mano_obra->proyecto->tipo_proyecto->descripcion }}</td>
                     <td class="align-middle align-middle text-right text-truncate">
-                        <a href="{{ route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) }}"
-                            class="btn btn-outline-dark" target="__blank">
-                            Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>
-                        </a>
+
+                        <button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover"
+                            data-placement="left" data-trigger="focus"
+                            data-content ="
+                            <a href='{{ route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'pendiente']) }}'  class='dropdown-item' target='__blank'> Editar </a>
+                            <a href='{{ route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) }}'
+                            class='dropdown-item' target='__blank'> PDF </a>
+                            ">
+                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                        </button>
                     </td>
                 </tr>
             @empty

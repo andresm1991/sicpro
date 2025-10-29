@@ -20,6 +20,7 @@ class ManoObra extends Model
         'actividad_id',
         'usuario_id',
         'subproyecto',
+        'nro_proforma',
     ];
 
     public function detalle_mano_obra()

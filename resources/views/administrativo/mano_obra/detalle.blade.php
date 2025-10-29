@@ -35,6 +35,7 @@
 
                                     <input type="hidden" name="pago_ids" value="{{ $pagoIds }}">
                                     <input type="hidden" name="mano_obra" value="{{ $mano_obra->id }}">
+                                    <input type="hidden" name="nroProforma" value="{{ $mano_obra->nro_proforma }}">
                                     <button class="btn btn-dark btn-options btn-block">Generar
                                         Pago</button>
                                     {{ Form::close() }}
@@ -53,21 +54,31 @@
                     @include('partials.alerts')
                     <div class="row">
                         <div class="col-md-7 col-12">
-                            <div class="form-group row">
-                                {{ Form::label('', 'Proyecto', ['class' => 'col-sm-2 col-form-label']) }}
-                                <div class="col-sm-10">
-                                    {{ Form::text('proyecto', $mano_obra->proyecto->nombre_proyecto, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
-                                </div>
+                            <div class="form-group">
+                                {{ Form::label('', 'Proyecto', ['class' => 'col-form-label']) }}
+                                {{ Form::text('proyecto', $mano_obra->proyecto->nombre_proyecto, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
                             </div>
                         </div>
                         <div class="col-md-5 col-12">
-                            <div class="form-group row">
-                                {{ Form::label('', 'Etapa', ['class' => 'col-sm-2 col-form-label']) }}
-                                <div class="col-sm-10">
-                                    {{ Form::text('etapa', $mano_obra->etapa->descripcion, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
-                                </div>
+                            <div class="form-group">
+                                {{ Form::label('', 'Etapa', ['class' => 'col-form-label']) }}
+                                {{ Form::text('etapa', $mano_obra->etapa->descripcion, ['class' => 'form-control text-capitalize', 'readonly', '']) }}
                             </div>
                         </div>
+                        <div class="col-md-7 col-12">
+                            <div class="form-group">
+                                {{ Form::label('', 'SubProyecto', ['class' => 'col-form-label']) }}
+                                {{ Form::text('subproyecto', $mano_obra->subproyecto ?? 'n/a', ['class' => 'form-control text-capitalize', 'readonly', '']) }}
+                            </div>
+                        </div>
+                        @if ($mano_obra->subproyecto && strtolower($mano_obra->proyecto->nombre_proyecto) == 'adecentamientos')
+                            <div class="col-md-5 col-12">
+                                <div class="form-group">
+                                    {{ Form::label('', 'nro. proforma', ['class' => 'col-form-label']) }}
+                                    {{ Form::text('nro_proforma', $mano_obra->nro_proforma, ['class' => 'form-control', 'placeholder' => 'Nro Proforma']) }}
+                                </div>
+                            </div>
+                        @endif
                     </div>
                     @if (strtolower($mano_obra->tipo_etapa->descripcion) == 'acabados')
                         <div class="row">

@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Services\PushNotificationService;
 use App\Models\PagoOrdenTrabajoContratista;
 use App\Http\Requests\RecepcionAdquisicionAdministrativoRequest;
+use App\Models\ProformaAdecentamiento;
 
 class AdministrativoController extends Controller
 {
@@ -810,10 +811,18 @@ class AdministrativoController extends Controller
         // Decodificar el array de `pago_ids`
         $pagoIds = json_decode($request->input('pago_ids'), true);
         $mano_obra_id = $request->mano_obra;
+        $nroProforma = $request->nroProforma;
 
         try {
+            $manoObra = ManoObra::find($mano_obra_id);
+            $existsProforma = ProformaAdecentamiento::where('numero', $nroProforma)->exists();
+
+            if ($manoObra->subproyecto && strtolower($manoObra->proyecto->nombre_proyecto) == 'adecentamientos' && !$existsProforma) {
+                return redirect()->route('administrativo.index.mano.obra')->with('error', 'El número de proforma ingresado no existe, por favor verifique que sea el correcto.');
+            }
 
             DB::beginTransaction();
+
             // Insertar registros en la tabla `pago_mano_obras`
             if (!empty($pagoIds)) {
                 foreach ($pagoIds as $pagoId) {
@@ -851,34 +860,44 @@ class AdministrativoController extends Controller
                         ->orWhere('fecha_fin', 'LIKE', '%' . $buscar . '%');
                 });
 
-            // Filtrar según el tipo
+            // Filtrar según el tipo (forma corregida y más limpia)
             if ($tipo == 'pendiente') {
-                $query->whereDoesntHave('pago_mano_obra', function ($query) {
-                    $query->whereNotNull('mano_obra_id');
-                });
+                // Trae solo los que NO tienen una relación en la tabla 'pago_mano_obra'.
+                $query->whereDoesntHave('pago_mano_obra');
             } else if ($tipo == 'completo') {
-                $query->whereHas('pago_mano_obra', function ($query) {
-                    $query->whereNotNull('mano_obra_id');
-                });
+                // Trae solo los que SÍ tienen al menos una relación en la tabla 'pago_mano_obra'.
+                $query->whereHas('pago_mano_obra');
             }
 
             // Ejecutar la consulta
-            $resultado = $query->orderBy('semana', 'asc')->get();
+            $resultado = $query->orderBy('fecha_inicio', 'desc')->get();
 
             foreach ($resultado as $mano_obra) {
-                $output .= '<tr id="{{ $mano_obra->id }}">' .
+                $subProyecto = $mano_obra->subproyecto  ?? '---';
+                $opciones = '';
+                $class = $tipo == 'completo' ? 'dropdown-item' : 'btn btn-outline-dark';
+
+                $editar = "<a href='" . route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'pendiente']) . "'  class='" . $class . "' target='__blank'> Editar </a>";
+
+                $pdf = "<a href='" . route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) . "' class='dropdown-item' target='__blank'> PDF </a>";
+
+                if ($tipo == 'completo') {
+                    $opciones = '<button type="button" class="btn btn-outline-dark" data-container="body" data-toggle="popover" data-placement="left" data-trigger="focus" data-content ="' . $editar . $pdf . '">
+                            <i class="fas fa-caret-left font-weight-normal"></i> Opciones
+                        </button>';
+                } else {
+                    $opciones = "<a href='" . route('administrativo.mano.obra.detalle', ['mano_obra' => $mano_obra->id, 'estado' => 'pendiente']) . "'  class='" . $class . "' target='__blank'> Detalle <i class='fas fa-caret-right font-weight-normal mx-2'></i> </a>";
+                }
+
+
+                $output .= '<tr id="' . $mano_obra->id . '">' .
                     '<td class="align-middle">' . $mano_obra->semana . '</td>' .
                     '<td class="align-middle">' . strtoupper($mano_obra->proyecto->nombre_proyecto) . '</td>' .
+                    '<td class="align-middle">' . $subProyecto  . '</td>' .
                     '<td class="align-middle">' . dateFormatHumansManoObra($mano_obra->fecha_inicio, $mano_obra->fecha_fin) . '</td>' .
                     '<td class="align-middle">' . $mano_obra->etapa->descripcion . '</td>' .
                     '<td class="align-middle">' . $mano_obra->proyecto->tipo_proyecto->descripcion . '</td>' .
-                    '<td class="align-middle align-middle text-right text-truncate">' .
-                    ' <a href="' . route('pago.mano.obra', ['mano_obra' => $mano_obra->id, 'pago' => true]) . '"
-                            class="btn btn-outline-dark" target="__blank">
-                            Detalle <i class="fas fa-caret-right font-weight-normal mx-2"></i>
-                        </a>' .
-                    '</a>' .
-                    '</td>' .
+                    '<td class="align-middle text-right text-truncate">' . $opciones . '</td>' .
                     '</tr>';
             }
             if (empty($output)) {
