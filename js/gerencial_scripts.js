@@ -30,8 +30,8 @@ $(function () {
                 $('#loading').addClass('show');
             },
             success: function (response) {
-                const data = response.result;
-                //reporteGlobal(data);
+                const data = response;
+                $('#table-view-reporte').html(data);
             },
             complete: function () {
                 $('#loading').removeClass('show');
