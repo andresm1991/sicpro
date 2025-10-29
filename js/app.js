@@ -866,6 +866,12 @@ $(function () {
     $('input[name=nro_proforma]').on('change', function () {
         var input = $(this);
         var nro_proforma = input.val();
+
+        $('input[name=nroProforma]').val(nro_proforma);
+        if (nro_proforma == '') {
+            $('.input_errors').remove();
+            return;
+        }
         $.ajax({
             url: base_url + '/proformas/validar-nro-proforma',
             headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
@@ -879,7 +885,6 @@ $(function () {
                 if (!response.success) {
                     input.after($('<small class="input_errors" style="color: red;">' + response.message + '</small>'));
                 }
-
             },
             complete: function () {
                 $('#loading').removeClass('show');

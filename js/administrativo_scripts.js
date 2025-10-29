@@ -458,9 +458,11 @@ $(function () {
 
         $(".input_errors").remove();
 
+        let proyecto = $('#proyecto').data('proyecto');
         let subproyecto = $('input[name=subproyecto]').attr('id');
         let nroProforma = $('input[name=nro_proforma]').val().trim();
-        if (subproyecto != '' && nroProforma == '') {
+
+        if (proyecto.toLowerCase().trim() == 'adecentamientos' && subproyecto != '' && nroProforma == '') {
             event.preventDefault();
             $('input[name=nro_proforma]').after($('<small class="input_errors" style="color: red;">campo requerido.</small>'));
         }
