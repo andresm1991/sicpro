@@ -232,7 +232,7 @@ class Proyecto extends Model
         $gastoAdminAdquisiciones = DB::table('adquisiciones_detalle')
             ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
             ->when($fechaInicioF && $fechaFinF, fn($q) => $q->whereBetween('adquisiciones.fecha', [$fechaInicioF, $fechaFinF]))
-            ->whereNull('adquisiciones.proyecto_id')
+            ->where('adquisiciones.proyecto_id', 0)
             ->sum(DB::raw('(adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + (adquisiciones_detalle.iva / 100))'));
 
         // Nota: Si Contratistas o Mano de Obra también pueden ser administrativos, añade sus sumas aquí.
@@ -296,6 +296,8 @@ class Proyecto extends Model
             return [
                 'proyecto_id' => $proyecto->id,
                 'proyecto_nombre' => $proyecto->nombre_proyecto,
+                'proyecto_tipo_id' => $proyecto->catalogo_proyecto_id,
+                'proyecto_tipo' => CatalogoDato::find($proyecto->catalogo_proyecto_id)->descripcion,
                 'total_ingresos' => $totalIngresos,
                 'total_gastos' => $totalGastos,
                 'utilidad' => $utilidad,

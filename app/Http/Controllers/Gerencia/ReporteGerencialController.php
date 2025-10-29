@@ -27,11 +27,17 @@ class ReporteGerencialController extends Controller
         $proyectoId = $request->proyecto;
         $etapa = $request->etapa;
         $tipoEtapa = $request->tipo_etapa;
-        $query = '';
+        $vista = '';
 
         switch ($tipoReporte) {
             case 'balance_global':
                 $query = Proyecto::dataReporteBalance($request);
+                $totalIngresosGeneral = $query->sum('total_ingresos');
+                $totalGastosGeneral = $query->sum('total_gastos');
+                $utilidadGeneral = $query->sum('utilidad');
+
+                $vista = view('gerencia.reportes.tabla_balance', compact('query', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral'))->render();
+
                 break;
             case 'balance_proyecto':
                 break;
@@ -41,6 +47,6 @@ class ReporteGerencialController extends Controller
                 break;
         }
 
-        return $query;
+        return $vista;
     }
 }
