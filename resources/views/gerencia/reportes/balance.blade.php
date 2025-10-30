@@ -7,7 +7,7 @@
     <section>
         <div class="container-fluid">
             <form id="form-reporte-balance-gerencial" method="POST" action="">
-
+                @csrf
                 <div class="card">
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">

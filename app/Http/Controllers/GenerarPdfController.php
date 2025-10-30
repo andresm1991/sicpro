@@ -935,4 +935,20 @@ class GenerarPdfController extends Controller
         $pdf = PDF::loadHTML($htmlParaPdf)->setPaper('a4', 'portrait');
         return $pdf->stream('contrato_reserva.pdf');
     }
+
+    public function exportarReporteBalancePrime(Request $request)
+    {
+        $query = Proyecto::dataReporteBalance($request);
+        $totalIngresosGeneral = $query->sum('total_ingresos');
+        $totalGastosGeneral = $query->sum('total_gastos');
+        $utilidadGeneral = $query->sum('utilidad');
+        $tipoReporte = $request->tipo_reporte == 'balance_global' ? 'Global' : 'Proyecto';
+
+        $vista = view('gerencia.reportes.tabla_balance', compact('query', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral'))->render();
+
+        $proyecto = Proyecto::find($request->proyecto);
+
+        $pdf = PDF::loadView('pdf.gerencia.balance_prime', compact('vista', 'tipoReporte', 'proyecto', 'request'))->setPaper('a4', 'landscape');
+        return $pdf->stream('reporte_balance.pdf');
+    }
 }
