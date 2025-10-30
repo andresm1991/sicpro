@@ -58,6 +58,33 @@ $(function () {
         });
     });
 
+    /**
+     * Generar el pdf del reporte
+     */
+    $(".generar-reporte").on('click', function () {
+        const $form = $('#form-reporte-balance-gerencial');
+        const formaData = getFormData($form);
+        var tipo = $(this).data('action');
+        var url = '';
+
+        if (formaData.tipo_reporte == '') {
+            Swal.fire(
+                'Ups.!',
+                'Por favor seleccione un tipo de reporte.',
+                'info'
+            )
+            return false;
+        }
+        url = base_url + '/gerencia/reporte/exportar/' + formaData.tipo_reporte;
+        // Agregar el valor de tipo_reporte como parámetro en la URL
+        $form.attr('action', `${url}`);
+        $form.attr('target', '_blank');
+
+        // Enviar el formulario
+        $form.submit();
+    });
+
+
     $('#select-proyecto').on('change', function () {
         var proyectoId = $(this).val();
         // Limpiar el select de subproyectos
@@ -134,5 +161,6 @@ $(function () {
             $('#contenedor-fechas').show();
         }
     });
+
 
 });
