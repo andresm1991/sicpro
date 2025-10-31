@@ -200,13 +200,24 @@
         <div class="col-12">
             <div class="form-group">
                 <label for="contenido" class="col-form-label">Contenido del Contrato
-                    @isset($seguimientoVenta->contrato)
+                    {{-- Muestra el contenido UNLESS (a menos que) la colección esté vacía --}}
+                    @unless ($seguimientoVenta->contrato->isEmpty())
                         <br>
-                        <a href="{{ route('marketing.seguimiento.ventas.contrato.preview', $seguimientoVenta->contrato->where('titulo', 'contrato reserva')->first()->id) }}"
-                            class="btn btn-sm btn-dark " target="_blank">
-                            <i class="fa-solid fa-eye mr-2"></i> Vista Previa
-                        </a>
-                    @endisset
+                        {{-- Notar que el where/first es correcto para una colección --}}
+                        @php
+                            $contratoReserva = $seguimientoVenta->contrato
+                                ->where('titulo', 'contrato reserva')
+                                ->first();
+                        @endphp
+
+                        {{-- Verifica si el modelo fue encontrado antes de acceder a la ID --}}
+                        @if ($contratoReserva)
+                            <a href="{{ route('marketing.seguimiento.ventas.contrato.preview', $contratoReserva->id) }}"
+                                class="btn btn-sm btn-dark " target="_blank">
+                                <i class="fa-solid fa-eye mr-2"></i> Vista Previa
+                            </a>
+                        @endif
+                    @endunless
                 </label>
 
                 {{-- Precargamos el textarea con el HTML de nuestra plantilla --}}
