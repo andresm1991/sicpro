@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Marketing;
 use Carbon\Carbon;
 use App\Models\Cliente;
 use Illuminate\Support\Str;
+use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
 use App\Models\Marketing\Contrato;
@@ -120,6 +121,30 @@ class SeguimientoVentaController extends Controller
                 'contenido' => $request->input('contenido')
             ]);
 
+            $documentosItems = CatalogoDato::getChildrenCatalogo('items.documentos.proceso.ventas');
+            foreach ($documentosItems as $item) {
+
+                DocumentacionItem::updateOrCreate(
+                    [
+                        'proceso_venta_id' => $procesoVenta->id,
+                        'nombre' => $item->descripcion,
+                    ],
+                    [
+                        'estado' => 'pendiente',
+                    ],
+                );
+
+                EscrituracionItem::updateOrCreate(
+                    [
+                        'proceso_venta_id' => $procesoVenta->id,
+                        'nombre' => $item->descripcion,
+                    ],
+                    [
+                        'estado' => 'pendiente',
+                    ],
+                );
+            }
+
             DB::commit();
 
             return response()->json(['success' => true, 'message' => 'Seguimiento de venta creado exitosamente.']);
@@ -155,6 +180,7 @@ class SeguimientoVentaController extends Controller
         // AQUÍ ESTÁ LA MAGIA: Renderizamos la plantilla de Blade a una cadena de HTML
         $plantillaContenido = $seguimiento->contrato->where('titulo', 'contrato reserva')->first()->contenido;
 
+
         if ($seguimiento->contrato->where('titulo', 'acta de entrega')->first()) {
             $plantillaActaEntrega = $seguimiento->contrato->where('titulo', 'acta de entrega')->first()->contenido;
         } else {
@@ -166,8 +192,41 @@ class SeguimientoVentaController extends Controller
             $plantillaActaEntrega = view('templates.contratos.acta_entrega', compact('cliente', 'proceso', 'fecha_entrega', 'fecha_reserva'))->render();
         }
 
+        if ($seguimiento->documentacionItems->isEmpty() ?? false) {
+            $documentosItems = CatalogoDato::getChildrenCatalogo('items.documentos.proceso.ventas');
+            foreach ($documentosItems as $item) {
+                DocumentacionItem::updateOrCreate(
+                    [
+                        'proceso_venta_id' => $seguimiento->id,
+                        'nombre' => $item->descripcion,
+                    ],
+                    [
+                        'estado' => 'pendiente',
+                    ],
+                );
+            }
+            // 🔥 Recargar la relación documentacionItems
+            $seguimiento->load('documentacionItems');
+        }
 
-        return view('marketing.seguimiento_ventas.edit', compact('title_page', 'breadcrumbs', 'seguimientoVenta', 'plantillaContenido', 'plantillaActaEntrega'));
+        if ($seguimiento->escrituracionItems->isEmpty() ?? false) {
+            $documentosItems = CatalogoDato::getChildrenCatalogo('items.documentos.proceso.ventas');
+            foreach ($documentosItems as $item) {
+                EscrituracionItem::updateOrCreate(
+                    [
+                        'proceso_venta_id' => $seguimiento->id,
+                        'nombre' => $item->descripcion,
+                    ],
+                    [
+                        'estado' => 'pendiente',
+                    ],
+                );
+            }
+            // 🔥 Recargar la relación documentacionItems
+            $seguimiento->load('escrituracionItems');
+        }
+
+        return view('marketing.seguimiento_ventas.edit', compact('title_page', 'breadcrumbs', 'seguimientoVenta', 'plantillaContenido', 'plantillaActaEntrega',));
     }
 
     public function actualizarEtapaReserva(Request $request, ProcesoVenta $seguimiento)
