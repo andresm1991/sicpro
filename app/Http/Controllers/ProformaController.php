@@ -272,7 +272,7 @@ class ProformaController extends Controller
 
             // Actualizar o crear los detalles de la proforma
             foreach ($items as $item) {
-                $detalle = $proforma->detalleAdecentamientos()->updateOrCreate(
+                $proforma->detalleAdecentamientos()->updateOrCreate(
                     ['producto_id' => $item['producto']],
                     [
                         'cantidad' => $item['cantidad'],
