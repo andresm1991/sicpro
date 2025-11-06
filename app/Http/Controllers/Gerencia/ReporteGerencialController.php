@@ -31,10 +31,12 @@ class ReporteGerencialController extends Controller
 
         $query = Proyecto::dataReporteBalance($request);
         $totalIngresosGeneral = $query->sum('total_ingresos');
+        $totalGatosDirectosGeneral = $query->sum('gastos_operativos');
+        $totalGastosIndirectosGeneral = $query->sum('gastos_administrativos');
         $totalGastosGeneral = $query->sum('total_gastos');
         $utilidadGeneral = $query->sum('utilidad');
 
-        $vista = view('gerencia.reportes.tabla_balance', compact('query', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral'))->render();
+        $vista = view('gerencia.reportes.tabla_balance', compact('query', 'totalIngresosGeneral', 'totalGastosGeneral', 'totalGatosDirectosGeneral', 'totalGastosIndirectosGeneral', 'utilidadGeneral'))->render();
 
         return $vista;
     }
