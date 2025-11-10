@@ -150,7 +150,8 @@ class SeguimientoVentaController extends Controller
             return response()->json(['success' => true, 'message' => 'Seguimiento de venta creado exitosamente.']);
         } catch (\Exception $e) {
             DB::rollBack();
-            LogService::log('ERROR', 'Seguimiento ventas', ['message' => $e]);
+            return $e;
+            LogService::log('ERROR', 'Seguimiento ventas', ['message' => 'Ocurrió un error al crear el seguimiento de venta: ' . $e->getMessage()]);
             return response()->json(['success' => false, 'message' => 'Ocurrió un error al crear el seguimiento de venta']);
         }
     }
