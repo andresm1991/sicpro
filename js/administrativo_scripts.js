@@ -1,4 +1,4 @@
-import { getFormData } from './helpers.js';
+import { getFormData, limpiarValores } from './helpers.js';
 
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
@@ -147,7 +147,6 @@ $(function () {
 
     //** Agregar elementos a la tabla de pedidos */
     $('#add-producto-adquisicion').on('click', function () {
-
         var producto_id = $('#productos').val();
         var producto = $('#productos option:selected').text();
         var unidad_medida_id = $('#unidad_medida').val();
@@ -202,10 +201,10 @@ $(function () {
 
         numeroFila = $('.elementos-agregados').length + 1;
         // Calcular el subtotal
-        let subtotal = parseFloat(cantidad) * parseFloat(valor_unitario);
+        let subtotal = limpiarValores(cantidad) * limpiarValores(valor_unitario);
 
         // Calcular el total con IVA
-        let totalConIva = subtotal * (1 + parseFloat(iva) / 100);
+        let totalConIva = parseFloat(subtotal) * (1 + parseFloat(iva) / 100);
 
         // Crear una nueva fila con los datos
         var nuevaFila = `
@@ -254,7 +253,7 @@ $(function () {
                     <input type="hidden" name="iva_producto[]" value="${iva}">
                 </td>
                 <td class="total_unitario">
-                   $ ${totalConIva.toFixed(2)}
+                   ${formatearUSD(totalConIva)}
                     <input type="hidden" name="total[]" value="${totalConIva.toFixed(2)}">
                 </td>
                 <td>
@@ -741,12 +740,12 @@ $(function () {
         // Iterar por cada fila del tbody
         $('.elementos-agregados').each(function () {
             let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
-            let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+            let total = limpiarValores(totalText) || 0; // Reemplazar la coma decimal por un punto y convertir a número
             // Sumar al subtotal
-            subtotal += total;
+            subtotal += parseFloat(total);
         });
         // Actualizar el total general
-        $('#total-general').text(subtotal.toFixed(2));
+        $('#total-general').text(formatearUSD(subtotal));
     }
 
 });
