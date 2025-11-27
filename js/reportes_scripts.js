@@ -1503,7 +1503,7 @@ $(function () {
                             <table class="table table-bordered table-sm">
                                 <thead class="thead-dark">
                                     <tr>
-                                        <th>Semanas/Periodos</th>
+                                        <th>Periodos</th>
                                         <th>Total Pagado</th>
                                     </tr>
                                 </thead>
@@ -1511,11 +1511,11 @@ $(function () {
                 categorias.mano_obra.forEach(m => {
                     html += `
                             <tr>
-                                <td>${m.cantidad}</td>
-                                <td class="text-right">${formatearUSD(m.total)}</td>
+                                <td> <a href="${base_url + '/generar-pdf/mano-obra-pdf/' + m.id}" class="text-dark" target="__blanck">${m.periodo}</a></td>
+                                <td class="text-right">${formatearUSD(m.pagado)}</td>
                             </tr>
                         `;
-                    totalManoObra += parseFloat(m.total);
+                    totalManoObra += parseFloat(m.pagado);
                 });
                 html += `</tbody>
                         <tfoot>
