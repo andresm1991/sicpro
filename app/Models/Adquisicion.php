@@ -298,8 +298,13 @@ class Adquisicion extends Model
                 self::mergeResults($resultado, $contratistas, 'contratista');
             }
             if (in_array($filters['tipo_slug'], [null, 'mano.obra'])) {
-                $manosDeObra = self::getManoDeObraData($filters);
-                self::mergeResults($resultado, $manosDeObra, 'mano_obra');
+                $respuestaManoObra = self::getManoDeObraData($filters);
+
+                // Extraemos las filas para que mergeResults reciba un ARRAY y no falle
+                $filasManoObra = $respuestaManoObra['rows'];
+
+                // Hacemos el merge solo con las filas
+                self::mergeResults($resultado, $filasManoObra, 'mano_obra');
             }
         }
 
@@ -315,6 +320,7 @@ class Adquisicion extends Model
         $resultado = self::sortFinalResult($resultado);
 
         return [
+            'proyecto_id' =>  $filters['proyecto'],
             'proyecto' => $filters['proyectoNombre'],
             'subproyecto' => $filters['subproyecto'],
             'data' => $resultado
@@ -421,32 +427,55 @@ class Adquisicion extends Model
      */
     private static function getManoDeObraData(array $filters): array
     {
-        $query = \App\Models\ManoObra::query()
+        $query = ManoObra::query()
             ->select(
+                'mano_obra.id', // Agrupamos por ID para sumar correctamente los detalles
                 'etapa_catalogo.descripcion as etapa_nombre',
-                DB::raw('COUNT(DISTINCT mano_obra.fecha_inicio, mano_obra.fecha_fin) as cantidad'),
-                DB::raw('SUM(COALESCE(dmo.valor, 0) + COALESCE(dmo.adicional, 0) - COALESCE(dmo.descuento, 0)) as total')
+                'mano_obra.fecha_inicio',
+                'mano_obra.fecha_fin',
+                // Calculamos el pagado (valor + adicional - descuento)
+                DB::raw('SUM(COALESCE(dmo.valor, 0) + COALESCE(dmo.adicional, 0) - COALESCE(dmo.descuento, 0)) as pagado')
             )
             ->join('catalogo_datos as etapa_catalogo', 'mano_obra.etapa_id', '=', 'etapa_catalogo.id')
             ->join('detalle_mano_obra as dmo', 'mano_obra.id', '=', 'dmo.mano_obra_id')
             ->where('mano_obra.proyecto_id', $filters['proyecto'])
             ->whereExists(function ($q) {
-                $q->select(DB::raw(1))->from('pagos_mano_obra')->whereColumn('pagos_mano_obra.mano_obra_id', 'mano_obra.id');
+                $q->select(DB::raw(1))
+                    ->from('pagos_mano_obra')
+                    ->whereColumn('pagos_mano_obra.mano_obra_id', 'mano_obra.id');
             });
 
         self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'etapa'], 'mano_obra');
 
-        $query->groupBy('etapa_catalogo.descripcion');
+        // Agrupamos por ID y los campos seleccionados (necesario en SQL estricto)
+        $query->groupBy(
+            'mano_obra.id',
+            'etapa_catalogo.descripcion',
+            'mano_obra.fecha_inicio',
+            'mano_obra.fecha_fin'
+        );
 
         $resultados = $query->get();
 
-        // Reformatear para la estructura final: ['Nombre Etapa' => [[...data...]]]
-        return $resultados->keyBy('etapa_nombre')->map(function ($item) {
-            return [[
-                'cantidad' => $item->cantidad,
-                'total' => $item->total,
-            ]];
+        // 1. Calcular el Total General
+        $totalGeneral = $resultados->sum('pagado');
+
+        // 2. Formatear los datos: [fecha_inicio, fecha_fin, pagado] agrupados por etapa
+        $filasFormateadas = $resultados->groupBy('etapa_nombre')->map(function ($items) {
+            return $items->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'periodo' => dateFormatHumansManoObra($item->fecha_inicio, $item->fecha_fin),
+                    'pagado' => $item->pagado
+                ];
+            })->values()->all();
         })->all();
+
+        // RETORNAMOS DOS COSAS SEPARADAS
+        return [
+            'rows' => $filasFormateadas, // Array para mergeResults
+            'total' => $totalGeneral     // Float para el total general
+        ];
     }
 
     /**
