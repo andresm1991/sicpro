@@ -65,6 +65,7 @@ class SeguimientoVentaController extends Controller
 
     public function storeEtapaReserva(StoreReservaRequest $request)
     {
+        return 'aqui';
         try {
             DB::beginTransaction();
             // Crear el cliente de venta
@@ -574,5 +575,29 @@ class SeguimientoVentaController extends Controller
             }
         }
         abort(404);
+    }
+
+    public function destroySeguimiento($id)
+    {
+        try {
+            $proceso = ProcesoVenta::find($id);
+            if ($proceso) {
+                $archivosEliminar = [$proceso->contrato_firmado_path, $proceso->cedula_path, $proceso->comprobante_pago_reserva_path, $proceso->comprobante_pago_saldo_reserva_path];
+                $archivosValidos = array_filter($archivosEliminar);
+                Storage::disk('digitalocean')->delete($archivosValidos);
+                $proceso->delete();
+                LogService::log('INFO', 'Seguimiento ventas', ['message' => 'Registros y archivos eliminado']);
+                return response()->json(['success' => true, 'message' => 'Registro eliminado exitosamente.']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'Registro no encontrado.']);
+            }
+        } catch (\Throwable $e) {
+            LogService::log('ERROR', 'Seguimiento ventas', ['message' => $e->getMessage()]);
+        }
+    }
+
+    public function buscarSeguimiento(Request $request)
+    {
+        $buscar = $request->text;
     }
 }

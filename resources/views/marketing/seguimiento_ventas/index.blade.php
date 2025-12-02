@@ -55,7 +55,7 @@
                                                 <div class="dropdown-menu dropdown-menu-right custom-dropdown-menu">
                                                     <a href='{{ route('marketing.seguimiento.ventas.edit', $seguimiento->id) }}'
                                                         class='dropdown-item'>Editar</a>
-                                                    <a href='javascript:void(0);' class='dropdown-item eliminar'
+                                                    <a href='javascript:void(0);' class='dropdown-item eliminar-seguimiento'
                                                         id='{{ $seguimiento->id }}'>Eliminar</a>
                                                 </div>
                                             </div>
@@ -83,8 +83,6 @@
 
 @endsection
 
-{{--  
 @section('scripts')
-    <script src="{{ asset('js/proformas.js?v=' . config('app.version', '')) }}"></script>
+    <script src="{{ asset('js/proceso_ventas.js?v=' . config('app.version', '')) }}"></script>
 @endsection
---}}
