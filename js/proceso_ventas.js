@@ -96,8 +96,12 @@ $(function () {
                         icon: 'success',
                         text: response.message,
                     });
-                    form[0].reset();
-                    $('select[name=proyecto]').val(null).trigger('change');
+                    console.log(procesoVentaId)
+                    if (procesoVentaId != 0) {
+                        form[0].reset();
+                        $('select[name=proyecto]').val(null).trigger('change');
+                    }
+
 
                 } else {
                     Swal.fire({
@@ -794,6 +798,61 @@ $(function () {
                             'error',
                         );
                 }
+            }
+        });
+    });
+
+    $(document).on('click', '.eliminar-seguimiento', function () {
+        var id = $(this).attr('id');
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Esta acción eliminará el rgistro, ¿Desea continuar?",
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, continuar',
+            cancelButtonText: 'Cancelar',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: base_url + '/marketing/seguimiento-ventas/eliminar/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    beforeSend: function () {
+
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.success ? "success" : "error",
+                            text: response.mensaje,
+                            confirmButtonText: 'Aceptar',
+                        }).then((result) => {
+                            location.reload();
+                        });
+
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    var errors = JSON.parse(jqXHR.responseText);
+                    console.log(errors);
+                });
+            }
+        });
+    });
+
+    $('input:text[name=seguimientos_search]').on('keyup', function () {
+        let buscar = $(this).val();
+
+        $.ajax({
+            url: base_url + '/marketing/seguimiento-ventas/buscar',
+            type: 'GET',
+            data: { text: buscar },
+            headers: { 'X-CSRF-TOKEN': csrf },
+            success: function (response) {
+                $('tbody').html(response);
+
+                // Inicializa los tooltips y popovers
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
             }
         });
     });
