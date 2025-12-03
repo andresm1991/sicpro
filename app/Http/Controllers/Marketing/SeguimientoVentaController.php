@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Marketing;
 
 use Carbon\Carbon;
-use App\Models\Cliente;
 use Illuminate\Support\Str;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
@@ -65,7 +64,6 @@ class SeguimientoVentaController extends Controller
 
     public function storeEtapaReserva(StoreReservaRequest $request)
     {
-        return 'aqui';
         try {
             DB::beginTransaction();
             // Crear el cliente de venta
@@ -75,7 +73,7 @@ class SeguimientoVentaController extends Controller
                 ],
                 [
                     'nombre' => $request->input('nombre'),
-                    'direccion'  => $request->input('direccion'),
+                    'direccion' => $request->input('direccion'),
                     'telefono' => $request->input('telefono'),
                     'email' => $request->input('email'),
                     'ciudad' => $request->input('ciudad'),
@@ -94,7 +92,7 @@ class SeguimientoVentaController extends Controller
                 'valor_reserva' => $request->input('valor_reserva'),
             ];
 
-            $carpetaDestino = $this->path_files . 'reserva/' . date('Y-m-d') . '/' .  Str::slug($clienteVenta->nombre, '_');
+            $carpetaDestino = $this->path_files . 'reserva/' . date('Y-m-d') . '/' . Str::slug($clienteVenta->nombre, '_');
             // Manejar las subidas de archivos
             if ($request->hasFile('file_contrato_firmado')) {
                 $path_archivo = subirArchivo($carpetaDestino, 'contrato_firmado', $request->file('file_contrato_firmado'));
@@ -227,7 +225,7 @@ class SeguimientoVentaController extends Controller
             $seguimiento->load('escrituracionItems');
         }
 
-        return view('marketing.seguimiento_ventas.edit', compact('title_page', 'breadcrumbs', 'seguimientoVenta', 'plantillaContenido', 'plantillaActaEntrega',));
+        return view('marketing.seguimiento_ventas.edit', compact('title_page', 'breadcrumbs', 'seguimientoVenta', 'plantillaContenido', 'plantillaActaEntrega', ));
     }
 
     public function actualizarEtapaReserva(Request $request, ProcesoVenta $seguimiento)
@@ -253,7 +251,7 @@ class SeguimientoVentaController extends Controller
             $seguimiento->valor_reserva = $request->input('valor_reserva');
             //$seguimiento->etapa_actual = $request->input('etapa_reserva_completa') ? 'Documentacion' : 'Reserva';
 
-            $carpetaDestino = $this->path_files . 'reserva/' . date('Y-m-d') . '/' .  Str::slug($clienteVenta->nombre, '_');
+            $carpetaDestino = $this->path_files . 'reserva/' . date('Y-m-d') . '/' . Str::slug($clienteVenta->nombre, '_');
 
             // Manejar las subidas de archivos
             if ($request->hasFile('file_contrato_firmado')) {
@@ -492,13 +490,13 @@ class SeguimientoVentaController extends Controller
                 ['contenido' => $request->input('contenido_acta_entrega')]
             );
 
-            $carpetaDestino = $this->path_files . 'entrega/' . date('Y-m-d') . '/' .  Str::slug($proceso->cliente->nombre, '_');
+            $carpetaDestino = $this->path_files . 'entrega/' . date('Y-m-d') . '/' . Str::slug($proceso->cliente->nombre, '_');
             $old_file_path = '';
             // Manejar las subidas de archivos
             if ($request->hasFile('file_contrato_entrega_firmado')) {
                 $path_archivo = subirArchivo($carpetaDestino, 'contrato_entrega_firmado', $request->file('file_contrato_entrega_firmado'));
 
-                $old_file_path  = $proceso->contrato_entrega_firmado_path;
+                $old_file_path = $proceso->contrato_entrega_firmado_path;
                 $proceso->contrato_entrega_firmado_path = $path_archivo;
             }
 
@@ -560,7 +558,6 @@ class SeguimientoVentaController extends Controller
                         break;
                     default:
                         return response()->json(['success' => false, 'message' => 'Etapa no reconocida.']);
-                        break;
                 }
 
                 $proceso->save();
