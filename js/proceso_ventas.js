@@ -97,7 +97,7 @@ $(function () {
                         text: response.message,
                     });
                     console.log(procesoVentaId)
-                    if (procesoVentaId != 0) {
+                    if (procesoVentaId == undefined) {
                         form[0].reset();
                         $('select[name=proyecto]').val(null).trigger('change');
                     }
