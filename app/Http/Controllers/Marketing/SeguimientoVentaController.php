@@ -598,6 +598,45 @@ class SeguimientoVentaController extends Controller
 
     public function buscarSeguimiento(Request $request)
     {
-        $buscar = $request->text;
+        if ($request->ajax()) {
+            $buscar = $request->text;
+            $html = '';
+            $procesos = ProcesoVenta::where(function ($query) use ($buscar) {
+                $query->where('etapa_actual', 'LIKE', '%' . $buscar . '%')
+                    ->orWhereHas('cliente', function ($q) use ($buscar) {
+                        $q->where('nombre', 'LIKE', '%' . $buscar . '%');
+                    });
+            })->get();
+
+            if ($procesos) {
+                foreach ($procesos as $index => $proceso) {
+                    $etapa = $proceso->etapa_actual == 'Entrega' ? 'Finalizado' : $proceso->etapa_actual;
+                    $html .= '<tr id="' . $proceso->id . '">';
+                    $html .= '<td class="align-middle">' . $index + 1 . '</td>';
+                    $html .= '<td class="align-middle">' . $proceso->fecha . '</td>';
+                    $html .= '<td class="align-middle">' . $proceso->cliente->nombre . '</td>';
+                    $html .= '<td class="align-middle">' . $etapa . ' </td>';
+                    $html .= '<td class="align-middle text-right">';
+                    $html .= '<div class="btn-group dropleft">';
+                    $html .= '<button type="button" class="btn btn-outline-dark dropdown-toggle" data-container="body" data-toggle="dropdown" aria-expanded="false"> Opciones </button>';
+                    $html .= '<div class="dropdown-menu dropdown-menu-right custom-dropdown-menu">';
+                    $html .= "<a href='" . route('marketing.seguimiento.ventas.edit', $proceso->id) . "' class='dropdown-item'>Editar</a>";
+                    $html .= "<a href='javascript:void(0);' class='dropdown-item eliminar-proceso' id='" . $proceso->id . "'>Eliminar</a>";
+                    $html .= '</div>';
+                    $html .= '</div>';
+                    $html .= '</td>';
+                    $html .= '</tr>';
+                }
+
+                if (empty($html)) {
+                    $html .= '<tr>' .
+                        '<td colspan="5" class="text-center">' .
+                        '<span class="text-danger">No existen datos para mostrar.</span>' .
+                        '</td>' .
+                        '</tr>';
+                }
+                return Response($html);
+            }
+        }
     }
 }
