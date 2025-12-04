@@ -189,9 +189,9 @@ class AdministrativoController extends Controller
         try {
             DB::beginTransaction();
 
-            $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $costo_indirecto, $kilometraje, $necesidad) {
+            $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $costo_indirecto, $kilometraje, $necesidad) use ($adquisicion) {
                 return [
-                    'producto' => $producto,
+                    'producto' => is_numeric($producto) ? $producto : registrarProducto($adquisicion->tipo_etapa, $producto, limpiarValor($precio_unitario), $iva)->id,
                     'cantidad' => str_replace(',', '', $cantidad),
                     'valor' => limpiarValor($precio_unitario),
                     'costo_indirecto' => $costo_indirecto,
@@ -266,7 +266,6 @@ class AdministrativoController extends Controller
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Se actualizó la información de la adquisición con éxito.');
         } catch (Throwable $e) {
             DB::rollBack();
-            return $e;
             LogService::log('error', 'Error al actualizar la inforacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
             return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.');
         }
