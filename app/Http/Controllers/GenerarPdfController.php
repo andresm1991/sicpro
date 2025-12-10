@@ -912,6 +912,10 @@ class GenerarPdfController extends Controller
     {
         $cliente = $contrato->procesoVenta->cliente;
         $htmlDelContrato = $contrato->contenido;
+        $path = public_path('images/prime_doc.png');
+        $type = pathinfo($path, PATHINFO_EXTENSION);
+        $data = file_get_contents($path);
+        $base64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
 
         $buscar = [
             'border: 1px solid #ddd;',
@@ -925,9 +929,10 @@ class GenerarPdfController extends Controller
             'border: none;',
             '',
             'margin: 0;',
-            'max-height: 150px;',
-            logoBase64(),
+            'max-height: 60px;',
+            $base64
         ];
+
 
         $htmlParaPdf = str_replace($buscar, $reemplazarPor, $htmlDelContrato);
 
