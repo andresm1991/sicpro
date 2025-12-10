@@ -925,8 +925,8 @@ class GenerarPdfController extends Controller
             'border: none;',
             '',
             'margin: 0;',
-            'max-height: 60px;',
-            public_path('images/prime_doc.png')
+            'max-height: 150px;',
+            logoBase64(),
         ];
 
         $htmlParaPdf = str_replace($buscar, $reemplazarPor, $htmlDelContrato);
