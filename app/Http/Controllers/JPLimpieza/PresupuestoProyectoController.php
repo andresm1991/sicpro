@@ -104,7 +104,7 @@ class PresupuestoProyectoController extends Controller
                     ],
                     [
                         'cantidad' => $presupuesto['cantidad'],
-                        'precio_unitario' => $presupuesto['precio_unitario'],
+                        'precio_unitario' => limpiarValor($presupuesto['precio_unitario']),
                         'meses' => $presupuesto['meses'],
                     ]
                 );
