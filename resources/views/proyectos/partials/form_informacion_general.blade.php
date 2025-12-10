@@ -175,7 +175,7 @@
                             <div class="col-md-6 col-12">
                                 <div class="form-group">
                                     <label class="col-form-label">Estado del proyecto </label>
-                                    {{ Form::select('estado_proyecto', getEstadoProyectoOptions(), $proyecto->estado->id, ['class' => 'form-control']) }}
+                                    {{ Form::select('estado_proyecto', getEstadoProyectoOptions(), $proyecto->estado_id, ['class' => 'form-control']) }}
                                 </div>
                             </div>
                         </div>
