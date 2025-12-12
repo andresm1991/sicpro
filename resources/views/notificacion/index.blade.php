@@ -5,37 +5,29 @@
 @section('content')
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">
-        <div class="">
-            <div class="card">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <h4 class="mt-2 font-weight-bold">Mis notificaciones</h4>
+        <div class="row">
+            <div class="col-12">
+                <ul class="nav nav-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">Operativas</a>
                     </li>
-                </ul>
-                <div class="card-body">
-                    <div class="list-group">
-                        @forelse ($notificaciones as $notificacion)
-                            <a href="javascript:void(0);"
-                                class="list-group-item list-group-item-action leer-notificacion {{ !$notificacion->leido ? 'list-group-item-dark' : '' }} "
-                                data-id="{{ $notificacion->id }}" data-url="{{ $notificacion->message->url }}">
-                                <div class="d-flex w-100 justify-content-between">
-                                    <h5 class="mb-1">{{ $notificacion->message->title }}</h5>
-                                    <small>{{ $notificacion->created_at->diffForHumans() }}</small>
-                                </div>
-                                <p class="mb-1">{{ $notificacion->message->body }}</p>
-                            </a>
-                        @empty
-                            <div class="alert alert-info" role="alert">
-                                No tienes notificaciones pendientes.
-                            </div>
-                        @endforelse
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab">Administrativas</a>
+                    </li>
+                </ul><!--.ul-->
+                <div class="tab-content">
+                    @include('partials.alerts')
+                    <div class="tab-pane active" id="tabs-1" role="tabpanel">
+                        @include('notificacion.partials.operativas')
                     </div>
-                    <div class="mt-3">
-                        @include('partials.pagination', ['paginator' => $notificaciones, 'interval' => 5])
+                    <div class="tab-pane" id="tabs-2" role="tabpanel">
+                        @include('notificacion.partials.administrativas')
                     </div>
-                </div>
-            </div>
-        </div>
+                </div><!--.tab-content-->
+            </div> <!--.col-12-->
+
+        </div><!--.row-->
+
     </section>
 
 

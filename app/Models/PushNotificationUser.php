@@ -9,7 +9,7 @@ class PushNotificationUser extends Model
 {
     use HasFactory;
     protected $table = 'push_notification_users';
-    protected $fillable = ['user_id', 'message_id', 'leido', 'is_new'];
+    protected $fillable = ['user_id', 'message_id', 'leido', 'is_new', 'tipo'];
 
     public function user()
     {

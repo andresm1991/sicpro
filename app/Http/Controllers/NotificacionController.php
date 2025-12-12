@@ -16,11 +16,17 @@ class NotificacionController extends Controller
             ['name' => 'Notificaciones', 'url' => '']
         ];
         // Obtener las notificaciones no leídas del usuario autenticado
-        $notificaciones = PushNotificationUser::where('user_id', auth()->user()->id)
-            ->orderBy('id', 'desc')
-            ->paginate(15);
+        $notificacionesOperativas = PushNotificationUser::where('user_id', auth()->user()->id)
+            ->where('tipo', 'operativo')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
 
-        return view('notificacion.index', compact('title_page', 'breadcrumbs', 'notificaciones'));
+        $notificacionesAdministrativas = PushNotificationUser::where('user_id', auth()->user()->id)
+            ->where('tipo', 'administrativo')
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        return view('notificacion.index', compact('title_page', 'breadcrumbs', 'notificacionesOperativas', 'notificacionesAdministrativas'));
     }
 
     public function leerNotificacion(Request $request)
