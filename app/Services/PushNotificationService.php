@@ -42,7 +42,7 @@ class PushNotificationService
                 'url' => $url,
             ])->id;
 
-            $tipo = 'operativo';
+            $categoriaNotificacion = 'operativo';
 
             switch ($tipoNotificacion) {
                 case PushNotificationsEnum::OPERATIVO:
@@ -57,12 +57,12 @@ class PushNotificationService
                     break;
                 case PushNotificationsEnum::TAREAS:
                     $users = User::whereIn('id', $usersNotified)->get();
-                    $tipo = 'administrativo';
+                    $categoriaNotificacion = 'administrativo';
                     break;
 
                 case PushNotificationsEnum::EVENTUALIDAD:
                     $users = User::whereIn('id', $usersNotified)->get();
-                    $tipo = 'administrativo';
+                    $categoriaNotificacion = 'administrativo';
                     break;
 
                 default:
@@ -74,7 +74,7 @@ class PushNotificationService
                     'message_id' => $msg,
                     'leido' => false,
                     'is_new' => true,
-                    'tipo' => $tipo,
+                    'tipo' => $categoriaNotificacion,
                 ]);
             }
 

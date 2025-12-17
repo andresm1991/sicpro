@@ -61,12 +61,22 @@ class User extends Authenticatable
 
     public function unreadNotifications()
     {
-        return $this->notifications()->where('leido', true)->orderBy('id', 'desc');
+        return $this->notifications()->where('leido', true)->where('tipo', 'operativo')->orderBy('created_at', 'desc');
     }
 
     public function isNewNotifications()
     {
-        return $this->notifications()->where('is_new', true)->orderBy('id', 'desc');
+        return $this->notifications()->where('is_new', true)->where('tipo', 'operativo')->orderBy('created_at', 'desc');
+    }
+
+    public function unreadNotificationsAdmin()
+    {
+        return $this->notifications()->where('leido', true)->where('tipo', 'administrativo')->orderBy('created_at', 'desc');
+    }
+
+    public function isNewNotificationsAdmin()
+    {
+        return $this->notifications()->where('is_new', true)->where('tipo', 'administrativo')->orderBy('created_at', 'desc');
     }
 
     public function getAuthPassword()
@@ -79,7 +89,7 @@ class User extends Authenticatable
     {
         $user_id = auth()->user()->id;
         if (!auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
-            $users =  User::where('activo', true)
+            $users = User::where('activo', true)
                 ->where('id', $user_id)->get();
         } else {
             $users = User::where('activo', true)->orderBy('nombre', 'asc')->get();

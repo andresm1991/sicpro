@@ -97,7 +97,7 @@ Route::group(['middleware' => ['auth']], function () {
 
     //** RUTAS NOTIFICACION */
     Route::group(['prefix' => 'notificaciones', 'as' => 'notificacion.'], function () {
-        Route::get('/', [NotificacionController::class, 'index'])->name('index');
+        Route::get('/{tipo}', [NotificacionController::class, 'index'])->name('index');
         Route::post('/leer-notificacion', [NotificacionController::class, 'leerNotificacion'])->name('leer');
         Route::post('/marcar-todos-leido', [NotificacionController::class, 'leerTodasNotificacion']);
     });

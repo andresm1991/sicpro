@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 class NotificacionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $title_page = 'Notificaciones';
 
@@ -15,18 +15,21 @@ class NotificacionController extends Controller
             ['name' => 'Inicio', 'url' => route('home')],
             ['name' => 'Notificaciones', 'url' => '']
         ];
-        // Obtener las notificaciones no leídas del usuario autenticado
-        $notificacionesOperativas = PushNotificationUser::where('user_id', auth()->user()->id)
-            ->where('tipo', 'operativo')
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
+        if ($request->tipo == 1) {
+            $notificaciones = PushNotificationUser::where('user_id', auth()->user()->id)
+                ->where('tipo', 'operativo')
+                ->orderBy('created_at', 'desc')
+                ->paginate(50);
+        } elseif ($request->tipo == 2) {
+            $notificaciones = PushNotificationUser::where('user_id', auth()->user()->id)
+                ->where('tipo', 'administrativo')
+                ->orderBy('created_at', 'desc')
+                ->paginate(50);
+        } else {
+            return redirect('home');
+        }
 
-        $notificacionesAdministrativas = PushNotificationUser::where('user_id', auth()->user()->id)
-            ->where('tipo', 'administrativo')
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
-
-        return view('notificacion.index', compact('title_page', 'breadcrumbs', 'notificacionesOperativas', 'notificacionesAdministrativas'));
+        return view('notificacion.index', compact('title_page', 'breadcrumbs', 'notificaciones'));
     }
 
     public function leerNotificacion(Request $request)
