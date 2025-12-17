@@ -2245,15 +2245,15 @@ section {
 }
 
 .content-notificaciones {
-    position: absolute;
-    display: flex;
-    right: 200px;
+    position: relative;
+    display: inline-block;
+    /* right: 200px; 
     justify-content: flex-end;
     align-items: center;
     gap: 12px;
     cursor: pointer;
     text-align: end;
-    z-index: +99;
+    z-index: +99;*/
 }
 
 .view-all {
@@ -2696,6 +2696,33 @@ a[href="javascript:void(0);"] {
     color: red;
     font-size: 10px;
 }
+
+/* Contenedor principal para alinear las campanas horizontalmente */
+.contenedor-notificaciones-doble {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Clase específica para volver verde la primera campana */
+.bell-green {
+    color: #28a745 !important;
+}
+
+.bell-green svg {
+    stroke: #28a745 !important;
+}
+
+.bell-green .notification-amount {
+    background-color: #28a745 !important;
+}
+
+/* Asegurar que el menú se posicione correctamente 
+.content-notificaciones {
+    position: relative;
+    display: inline-block;
+}
+    */
 
 /*===========================================================*/
 /* Aqui inicia css para responsive*/

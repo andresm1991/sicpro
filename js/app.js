@@ -1,13 +1,18 @@
+// Selectores de Perfil
 let profile = document.querySelector('.profile');
 let profileMenu = document.querySelector('.profile .menu');
 
-let notificaciones = document.querySelector('.content-notificaciones');
-let notificacionesMenu = document.querySelector('.content-notificaciones .menu');
+// Seleccionamos TODOS los contenedores de notificaciones (la verde y la original)
+let allNotificaciones = document.querySelectorAll('.content-notificaciones');
 
+// --- LÓGICA DE PERFIL ---
 if (profile && profileMenu) {
     profile.onclick = function (event) {
-        notificacionesMenu.classList.remove('active');
-        // Verifica si el clic fue en un elemento con la clase 'user' o 'img-box
+        // Al abrir perfil, cerramos todos los menús de notificaciones abiertos
+        allNotificaciones.forEach(notif => {
+            let menu = notif.querySelector('.menu');
+            if (menu) menu.classList.remove('active');
+        });
 
         if (event.target.closest('.user') || event.target.closest('.img-box')) {
             profileMenu.classList.toggle('active');
@@ -15,27 +20,46 @@ if (profile && profileMenu) {
     };
 }
 
-if (notificaciones && notificacionesMenu) {
-    notificaciones.onclick = function (event) {
+// --- LÓGICA DE NOTIFICACIONES (Múltiples campanas) ---
+allNotificaciones.forEach(notifContainer => {
+    let currentMenu = notifContainer.querySelector('.menu');
+
+    if (notifContainer && currentMenu) {
+        notifContainer.onclick = function (event) {
+            // 1. Cerramos el menú de perfil
+            if (profileMenu) profileMenu.classList.remove('active');
+
+            // 2. Cerramos OTROS menús de notificaciones que no sean este (opcional, para limpieza)
+            allNotificaciones.forEach(otherNotif => {
+                if (otherNotif !== notifContainer) {
+                    let otherMenu = otherNotif.querySelector('.menu');
+                    if (otherMenu) otherMenu.classList.remove('active');
+                }
+            });
+
+            // 3. Abrimos/Cerramos solo el menú relativo a la campana clickeada
+            if (event.target.closest('.bell-icon')) {
+                currentMenu.classList.toggle('active');
+            }
+        };
+    }
+});
+
+// --- EVENTO GLOBAL PARA CERRAR TODO ---
+document.addEventListener('click', function (event) {
+    // Cerrar perfil si se hace clic fuera
+    if (profile && profileMenu && !profile.contains(event.target)) {
         profileMenu.classList.remove('active');
-        if (event.target.closest('.bell-icon')) {
-            notificacionesMenu.classList.toggle('active');
+    }
+
+    // Cerrar cada menú de notificaciones si se hace clic fuera de su contenedor
+    allNotificaciones.forEach(notifContainer => {
+        let menu = notifContainer.querySelector('.menu');
+        if (notifContainer && menu && !notifContainer.contains(event.target)) {
+            menu.classList.remove('active');
         }
-    };
-}
-
-// Evento global para ocultar los menús al hacer clic fuera de ellos
-document.onclick = function (event) {
-    // Oculta el menú de perfil si el clic fue fuera de él
-    if (profile && profileMenu && !profile.contains(event.target) && !profileMenu.contains(event.target)) {
-        profileMenu.classList.remove('active');
-    }
-
-    // Oculta el menú de notificaciones si el clic fue fuera de él
-    if (notificaciones && notificacionesMenu && !notificaciones.contains(event.target) && !notificacionesMenu.contains(event.target)) {
-        notificacionesMenu.classList.remove('active');
-    }
-};
+    });
+});
 
 document.addEventListener('DOMContentLoaded', function () {
 
