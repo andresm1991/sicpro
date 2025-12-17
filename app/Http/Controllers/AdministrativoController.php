@@ -318,6 +318,7 @@ class AdministrativoController extends Controller
                         'cantidad_solicitada' => $data['cantidad_solicitada'],
                         'cantidad_recibida' => $data['cantidad_solicitada'],
                         'unidad_medida_id' => $data['unidad_medida_id'],
+                        'iva' => $data['iva'],
                         'necesidad' => $data['necesidad']
                     ]
                 );

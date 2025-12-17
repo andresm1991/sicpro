@@ -856,16 +856,11 @@ class AdquisicionController extends Controller
         $numero_factura = $request->numero_factura;
         $nro_proforma = $request->nro_proforma;
 
-        $productos = $request->productos;
-        $cantidad = $request->cantidad;
-        $unidad_medida = $request->unidad_medida;
-        $valor_unitario = $request->valor_unitario;
-        $iva_producto = $request->iva_producto;
-        $necesidad = $request->necesidad;
-        $inventario = $request->inventario;
+
         $orden_completa = $request->has('orden_completa') ? true : false;
         $forma_pago = $request->forma_pago;
         $estado = $orden_completa ? 'Completado' : 'En Proceso';
+
 
         try {
             DB::beginTransaction();
@@ -885,66 +880,66 @@ class AdquisicionController extends Controller
             ]);
 
             if ($adquisicion) {
-                foreach ($productos as $index => $producto) {
-                    $param_detalle_adquisicion = [
-                        'adquisicion_id' => $adquisicion->id,
-                        'articulo_id' => '',
-                        'cantidad_solicitada' => str_replace(',', '', $cantidad[$index]),
-                        'cantidad_recibida' => str_replace(',', '', $cantidad[$index]),
-                        'unidad_medida_id' => $unidad_medida[$index],
-                        'valor' => $valor_unitario[$index],
-                        'necesidad' => $necesidad[$index]
+
+                $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $necesidad, $inventario) use ($adquisicion) {
+                    return [
+                        'producto' => is_numeric($producto) ? $producto : registrarProducto($adquisicion->tipo_etapa, $producto, limpiarValor($precio_unitario), $iva)->id,
+                        'cantidad' => str_replace(',', '', $cantidad),
+                        'valor' => limpiarValor($precio_unitario),
+                        'iva' => $iva ?? 0,
+                        'unidad_medida' => is_numeric($unidad_medida) ? $unidad_medida : registrarUnidadMedida($unidad_medida),
+                        'necesidad' => $necesidad,
+                        'inventario' => $inventario,
                     ];
+                }, $request->input('productos', []), $request->input('cantidad', []), $request->input('valor_unitario', []), $request->input('iva_producto', []), $request->input('unidad_medida', []), $request->input('necesidad', []), $request->input('inventario', []));
 
-                    if (is_numeric($producto)) {
-                        $param_detalle_adquisicion['articulo_id'] = $producto;
-                    } else {
-                        $etapa = CatalogoDato::find($adquisicion_id);
-                        $nuevo_producto = $this->registrarNuevoProducto($etapa, $producto);
-                        $param_detalle_adquisicion['articulo_id'] = $nuevo_producto->id;
-                    }
+                foreach ($items as $item) {
+                    $detalle = AdquisicionDetalle::create([
+                        'adquisicion_id' => $adquisicion->id,
+                        'articulo_id' => $item['producto'],
+                        'cantidad_solicitada' => $item['cantidad'],
+                        'cantidad_recibida' => $item['cantidad'],
+                        'unidad_medida_id' => $item['unidad_medida'],
+                        'valor' => $item['valor'],
+                        'iva' => $item['iva'],
+                        'necesidad' => $item['necesidad'],
+                    ]);
 
-                    $detalle = AdquisicionDetalle::create($param_detalle_adquisicion);
+                    agregarPalabra($item['necesidad']);
 
-                    agregarPalabra($necesidad[$index]);
-
-                    // registrar precio unitario del producto y el iva
                     $articulo = Articulo::find($detalle->articulo_id);
-                    $articulo->valor_unitario = $valor_unitario[$index];
-                    $articulo->iva = $iva_producto[$index];
+                    $articulo->valor_unitario = $item['valor'];
+                    $articulo->iva = $item['iva'];
                     $articulo->save();
                 }
-                /// Crear orden de recepcion
-                $orden_recepcion_param = [
-                    'fecha' => $fecha,
-                    'adquisicion_id' => $adquisicion->id,
-                    'proveedor_id' => $proveedor,
-                    'forma_pago_id' => $forma_pago,
-                    'completado' => $orden_completa,
-                    'editar' => $orden_completa ? false : true,
-                ];
 
                 $orden_recepcion = OrdenRecepcion::updateOrCreate(
                     [
                         'adquisicion_id' => $adquisicion->id
                     ],
-                    $orden_recepcion_param
+                    [
+                        'fecha' => $fecha,
+                        'adquisicion_id' => $adquisicion->id,
+                        'proveedor_id' => $proveedor,
+                        'forma_pago_id' => $forma_pago,
+                        'completado' => $orden_completa,
+                        'editar' => $orden_completa ? false : true,
+                    ],
                 );
 
                 if ($orden_completa) {
-                    foreach ($inventario as $index => $item) {
+                    foreach ($request->inventario as $index => $item) {
                         if ($item) {
                             Inventario::create([
                                 'orden_recepcion_id' => $orden_recepcion->id,
-                                'producto_id' => $productos[$index],
-                                'cantidad' => str_replace(',', '', $cantidad[$index]),
+                                'producto_id' => $items[$index]['producto'],
+                                'cantidad' => $items[$index]['cantidad'],
                                 'fecha' => date('Y-m-d'),
                                 'usuario_id' => Auth::user()->id,
                                 'estado' => 10,
                             ]);
                         }
                     }
-
 
                     // Registrar en caja si el pago esta completado y si fue pagado en efectivo
                     if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->forma_pago->slug == 'forma.pago.contado') {
