@@ -1,6 +1,6 @@
 <div class="contenedor-notificaciones-doble">
 
-    <!-- Notificaciones administrativas
+    <!-- Notificaciones administrativas -->
     <div class="content-notificaciones" id="notif-2">
         <div class="bell-icon bell-green" tabindex="0">
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="50px" height="30px" viewBox="0 0 50 30">
@@ -20,22 +20,22 @@
 
         <div class="menu" style="width: 250px">
             @if (auth()->user()->unreadNotificationsAdmin()->count() > 0)
-<div class="menu-content">
+                <div class="menu-content">
                     <ul>
                         @foreach (auth()->user()->unreadNotificationsAdmin->sortByDesc('created_at')->take(10) as $item)
-<li><a href="javascript:void(0);" class="leer-notificacion" data-id="{{ $item->id }}"
+                            <li><a href="javascript:void(0);" class="leer-notificacion" data-id="{{ $item->id }}"
                                     data-url="{{ $item->message->url }}"
                                     style="text-align: start; font-size: 12px; padding: 10px">{{ $item->message->title }}</a>
                             </li>
-@endforeach
+                        @endforeach
                         <li class="view-all">
                             <a href="{{ route('notificacion.index', 2) }}"
                                 style="text-align: center;position: absolute;right: 65px;">Ver todo</a>
                         </li>
                     </ul>
                 </div>
-@else
-<ul>
+            @else
+                <ul>
                     <li>
                         <a href="javascript:void(0);" class="text-dark"
                             style="text-align: start; font-size: 12px; padding: 10px">No tienes notificaciones
@@ -45,10 +45,10 @@
                         <a href="{{ route('notificacion.index', 2) }}" class="text-center">Ver todo</a>
                     </li>
                 </ul>
-@endif
+            @endif
         </div>
     </div>
--->
+
     <!-- Notificaciones operativas -->
     <div class="content-notificaciones" id="notif-1">
         <div class="bell-icon" tabindex="0">
