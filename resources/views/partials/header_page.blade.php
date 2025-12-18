@@ -35,7 +35,7 @@
 
             </div>
 
-            <div class="">
+            <div class="col-2 d-flex justify-content-end">
                 @include('partials.notificaciones')
             </div>
 

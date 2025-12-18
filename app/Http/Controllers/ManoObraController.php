@@ -360,6 +360,7 @@ class ManoObraController extends Controller
 
     public function updatePlanificacion(Request $request)
     {
+
         if ($request->ajax()) {
             // 1. Encuentra el registro a actualizar
             $mano_obra = ManoObra::find($request->id);
@@ -418,6 +419,7 @@ class ManoObraController extends Controller
 
                 $mano_obra->fecha_fin = $fechaFin;
                 $mano_obra->subproyecto = $request->subproyecto;
+                $mano_obra->actividad_id = $request->actividad;
 
                 if ($mano_obra->save()) {
                     DB::commit();
