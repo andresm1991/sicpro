@@ -57,12 +57,12 @@ class PushNotificationService
                     break;
                 case PushNotificationsEnum::TAREAS:
                     $users = User::whereIn('id', $usersNotified)->get();
-                    $categoriaNotificacion = 'administrativo';
+                    // $categoriaNotificacion = 'administrativo';
                     break;
 
                 case PushNotificationsEnum::EVENTUALIDAD:
                     $users = User::whereIn('id', $usersNotified)->get();
-                    $categoriaNotificacion = 'administrativo';
+                    //$categoriaNotificacion = 'administrativo';
                     break;
 
                 default:
