@@ -88,7 +88,7 @@
                     <li>
                         <a href="javascript:void(0);" class="text-dark"
                             style="text-align: start; font-size: 12px; padding: 10px">No tienes notificaciones
-                            pendientes.</a>
+                            pendientes.</a> 
                     </li>
                     <li class="view-all" style="text-align: center;position: absolute;top: 40px;left: 65px;">
                         <a href="{{ route('notificacion.index', 1) }}" class="text-center">Ver todo</a>

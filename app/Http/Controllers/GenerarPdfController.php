@@ -618,7 +618,7 @@ class GenerarPdfController extends Controller
     {
         $query = MovimientoCaja::dataReporteCaja($request);
         $tipo = 'prime';
-        $pdf = PDF::loadView('pdf.reporte_caja', compact('query', 'tipo'))->setPaper('a4', 'landscape');
+        $pdf = PDF::loadView('pdf.reporte_caja', compact('query', 'tipo'))->setPaper('a3', 'landscape');
         return $pdf->stream('reportes.pdf');
     }
 
