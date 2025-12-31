@@ -53,7 +53,8 @@ class MovimientoCaja extends Model
         return $this->belongsTo(Articulo::class, 'articulo_id');
     }
 
-    public function adquisicion(){
+    public function adquisicion()
+    {
         return $this->belongsTo(Adquisicion::class, 'origen_id');
     }
 
@@ -86,23 +87,40 @@ class MovimientoCaja extends Model
                 ]
             );
         } else {
-            return self::updateOrCreate(
-                [
-                    'articulo_id' => $request->input('articulo'),
-                    'origen_id' => $request->input('origen_id'),
-                ],
-                [
-                    'fecha'        => date('Y-m-d'),
+            // Primero buscar si existe el registro
+            $registro = self::where([
+                'articulo_id' => $request->input('articulo'),
+                'origen_id' => $request->input('origen_id'),
+            ])->first();
+
+            // Si existe, actualizar sin modificar la fecha
+            if ($registro) {
+                $registro->update([
                     'proveedor_id' => $request->input('proveedor'),
-                    'tipo'         => $request->input('tipo_movimiento', 'egreso'),
-                    'tipo'         => $request->input('tipo_movimiento', 'egreso'),
-                    'monto'        => limpiarValor($request->input('monto')),
-                    'descripcion'  => $request->input('detalle'),
-                    'referencia'   => $request->input('referencia'),
-                    'user_id'      => auth()->user()->id,
+                    'tipo' => $request->input('tipo_movimiento', 'egreso'),
+                    'monto' => limpiarValor($request->input('monto')),
+                    'descripcion' => $request->input('detalle'),
+                    'referencia' => $request->input('referencia'),
+                    'user_id' => auth()->user()->id,
                     'origen_type' => $request->input('origen_type'),
-                ]
-            );
+                ]);
+
+                return $registro;
+            }
+
+            // Si no existe, crear con fecha actual
+            return self::create([
+                'articulo_id' => $request->input('articulo'),
+                'origen_id' => $request->input('origen_id'),
+                'fecha' => date('Y-m-d'),
+                'proveedor_id' => $request->input('proveedor'),
+                'tipo' => $request->input('tipo_movimiento', 'egreso'),
+                'monto' => limpiarValor($request->input('monto')),
+                'descripcion' => $request->input('detalle'),
+                'referencia' => $request->input('referencia'),
+                'user_id' => auth()->user()->id,
+                'origen_type' => $request->input('origen_type'),
+            ]);
         }
     }
 
