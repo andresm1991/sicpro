@@ -1263,9 +1263,9 @@ $(function () {
                             <tbody>
                                 <tr>
                                     <td>Total Pagado Mano de Obra</td>
-                                    <td class="text-right">${formatearMoneda(p1.total)}</td>
-                                    <td class="text-right">${formatearMoneda(p2.total)}</td>
-                                    <td class="text-right ${claseDiferencia(diff.total)}">${formatearMoneda(diff.total)}</td>
+                                    <td class="text-right">${formatearMoneda(p1.pagado)}</td>
+                                    <td class="text-right">${formatearMoneda(p2.pagado)}</td>
+                                    <td class="text-right ${claseDiferencia((p1.pagado - p2.pagado))}">${formatearMoneda((p1.pagado - p2.pagado))}</td>
                                 </tr>
                             </tbody>
                         </table>
