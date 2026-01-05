@@ -32,9 +32,7 @@ class TareaController extends Controller
         $filtroAgenda = $request->input('filtrar_agenda');
         $filtroAgendaUser = $request->input('user');
 
-        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', $filtroAgenda, $filtroAgendaUser);
-        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', $filtroAgenda, $filtroAgendaUser);
-        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', $filtroAgenda, $filtroAgendaUser);
+        $html = $this->getItemsTrea($filtroAgenda, $filtroAgendaUser);
 
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
@@ -48,7 +46,20 @@ class TareaController extends Controller
             $modalToShow = ['activeModal' => false];
         }
 
-        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados', 'modalToShow'));
+
+
+        return view('tareas.index', compact('title_page', 'breadcrumbs', 'estados', 'modalToShow', 'html'));
+    }
+
+    private function getItemsTrea($filtroAgenda, $filtroAgendaUser)
+    {
+        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', $filtroAgenda, $filtroAgendaUser);
+        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', $filtroAgenda, $filtroAgendaUser);
+        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', $filtroAgenda, $filtroAgendaUser);
+
+        $html =  view('tareas.partials.list', compact('todoTasks', 'inProgressTasks', 'completedTasks'))->render();
+
+        return $html;
     }
 
     public function visualizarTarea(Tarea $tarea)
@@ -101,8 +112,13 @@ class TareaController extends Controller
                 }
                 DB::commit();
 
+                // Aplicar filtro si existe el parámetro
+                $filtroAgenda = $request->filtrar_agenda;
+                $filtroAgendaUser = $request->user;
+                $html = $this->getItemsTrea($filtroAgenda, $filtroAgendaUser);
+
                 PushNotificationService::sendNotification(PushNotificationsEnum::TAREAS, 'Nueva tarea', "El usuario " . auth()->user()->nombre . " creao una nueva tarea " . $tarea->titulo, route('tarea.visualizar', $tarea->id), $usuarios);
-                return response()->json(['success' => true, 'message' => MessagesConstant::INSERT]);
+                return response()->json(['success' => true, 'message' => MessagesConstant::INSERT, 'html' => $html]);
             } catch (\Throwable $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => MessagesConstant::CATCH_ERROR, 'error' => $e->getMessage()]);
@@ -220,7 +236,12 @@ class TareaController extends Controller
                 $tarea->estado_id = $request->estado;
                 $tarea->save();
                 DB::commit();
-                return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);
+
+                $filtroAgenda = $request->filtrar_agenda;
+                $filtroAgendaUser = $request->filtrar_user;
+                $html = $this->getItemsTrea($filtroAgenda, $filtroAgendaUser);
+
+                return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE, 'html' => $html]);
             } catch (\Throwable $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);
@@ -240,6 +261,7 @@ class TareaController extends Controller
                 $comentario = ComentarioTarea::find($request->comentario);
                 $comentario->delete();
                 DB::commit();
+
                 return response()->json(['success' => true, 'message' => MessagesConstant::DELETE]);
             } catch (\Throwable $e) {
                 DB::rollBack();
@@ -260,7 +282,12 @@ class TareaController extends Controller
                 $tarea = Tarea::find($request->tarea);
                 $tarea->delete();
                 DB::commit();
-                return response()->json(['success' => true, 'message' => MessagesConstant::DELETE]);
+
+                $filtroAgenda = $request->filtrar_agenda;
+                $filtroAgendaUser = $request->filtrar_user;
+                $html = $this->getItemsTrea($filtroAgenda, $filtroAgendaUser);
+
+                return response()->json(['success' => true, 'message' => MessagesConstant::DELETE, 'html' => $html]);
             } catch (\Throwable $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);
