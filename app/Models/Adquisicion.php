@@ -676,7 +676,7 @@ class Adquisicion extends Model
                 return strnatcasecmp($a['item_base']['categoria'], $b['item_base']['categoria']);
             });
 
-            // 2. Combinar Mano de Obra (sin cambios)
+            // 2. Combinar Mano de Obra
             $manoObraCombinada = self::combinarCategoria(
                 $etapa1['mano_obra'] ?? [],
                 $etapa2['mano_obra'] ?? [],
@@ -722,7 +722,6 @@ class Adquisicion extends Model
     private static function combinarCategoria(array $items1, array $items2, callable $keyGenerator): array
     {
         $mapaCombinado = [];
-
         // Procesamos el primer proyecto
         foreach ($items1 as $item) {
             $key = $keyGenerator($item);
