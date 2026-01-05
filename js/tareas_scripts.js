@@ -24,7 +24,8 @@ $(function () {
                     confirmButtonText: 'Aceptar',
                 }).then((result) => {
                     if (response.success) {
-                        location.reload();
+                        //location.reload();
+                        $('.tareas-items').html(response.html);
                     }
                 });
 
@@ -285,11 +286,16 @@ $(function () {
         if (estadoActual == estado) {
             return;
         }
+
+        const params = new URLSearchParams(window.location.search);
+        const filtrarAgenda = params.get('filtrar_agenda');
+        const filtrarUser = params.get('user');
+
         $.ajax({
             url: 'agenda/actualizar-estado-tarea/' + tarea_id,
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'PUT',
-            data: { estado: estado },
+            data: { estado: estado, 'filtrar_agenda': filtrarAgenda, 'filtrar_user': filtrarUser },
             beforeSend: function () {
                 $('#comentarioTareaModal #modal-overlay').show();
             },
@@ -300,7 +306,8 @@ $(function () {
                     confirmButtonText: 'Aceptar',
                 }).then((result) => {
                     if (response.success) {
-                        location.reload();
+                        $('.tareas-items').html(response.html);
+                        //location.reload();
                     }
                 });
 
@@ -362,7 +369,8 @@ $(function () {
                             confirmButtonText: 'Aceptar',
                         }).then((result) => {
                             if (response.success) {
-                                location.reload();
+                                //location.reload();
+                                $('.tareas-items').html(response.html);
                             }
                         });
                     })
@@ -397,7 +405,7 @@ $(function () {
     });
 
     $(document).on('hidden.bs.modal', '#comentarioTareaModal', function () {
-        window.location.href = url;
+        //window.location.href = url;
 
     });
 
