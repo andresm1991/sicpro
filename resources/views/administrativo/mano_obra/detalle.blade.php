@@ -206,11 +206,14 @@
                                             {{ implode(',', $detalle['detalle_descuento']) }}
                                         </td>
                                         <!-- pago prestamo -->
-                                        <td class="align-middle text-fontsize-12">$
-                                            {{ number_format(collect($detalle['prestamo'])->sum('pagos'), 2) }}</td>
                                         @if ($isFirstRowForName)
                                             <td rowspan="{{ $rowspan }}" class="align-middle text-fontsize-12">$
-                                                {{ number_format($liquidoRecibirTotal, 2) }}</td>
+                                                {{ number_format(collect($detalle['prestamo'])->sum('pagos'), 2) }}
+                                            </td>
+
+                                            <td rowspan="{{ $rowspan }}" class="align-middle text-fontsize-12">$
+                                                {{ number_format($liquidoRecibirTotal, 2) }}
+                                            </td>
                                         @endif
                                         <td class="align-middle text-fontsize-12">
                                             {{ implode(',', $detalle['observacion']) }}
