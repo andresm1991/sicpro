@@ -80,14 +80,14 @@ class Caja extends Model
         if (!$request->input('articulo')) {
             return self::create(
                 [
-                    'fecha'        => date('Y-m-d'),
+                    'fecha' => date('Y-m-d'),
                     'proveedor_id' => $request->input('proveedor'),
                     'articulo_manual' => $request->input('detalle'),
-                    'tipo'         => $request->input('tipo_movimiento', 'egreso'),
-                    'monto'        => limpiarValor($request->input('monto')),
-                    'descripcion'  => $request->input('detalle'),
-                    'referencia'   => $request->input('referencia'),
-                    'user_id'      => auth()->user()->id,
+                    'tipo' => $request->input('tipo_movimiento', 'egreso'),
+                    'monto' => limpiarValor($request->input('monto')),
+                    'descripcion' => $request->input('detalle'),
+                    'referencia' => $request->input('referencia'),
+                    'user_id' => auth()->user()->id,
                     'origen_type' => $request->input('origen_type'),
                     'origen_id' => $request->input('origen_id'),
                 ]
@@ -95,7 +95,7 @@ class Caja extends Model
         } else {
             // Primero buscar si existe el registro
             $registro = self::where([
-                'articulo_id' => $request->input('articulo'),
+                'producto_id' => $request->input('articulo'),
                 'origen_id' => $request->input('origen_id'),
             ])->first();
 
@@ -116,7 +116,7 @@ class Caja extends Model
 
             // Si no existe, crear con fecha actual
             return self::create([
-                'articulo_id' => $request->input('articulo'),
+                'producto_id' => $request->input('articulo'),
                 'origen_id' => $request->input('origen_id'),
                 'fecha' => date('Y-m-d'),
                 'proveedor_id' => $request->input('proveedor'),
