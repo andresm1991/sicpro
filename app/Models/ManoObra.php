@@ -73,9 +73,11 @@ class ManoObra extends Model
             $nombre_mostrado = false;  // Bandera para saber si ya mostramos el nombre del proveedor
 
             if ($estado == 'completo') {
-                $prestamos = PagoManoObra::with(['pago_prestamo' => function ($q) {
-                    $q->select('id', 'monto_pagado', 'fecha_pago', 'prestamo_id', 'estado_id'); // agrega aquí los campos que necesitas
-                }])
+                $prestamos = PagoManoObra::with([
+                    'pago_prestamo' => function ($q) {
+                        $q->select('id', 'monto_pagado', 'fecha_pago', 'prestamo_id', 'estado_id'); // agrega aquí los campos que necesitas
+                    }
+                ])
                     ->where('mano_obra_id', $mano_obra_id)
                     ->whereHas('pago_prestamo', function ($query) use ($proveedor_id) {
                         $query->whereHas('estado', function ($query) {
@@ -88,14 +90,26 @@ class ManoObra extends Model
                     ->get();
             } else {
 
-                $prestamos = Prestamo::with('pagos_prestamo')
-                    ->where('trabajador_id', $proveedor_id)
+                $prestamos = Prestamo::where('trabajador_id', $proveedor_id)
+                    // 1. Filtramos el Préstamo: Solo si tiene pagos listos para procesar
                     ->whereHas('pagos_prestamo', function ($query) {
                         $query->whereHas('estado', function ($q) {
                             $q->where('descripcion', 'Pagado');
-                        });
+                        })
+                            ->whereDoesntHave('pago_mano_obra');
                     })
+                    // 2. Filtramos la Relación: Para que en la vista solo veas los pagos que cumplen
+                    ->with([
+                        'pagos_prestamo' => function ($query) {
+                            $query->whereHas('estado', function ($q) {
+                                $q->where('descripcion', 'Pagado');
+                            })
+                                ->whereDoesntHave('pago_mano_obra');
+                        }
+                    ])
                     ->get();
+
+
                 // old
                 /*$prestamos = Prestamo::with('pagos_prestamo')
                     ->where('trabajador_id', $proveedor_id)
@@ -103,6 +117,10 @@ class ManoObra extends Model
                         $query->where('descripcion', 'Pendiente');
                     })->get();*/
             }
+
+            // --- BANDERA DE CONTROL ---
+            $prestamo_ya_asignado = false;
+
             //$prestamos = Prestamo::where('trabajador_id', $proveedor_id)->get();
             foreach ($registros_por_proveedor->groupBy('articulo_id') as $articulo_id => $registros) {
                 // Inicializamos las variables para cada trabajador y su cargo
@@ -161,16 +179,31 @@ class ManoObra extends Model
                 $fila['liquido_recibir'] = ($fila['total_adicional'] + array_sum($fila['dias'])) - $fila['total_descuento'];
 
                 // Procesar préstamos y pagos
-                if ($estado == 'completo') {
-                    foreach ($prestamos as $prestamo) {
-                        $fila['prestamo'][] = ['pago_id' => $prestamo->pago_prestamo->id, 'pagos' => $prestamo->pago_prestamo->monto_pagado];
-                    }
-                } else {
-                    foreach ($prestamos as $prestamo) {
-                        foreach ($prestamo->pagos_prestamo as $pago) {
-                            $fila['prestamo'][] = ['pago_id' => $pago->id, 'pagos' => $pago->monto_pagado];
+                // 2. PROCESAR PRÉSTAMOS SOLO SI NO SE HAN ASIGNADO YA
+                if (!$prestamo_ya_asignado) {
+                    if ($estado == 'completo') {
+                        foreach ($prestamos as $p) {
+                            $fila['prestamo'][] = [
+                                'pago_id' => $p->pago_prestamo->id,
+                                'pagos' => $p->pago_prestamo->monto_pagado
+                            ];
+                            // Restamos del líquido si es necesario
+                            $fila['liquido_recibir'] -= $p->pago_prestamo->monto_pagado;
+                        }
+                    } else {
+                        $pagosUnicos = $prestamos->flatMap->pagos_prestamo->unique('id');
+                        foreach ($pagosUnicos as $pago) {
+                            $fila['prestamo'][] = [
+                                'pago_id' => $pago->id,
+                                'pagos' => $pago->monto_pagado
+                            ];
+                            // IMPORTANTE: Restar el préstamo del líquido a recibir de esta fila
+                            $fila['liquido_recibir'] -= $pago->monto_pagado;
                         }
                     }
+
+                    // 3. ACTIVAR LA BANDERA: Ya no entrará aquí para el siguiente cargo (ej. Oficial)
+                    $prestamo_ya_asignado = true;
                 }
 
 
@@ -221,9 +254,11 @@ class ManoObra extends Model
         $query->when($cargo, function ($q, $cargo) {
             $q->whereHas('detalle_mano_obra', function ($query) use ($cargo) {
                 $query->where('articulo_id', $cargo);
-            })->with(['detalle_mano_obra' => function ($query) use ($cargo) {
-                $query->where('articulo_id', $cargo); // Filtrar por el producto específico
-            }]);
+            })->with([
+                        'detalle_mano_obra' => function ($query) use ($cargo) {
+                            $query->where('articulo_id', $cargo); // Filtrar por el producto específico
+                        }
+                    ]);
         });
 
 
