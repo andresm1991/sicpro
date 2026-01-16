@@ -93,24 +93,28 @@ class PrestamoController extends Controller
     public function updatePrestamo(Request $request, Prestamo $prestamo)
     {
         if ($request->ajax()) {
-
             try {
                 if ($prestamo->estado->descripcion == 'Pagado') {
                     return response()->json(['success' => false, 'mensaje' => 'No es posible actualizar la información del préstamo porque está pagado.']);
                 }
+
                 DB::transaction(function () use ($request, $prestamo) {
+                    // Obtener plazos
+                    $plazoActual = $prestamo->plazo;
+                    $nuevoPlazo = (int) $request->plazo;
+
+                    // Validar que el nuevo plazo sea mayor que el actual (para aumentos)
+                    if ($nuevoPlazo <= $plazoActual) {
+                        throw new Exception('El nuevo plazo debe ser mayor al actual para realizar un aumento.');
+                    }
+
                     // Validar si hay saldo pendiente
                     $saldoRestante = $prestamo->monto - $prestamo->pago_prestamo->sum('monto_pagado');
                     if ($saldoRestante <= 0) {
                         throw new Exception('No hay saldo pendiente para recalcular.');
                     }
 
-                    // Actualizar el plazo con el nuevo valor
-                    $nuevoPlazo = $request->plazo;
-                    $prestamo->plazo = $nuevoPlazo;
-                    $prestamo->save();
-
-                    // Recalcular los pagos pendientes
+                    // Obtener pagos pendientes
                     $pagosPendientes = $prestamo->pago_prestamo()
                         ->whereHas('estado', function ($query) {
                             $query->where('descripcion', 'Pendiente');
@@ -118,42 +122,125 @@ class PrestamoController extends Controller
                         ->orderBy('fecha_pago', 'asc')
                         ->get();
 
-                    // Calcular nuevo monto programado
-                    $nuevoMontoProgramado = round($saldoRestante / $nuevoPlazo, 2);
+                    // Calcular semanas adicionales (CORREGIDO: solo la diferencia)
+                    $semanasAdicionales = $nuevoPlazo - $plazoActual;
 
-                    // Generar nuevas fechas de pago
-                    $nuevasFechasPago = calcularFechasPago(Carbon::now(), $nuevoPlazo);
+                    // Si hay pagos pendientes, mantener su monto programado original
+                    // Solo necesitamos agregar los pagos adicionales
+                    if ($pagosPendientes->count() > 0) {
+                        // Calcular el monto total ya programado en pagos pendientes
+                        $montoYaProgramado = $pagosPendientes->sum('monto_programado');
 
-                    // Comparar el número de pagos pendientes con el nuevo plazo
-                    if ($pagosPendientes->count() < $nuevoPlazo) {
-                        // Generar nuevos pagos si faltan
-                        $faltantes = $nuevoPlazo - $pagosPendientes->count();
-                        for ($i = 0; $i < $faltantes; $i++) {
-                            $prestamo->pago_prestamo()->create([
-                                'fecha_pago' => $nuevasFechasPago[$pagosPendientes->count() + $i],
-                                'monto_programado' => $nuevoMontoProgramado,
-                                'estado_id' => CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pendiente'),
-                                'metodo_pago_id' => CatalogoDato::getIdCatalogo('metodos.pagos.otro'),
-                                'monto_pagado' => 0,
-                            ]);
+                        // Calcular el saldo que queda para distribuir en las semanas adicionales
+                        $saldoParaAdicionales = $saldoRestante - $montoYaProgramado;
+
+                        // Solo dividir el saldo entre las semanas adicionales (no el plazo total)
+                        $montoPorSemanaAdicional = round($saldoParaAdicionales / $semanasAdicionales, 2);
+
+                        // Obtener la última fecha de pago y asegurarnos de que sea Carbon
+                        $ultimaFechaPago = Carbon::parse($pagosPendientes->last()->fecha_pago);
+
+                        // Agregar SOLO las semanas adicionales necesarias
+                        $this->agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoPorSemanaAdicional, $ultimaFechaPago);
+                    } else {
+                        // Si no hay pagos pendientes, verificar si ya se han realizado algunos pagos
+                        $pagosRealizados = $prestamo->pago_prestamo()
+                            ->whereHas('estado', function ($query) {
+                                $query->where('descripcion', 'Pagado');
+                            })
+                            ->count();
+
+                        if ($pagosRealizados > 0) {
+                            // Hay pagos realizados pero no pendientes
+                            $ultimoPago = $prestamo->pago_prestamo()
+                                ->orderBy('fecha_pago', 'desc')
+                                ->first();
+
+                            if ($ultimoPago) {
+                                // Calcular monto por semana para las semanas adicionales
+                                $montoPorSemanaAdicional = round($saldoRestante / $semanasAdicionales, 2);
+
+                                // Convertir a Carbon y agregar SOLO las semanas adicionales
+                                $ultimaFechaPago = Carbon::parse($ultimoPago->fecha_pago);
+                                $this->agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoPorSemanaAdicional, $ultimaFechaPago);
+                            } else {
+                                // Caso sin pagos: agregar todos los pagos del nuevo plazo
+                                $montoPorSemana = round($saldoRestante / $nuevoPlazo, 2);
+                                $this->agregarTodosPagos($prestamo, $nuevoPlazo, $montoPorSemana);
+                            }
+                        } else {
+                            // No hay pagos realizados ni pendientes: agregar todos los pagos del nuevo plazo
+                            $montoPorSemana = round($saldoRestante / $nuevoPlazo, 2);
+                            $this->agregarTodosPagos($prestamo, $nuevoPlazo, $montoPorSemana);
                         }
                     }
 
-                    // Actualizar los pagos existentes
-                    foreach ($pagosPendientes as $index => $pago) {
-                        $pago->monto_programado = $nuevoMontoProgramado;
-                        $pago->fecha_pago = $nuevasFechasPago[$index];
-                        $pago->save();
-                    }
+                    // Actualizar el plazo del préstamo
+                    $prestamo->plazo = $nuevoPlazo;
+                    $prestamo->save();
                 });
 
-                return response()->json(['success' => true, 'mensaje' => 'Plazo actualizado y pagos recalculados.']);
+                return response()->json(['success' => true, 'mensaje' => 'Plazo actualizado correctamente.']);
             } catch (\Throwable $e) {
-                LogService::log('error', 'Error al actualizar el plazo del prestamo', ['user_id' => auth()->id(), 'action' => 'update', 'message' => $e->getMessage()]);
+                LogService::log('error', 'Error al actualizar el plazo del prestamo', [
+                    'user_id' => auth()->id(),
+                    'action' => 'update',
+                    'message' => $e->getMessage(),
+                    'prestamo_id' => $prestamo->id
+                ]);
                 return response()->json(['success' => false, 'mensaje' => 'Error al actualizar el plazo.', 'error' => $e->getMessage()]);
             }
         }
         abort(404);
+    }
+
+    /**
+     * Agrega pagos adicionales para el aumento del plazo
+     */
+    private function agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoSemanal, Carbon $ultimaFechaPago)
+    {
+        // Si no hay semanas adicionales, no hacer nada
+        if ($semanasAdicionales <= 0) {
+            return;
+        }
+
+        // Validar que el monto no sea negativo o cero
+        if ($montoSemanal <= 0) {
+            throw new Exception('El monto por semana adicional no puede ser cero o negativo.');
+        }
+
+        // Generar fechas para las semanas adicionales
+        for ($i = 1; $i <= $semanasAdicionales; $i++) {
+            $nuevaFecha = $ultimaFechaPago->copy()->addWeeks($i);
+
+            $prestamo->pago_prestamo()->create([
+                'fecha_pago' => $nuevaFecha,
+                'monto_programado' => $montoSemanal,
+                'estado_id' => CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pendiente'),
+                'metodo_pago_id' => CatalogoDato::getIdCatalogo('metodos.pagos.otro'),
+                'monto_pagado' => 0,
+            ]);
+        }
+    }
+
+    /**
+     * Agrega todos los pagos del nuevo plazo (solo cuando no hay pagos existentes)
+     */
+    private function agregarTodosPagos($prestamo, $nuevoPlazo, $montoSemanal)
+    {
+        // Generar todas las fechas de pago desde hoy
+        $nuevasFechasPago = calcularFechasPago(Carbon::now(), $nuevoPlazo);
+
+        // Crear todos los pagos
+        foreach ($nuevasFechasPago as $fecha) {
+            $prestamo->pago_prestamo()->create([
+                'fecha_pago' => $fecha,
+                'monto_programado' => $montoSemanal,
+                'estado_id' => CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pendiente'),
+                'metodo_pago_id' => CatalogoDato::getIdCatalogo('metodos.pagos.otro'),
+                'monto_pagado' => 0,
+            ]);
+        }
     }
 
     public function detallePrestamo(Prestamo $prestamo)
