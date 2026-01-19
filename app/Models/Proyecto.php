@@ -90,13 +90,17 @@ class Proyecto extends Model
         return CategoriaPresupuesto::whereHas('rubrosPresupuesto.presupuestoProyectos', function ($query) use ($proyectoId) {
             $query->where('proyecto_id', $proyectoId);
         })
-            ->with(['rubrosPresupuesto' => function ($query) use ($proyectoId) {
-                $query->whereHas('presupuestoProyectos', function ($q) use ($proyectoId) {
-                    $q->where('proyecto_id', $proyectoId);
-                })->with(['presupuestoProyectos' => function ($q) use ($proyectoId) {
-                    $q->where('proyecto_id', $proyectoId);
-                }]);
-            }])
+            ->with([
+                'rubrosPresupuesto' => function ($query) use ($proyectoId) {
+                    $query->whereHas('presupuestoProyectos', function ($q) use ($proyectoId) {
+                        $q->where('proyecto_id', $proyectoId);
+                    })->with([
+                                'presupuestoProyectos' => function ($q) use ($proyectoId) {
+                                    $q->where('proyecto_id', $proyectoId);
+                                }
+                            ]);
+                }
+            ])
             ->get();
     }
 
@@ -161,7 +165,7 @@ class Proyecto extends Model
 
         // --- 2. PRE-CÁLCULO DE INGRESOS Y GASTOS POR PROYECTO ---
 
-        // Ingreso A: Ventas (ProcesoVenta)
+        // Ingreso A: Ventas (ProcesoVenta) - ESTÁ BIEN
         $ingresosVentasPorProyecto = DB::table('proceso_ventas')
             ->select('proyecto_id', DB::raw('SUM(valor_reserva + valor_saldo_reserva + monto_desembolsado) as total'))
             ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('created_at', $anioF))
@@ -170,16 +174,55 @@ class Proyecto extends Model
             ->groupBy('proyecto_id')
             ->pluck('total', 'proyecto_id');
 
-        // Ingreso B: Proformas de Adecentamiento
-        $proformasViaAdquisiciones = DB::table('proforma_adecentamientos as pa')->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')->join('adquisiciones as a', 'pa.numero', '=', 'a.nro_proforma')->select('a.proyecto_id', 'pa.total', 'pa.fecha')->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('a.subproyecto', $subproyectoInput))->when($etapa, fn($q) => $q->where('a.etapa_id', $etapa))->when($tipoEtapa, fn($q) => $q->where('a.tipo_etapa_id', $tipoEtapa))->where('cd.slug', 'estados.proformas.facturado')->whereNotNull('a.proyecto_id');
-        $proformasViaContratistas = DB::table('proforma_adecentamientos as pa')->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')->join('contratistas as c', 'pa.numero', '=', 'c.nro_proforma')->select('c.proyecto_id', 'pa.total', 'pa.fecha')->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('c.subproyecto', $subproyectoInput))->when($etapa, fn($q) => $q->where('c.etapa_id', $etapa))->when($tipoEtapa, fn($q) => $q->where('c.tipo_etapa_id', $tipoEtapa))->where('cd.slug', 'estados.proformas.facturado')->whereNotNull('c.proyecto_id');
-        $proformasViaManoObra = DB::table('proforma_adecentamientos as pa')->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')->join('mano_obra as m', 'pa.numero', '=', 'm.nro_proforma')->select('m.proyecto_id', 'pa.total', 'pa.fecha')->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('m.subproyecto', $subproyectoInput))->when($etapa, fn($q) => $q->where('m.etapa_id', $etapa))->when($tipoEtapa, fn($q) => $q->where('m.tipo_etapa_id', $tipoEtapa))->where('cd.slug', 'estados.proformas.facturado')->whereNotNull('m.proyecto_id');
+        // Ingreso B: Proformas de Adecentamiento - CORREGIDO CON GROUP BY
+        $proformasViaAdquisiciones = DB::table('proforma_adecentamientos as pa')
+            ->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')
+            ->join('adquisiciones as a', 'pa.numero', '=', 'a.nro_proforma')
+            ->select('a.proyecto_id', 'pa.total', 'pa.fecha')
+            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('a.subproyecto', $subproyectoInput))
+            ->when($etapa, fn($q) => $q->where('a.etapa_id', $etapa))
+            ->when($tipoEtapa, fn($q) => $q->where('a.tipo_etapa_id', $tipoEtapa))
+            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('pa.fecha', $anioF))
+            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('pa.fecha', [$fechaInicioF, $fechaFinF]))
+            ->where('cd.slug', 'estados.proformas.facturado')
+            ->whereNotNull('a.proyecto_id')
+            ->groupBy('pa.numero', 'a.proyecto_id', 'pa.total', 'pa.fecha');
+
+        $proformasViaContratistas = DB::table('proforma_adecentamientos as pa')
+            ->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')
+            ->join('contratistas as c', 'pa.numero', '=', 'c.nro_proforma')
+            ->select('c.proyecto_id', 'pa.total', 'pa.fecha')
+            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('c.subproyecto', $subproyectoInput))
+            ->when($etapa, fn($q) => $q->where('c.etapa_id', $etapa))
+            ->when($tipoEtapa, fn($q) => $q->where('c.tipo_etapa_id', $tipoEtapa))
+            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('pa.fecha', $anioF))
+            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('pa.fecha', [$fechaInicioF, $fechaFinF]))
+            ->where('cd.slug', 'estados.proformas.facturado')
+            ->whereNotNull('c.proyecto_id')
+            ->groupBy('pa.numero', 'c.proyecto_id', 'pa.total', 'pa.fecha');
+
+        $proformasViaManoObra = DB::table('proforma_adecentamientos as pa')
+            ->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')
+            ->join('mano_obra as m', 'pa.numero', '=', 'm.nro_proforma')
+            ->select('m.proyecto_id', 'pa.total', 'pa.fecha')
+            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('m.subproyecto', $subproyectoInput))
+            ->when($etapa, fn($q) => $q->where('m.etapa_id', $etapa))
+            ->when($tipoEtapa, fn($q) => $q->where('m.tipo_etapa_id', $tipoEtapa))
+            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('pa.fecha', $anioF))
+            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('pa.fecha', [$fechaInicioF, $fechaFinF]))
+            ->where('cd.slug', 'estados.proformas.facturado')
+            ->whereNotNull('m.proyecto_id')
+            ->groupBy('pa.numero', 'm.proyecto_id', 'pa.total', 'pa.fecha');
 
         $unionDeProformas = $proformasViaAdquisiciones->unionAll($proformasViaContratistas)->unionAll($proformasViaManoObra);
 
-        $ingresosProformasPorProyecto = DB::query()->fromSub($unionDeProformas, 'ingresos_proforma')->select('proyecto_id', DB::raw('SUM(total) as total_ingreso'))->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('fecha', $anioF))->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('fecha', [$fechaInicioF, $fechaFinF]))->groupBy('proyecto_id')->pluck('total_ingreso', 'proyecto_id');
+        $ingresosProformasPorProyecto = DB::query()
+            ->fromSub($unionDeProformas, 'ingresos_proforma')
+            ->select('proyecto_id', DB::raw('SUM(total) as total_ingreso'))
+            ->groupBy('proyecto_id')
+            ->pluck('total_ingreso', 'proyecto_id');
 
-        // Gasto A: Adquisiciones (MODIFICADO PARA SEPARAR POR TIPO)
+        // Gasto A: Adquisiciones - REVISAR POSIBLES DUPLICADOS
         $resultadosAdquisiciones = DB::table('adquisiciones_detalle')
             ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
             ->select(
@@ -197,48 +240,94 @@ class Proyecto extends Model
             ->groupBy('adquisiciones.proyecto_id', 'adquisiciones.tipo_adquisicion')
             ->get();
 
-        $gastosAdquisicionesArray = []; // Iniciar como un array normal
+        $gastosAdquisicionesArray = [];
         foreach ($resultadosAdquisiciones as $item) {
             $proyectoId = $item->proyecto_id;
             $tipo = in_array($item->tipo_adquisicion, ['operativo', 'administrativo']) ? $item->tipo_adquisicion : 'operativo';
 
-            // Inicializar el array para el proyecto si no existe
             if (!isset($gastosAdquisicionesArray[$proyectoId])) {
                 $gastosAdquisicionesArray[$proyectoId] = ['operativo' => 0, 'administrativo' => 0];
             }
 
-            // Modificar el array directamente (esto SÍ funciona)
             $gastosAdquisicionesArray[$proyectoId][$tipo] += $item->total;
         }
-        // Convertir el array final a una Colección de Laravel para usar sus métodos después
         $gastosAdquisicionesSeparados = collect($gastosAdquisicionesArray);
 
-        // Gasto B: Contratistas
-        $gastosContratistas = DB::table('pagos_orden_trabajo_contratista as potc')->join('contratistas', 'potc.contratista_id', '=', 'contratistas.id')->select('contratistas.proyecto_id', DB::raw('SUM(potc.valor) as total'))->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('potc.fecha', $anioF))->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('potc.fecha', [$fechaInicioF, $fechaFinF]))->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('contratistas.subproyecto', $subproyectoInput))->when($etapa, fn($q) => $q->where('contratistas.etapa_id', $etapa))->when($tipoEtapa, fn($q) => $q->where('contratistas.tipo_etapa_id', $tipoEtapa))->where('potc.pagado', true)->whereNotNull('contratistas.proyecto_id')->groupBy('contratistas.proyecto_id')->pluck('total', 'proyecto_id');
+        // Gasto B: Contratistas - REVISAR POSIBLES DUPLICADOS
+        $gastosContratistas = DB::table('pagos_orden_trabajo_contratista as potc')
+            ->join('contratistas', 'potc.contratista_id', '=', 'contratistas.id')
+            ->select('contratistas.proyecto_id', DB::raw('SUM(potc.valor) as total'))
+            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('potc.fecha', $anioF))
+            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('potc.fecha', [$fechaInicioF, $fechaFinF]))
+            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('contratistas.subproyecto', $subproyectoInput))
+            ->when($etapa, fn($q) => $q->where('contratistas.etapa_id', $etapa))
+            ->when($tipoEtapa, fn($q) => $q->where('contratistas.tipo_etapa_id', $tipoEtapa))
+            ->where('potc.pagado', true)
+            ->whereNotNull('contratistas.proyecto_id')
+            ->groupBy('contratistas.proyecto_id')
+            ->pluck('total', 'proyecto_id');
 
-        // Gasto C: Mano de Obra
-        $gastosManoObra = DB::table('mano_obra')->join('detalle_mano_obra', 'mano_obra.id', '=', 'detalle_mano_obra.mano_obra_id')->whereExists(function ($query) {
-            $query->select(DB::raw(1))->from('pagos_mano_obra')->whereColumn('pagos_mano_obra.mano_obra_id', 'mano_obra.id');
-        })->select('mano_obra.proyecto_id', DB::raw('SUM(COALESCE(detalle_mano_obra.valor, 0) + COALESCE(detalle_mano_obra.adicional, 0) - COALESCE(detalle_mano_obra.descuento, 0)) as total'))->when($tipoReporte === 'balance_global' && $anioF, function ($q) use ($anioF) {
-            $q->where(function ($query) use ($anioF) {
-                $query->whereYear('mano_obra.fecha_inicio', '<=', $anioF)->whereYear('mano_obra.fecha_fin', '>=', $anioF);
-            });
-        })->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, function ($q) use ($fechaInicioF, $fechaFinF) {
-            $q->where(function ($query) use ($fechaInicioF, $fechaFinF) {
-                $query->where('mano_obra.fecha_inicio', '<=', $fechaFinF)->where('mano_obra.fecha_fin', '>=', $fechaInicioF);
-            });
-        })->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('mano_obra.subproyecto', $subproyectoInput))->when($etapa, fn($q) => $q->where('mano_obra.etapa_id', $etapa))->when($tipoEtapa, fn($q) => $q->where('mano_obra.tipo_etapa_id', $tipoEtapa))->whereNotNull('mano_obra.proyecto_id')->groupBy('mano_obra.proyecto_id')->pluck('total', 'proyecto_id');
+        // Gasto C: Mano de Obra - REVISAR FILTROS Y POSIBLES DUPLICADOS
+        $gastosManoObra = DB::table('mano_obra')
+            ->join('detalle_mano_obra', 'mano_obra.id', '=', 'detalle_mano_obra.mano_obra_id')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('pagos_mano_obra')
+                    ->whereColumn('pagos_mano_obra.mano_obra_id', 'mano_obra.id');
+            })
+            ->select(
+                'mano_obra.proyecto_id',
+                DB::raw('SUM(COALESCE(detalle_mano_obra.valor, 0) + COALESCE(detalle_mano_obra.adicional, 0) - COALESCE(detalle_mano_obra.descuento, 0)) as total')
+            )
+            ->when($tipoReporte === 'balance_global' && $anioF, function ($q) use ($anioF) {
+                // IMPORTANTE: Verificar si esta lógica es correcta
+                // Quizás debería ser fecha de pago, no fechas de inicio/fin
+                $q->where(function ($query) use ($anioF) {
+                    $query->whereYear('mano_obra.fecha_inicio', '<=', $anioF)
+                        ->whereYear('mano_obra.fecha_fin', '>=', $anioF);
+                });
+            })
+            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, function ($q) use ($fechaInicioF, $fechaFinF) {
+                // REVISAR: ¿Debería filtrar por fecha_pago o por fecha_inicio/fin?
+                $q->where(function ($query) use ($fechaInicioF, $fechaFinF) {
+                    $query->where('mano_obra.fecha_inicio', '<=', $fechaFinF)
+                        ->where('mano_obra.fecha_fin', '>=', $fechaInicioF);
+                    // Alternativa: filtrar por fecha de pago si existe
+                    // if (Schema::hasColumn('mano_obra', 'fecha_pago')) {
+                    //     $query->orWhereBetween('mano_obra.fecha_pago', [$fechaInicioF, $fechaFinF]);
+                    // }
+                });
+            })
+            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('mano_obra.subproyecto', $subproyectoInput))
+            ->when($etapa, fn($q) => $q->where('mano_obra.etapa_id', $etapa))
+            ->when($tipoEtapa, fn($q) => $q->where('mano_obra.tipo_etapa_id', $tipoEtapa))
+            ->whereNotNull('mano_obra.proyecto_id')
+            ->groupBy('mano_obra.proyecto_id')
+            ->pluck('total', 'proyecto_id');
 
-        // Gasto D: Préstamos
-        $gastosPrestamos = DB::table('prestamos as p')->join('catalogo_datos as cd', 'p.estado_id', '=', 'cd.id')->join('proveedores as prov', 'p.trabajador_id', '=', 'prov.id')->join('detalle_mano_obra as dmo', 'prov.id', '=', 'dmo.proveedor_id')->join('mano_obra as mo', 'dmo.mano_obra_id', '=', 'mo.id')->select('mo.proyecto_id', DB::raw('SUM(p.monto) as total'))->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('p.fecha_aprobacion', $anioF))->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('p.fecha_aprobacion', [$fechaInicioF, $fechaFinF]))->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('mo.subproyecto', $subproyectoInput))->when($etapa, fn($q) => $q->where('mo.etapa_id', $etapa))->when($tipoEtapa, fn($q) => $q->where('mo.tipo_etapa_id', $tipoEtapa))->where('cd.slug', 'estados.prestamos.aprobado')->whereNotNull('mo.proyecto_id')->groupBy('mo.proyecto_id')->pluck('total', 'proyecto_id');
-
+        // Gasto D: Préstamos - REVISAR POSIBLES DUPLICADOS POR JOINS MÚLTIPLES
+        $gastosPrestamos = DB::table('prestamos as p')
+            ->join('catalogo_datos as cd', 'p.estado_id', '=', 'cd.id')
+            ->join('proveedores as prov', 'p.trabajador_id', '=', 'prov.id')
+            ->join('detalle_mano_obra as dmo', 'prov.id', '=', 'dmo.proveedor_id')
+            ->join('mano_obra as mo', 'dmo.mano_obra_id', '=', 'mo.id')
+            ->select('mo.proyecto_id', DB::raw('SUM(p.monto) as total'))
+            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('p.fecha_aprobacion', $anioF))
+            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('p.fecha_aprobacion', [$fechaInicioF, $fechaFinF]))
+            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('mo.subproyecto', $subproyectoInput))
+            ->when($etapa, fn($q) => $q->where('mo.etapa_id', $etapa))
+            ->when($tipoEtapa, fn($q) => $q->where('mo.tipo_etapa_id', $tipoEtapa))
+            ->where('cd.slug', 'estados.prestamos.aprobado')
+            ->whereNotNull('mo.proyecto_id')
+            ->groupBy('mo.proyecto_id')
+            ->pluck('total', 'proyecto_id');
 
         // --- 3. PRE-CÁLCULO DE GASTOS ADMINISTRATIVOS (SIN PROYECTO) ---
         $gastoAdminTotalOperativo = 0;
         $gastoAdminTotalAdministrativo = 0;
 
         if ($tipoReporte === 'balance_global') {
-            // Gasto Admin A: Adquisiciones (separado por tipo)
+            // Gasto Admin A: Adquisiciones
             $gastoAdminAdquisiciones = DB::table('adquisiciones_detalle')
                 ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
                 ->select('adquisiciones.tipo_adquisicion', DB::raw('SUM((adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + (adquisiciones_detalle.iva / 100))) as total'))
@@ -248,12 +337,25 @@ class Proyecto extends Model
                 ->groupBy('adquisiciones.tipo_adquisicion')
                 ->pluck('total', 'tipo_adquisicion');
 
-            // Gasto Admin B y D (se consideran operativos por defecto)
-            $gastoAdminContratistas = DB::table('pagos_orden_trabajo_contratista as potc')->join('contratistas', 'potc.contratista_id', '=', 'contratistas.id')->when($anioF, fn($q) => $q->whereYear('potc.fecha', $anioF))->where('potc.pagado', true)->where('contratistas.proyecto_id', 0)->sum('potc.valor');
+            // Gasto Admin B: Contratistas
+            $gastoAdminContratistas = DB::table('pagos_orden_trabajo_contratista as potc')
+                ->join('contratistas', 'potc.contratista_id', '=', 'contratistas.id')
+                ->when($anioF, fn($q) => $q->whereYear('potc.fecha', $anioF))
+                ->where('potc.pagado', true)
+                ->where('contratistas.proyecto_id', 0)
+                ->sum('potc.valor');
 
-            $gastoAdminPrestamos = DB::table('prestamos as p')->join('catalogo_datos as cd', 'p.estado_id', '=', 'cd.id')->join('proveedores as prov', 'p.trabajador_id', '=', 'prov.id')->leftJoin('detalle_mano_obra as dmo', 'prov.id', '=', 'dmo.proveedor_id')->leftJoin('mano_obra as mo', 'dmo.mano_obra_id', '=', 'mo.id')->when($anioF, fn($q) => $q->whereYear('p.fecha_aprobacion', $anioF))->where('cd.slug', 'estados.prestamos.aprobado')->where('mo.proyecto_id', 0)->sum('p.monto');
+            // Gasto Admin D: Préstamos - REVISAR POSIBLES DUPLICADOS
+            $gastoAdminPrestamos = DB::table('prestamos as p')
+                ->join('catalogo_datos as cd', 'p.estado_id', '=', 'cd.id')
+                ->join('proveedores as prov', 'p.trabajador_id', '=', 'prov.id')
+                ->leftJoin('detalle_mano_obra as dmo', 'prov.id', '=', 'dmo.proveedor_id')
+                ->leftJoin('mano_obra as mo', 'dmo.mano_obra_id', '=', 'mo.id')
+                ->when($anioF, fn($q) => $q->whereYear('p.fecha_aprobacion', $anioF))
+                ->where('cd.slug', 'estados.prestamos.aprobado')
+                ->where('mo.proyecto_id', 0)
+                ->sum('p.monto');
 
-            // Consolidamos los totales administrativos
             $gastoAdminTotalOperativo = $gastoAdminAdquisiciones->get('operativo', 0) + $gastoAdminContratistas + $gastoAdminPrestamos;
             $gastoAdminTotalAdministrativo = $gastoAdminAdquisiciones->get('administrativo', 0);
         }
@@ -262,17 +364,22 @@ class Proyecto extends Model
 
         // --- 4. OBTENER PROYECTOS Y CONSOLIDAR DATOS ---
         $estadosEjecutadosIds = CatalogoDato::whereIn('slug', ['estados.proyectos.ejecucion', 'estados.proyectos.finalizado'])->pluck('id');
-        $proyectosQuery = self::query()->when($proyectoInput, function ($q) use ($proyectoInput) {
-            $q->where('id', $proyectoInput);
-        })
+
+        $proyectosQuery = self::query()
+            ->when($proyectoInput, function ($q) use ($proyectoInput) {
+                $q->where('id', $proyectoInput);
+            })
             ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('created_at', $anioF))
             ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('created_at', [$fechaInicioF, $fechaFinF]));
+
         if ($estadosEjecutadosIds->isNotEmpty()) {
             $proyectosQuery->whereIn('estado_id', $estadosEjecutadosIds);
         }
+
         if ($tipoReporte === 'balance_proyecto' && $proyectoInput) {
             $gastoAdministrativoTotal = 0;
         }
+
         $proyectos = $proyectosQuery->orderBy('nombre_proyecto', 'asc')->get();
 
         $balance = $proyectos->map(function ($proyecto) use ($ingresosVentasPorProyecto, $ingresosProformasPorProyecto, $gastosAdquisicionesSeparados, $gastosContratistas, $gastosManoObra, $gastosPrestamos) {
