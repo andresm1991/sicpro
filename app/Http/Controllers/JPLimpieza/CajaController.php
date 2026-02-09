@@ -62,4 +62,27 @@ class CajaController extends Controller
             }
         }
     }
+
+    public function eliminarMovimiento($id)
+    {
+        if (request()->ajax()) {
+            try {
+                DB::beginTransaction();
+
+                $movimiento = Caja::find($id);
+
+                if (!empty($movimiento->adquisicion)) {
+                    return response()->json(['success' => false, 'message' => 'No se puede eliminar un movimiento que tenga una adquisicion.']);
+                } else {
+                    Caja::destroy($id);
+                    DB::commit();
+
+                    return response()->json(['success' => true, 'message' => MessagesConstant::DELETE]);
+                }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR, 'error' => $e->getMessage()]);
+            }
+        }
+    }
 }

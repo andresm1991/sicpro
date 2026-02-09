@@ -22,7 +22,7 @@
                                 </a>
                         </div>
                     </div>
-                    {{--  <div class="col-md-8 col-12 ">
+                    {{-- <div class="col-md-8 col-12 ">
                         <div class="form-group form-search form-icon col-md-10 col-12 float-right p-0">
                             <i class="fal fa-search fa-lg form-control-icon"></i>
                             <input type="text" name="mano_obra_search" class="form-control form-control-round"
@@ -45,6 +45,9 @@
                                 <th scope="col">tipo</th>
                                 <th scope="col">monto</th>
                                 <th scope="col">saldo</th>
+                                @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                    <th scope="col-accion"></th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -86,6 +89,14 @@
                                     <td class="align-middle">
                                         ${{ number_format($movimiento->saldo_acumulado, 4) }}
                                     </td>
+                                    @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                        <td class="align-middle">
+                                            <button type="button" class="btn btn-danger btn-sm eliminarMovimiento"
+                                                data-id="{{ $movimiento->id }}">
+                                                <i class="fa-regular fa-trash-alt"></i>
+                                            </button>
+                                        </td>
+                                    @endif
                                 </tr>
                             @empty
                                 <tr>

@@ -105,6 +105,7 @@ Route::group(['prefix' => 'jp-limpieza', 'as' => 'jp.limpieza.'], function () {
     Route::group(['prefix' => 'caja', 'as' => 'caja.'], function () {
         Route::get('/', [CajaController::class, 'index'])->name('index');
         Route::post('/guardar', [CajaController::class, 'guardarMovimiento'])->name('store');
+        Route::delete('/eliminar-movimiento/{id}', [CajaController::class, 'eliminarMovimiento']);
     });
 
     //** REPORTES */
