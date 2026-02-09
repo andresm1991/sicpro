@@ -95,4 +95,58 @@ $(function () {
             }
         });
     });
+
+    $(document).on('click', '.eliminarMovimiento', function () {
+        var id = $(this).data('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el movimiento no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'caja/eliminar-movimiento/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (response) {
+                        if (response.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: response.message,
+                            });
+
+                            $("#" + id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan="10" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                response.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
 });
