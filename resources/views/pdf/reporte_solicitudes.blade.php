@@ -297,6 +297,7 @@
                 @empty
                 @endforelse
             </tbody>
+
             @if ($tipo_solicitud == 'reposiciones_detallado')
                     <tfoot>
                         <tr>
@@ -304,6 +305,18 @@
                             <td colspan="3">{{ sumarTiempos(collect($query)
                 ->map(function ($item) {
                     return $item['totalGeneral']; // ✅ Acceso como array, no como propiedad
+                })
+                ->flatten()
+                ->toArray()) }}</td>
+                        </tr>
+                    </tfoot>
+            @elseif (strtoupper($tipo_solicitud) == 'AUSENCIA')
+                    <tfoot>
+                        <tr>
+                            <td colspan="3">total general</td>
+                            <td colspan="5">{{ sumarTiempos(collect($query)
+                ->map(function ($item) {
+                    return $item['tiempo_total'];
                 })
                 ->flatten()
                 ->toArray()) }}</td>
