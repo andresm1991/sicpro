@@ -41,9 +41,12 @@ class ReposicionTiempo extends Model
         // Consulta principal: Agrupar por usuario_id y calcular el tiempo total
         $query = Solicitud::selectRaw('solicitudes.usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos, MAX(fecha_solicitud) as max_fecha')
             ->join('usuarios as usuario', 'solicitudes.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
-            ->with(['reposiciones' => function ($query) {
-                $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id', 'detalle')->with('estado', 'usuario');
-            }, 'usuario'])
+            ->with([
+                'reposiciones' => function ($query) {
+                    $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id', 'detalle')->with('estado', 'usuario');
+                },
+                'usuario'
+            ])
             ->whereHas('estado_solicitud', function ($q) {
                 $q->where('slug', 'estados.solicitud.aprobado');
             })
@@ -107,6 +110,9 @@ class ReposicionTiempo extends Model
             }
 
             $item->tiempo_acumulado_formateado = sprintf('%d horas y %d minutos', $horas, $minutos);
+            $item->totalGeneral = $item->reposiciones->map(function ($item) {
+                return $item->total;
+            });
 
             // Formatear la suma total de reposiciones
             $horasReposicion = floor($sumaTotalReposiciones / 3600);
@@ -253,17 +259,17 @@ class ReposicionTiempo extends Model
                 'detalle' => $solicitud->detalle,
             ];
         })->merge(
-            $reposiciones->map(function ($reposicion) {
-                return [
-                    'tipo' => 'reposicion',
-                    'id' => $reposicion->id,
-                    'usuario' => $reposicion->usuario->nombre,
-                    'fecha' => $reposicion->fecha,
-                    'estado' => $reposicion->estado->descripcion,
-                    'detalle' => $reposicion->detalle,
-                ];
-            })
-        );
+                $reposiciones->map(function ($reposicion) {
+                    return [
+                        'tipo' => 'reposicion',
+                        'id' => $reposicion->id,
+                        'usuario' => $reposicion->usuario->nombre,
+                        'fecha' => $reposicion->fecha,
+                        'estado' => $reposicion->estado->descripcion,
+                        'detalle' => $reposicion->detalle,
+                    ];
+                })
+            );
 
         return $resultados->sortBy($ordernar === 'fecha' ? 'fecha' : 'id')->values();
     }

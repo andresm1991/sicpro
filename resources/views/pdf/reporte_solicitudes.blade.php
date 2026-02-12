@@ -153,6 +153,7 @@
             #table-resumen td:nth-child(2) {
                 width: 50px;
             }
+
         @endif
 
         /* Estilos para la marca de agua */
@@ -296,6 +297,19 @@
                 @empty
                 @endforelse
             </tbody>
+            @if ($tipo_solicitud == 'reposiciones_detallado')
+                    <tfoot>
+                        <tr>
+                            <td colspan="4">Total general</td>
+                            <td colspan="3">{{ sumarTiempos(collect($query)
+                ->map(function ($item) {
+                    return $item['totalGeneral']; // ✅ Acceso como array, no como propiedad
+                })
+                ->flatten()
+                ->toArray()) }}</td>
+                        </tr>
+                    </tfoot>
+            @endif
         </table>
     </div>
 </body>

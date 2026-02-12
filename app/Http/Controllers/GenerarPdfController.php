@@ -38,6 +38,7 @@ use App\Exports\ReporteAdquisicionesOperativoJPExport;
 use App\Models\JPLimpieza\ManoObra as JPLimpiezaManoObra;
 use App\Models\JPLimpieza\Proyecto as JPLimpiezaProyecto;
 use App\Models\JPLimpieza\Adquisicion as JPLimpiezaAdquisicion;
+use function PHPUnit\Framework\returnArgument;
 
 class GenerarPdfController extends Controller
 {
@@ -198,7 +199,7 @@ class GenerarPdfController extends Controller
 
             $detalle = $mano_obra->getDetalleManoObraGroupTrabajador($mano_obra->id, 'completo');
             $info_mano_obra['detalle'] = collect($detalle['detalle'])->all();
-            $info_mano_obra['pago_nro'] =  $numero_orden;
+            $info_mano_obra['pago_nro'] = $numero_orden;
         } else {
             foreach ($agrupados as $proveedor_id => $registros_por_proveedor) {
                 $nombre_mostrado = false;  // Bandera para saber si ya mostramos el nombre del proveedor
@@ -687,7 +688,7 @@ class GenerarPdfController extends Controller
 
 
     //** Proformas */
-    public function  proformas($tipo, $id)
+    public function proformas($tipo, $id)
     {
         // Cargar la proforma con sus relaciones. Eager loading es más eficiente.
         if ($tipo == 'adecentamientos') {

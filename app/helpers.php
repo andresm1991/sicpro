@@ -93,7 +93,7 @@ if (!function_exists('dateFormat')) {
         Carbon::setLocale('es');
         // Convertir las fechas de cadena a objetos Carbon
         $fechaInicio = Carbon::createFromFormat('Y-m-d', $date_start);
-        $fechaFin = Carbon::createFromFormat('Y-m-d',  is_null($date_end) ? date('Y-m-d') : $date_end);
+        $fechaFin = Carbon::createFromFormat('Y-m-d', is_null($date_end) ? date('Y-m-d') : $date_end);
 
         // Formatear las fechas al estilo solicitado
         $formato = 'D [de] MMMM';
@@ -295,7 +295,7 @@ if (!function_exists('registrarProducto')) {
         $categoria = CatalogoDato::where('slug', $tipo_producto)->first();
         $type = $tipo->slug == 'meteriales.herramientas' ? 'B-' : 'S-';
         $code = generateProductCode($type);
-        $create =  Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'valor_unitario' => $valor, 'iva' => $iva, 'activo' => true]);
+        $create = Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'valor_unitario' => $valor, 'iva' => $iva, 'activo' => true]);
 
         return $create;
     }
@@ -403,7 +403,7 @@ if (!function_exists('registrarProducto')) {
         $iva = $iva ?? 0;
         $iva = ($subTotal * $iva) / 100;
         $total = $subTotal + $iva;
-        return  $total;
+        return $total;
     }
 
 
@@ -950,5 +950,42 @@ if (!function_exists('palabras')) {
         $yearsAssoc = array_combine($years, $years);
 
         return $yearsAssoc;
+    }
+}
+
+
+if (!function_exists('sumarTiempos')) {
+    /**
+     * Sumar array de tiempos en formato "H:i"
+     */
+    function sumarTiempos(array $tiempos): string
+    {
+        $minutosTotales = 0;
+
+        foreach ($tiempos as $tiempo) {
+            $partes = explode(':', $tiempo);
+            $minutos = (int) $partes[0] * 60 + (int) $partes[1];
+            $minutosTotales += $minutos;
+        }
+
+        $dias = floor($minutosTotales / (60 * 24));
+        $horas = floor(($minutosTotales % (60 * 24)) / 60);
+        $minutos = $minutosTotales % 60;
+
+        $resultado = [];
+
+        if ($dias > 0) {
+            $resultado[] = $dias . ($dias == 1 ? ' día' : ' días');
+        }
+
+        if ($horas > 0) {
+            $resultado[] = $horas . ($horas == 1 ? ' hora' : ' horas');
+        }
+
+        if ($minutos > 0) {
+            $resultado[] = $minutos . ($minutos == 1 ? ' minuto' : ' minutos');
+        }
+
+        return empty($resultado) ? '0 minutos' : implode(' ', $resultado);
     }
 }
