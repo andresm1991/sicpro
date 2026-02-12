@@ -1233,3 +1233,49 @@ function showError(error) {
             break;
     }
 }
+
+
+/**
+ * Función para sumar todos los tiempos
+ * @param {Array} arrayTiempos 
+ * @returns 
+ */
+function sumarTiempos(arrayTiempos) {
+    var minutosTotales = 0;
+
+    // Sumar todos los tiempos
+    $.each(arrayTiempos, function (index, tiempo) {
+        var partes = tiempo.split(':');
+        var minutos = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+        minutosTotales += minutos;
+    });
+
+    // Calcular días, horas y minutos
+    var dias = Math.floor(minutosTotales / (60 * 24));
+    var horas = Math.floor((minutosTotales % (60 * 24)) / 60);
+    var minutos = minutosTotales % 60;
+
+    // Formatear según corresponda
+    var resultado = '';
+
+    if (dias > 0) {
+        resultado += dias + (dias === 1 ? ' día' : ' días');
+    }
+
+    if (horas > 0) {
+        if (resultado !== '') resultado += ' ';
+        resultado += horas + (horas === 1 ? ' hora' : ' horas');
+    }
+
+    if (minutos > 0) {
+        if (resultado !== '') resultado += ' ';
+        resultado += minutos + (minutos === 1 ? ' minuto' : ' minutos');
+    }
+
+    // Si todo es 0
+    if (resultado === '') {
+        resultado = '0 minutos';
+    }
+
+    return resultado;
+}

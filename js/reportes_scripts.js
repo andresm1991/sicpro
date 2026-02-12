@@ -591,6 +591,7 @@ $(function () {
             success: function (response) {
                 const data = response.result;
                 let totalGeneral = 0;
+                var tiempos = [];
 
                 $('#table-view-reporte').empty();
 
@@ -621,7 +622,7 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-
+                        tiempos.push(item.tiempo_total);
                         return `
                                 <tr>
                                     <td>${item.usuario.nombre}</td>
@@ -637,7 +638,10 @@ $(function () {
                     }).join('')}
                         </tbody>
                         <tfoot>
-                           
+                           <tr>
+                            <td colspan="3" class="font-weight-bold">Total General</td>
+                            <td colspan="5" class="font-weight-bold">${sumarTiempos(tiempos)}</td>
+                           </tr>
                         </tfoot>
                         </table>
                         </div>
@@ -718,8 +722,8 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-
                         return item.reposiciones.map((reposicion) => {
+                            tiempos.push(reposicion.total);
                             return `
                                 <tr>
                                     <td class="align-middle">${reposicion.usuario.nombre}</td>
@@ -735,7 +739,10 @@ $(function () {
                     }).join('')}
                         </tbody>
                         <tfoot>
-                           
+                           <tr>
+                            <td colspan="4" class="font-weight-bold">Total General</td>
+                            <td colspan="3" class="font-weight-bold">${sumarTiempos(tiempos)}</td>
+                           </tr>
                         </tfoot>
                         </table>
                         </div>
