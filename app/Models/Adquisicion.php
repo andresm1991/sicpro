@@ -320,7 +320,7 @@ class Adquisicion extends Model
         $resultado = self::sortFinalResult($resultado);
 
         return [
-            'proyecto_id' =>  $filters['proyecto'],
+            'proyecto_id' => $filters['proyecto'],
             'proyecto' => $filters['proyectoNombre'],
             'subproyecto' => $filters['subproyecto'],
             'data' => $resultado
@@ -494,7 +494,7 @@ class Adquisicion extends Model
                 DB::raw('SUM( (adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + adquisiciones_detalle.iva/100) ) as total_con_iva')
             )
             ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
-            ->join('orden_recepciones', 'adquisiciones.id', '=', 'orden_recepciones.adquisicion_id')
+            ->leftJoin('orden_recepciones', 'adquisiciones.id', '=', 'orden_recepciones.adquisicion_id')
             ->join('catalogo_datos as etapa_catalogo', 'adquisiciones.etapa_id', '=', 'etapa_catalogo.id')
             ->join('articulos', 'adquisiciones_detalle.articulo_id', '=', 'articulos.id')
             ->join('catalogo_datos as unidad_medida_catalogo', 'adquisiciones_detalle.unidad_medida_id', '=', 'unidad_medida_catalogo.id')
@@ -504,6 +504,12 @@ class Adquisicion extends Model
         $columnOverrides = ['proveedor' => 'orden_recepciones.proveedor_id'];
         // Aplicar filtros
         self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'estado', 'fechas', 'etapa'], 'adquisiciones', $columnOverrides);
+
+        // Si no se especifica un estado en el filtro, forzamos 'Completado'
+        // para ser consistentes con dataReporteBalance en Proyecto.php
+        if (empty($filters['estado'])) {
+            $query->where('adquisiciones.estado', 'Completado');
+        }
 
         $query->when($filters['producto'], function ($q, $productoValue) {
             if (is_numeric($productoValue)) {
@@ -544,11 +550,11 @@ class Adquisicion extends Model
             return $itemsPorEtapa->groupBy('tipo_etapa_slug')->map(function ($itemsPorTipo) {
                 return $itemsPorTipo->map(function ($item) {
                     return [
-                        'articulo_id'    => $item->articulo_id,
-                        'articulo'       => $item->articulo_nombre,
-                        'unidad_medida'  => $item->unidad_medida_nombre,
+                        'articulo_id' => $item->articulo_id,
+                        'articulo' => $item->articulo_nombre,
+                        'unidad_medida' => $item->unidad_medida_nombre,
                         'cantidad_total' => $item->cantidad_total,
-                        'total'          => (float) $item->total_con_iva,
+                        'total' => (float) $item->total_con_iva,
                     ];
                 })->values()->all();
             });
@@ -705,10 +711,10 @@ class Adquisicion extends Model
 
             // Asignamos los resultados ya ordenados a la estructura final
             $resultadoFinal[$etapaNombre] = [
-                'contratista'             => $contratistasCombinados,
-                'mano_obra'               => $manoObraCombinada,
+                'contratista' => $contratistasCombinados,
+                'mano_obra' => $manoObraCombinada,
                 'materiales_herramientas' => $materialesCombinados,
-                'servicios'               => $serviciosCombinados,
+                'servicios' => $serviciosCombinados,
             ];
 
             // --- FIN DE LA MODIFICACIÓN ---
