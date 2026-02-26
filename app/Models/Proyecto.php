@@ -305,22 +305,7 @@ class Proyecto extends Model
             ->groupBy('mano_obra.proyecto_id')
             ->pluck('total', 'proyecto_id');
 
-        // Gasto D: Préstamos - REVISAR POSIBLES DUPLICADOS POR JOINS MÚLTIPLES
-        $gastosPrestamos = DB::table('prestamos as p')
-            ->join('catalogo_datos as cd', 'p.estado_id', '=', 'cd.id')
-            ->join('proveedores as prov', 'p.trabajador_id', '=', 'prov.id')
-            ->join('detalle_mano_obra as dmo', 'prov.id', '=', 'dmo.proveedor_id')
-            ->join('mano_obra as mo', 'dmo.mano_obra_id', '=', 'mo.id')
-            ->select('mo.proyecto_id', DB::raw('SUM(p.monto) as total'))
-            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('p.fecha_aprobacion', $anioF))
-            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('p.fecha_aprobacion', [$fechaInicioF, $fechaFinF]))
-            ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('mo.subproyecto', $subproyectoInput))
-            ->when($etapa, fn($q) => $q->where('mo.etapa_id', $etapa))
-            ->when($tipoEtapa, fn($q) => $q->where('mo.tipo_etapa_id', $tipoEtapa))
-            ->where('cd.slug', 'estados.prestamos.aprobado')
-            ->whereNotNull('mo.proyecto_id')
-            ->groupBy('mo.proyecto_id')
-            ->pluck('total', 'proyecto_id');
+
 
         // --- 3. PRE-CÁLCULO DE GASTOS ADMINISTRATIVOS (SIN PROYECTO) ---
         $gastoAdminTotalOperativo = 0;
@@ -345,18 +330,7 @@ class Proyecto extends Model
                 ->where('contratistas.proyecto_id', 0)
                 ->sum('potc.valor');
 
-            // Gasto Admin D: Préstamos - REVISAR POSIBLES DUPLICADOS
-            $gastoAdminPrestamos = DB::table('prestamos as p')
-                ->join('catalogo_datos as cd', 'p.estado_id', '=', 'cd.id')
-                ->join('proveedores as prov', 'p.trabajador_id', '=', 'prov.id')
-                ->leftJoin('detalle_mano_obra as dmo', 'prov.id', '=', 'dmo.proveedor_id')
-                ->leftJoin('mano_obra as mo', 'dmo.mano_obra_id', '=', 'mo.id')
-                ->when($anioF, fn($q) => $q->whereYear('p.fecha_aprobacion', $anioF))
-                ->where('cd.slug', 'estados.prestamos.aprobado')
-                ->where('mo.proyecto_id', 0)
-                ->sum('p.monto');
-
-            $gastoAdminTotalOperativo = $gastoAdminAdquisiciones->get('operativo', 0) + $gastoAdminContratistas + $gastoAdminPrestamos;
+            $gastoAdminTotalOperativo = $gastoAdminAdquisiciones->get('operativo', 0) + $gastoAdminContratistas;
             $gastoAdminTotalAdministrativo = $gastoAdminAdquisiciones->get('administrativo', 0);
         }
 
@@ -382,7 +356,7 @@ class Proyecto extends Model
 
         $proyectos = $proyectosQuery->orderBy('nombre_proyecto', 'asc')->get();
 
-        $balance = $proyectos->map(function ($proyecto) use ($ingresosVentasPorProyecto, $ingresosProformasPorProyecto, $gastosAdquisicionesSeparados, $gastosContratistas, $gastosManoObra, $gastosPrestamos) {
+        $balance = $proyectos->map(function ($proyecto) use ($ingresosVentasPorProyecto, $ingresosProformasPorProyecto, $gastosAdquisicionesSeparados, $gastosContratistas, $gastosManoObra) {
             // Ingresos
             $ingresosVentas = $ingresosVentasPorProyecto->get($proyecto->id, 0);
             $ingresosProformas = $ingresosProformasPorProyecto->get($proyecto->id, 0);
@@ -392,9 +366,8 @@ class Proyecto extends Model
             $gastosAdq = $gastosAdquisicionesSeparados->get($proyecto->id, ['operativo' => 0, 'administrativo' => 0]);
             $gastoB = $gastosContratistas->get($proyecto->id, 0);
             $gastoC = $gastosManoObra->get($proyecto->id, 0);
-            $gastoD = $gastosPrestamos->get($proyecto->id, 0);
 
-            $gastosOperativos = $gastosAdq['operativo'] + $gastoB + $gastoC + $gastoD;
+            $gastosOperativos = $gastosAdq['operativo'] + $gastoB + $gastoC;
             $gastosAdministrativos = $gastosAdq['administrativo'];
 
             $totalGastos = $gastosOperativos + $gastosAdministrativos;

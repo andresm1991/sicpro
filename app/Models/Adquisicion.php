@@ -485,20 +485,20 @@ class Adquisicion extends Model
     {
         $query = \App\Models\AdquisicionDetalle::query()
             ->select(
-                'etapa_catalogo.descripcion as etapa_nombre',
-                'tipo_etapa_catalogo.slug as tipo_etapa_slug',
+                DB::raw("COALESCE(etapa_catalogo.descripcion, 'Sin etapa') as etapa_nombre"),
+                DB::raw("COALESCE(tipo_etapa_catalogo.slug, 'meteriales.herramientas') as tipo_etapa_slug"),
                 'adquisiciones_detalle.articulo_id',
                 'articulos.descripcion as articulo_nombre',
-                'unidad_medida_catalogo.descripcion as unidad_medida_nombre',
+                DB::raw("COALESCE(unidad_medida_catalogo.descripcion, '') as unidad_medida_nombre"),
                 DB::raw('SUM(adquisiciones_detalle.cantidad_solicitada) as cantidad_total'),
                 DB::raw('SUM( (adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + adquisiciones_detalle.iva/100) ) as total_con_iva')
             )
             ->join('adquisiciones', 'adquisiciones_detalle.adquisicion_id', '=', 'adquisiciones.id')
             ->leftJoin('orden_recepciones', 'adquisiciones.id', '=', 'orden_recepciones.adquisicion_id')
-            ->join('catalogo_datos as etapa_catalogo', 'adquisiciones.etapa_id', '=', 'etapa_catalogo.id')
+            ->leftJoin('catalogo_datos as etapa_catalogo', 'adquisiciones.etapa_id', '=', 'etapa_catalogo.id')
             ->join('articulos', 'adquisiciones_detalle.articulo_id', '=', 'articulos.id')
-            ->join('catalogo_datos as unidad_medida_catalogo', 'adquisiciones_detalle.unidad_medida_id', '=', 'unidad_medida_catalogo.id')
-            ->join('catalogo_datos as tipo_etapa_catalogo', 'adquisiciones.tipo_etapa_id', '=', 'tipo_etapa_catalogo.id')
+            ->leftJoin('catalogo_datos as unidad_medida_catalogo', 'adquisiciones_detalle.unidad_medida_id', '=', 'unidad_medida_catalogo.id')
+            ->leftJoin('catalogo_datos as tipo_etapa_catalogo', 'adquisiciones.tipo_etapa_id', '=', 'tipo_etapa_catalogo.id')
             ->where('adquisiciones.proyecto_id', $filters['proyecto']);
 
         $columnOverrides = ['proveedor' => 'orden_recepciones.proveedor_id'];
@@ -534,12 +534,12 @@ class Adquisicion extends Model
         // Esto asegura que si un artículo tiene dos unidades de medida diferentes,
         // se traten como dos filas distintas en el resultado.
         $query->groupBy(
-            'etapa_catalogo.descripcion',
-            'tipo_etapa_catalogo.slug',
+            DB::raw("COALESCE(etapa_catalogo.descripcion, 'Sin etapa')"),
+            DB::raw("COALESCE(tipo_etapa_catalogo.slug, 'meteriales.herramientas')"),
             'adquisiciones_detalle.articulo_id',
             'articulos.descripcion',
-            'adquisiciones_detalle.unidad_medida_id', // <-- ¡LA LÍNEA CLAVE!
-            'unidad_medida_catalogo.descripcion'
+            'adquisiciones_detalle.unidad_medida_id',
+            DB::raw("COALESCE(unidad_medida_catalogo.descripcion, '')")
         );
         // --- FIN DE LA CORRECCIÓN ---
 
