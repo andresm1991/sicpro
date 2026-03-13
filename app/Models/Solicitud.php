@@ -220,7 +220,7 @@ class Solicitud extends Model
             list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
             $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
             $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+            $q->whereBetween('fecha_solicitud', [$fechaInicioFormatted, $fechaFinFormatted]);
         });
 
         // Filtrar por estado

@@ -38,12 +38,26 @@ class ReposicionTiempo extends Model
         $estado = $request->input('estado');
         $ordernar = $request->input('ordenado');
 
+        // Parsear fechas una sola vez para reutilizarlas
+        $fechaInicioFormatted = null;
+        $fechaFinFormatted = null;
+        if ($fechas) {
+            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
+            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
+            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+        }
+
         // Consulta principal: Agrupar por usuario_id y calcular el tiempo total
         $query = Solicitud::selectRaw('solicitudes.usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos, MAX(fecha_solicitud) as max_fecha')
             ->join('usuarios as usuario', 'solicitudes.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
             ->with([
-                'reposiciones' => function ($query) {
-                    $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id', 'detalle')->with('estado', 'usuario');
+                'reposiciones' => function ($query) use ($fechaInicioFormatted, $fechaFinFormatted) {
+                    $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id', 'detalle')
+                        ->with('estado', 'usuario');
+                    // Filtrar reposiciones por el mismo rango de fechas
+                    if ($fechaInicioFormatted && $fechaFinFormatted) {
+                        $query->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+                    }
                 },
                 'usuario'
             ])
@@ -60,10 +74,7 @@ class ReposicionTiempo extends Model
         });
 
         // Filtrar por rango de fechas
-        $query->when($fechas, function ($q) use ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+        $query->when($fechaInicioFormatted && $fechaFinFormatted, function ($q) use ($fechaInicioFormatted, $fechaFinFormatted) {
             $q->whereBetween('fecha_solicitud', [$fechaInicioFormatted, $fechaFinFormatted]);
         });
 

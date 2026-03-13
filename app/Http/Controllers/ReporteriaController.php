@@ -214,7 +214,7 @@ class ReporteriaController extends Controller
 
         $necesidades = DiccionarioPalabra::pluck('palabra', 'palabra')->prepend('', '');
 
-        return view('reportes.gasolina_camioneta', compact('title_page', 'breadcrumbs',  'proyectos', 'necesidades'));
+        return view('reportes.gasolina_camioneta', compact('title_page', 'breadcrumbs', 'proyectos', 'necesidades'));
     }
 
     public function visualizarReporteGasolinaCamioneta(Request $request)
@@ -282,7 +282,7 @@ class ReporteriaController extends Controller
         $tipo_solicitudes = collect($tipo_solicitudes); // Convertir nuevamente a colección si es necesario
         $estados = CatalogoDato::getChildrenCatalogo('estados.solicitud')->pluck('descripcion', 'id')->prepend('', '');
 
-        return view('reportes.eventaulidad_reposicion', compact('title_page', 'breadcrumbs', 'tipo_solicitudes',  'estados'));
+        return view('reportes.eventaulidad_reposicion', compact('title_page', 'breadcrumbs', 'tipo_solicitudes', 'estados'));
     }
 
     public function visualizarSolicitudes(Request $request)
@@ -429,7 +429,7 @@ class ReporteriaController extends Controller
             $html .= '<td class="align-middle">' . ($item['contratista']->subproyecto ?? '') . '</td>';
             $html .= '<td class="align-middle">' . ($item['contratista']->etapa->descripcion ?? '') . '</td>';
             $html .= '<td class="align-middle">' . ($item['contratista']->tipo_etapa->descripcion ?? '') . '</td>';
-            $html .= '<td class="align-middle">$ ' .  number_format($item['contratista']->total_contratistas, 2) . '</td>';
+            $html .= '<td class="align-middle">$ ' . number_format($item['contratista']->total_contratistas, 2) . '</td>';
             $html .= '<td class="align-middle">$ ' . number_format($item['contratista']->pagos_contratistas, 2) . '</td>';
             $html .= '<td class="align-middle">$ ' . number_format($item['contratista']->total_contratistas - $item['contratista']->pagos_contratistas, 2) . '</td>';
             $html .= '</tr>';
