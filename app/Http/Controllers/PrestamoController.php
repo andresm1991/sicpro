@@ -314,8 +314,30 @@ class PrestamoController extends Controller
                 $query->where('descripcion', 'Pendiente');
             })->orderBy('fecha_pago', 'asc')->get();
 
-            if ($pagosPendientes->isEmpty()) {
-                return response()->json(['success' => false, 'mensaje' => 'No es posible recalcular los pagos porque no existe saldo pendiente.']);
+            return $pagosPendientes->count();
+
+            if ($saldoRestante <= 0) {
+                return response()->json(['success' => false, 'mensaje' => 'No es posible recalcular los pagos porque no existe pagos pendiente.']);
+            } else if ($pagosPendientes->count() == 0) {
+                $cuota_semanal = calcularCuotaSemanalPrestamo($prestamo->monto, $prestamo->interes, $prestamo->plazo);
+                $fechasPago = calcularFechasPago($prestamo->fecha_solicitud, $prestamo->plazo);
+
+                $estado_pago = CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pendiente');
+                $metodo_pago = CatalogoDato::getIdCatalogo('metodos.pagos.otro');
+
+
+                foreach ($fechasPago as $fecha) {
+                    PagoPrestamo::updateOrCreate([
+                        'prestamo_id' => $prestamo->id,
+                        'fecha_pago' => $fecha,
+                    ], [
+                        'monto_pagado' => 0,
+                        'monto_programado' => $cuota_semanal,
+                        'estado_id' => $estado_pago,
+                        'metodo_pago_id' => $metodo_pago,
+                    ]);
+                }
+                return response()->json(['success' => true, 'mensaje' => 'Se han generado los pagos programados para el préstamo.']);
             }
 
             // Distribuir saldo restante proporcionalmente entre los pagos pendientes
