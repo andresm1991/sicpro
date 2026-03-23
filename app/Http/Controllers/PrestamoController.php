@@ -328,8 +328,6 @@ class PrestamoController extends Controller
                 $query->where('descripcion', 'Pendiente');
             })->orderBy('fecha_pago', 'asc')->get();
 
-            return $pagosPendientes->count();
-
             if ($saldoRestante <= 0) {
                 return response()->json(['success' => false, 'mensaje' => 'No es posible recalcular los pagos porque no existe pagos pendiente.']);
             } else if ($pagosPendientes->count() == 0) {
