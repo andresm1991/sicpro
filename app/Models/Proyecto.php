@@ -174,50 +174,55 @@ class Proyecto extends Model
             ->groupBy('proyecto_id')
             ->pluck('total', 'proyecto_id');
 
-        // Ingreso B: Proformas de Adecentamiento - CORREGIDO CON GROUP BY
+        // Ingreso B: Proformas de Adecentamiento - CORREGIDO PARA EVITAR DUPLICADOS
+        // Estructura: UNION de las 3 tablas -> GROUP BY proyecto+numero (dedupe) -> SUM por proyecto
         $proformasViaAdquisiciones = DB::table('proforma_adecentamientos as pa')
             ->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')
             ->join('adquisiciones as a', 'pa.numero', '=', 'a.nro_proforma')
-            ->select('a.proyecto_id', 'pa.total', 'pa.fecha')
+            ->select('a.proyecto_id', 'pa.numero', 'pa.total')
             ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('a.subproyecto', $subproyectoInput))
             ->when($etapa, fn($q) => $q->where('a.etapa_id', $etapa))
             ->when($tipoEtapa, fn($q) => $q->where('a.tipo_etapa_id', $tipoEtapa))
             ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('pa.fecha', $anioF))
             ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('pa.fecha', [$fechaInicioF, $fechaFinF]))
             ->where('cd.slug', 'estados.proformas.facturado')
-            ->whereNotNull('a.proyecto_id')
-            ->groupBy('pa.numero', 'a.proyecto_id', 'pa.total', 'pa.fecha');
+            ->whereNotNull('a.proyecto_id');
 
         $proformasViaContratistas = DB::table('proforma_adecentamientos as pa')
             ->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')
             ->join('contratistas as c', 'pa.numero', '=', 'c.nro_proforma')
-            ->select('c.proyecto_id', 'pa.total', 'pa.fecha')
+            ->select('c.proyecto_id', 'pa.numero', 'pa.total')
             ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('c.subproyecto', $subproyectoInput))
             ->when($etapa, fn($q) => $q->where('c.etapa_id', $etapa))
             ->when($tipoEtapa, fn($q) => $q->where('c.tipo_etapa_id', $tipoEtapa))
             ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('pa.fecha', $anioF))
             ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('pa.fecha', [$fechaInicioF, $fechaFinF]))
             ->where('cd.slug', 'estados.proformas.facturado')
-            ->whereNotNull('c.proyecto_id')
-            ->groupBy('pa.numero', 'c.proyecto_id', 'pa.total', 'pa.fecha');
+            ->whereNotNull('c.proyecto_id');
 
         $proformasViaManoObra = DB::table('proforma_adecentamientos as pa')
             ->join('catalogo_datos as cd', 'pa.estado_id', '=', 'cd.id')
             ->join('mano_obra as m', 'pa.numero', '=', 'm.nro_proforma')
-            ->select('m.proyecto_id', 'pa.total', 'pa.fecha')
+            ->select('m.proyecto_id', 'pa.numero', 'pa.total')
             ->when($tipoReporte === 'balance_proyecto' && $subproyectoInput, fn($q) => $q->where('m.subproyecto', $subproyectoInput))
             ->when($etapa, fn($q) => $q->where('m.etapa_id', $etapa))
             ->when($tipoEtapa, fn($q) => $q->where('m.tipo_etapa_id', $tipoEtapa))
             ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('pa.fecha', $anioF))
             ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('pa.fecha', [$fechaInicioF, $fechaFinF]))
             ->where('cd.slug', 'estados.proformas.facturado')
-            ->whereNotNull('m.proyecto_id')
-            ->groupBy('pa.numero', 'm.proyecto_id', 'pa.total', 'pa.fecha');
+            ->whereNotNull('m.proyecto_id');
 
+        // UNION de las tres fuentes
         $unionDeProformas = $proformasViaAdquisiciones->unionAll($proformasViaContratistas)->unionAll($proformasViaManoObra);
 
+        // Dos niveles: 1) GROUP BY proyecto+numero con MAX para dedupe, 2) SUM por proyecto
+        $dedupeSubquery = DB::query()
+            ->fromSub($unionDeProformas, 'todas_proformas')
+            ->select('proyecto_id', DB::raw('MAX(total) as total'))
+            ->groupBy('proyecto_id', 'numero');
+
         $ingresosProformasPorProyecto = DB::query()
-            ->fromSub($unionDeProformas, 'ingresos_proforma')
+            ->fromSub($dedupeSubquery, 'deduped')
             ->select('proyecto_id', DB::raw('SUM(total) as total_ingreso'))
             ->groupBy('proyecto_id')
             ->pluck('total_ingreso', 'proyecto_id');
