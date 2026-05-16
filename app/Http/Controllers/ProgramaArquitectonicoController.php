@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\LogService;
 use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Models\ProformaPlano;
@@ -79,7 +80,7 @@ class ProgramaArquitectonicoController extends Controller
             // Garantiza que todas las operaciones se realicen con éxito, o ninguna.
             DB::beginTransaction();
 
-            $espaciosExistentes =  $programa->espacios()->pluck('id')->toArray();
+            $espaciosExistentes = $programa->espacios()->pluck('id')->toArray();
             // 3. ACTUALIZACIÓN DEL MODELO PRINCIPAL (PROGRAMA)
             $programa->update(Arr::only($validated, ['estilo', 'urls_referencias']));
 
@@ -136,12 +137,9 @@ class ProgramaArquitectonicoController extends Controller
             // 8. MANEJO DE ERRORES
             // Si ocurre cualquier error dentro del bloque 'try', se ejecuta este código.
             DB::rollBack();
-            return $e;
-            // Registra el error detallado en los logs de Laravel para que el desarrollador pueda depurarlo.
-            Log::error('Error al actualizar el programa arquitectónico: ' . $e->getMessage(), [
-                'programa_id' => $programa->id,
-                'request_data' => $request->all(),
-                'exception' => $e
+
+            LogService::log('ERROR', 'Error al actualizar el programa arquitectónico: ' . $e->getMessage(), [
+                'programa_id' => $programa->id
             ]);
 
             // Devuelve al usuario a la página anterior con un mensaje de error genérico y amigable.
