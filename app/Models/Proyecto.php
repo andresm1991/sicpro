@@ -348,8 +348,7 @@ class Proyecto extends Model
             ->when($proyectoInput, function ($q) use ($proyectoInput) {
                 $q->where('id', $proyectoInput);
             })
-            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('created_at', $anioF))
-            ->when($tipoReporte === 'balance_proyecto' && $fechaInicioF, fn($q) => $q->whereBetween('created_at', [$fechaInicioF, $fechaFinF]));
+            ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('created_at', $anioF));
 
         if ($estadosEjecutadosIds->isNotEmpty()) {
             $proyectosQuery->whereIn('estado_id', $estadosEjecutadosIds);

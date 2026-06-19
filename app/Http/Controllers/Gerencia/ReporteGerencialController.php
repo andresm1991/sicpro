@@ -21,13 +21,6 @@ class ReporteGerencialController extends Controller
 
     public function generarReporteBalance(Request $request)
     {
-        $tipoReporte = $request->tipo_reporte;
-        $fechas = $request->fechas;
-        $anio = $request->anio;
-        $proyectoId = $request->proyecto;
-        $etapa = $request->etapa;
-        $tipoEtapa = $request->tipo_etapa;
-
         $query = Proyecto::dataReporteBalance($request);
         $totalIngresosGeneral = $query->sum('total_ingresos');
         $totalGatosDirectosGeneral = $query->sum('gastos_operativos');

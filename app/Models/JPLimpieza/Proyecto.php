@@ -170,10 +170,10 @@ class Proyecto extends Model
                 // Calculamos la diferencia en días.
                 $diferenciaEnDias = $inicio->diffInDays($fin);
 
-                // Si la diferencia es menor a un año (365 días), usamos el valor mensual.
+                // Si la diferencia es menor a un año (365 días), prorrateamos el ingreso.
                 if ($diferenciaEnDias < 365) {
-                    // Laravel llamará automáticamente a tu accesor getValorContratadoMensualAttribute()
-                    $totalIngresos = $proyecto->valor_contratado_mensual;
+                    $mesesEnRango = (int) ceil($diferenciaEnDias / 30);
+                    $totalIngresos = $proyecto->valor_contratado_mensual * $mesesEnRango;
                 }
             }
             // Obtener los gastos pre-calculados, o 0 si no hay registros
