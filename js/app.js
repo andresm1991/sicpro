@@ -999,8 +999,7 @@ function calcularTotal($element, $decimales = 4) {
 
     // Iterar por cada fila del tbody
     $($element).each(function () {
-        let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
-        let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+        let total = parsePrecio($(this).find('.total_unitario').text());
         // Sumar al subtotal
         subtotal += total;
     });

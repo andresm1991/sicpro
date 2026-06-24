@@ -5,7 +5,7 @@ $(function () {
     $('#agregar-producto').on('click', function () {
         let producto = $('#producto').val();
         let cantidad = $('#cantidad').val();
-        let valorUnitario = parseFloat($('#valor_unitario').val());
+        let valorUnitario = parsePrecio($('#valor_unitario').val());
         let iva = $('#iva').val();
         let unidadMedida = $('#unidad_medida').val();
         let necesidad = $('#necesidad').val();
@@ -92,7 +92,7 @@ $(function () {
                     <input type="hidden" name="unidad_medida[]" value="${unidadMedida}">
                 </td>
                 <td>
-                    $ ${valorUnitario}
+                    $ ${formatearUSD(valorUnitario, 'decimal')}
                     <input type="hidden" name="precio[]" value="${valorUnitario}">
                 </td>
                 <td>
@@ -100,7 +100,7 @@ $(function () {
                     <input type="hidden" name="iva[]" value="${iva}">
                 </td>
                 <td class="total_unitario">
-                   $ ${totalFinal.toFixed(4)}
+                   $ ${formatearUSD(totalFinal, 'decimal')}
                 </td>
                 <td>
                     <span>${necesidad}</span>
@@ -121,8 +121,8 @@ $(function () {
         // Ocultar tr por defecto
         $('#tr-default').hide();
         // Calcular el total general
-        var totalGenral = calcularTotal('.elementos-agregados');
-        $('#total-general').text('$ ' + totalGenral);
+        var totalGeneral = calcularTotal('.elementos-agregados');
+        $('#total-general').text('$ ' + formatearUSD(parseFloat(totalGeneral), 'decimal'));
 
         // Limpiar campos 
         clearInputs();
@@ -154,7 +154,7 @@ $(function () {
         }
 
         var totalGeneral = calcularTotal('.elementos-agregados');
-        $('#total-general').text('$ ' + totalGeneral);
+        $('#total-general').text('$ ' + formatearUSD(parseFloat(totalGeneral), 'decimal'));
     });
 
 
@@ -316,6 +316,6 @@ $(function () {
         let totalIva = (total * iva) / 100;
         let totalFinal = total + totalIva;
 
-        $('#total').val(formatearUSD(totalFinal.toFixed(4)));
+        $('#total').val(formatearUSD(totalFinal));
     }
 });
