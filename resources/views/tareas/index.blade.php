@@ -70,7 +70,11 @@
                     </div>
 
                     <div class="tareas-items">
-                        {!! $html !!}
+
+                        @isset($html)
+                            {!! $html !!}
+                        @endisset
+
                     </div>
 
                 </div>

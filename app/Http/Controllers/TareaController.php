@@ -70,9 +70,11 @@ class TareaController extends Controller
             ['name' => 'Agenda', 'url' => '']
         ];
 
-        $todoTasks = $this->getTasksByState('estados.tarea.porhacer', '', '');
-        $inProgressTasks = $this->getTasksByState('estados.tarea.encurso', '', '');
-        $completedTasks = $this->getTasksByState('estados.tarea.finalizado', '', '');
+        // Aplicar filtro si existe el parámetro
+        $filtroAgenda = "";
+        $filtroAgendaUser = "";
+
+        $html = $this->getItemsTrea($filtroAgenda, $filtroAgendaUser);
 
 
         $estados = CatalogoDato::getChildrenCatalogo('estados.tarea')->pluck('descripcion', 'id');
@@ -83,7 +85,7 @@ class TareaController extends Controller
             $modalToShow = ['activeModal' => false];
         }
 
-        return view('tareas.index', compact('title_page', 'breadcrumbs', 'todoTasks', 'inProgressTasks', 'completedTasks', 'estados', 'modalToShow'));
+        return view('tareas.index', compact('title_page', 'breadcrumbs', 'estados', 'modalToShow', 'html'));
     }
 
     /**
