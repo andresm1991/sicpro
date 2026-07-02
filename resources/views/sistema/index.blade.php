@@ -32,6 +32,11 @@
                     <span>Usuarios</span>
                 </a>
 
+                <a href="{{ route('sistema.roles.index') }}" class="nodo">
+                    <i class="fa-solid fa-shield-halved fa-3x" style="color: #fff;"></i>
+                    <span>Roles y Permisos</span>
+                </a>
+
 
                 {{-- <a href="{{ route('sistema.rubros.index') }}" class="nodo">
                     <img src="{{ asset('images/icons/icono_1.png') }}">
