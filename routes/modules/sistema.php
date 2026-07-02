@@ -7,6 +7,7 @@ use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\Sistema\RoleController;
 use App\Http\Controllers\UserController;
 
 
@@ -66,6 +67,13 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'role:A
     Route::group(['prefix' => 'configuraciones', 'as' => 'config.'], function () {
         Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
         Route::get('/configuraciones/detalle/{config}', [ConfiguracionController::class, 'detalle'])->name('detalle');
+    });
+
+    // Roles y Permisos
+    Route::group(['prefix' => 'roles', 'as' => 'roles.'], function () {
+        Route::get('/', [RoleController::class, 'index'])->name('index');
+        Route::get('/{role}/editar', [RoleController::class, 'edit'])->name('edit');
+        Route::put('/{role}/update', [RoleController::class, 'update'])->name('update');
     });
 
     require base_path('routes/modules/cliente.php');
