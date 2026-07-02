@@ -15,6 +15,11 @@ use App\Http\Requests\PerfilUserUpdateRequest;
 
 class UserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('role:Administrador')->except(['perfil', 'updatePerfil']);
+    }
+
     /**
      * Display a listing of the resource.
      *

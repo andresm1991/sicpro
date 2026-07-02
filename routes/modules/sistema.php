@@ -10,8 +10,8 @@ use App\Http\Controllers\ConfiguracionController;
 use App\Http\Controllers\UserController;
 
 
-// Sistema
-Route::group(['prefix' => 'sistema', 'as' => 'sistema.'], function () {
+// Sistema — protected: only Administrador role can access
+Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'role:Administrador'], function () {
     Route::get('/', [SistemaController::class, 'index'])->name('index');
 
     // Proveedores
