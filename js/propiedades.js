@@ -183,6 +183,86 @@ $(function () {
         });
     });
 
+    // ==========================================
+    // Lightbox / Galería de imágenes
+    // ==========================================
+    let lightboxImages = [];
+    let lightboxCurrent = 0;
+
+    function recargarLightboxImages() {
+        lightboxImages = [];
+        $('#contenedor_imagenes .btn-ver-imagen').each(function () {
+            lightboxImages.push($(this).data('src'));
+        });
+    }
+
+    function abrirLightbox(index) {
+        recargarLightboxImages();
+        if (lightboxImages.length === 0) return;
+        lightboxCurrent = index;
+        mostrarImagenLightbox();
+        $('#lightbox-modal').modal('show');
+    }
+
+    function mostrarImagenLightbox() {
+        if (lightboxImages.length === 0) return;
+        $('#lightbox-image').attr('src', lightboxImages[lightboxCurrent]);
+        $('#lightbox-counter').text((lightboxCurrent + 1) + ' / ' + lightboxImages.length);
+
+        $('#lightbox-prev').toggle(lightboxImages.length > 1);
+        $('#lightbox-next').toggle(lightboxImages.length > 1);
+    }
+
+    function lightboxAnterior() {
+        if (lightboxImages.length <= 1) return;
+        lightboxCurrent = (lightboxCurrent - 1 + lightboxImages.length) % lightboxImages.length;
+        mostrarImagenLightbox();
+    }
+
+    function lightboxSiguiente() {
+        if (lightboxImages.length <= 1) return;
+        lightboxCurrent = (lightboxCurrent + 1) % lightboxImages.length;
+        mostrarImagenLightbox();
+    }
+
+    // Abrir lightbox al hacer clic en la lupa
+    $(document).on('click', '.btn-ver-imagen', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const index = parseInt($(this).data('index'));
+        abrirLightbox(index);
+    });
+
+    // Navegación del lightbox
+    $(document).on('click', '#lightbox-prev', function (e) {
+        e.preventDefault();
+        lightboxAnterior();
+    });
+
+    $(document).on('click', '#lightbox-next', function (e) {
+        e.preventDefault();
+        lightboxSiguiente();
+    });
+
+    // Navegación con teclado
+    $(document).on('keydown', function (e) {
+        if (!$('#lightbox-modal').hasClass('show')) return;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            lightboxAnterior();
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            lightboxSiguiente();
+        } else if (e.key === 'Escape') {
+            $('#lightbox-modal').modal('hide');
+        }
+    });
+
+    // Limpiar al cerrar
+    $('#lightbox-modal').on('hidden.bs.modal', function () {
+        $('#lightbox-image').attr('src', '');
+    });
+
     actualizarContador();
 
     function actualizarContador() {
