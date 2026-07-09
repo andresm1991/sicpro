@@ -37,7 +37,7 @@
                             {{ Form::text('fechas', '', ['class' => 'form-control daterange', 'id' => 'fechas', 'placeholder' => 'seleccione rago de fechas']) }}
                         </div>
 
-                        @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                        @can('reporteria.caja.ver')
                             <div class="form-group col-sm-4">
                                 <label for="lbl_ultima-revision" class="col-form-label ">Fecha última revisión </label>
                                 <input type="text" class="form-control" id="ultima-revision"
@@ -50,7 +50,7 @@
                                     Finalizar Revisión
                                 </button>
                             </div>
-                        @endif
+                        @endcan
 
 
                         <div id="table-view-reporte"></div>

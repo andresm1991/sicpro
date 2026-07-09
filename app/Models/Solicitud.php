@@ -47,7 +47,7 @@ class Solicitud extends Model
         $tipo = CatalogoDato::getIdCatalogo($tipo);
 
         $query = Solicitud::where('tipo_id', $tipo);
-        if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial')) {
+        if (auth()->user()->can('solicitudes.ver')) {
             $solicitudes = $query->orderBy('fecha_solicitud', 'desc')
                 ->paginate(15);
         } else {
@@ -120,7 +120,7 @@ class Solicitud extends Model
             })
             ->where('recuperable', true);
 
-        if (!auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
+        if (!auth()->user()->can('solicitudes.ver')) {
             $query->whereHas('usuario', function ($q) {
                 $q->where('id', auth()->user()->id);
             });

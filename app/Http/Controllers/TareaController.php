@@ -302,8 +302,8 @@ class TareaController extends Controller
      */
     private function getTasksByState($stateSlug, $filtroAgenda = '', $filtroAgendaUser = '')
     {
-        // Verificar si el usuario es administrador
-        $hasRole = auth()->user()->hasRole('Administrador');
+        // Verificar si el usuario tiene permisos de gestion de agenda
+        $canManageAgenda = auth()->user()->can('agenda.editar');
         $userId = !empty($filtroAgendaUser) ? $filtroAgendaUser : Auth::user()->id;
 
         // Consulta base: Filtrar tareas por estado
@@ -312,7 +312,7 @@ class TareaController extends Controller
         });
 
         // Aplicar filtro por usuario asignado
-        if (!$hasRole) {
+        if (!$canManageAgenda) {
             // Si no es administrador, filtrar solo las tareas del usuario autenticado
             $tasks = $tasks->where(function ($query) use ($userId) {
                 $query->where('usuario_id', $userId)

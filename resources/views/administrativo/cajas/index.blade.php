@@ -45,9 +45,9 @@
                                 <th scope="col">tipo</th>
                                 <th scope="col">monto</th>
                                 <th scope="col">saldo</th>
-                                @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                @can('caja.eliminar')
                                     <th scope="col-accion"></th>
-                                @endif
+                                @endcan
                             </tr>
                         </thead>
                         <tbody>
@@ -89,14 +89,14 @@
                                     <td class="align-middle">
                                         ${{ number_format($movimiento->saldo_acumulado, 4) }}
                                     </td>
-                                    @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                    @can('caja.eliminar')
                                         <td class="align-middle">
                                             <button type="button" class="btn btn-danger btn-sm eliminarMovimiento"
                                                 data-id="{{ $movimiento->id }}">
                                                 <i class="fa-regular fa-trash-alt"></i>
                                             </button>
                                         </td>
-                                    @endif
+                                    @endcan
                                 </tr>
                             @empty
                                 <tr>

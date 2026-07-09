@@ -2,6 +2,29 @@
 
 @section('title', $title_page)
 
+@section('styles')
+<style>
+    /* Lightbox: hover en botones */
+    #lightbox-prev:hover,
+    #lightbox-next:hover {
+        opacity: 1 !important;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 4px;
+    }
+    #lightbox-modal .close:hover {
+        opacity: 1 !important;
+    }
+    /* Botón de lupa sobre imágenes Dropify */
+    .btn-ver-imagen {
+        opacity: 0.85;
+        transition: opacity 0.15s ease;
+    }
+    .btn-ver-imagen:hover {
+        opacity: 1;
+    }
+</style>
+@endsection
+
 @section('content')
     @include('partials.header_page')
     <section class="content" style="padding-bottom: 20px; margin:15px;">

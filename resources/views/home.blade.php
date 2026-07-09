@@ -7,14 +7,14 @@
     <section style="padding: 10px 0 50px 0;">
         <div class="container">
             <div class="row justify-content-center align-items-center full-height">
-                @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                @can('gerencia.ver')
                     <div class="col-12 align-items-center d-flex justify-content-center">
                         <a href="{{ route('gerencia.index') }}" class="nodo" id="gerencia">
                             <img src="{{ asset('images/svg/manager.svg') }}" alt="Gerencia">
                             <span>Gerencia</span>
                         </a>
                     </div>
-                @endif
+                @endcan
 
                 <div class="col-sm-3 col-12">
                     <a href="{{ route('proyecto.index') }}" class="nodo" id="operativo">
@@ -29,24 +29,24 @@
                     </a>
                 </div>
 
-                @if (!auth()->user()->hasRole('Operativo'))
+                @can('marketing.ver')
                     <div class="col-sm-3 col-12">
                         <a href="{{ route('marketing.index') }}" class="nodo" id="marketing">
                             <img src="{{ asset('images/svg/marketing.svg') }}" alt="Marketing">
                             <span>Marketing</span>
                         </a>
                     </div>
-                @endif
+                @endcan
 
 
-                @if (!auth()->user()->hasRole('Operativo'))
+                @can('administrativo.ver')
                     <div class="col-sm-3 col-12">
                         <a href="{{ route('administrativo.index') }}" class="nodo" id="administrativo">
                             <img src="{{ asset('images/svg/users.svg') }}" alt="Administrativo">
                             <span>Administrativo</span>
                         </a>
                     </div>
-                @endif
+                @endcan
 
                 <div class="col-sm-3 col-12">
                     <a href="{{ route('tarea.index') }}" class="nodo">
@@ -54,14 +54,14 @@
                         <span>Agenda</span>
                     </a>
                 </div>
-                @if (!auth()->user()->hasRole('Operativo'))
+                @can('proformas.ver')
                     <div class="col-sm-3 col-12">
                         <a href="{{ route('proformas.index') }}" class="nodo">
                             <img src="{{ asset('images/svg/cotizacion.svg') }}" alt="Administrativo">
                             <span>Proformas</span>
                         </a>
                     </div>
-                @endif
+                @endcan
 
                 <div class="col-sm-3 col-12">
                     <a href="{{ route('reporte.index') }}" class="nodo">

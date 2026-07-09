@@ -41,13 +41,13 @@
                             @include('adquisiciones.partials.boton_pedido_completo')
 
                             <div class="col-md-2 ">
-                                @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                @can('adquisiciones.editar')
                                     <button class="btn btn-dark btn-options btn-block"
                                         form="form_order_pedido">Guardar</button>
                                 @else
                                     <button class="btn btn-dark btn-options btn-block" form="form_order_pedido"
                                         {{ isset($orden_pedido->orden_recepcion->completado) && $orden_pedido->orden_recepcion->completado ? 'disabled' : '' }}>Guardar</button>
-                                @endif
+                                @endcan
 
                             </div>
                         </div>

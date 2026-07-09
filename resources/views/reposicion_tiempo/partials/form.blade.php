@@ -23,12 +23,12 @@
             </div>
         </div>
 
-        @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+        @can('solicitudes.editar')
             <div class="form-group col-sm-4 p-0">
                 <label class="col-form-label">Estado <i class="fa-regular fa-asterisk fa-2xs"></i></label>
                 {{ Form::select('estado', getEstadosSolicitudes(), old('estado', $reposicion->estado_id), ['class' => 'form-control', 'data-placeholder' => 'seleccione estado']) }}
             </div>
-        @endif
+        @endcan
 
     </div>
 

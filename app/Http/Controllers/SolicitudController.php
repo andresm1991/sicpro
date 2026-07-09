@@ -362,7 +362,7 @@ class SolicitudController extends Controller
                         $editar = "<a href='" . route('solicitud.permisos.edit', $solicitud->id) . "' class='dropdown-item'>Editar</a>";
                         $eliminar = "<a href='#' class='dropdown-item eliminar-solicitud' id='" . $solicitud->id . "'>Eliminar</a>";
 
-                        if ($solicitud->estado_solicitud->descripcion == 'Aprobado' && !auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
+                        if ($solicitud->estado_solicitud->descripcion == 'Aprobado' && !auth()->user()->can('solicitudes.editar')) {
                             $editar = "<a href='" . route('solicitud.permisos.show', $solicitud->id) . "' class='dropdown-item'>Detalle</a>";
                         }
 

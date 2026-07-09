@@ -28,12 +28,12 @@
                             {{ Form::select('usuario', usuariosPluck(), '', ['class' => 'select2-basic-single form-control', 'data-placeholder' => 'SELECCIONE OPCIóN']) }}
                         </div>
 
-                        @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial'))
+                        @can('agenda.editar')
                             <div class="col-12 form-group">
                                 <label class="col-form-label">Categoria</label>
                                 {{ Form::select('categoria_tarea', categoriasAgenda(), '', ['class' => 'select2-basic-single form-control', 'data-placeholder' => 'SELECCIONE OPCIÓN']) }}
                             </div>
-                        @endif
+                        @endcan
                     </div>
                 </form>
 

@@ -44,12 +44,12 @@
                                 {{ Form::select('list_usuarios[]', usuariosPluck(true), 0, ['class' => 'select2-basic-single form-control', 'id' => 'list_usuarios', 'multiple' => 'multiple', 'data-placeholder' => 'SELECCIONE USUARIOS']) }}
                             </div>
 
-                            @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial'))
+                            @can('agenda.editar')
                                 <div class="col-12 form-group">
                                     <label class="col-form-label">Categoria</label>
                                     {{ Form::select('categoria_tarea', categoriasAgenda(), '', ['class' => 'select2-tag form-control', 'id' => 'categoria_tarea', 'data-placeholder' => 'SELECCIONE OPCIÓN']) }}
                                 </div>
-                            @endif
+                            @endcan
 
 
                             <div class="col-12 form-group">

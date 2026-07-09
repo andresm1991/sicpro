@@ -33,7 +33,7 @@
                 </a>
 
                 <a href="{{ route('sistema.roles.index') }}" class="nodo">
-                    <i class="fa-solid fa-shield-halved fa-3x" style="color: #fff;"></i>
+                    <img src="{{ asset('images/svg/proteger.svg') }}">
                     <span>Roles y Permisos</span>
                 </a>
 

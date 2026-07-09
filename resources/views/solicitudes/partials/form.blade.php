@@ -8,7 +8,7 @@
         </div>
     </div>
 
-    @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+    @can('solicitudes.editar')
         <div class="col-sm-4 col-12">
             <div class="form-group">
                 <label class="col-form-label">Estado Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
@@ -17,7 +17,7 @@
                 {!! $errors->first('estado_solicitud', '<span class="help-block text-quicksand text-danger">:message</span>') !!}
             </div>
         </div>
-    @endif
+    @endcan
 
 </div>
 

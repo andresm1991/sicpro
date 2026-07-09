@@ -632,7 +632,7 @@ if (!function_exists('palabras')) {
 
     function usuariosPluck($viewAll = false, $prepend = true)
     {
-        $has_role = auth()->user()->hasRole('Administrador');
+        $has_role = auth()->user()->can('sistema.usuarios.ver');
         if ($has_role) {
             $usuarios = User::where('id', '!=', auth()->user()->id)->pluck('nombre', 'id');
         } elseif ($viewAll) {

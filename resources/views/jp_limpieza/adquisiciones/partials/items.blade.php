@@ -94,7 +94,7 @@
                                 <input class="tgl tgl-skewed inventario" name="inventario[{{ $index }}]"
                                     id="cb3-{{ $index }}" type="checkbox" value="0"
                                     {{ isset($detalle->inventario) && $detalle->inventario->pluck('producto_id')->contains($detalle->producto_id) ? 'checked' : '' }}
-                                    {{ !auth()->user()->hasRole(['Administrador', 'Gerencial']) && $adquisicion->estado == 'completado'? 'disabled': '' }} />
+                                    {{ !auth()->user()->can('jp_limpieza.adquisiciones.editar') && $adquisicion->estado == 'completado'? 'disabled': '' }} />
                                 <label class="tgl-btn" data-tg-off="NO" data-tg-on="SI"
                                     for="cb3-{{ $index }}"></label>
                             </div>

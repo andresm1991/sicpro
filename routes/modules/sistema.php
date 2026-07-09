@@ -11,8 +11,8 @@ use App\Http\Controllers\Sistema\RoleController;
 use App\Http\Controllers\UserController;
 
 
-// Sistema — protected: only Administrador role can access
-Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'role:Administrador'], function () {
+// Sistema — requires sistema.ver permission to access the module
+Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'permission:sistema.ver'], function () {
     Route::get('/', [SistemaController::class, 'index'])->name('index');
 
     // Proveedores
@@ -26,8 +26,9 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'role:A
         Route::get('/{menu_id}/buscar', [ProveedorController::class, 'buscar']);
         Route::delete('/{menu_id}/eliminar/{proveedor}', [ProveedorController::class, 'delete']);
     });
-    // Usuarios
-    Route::group(['prefix' => 'usuarios', 'as' => 'users.'], function () {
+
+    // Usuarios — Admin only
+    Route::group(['prefix' => 'usuarios', 'as' => 'users.', 'middleware' => 'role:Administrador'], function () {
         Route::get('/', [UserController::class, 'index'])->name('index');
         Route::get('/crear-usuario', [UserController::class, 'create'])->name('create');
         Route::post('/store', [UserController::class, 'store'])->name('store');
@@ -57,20 +58,20 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'role:A
         Route::delete('/eliminar/{id}', [InventarioController::class, 'destroyInventario']);
     });
 
-    //** RUBROS */
-    Route::group(['prefix' => 'rubros', 'as' => 'rubros.'], function () {
+    // Rubros — Admin only
+    Route::group(['prefix' => 'rubros', 'as' => 'rubros.', 'middleware' => 'role:Administrador'], function () {
         Route::get('/', [RubroController::class, 'index'])->name('index');
         Route::delete('/eliminar/{rubro}', [RubroController::class, 'destrory'])->name('destroy');
     });
 
-    // Configuraciones
-    Route::group(['prefix' => 'configuraciones', 'as' => 'config.'], function () {
+    // Configuraciones — Admin only
+    Route::group(['prefix' => 'configuraciones', 'as' => 'config.', 'middleware' => 'role:Administrador'], function () {
         Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
         Route::get('/configuraciones/detalle/{config}', [ConfiguracionController::class, 'detalle'])->name('detalle');
     });
 
-    // Roles y Permisos
-    Route::group(['prefix' => 'roles', 'as' => 'roles.'], function () {
+    // Roles y Permisos — Admin only (also enforced in RoleController constructor)
+    Route::group(['prefix' => 'roles', 'as' => 'roles.', 'middleware' => 'role:Administrador'], function () {
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/{role}/editar', [RoleController::class, 'edit'])->name('edit');
         Route::put('/{role}/update', [RoleController::class, 'update'])->name('update');

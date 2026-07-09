@@ -766,7 +766,7 @@ class AdquisicionController extends Controller
                     $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar</a>";
                     $eliminar = "<a href='#' class='dropdown-item eliminar-adquisicion' id='" . $adquisicion->id . "'>Eliminar</a>";
                     $pdf = "<a href='" . route('pdf.recepcion', $adquisicion->id) . "' class='dropdown-item' target='_blank'>Generar PDF</a>";
-                    $opciones_boton .= $editar . (auth()->user()->hasRole(['Administrador', 'Gerencial']) ? $eliminar : '') . $pdf;
+                    $opciones_boton .= $editar . (auth()->user()->can('adquisiciones.eliminar') ? $eliminar : '') . $pdf;
                 } else {
                     $editar = "<a href='" . route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Editar Pedido</a>";
                     $recepcion = "<a href='" . route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id]) . "' class='dropdown-item'>Recepción</a>";

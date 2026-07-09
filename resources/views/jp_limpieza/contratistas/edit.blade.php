@@ -35,13 +35,13 @@
                             </div>
 
                             <div class="col-md-2">
-                                @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                @can('jp_limpieza.contratistas.editar')
                                     <button class="btn btn-dark btn-options btn-block"
                                         form="form_contratista">Guardar</button>
                                 @else
                                     <button class="btn btn-dark btn-options btn-block"
                                         form="form_contratista">Guardar</button>
-                                @endif
+                                @endcan
 
                             </div>
                         </div>

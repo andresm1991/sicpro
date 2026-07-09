@@ -124,7 +124,7 @@ class PagoContratistaController extends Controller
                 return redirect()->back()->withInput()->with('error', 'El monto del pago es igual al total del saldo pendiente, por lo que no se puede registrar como avance.');
             }
 
-            if ($pago->estado_id == CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado') && !auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
+            if ($pago->estado_id == CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado') && !auth()->user()->can('jp_limpieza.contratistas.editar')) {
                 return redirect()->back()->with('error', 'El pago ya fue registrado y no es posible modificarlo.');
             }
 

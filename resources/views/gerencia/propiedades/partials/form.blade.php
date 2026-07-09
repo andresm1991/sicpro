@@ -106,7 +106,7 @@
             @forelse ($propiedad->imagenes_propiedades as $index => $file)
                 @if ($index == 0)
                     {{-- Input inicial --}}
-                    <div class="form-group col-sm-6">
+                    <div class="form-group col-sm-6 position-relative">
                         {{ Form::file('files[]', [
                             'class' => 'dropify',
                             'data-default-file' => old(
@@ -117,6 +117,12 @@
                             'data-tipo' => '',
                             'data-height' => '100',
                         ]) }}
+                        <button type="button" class="btn btn-sm btn-info btn-ver-imagen" title="Ampliar"
+                            style="position: absolute; top: 5px; right: 5px; z-index: 10;"
+                            data-index="{{ $index }}"
+                            data-src="{{ route('imagen.proxy', ['imagen' => $file->id, 'filename' => $file->file_name]) }}">
+                            <i class="fa fa-search-plus"></i>
+                        </button>
                         {{ Form::hidden('imagenes_propiedades[]', $file->id) }}
                     </div>
                 @else
@@ -132,6 +138,12 @@
                             'data-tipo' => '',
                             'data-height' => '100',
                         ]) }}
+                        <button type="button" class="btn btn-sm btn-info btn-ver-imagen" title="Ampliar"
+                            style="position: absolute; top: 5px; right: 30px; z-index: 10;"
+                            data-index="{{ $index }}"
+                            data-src="{{ route('imagen.proxy', ['imagen' => $file->id, 'filename' => $file->file_name]) }}">
+                            <i class="fa fa-search-plus"></i>
+                        </button>
                         <button type="button" class="btn btn-sm btn-danger btn-eliminar-imagen" title="Eliminar"
                             style="position: absolute; top: 5px; right: 5px; z-index: 10;">
                             <i class="fa fa-times"></i>
@@ -152,6 +164,29 @@
             @endforelse
             {{-- Input inicial --}}
 
+        </div>
+    </div>
+
+    {{-- Lightbox Modal --}}
+    <div class="modal fade" id="lightbox-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content bg-dark border-0">
+                <div class="modal-body text-center p-0 position-relative">
+                    <button type="button" class="close text-white position-absolute" style="right: 15px; top: 10px; z-index: 1050; font-size: 2rem; opacity: 0.8;" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <button type="button" class="btn btn-link text-white position-absolute" id="lightbox-prev"
+                        style="left: 10px; top: 50%; transform: translateY(-50%); z-index: 1050; font-size: 2.5rem; text-decoration: none; opacity: 0.8;">
+                        <i class="fa fa-chevron-left"></i>
+                    </button>
+                    <button type="button" class="btn btn-link text-white position-absolute" id="lightbox-next"
+                        style="right: 10px; top: 50%; transform: translateY(-50%); z-index: 1050; font-size: 2.5rem; text-decoration: none; opacity: 0.8;">
+                        <i class="fa fa-chevron-right"></i>
+                    </button>
+                    <img id="lightbox-image" src="" class="img-fluid" style="max-height: 85vh; object-fit: contain;" alt="Vista ampliada">
+                    <div id="lightbox-counter" class="text-white py-2" style="font-size: 0.9rem;"></div>
+                </div>
+            </div>
         </div>
     </div>
 

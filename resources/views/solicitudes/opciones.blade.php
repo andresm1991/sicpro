@@ -27,7 +27,7 @@
                     </a>
                 </div>
                 {{--  
-                @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial') || auth()->user()->hasRole('Administrativo'))
+                @if (auth()->user()->can('solicitudes.ver') || auth()->user()->can('solicitudes.editar') || auth()->user()->can('solicitudes.aprobar'))
                     <div class="max-auto">
                         <a href="{{ route('solicitud.autorizacion.index') }}" class="nodo">
                             <img src="{{ asset('images/svg/administrador.svg') }}" alt="">

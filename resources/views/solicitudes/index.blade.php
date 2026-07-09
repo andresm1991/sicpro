@@ -58,7 +58,7 @@
                                                 </button>
                                                 <div class="dropdown-menu">
                                                     <!-- Dropdown menu links -->
-                                                    @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+                                                    @can('solicitudes.editar')
                                                         <a href='{{ route('solicitud.permisos.edit', $solicitud->id) }}'
                                                             class='dropdown-item'>Editar</a>
                                                     @else
@@ -69,7 +69,7 @@
                                                             <a href='{{ route('solicitud.permisos.edit', $solicitud->id) }}'
                                                                 class='dropdown-item'>Editar</a>
                                                         @endif
-                                                    @endif
+                                                    @endcan
                                                     <a href='javascript:void(0);' class='dropdown-item eliminar-solicitud'
                                                         id='{{ $solicitud->id }}'>Eliminar</a>
                                                 </div>

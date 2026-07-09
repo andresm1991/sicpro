@@ -7,14 +7,14 @@
             {!! $errors->first('users', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
         </div>
 
-        @if (auth()->user()->hasRole(['Administrador', 'Gerencial']))
+        @can('solicitudes.editar')
             <div class="form-group">
                 <label class="col-form-label">Estado Solicitud <i class="fa-regular fa-asterisk fa-2xs"></i></label>
                 {{ Form::select('estado_solicitud', $estados_solicitud->prepend('', ''), old('estado_solicitud', $solicitud->estado_id), ['class' => 'select2-basic-single', 'data-placeholder' => 'Selecione opción']) }}
 
                 {!! $errors->first('estado_solicitud', '<small class="help-block text-quicksand text-danger">:message</small>') !!}
             </div>
-        @endif
+        @endcan
 
     </div>
     <div class="col-sm-8 col-12">

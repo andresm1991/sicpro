@@ -129,7 +129,7 @@ class AdministrativoController extends Controller
      */
     private function actualizarAdquisicionOperativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
-        if (!auth()->user()->hasRole(['Administrador', 'Gerencial'])) {
+        if (!auth()->user()->can('adquisiciones.editar')) {
             if ($adquisicion->estado == 'Completado') {
                 if (is_null($adquisicion->factura) && !empty($request->numero_factura)) {
                     $adquisicion->factura = $request->numero_factura;
@@ -274,7 +274,7 @@ class AdministrativoController extends Controller
     private function actualizarAdquisicionAdministrativa(Request $request, $tipo, Adquisicion $adquisicion)
     {
         try {
-            if (!auth()->user()->hasRole(['Administrador', 'Gerencial']) && $adquisicion->orden_recepcion && $adquisicion->orden_recepcion->completado) {
+            if (!auth()->user()->can('adquisiciones.editar') && $adquisicion->orden_recepcion && $adquisicion->orden_recepcion->completado) {
                 return redirect()->route('administrativo.adquisicion.edit', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('error', 'No es posible modificar la recepción porque esta esta completada.');
             }
             $orden_completa = $request->has('orden_completa') ? true : false;

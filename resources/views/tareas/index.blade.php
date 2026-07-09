@@ -10,7 +10,7 @@
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
                         <h4 class="mt-2 font-weight-bold">Agenda de tareas</h4>
-                        @if (auth()->user()->hasRole('Administrador') || auth()->user()->hasRole('Gerencial'))
+                        @can('agenda.editar')
                             <div class="form-group row">
                                 <label class="col-sm-2 col-form-label">Filtrar agenda por</label>
                                 <div class="col-sm-4">
@@ -36,7 +36,7 @@
                                     <button type="button" class="btn btn-dark" id="aplicar-filtro">Aplicar</button>
                                 </div>
                             </div>
-                        @endif
+                        @endcan
                     </li>
                 </ul>
                 <div class="card-body ">
