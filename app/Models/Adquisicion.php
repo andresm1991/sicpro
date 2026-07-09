@@ -489,7 +489,7 @@ class Adquisicion extends Model
                 DB::raw("COALESCE(tipo_etapa_catalogo.slug, 'meteriales.herramientas') as tipo_etapa_slug"),
                 'adquisiciones_detalle.articulo_id',
                 'articulos.descripcion as articulo_nombre',
-                DB::raw("COALESCE(unidad_medida_catalogo.descripcion, '') as unidad_medida_nombre"),
+                DB::raw("COALESCE(unidad_medida_catalogo.descripcion, 'Sin unidad') as unidad_medida_nombre"),
                 DB::raw('SUM(adquisiciones_detalle.cantidad_solicitada) as cantidad_total'),
                 DB::raw('SUM( (adquisiciones_detalle.cantidad_solicitada * adquisiciones_detalle.valor) * (1 + adquisiciones_detalle.iva/100) ) as total_con_iva')
             )
@@ -539,7 +539,7 @@ class Adquisicion extends Model
             'adquisiciones_detalle.articulo_id',
             'articulos.descripcion',
             'adquisiciones_detalle.unidad_medida_id',
-            DB::raw("COALESCE(unidad_medida_catalogo.descripcion, '')")
+            DB::raw("COALESCE(unidad_medida_catalogo.descripcion, 'Sin unidad')")
         );
         // --- FIN DE LA CORRECCIÓN ---
 
@@ -693,7 +693,7 @@ class Adquisicion extends Model
             $materialesCombinados = self::combinarCategoria(
                 $etapa1['materiales_herramientas'] ?? [],
                 $etapa2['materiales_herramientas'] ?? [],
-                fn($item) => $item['articulo_id']
+                fn($item) => $item['articulo_id'] . '|' . $item['unidad_medida']
             );
             usort($materialesCombinados, function ($a, $b) {
                 return strnatcasecmp($a['item_base']['articulo'], $b['item_base']['articulo']);
@@ -703,7 +703,7 @@ class Adquisicion extends Model
             $serviciosCombinados = self::combinarCategoria(
                 $etapa1['servicios'] ?? [],
                 $etapa2['servicios'] ?? [],
-                fn($item) => $item['articulo_id']
+                fn($item) => $item['articulo_id'] . '|' . $item['unidad_medida']
             );
             usort($serviciosCombinados, function ($a, $b) {
                 return strnatcasecmp($a['item_base']['articulo'], $b['item_base']['articulo']);
