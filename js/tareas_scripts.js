@@ -339,7 +339,7 @@ $(function () {
         });
     });
 
-    $('.eliminar-tarea').on('click', function (e) {
+    $(document).on('click', '.eliminar-tarea', function (e) {
         e.preventDefault(); // Prevenir el comportamiento predeterminado del botón
         e.stopPropagation(); // Detener la propagación del evento al elemento padre (<a>)
 
