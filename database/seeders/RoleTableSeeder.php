@@ -39,7 +39,7 @@ class RoleTableSeeder extends Seeder
         $admin->syncPermissions([]);
 
         // ============================================================
-        // GERENCIAL: All modules EXCEPT sistema.*, reporteria.financiero.*
+        // GERENCIAL: All modules EXCEPT reporteria.financiero.*
         // ============================================================
         $gerencial = Role::findByName('Gerencial');
         $gerencialPermissions = Permission::where(function ($q) {
@@ -58,7 +58,8 @@ class RoleTableSeeder extends Seeder
                 ->orWhere('name', 'like', 'marketing%')
                 ->orWhere('name', 'like', 'proformas%')
                 ->orWhere('name', 'like', 'clientes%')
-                ->orWhere('name', 'like', 'jp_limpieza%');
+                ->orWhere('name', 'like', 'jp_limpieza%')
+                ->orWhere('name', 'like', 'sistema%');
         })->whereNotIn('name', [
             'reporteria.financiero.ver',
         ])->pluck('name')->toArray();

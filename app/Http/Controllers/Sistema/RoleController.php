@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends Controller
 {
@@ -76,7 +77,15 @@ class RoleController extends Controller
     {
         $permissionIds = $request->input('permissions', []);
 
+        // Cast to integers — Spatie accepts numeric IDs, but string IDs from
+        // form checkboxes can trigger findByName instead of findById in some versions.
+        $permissionIds = array_map('intval', $permissionIds);
+
         $role->syncPermissions($permissionIds);
+
+        // Force-clear the permission cache so role changes take effect immediately
+        // for all users, not just the admin making the change.
+        app(PermissionRegistrar::class)->forgetCachedPermissions();
 
         return redirect()->route('sistema.roles.edit', $role)
             ->with('success', 'Permisos actualizados con éxito.');

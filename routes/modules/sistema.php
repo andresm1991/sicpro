@@ -27,15 +27,15 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'permis
         Route::delete('/{menu_id}/eliminar/{proveedor}', [ProveedorController::class, 'delete']);
     });
 
-    // Usuarios — Admin only
-    Route::group(['prefix' => 'usuarios', 'as' => 'users.', 'middleware' => 'role:Administrador'], function () {
-        Route::get('/', [UserController::class, 'index'])->name('index');
-        Route::get('/crear-usuario', [UserController::class, 'create'])->name('create');
-        Route::post('/store', [UserController::class, 'store'])->name('store');
-        Route::get('/{user}/editar', [UserController::class, 'edit'])->name('edit');
-        Route::put('/update/{user}', [UserController::class, 'update'])->name('update');
-        Route::delete('/eliminar/{user}', [UserController::class, 'destroy']);
-        Route::get('/buscar', [UserController::class, 'buscar']);
+    // Usuarios — permission-based (sistema.usuarios.*)
+    Route::group(['prefix' => 'usuarios', 'as' => 'users.'], function () {
+        Route::get('/', [UserController::class, 'index'])->name('index')->middleware('permission:sistema.usuarios.ver');
+        Route::get('/crear-usuario', [UserController::class, 'create'])->name('create')->middleware('permission:sistema.usuarios.crear');
+        Route::post('/store', [UserController::class, 'store'])->name('store')->middleware('permission:sistema.usuarios.crear');
+        Route::get('/{user}/editar', [UserController::class, 'edit'])->name('edit')->middleware('permission:sistema.usuarios.editar');
+        Route::put('/update/{user}', [UserController::class, 'update'])->name('update')->middleware('permission:sistema.usuarios.editar');
+        Route::delete('/eliminar/{user}', [UserController::class, 'destroy'])->middleware('permission:sistema.usuarios.eliminar');
+        Route::get('/buscar', [UserController::class, 'buscar'])->middleware('permission:sistema.usuarios.ver');
     });
 
     // Productos
@@ -58,14 +58,14 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'permis
         Route::delete('/eliminar/{id}', [InventarioController::class, 'destroyInventario']);
     });
 
-    // Rubros — Admin only
-    Route::group(['prefix' => 'rubros', 'as' => 'rubros.', 'middleware' => 'role:Administrador'], function () {
+    // Rubros — permission-based (sistema.rubros.ver)
+    Route::group(['prefix' => 'rubros', 'as' => 'rubros.', 'middleware' => 'permission:sistema.rubros.ver'], function () {
         Route::get('/', [RubroController::class, 'index'])->name('index');
         Route::delete('/eliminar/{rubro}', [RubroController::class, 'destrory'])->name('destroy');
     });
 
-    // Configuraciones — Admin only
-    Route::group(['prefix' => 'configuraciones', 'as' => 'config.', 'middleware' => 'role:Administrador'], function () {
+    // Configuraciones — permission-based (sistema.configuracion.ver)
+    Route::group(['prefix' => 'configuraciones', 'as' => 'config.', 'middleware' => 'permission:sistema.configuracion.ver'], function () {
         Route::get('/', [ConfiguracionController::class, 'index'])->name('index');
         Route::get('/configuraciones/detalle/{config}', [ConfiguracionController::class, 'detalle'])->name('detalle');
     });
