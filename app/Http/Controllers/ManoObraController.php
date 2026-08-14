@@ -529,12 +529,38 @@ class ManoObraController extends Controller
     public function destroy(Request $request)
     {
         $id = $request->mano_obra;
-        $is_delete = ManoObra::find($id)->delete();
-        if ($is_delete) {
-            LogService::log('info', 'Planificacion mano obra eliminado', ['user' => auth()->id(), 'action' => 'destroy ' . $id]);
-            return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
-        } else {
-            return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+        $mano_obra = ManoObra::find($id);
+
+        if (!$mano_obra) {
+            return response()->json(['success' => false, 'message' => 'No se pudo encontrar el registro']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Validar si la planificacion ya esta pagada por administrativo
+            $mano_obra = ManoObra::where('id', $id)->lockForUpdate()->first();
+            $manoObraPagado = PagoManoObra::where('mano_obra_id', $id)->exists();
+            if ($manoObraPagado) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'No es posible eliminar la planificación porque esta ya se encuentra pagada.']);
+            }
+
+            // Eliminar los detalles asociados para no violar la llave foránea
+            DetalleManoObra::where('mano_obra_id', $id)->delete();
+            $is_delete = $mano_obra->delete();
+            DB::commit();
+
+            if ($is_delete) {
+                LogService::log('info', 'Planificacion mano obra eliminado', ['user' => auth()->id(), 'action' => 'destroy ' . $id]);
+                return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
+            } else {
+                return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+            }
+        } catch (Throwable $e) {
+            DB::rollBack();
+            LogService::log('error', 'Error al eliminar planificacion mano de obra', ['user' => auth()->id(), 'action' => 'destroy ' . $id, 'message' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Ocurrió un error inesperado, comuníquese con el administrador del sistema.']);
         }
     }
 
