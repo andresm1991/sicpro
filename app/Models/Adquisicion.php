@@ -683,11 +683,27 @@ class Adquisicion extends Model
             });
 
             // 2. Combinar Mano de Obra
-            $manoObraCombinada = self::combinarCategoria(
-                $etapa1['mano_obra'] ?? [],
-                $etapa2['mano_obra'] ?? [],
-                fn($item) => 'mano_de_obra_total'
-            );
+            // Las filas de mano de obra traen la clave 'pagado' (no 'total'), y la
+            // vista espera UN solo total por etapa con estructura p1.total / p2.total.
+            // Por eso no usamos combinarCategoria: sumamos todos los periodos pagados
+            // de cada proyecto en un único registro comparativo.
+            $totalManoObraP1 = array_sum(array_map(fn($item) => (float) ($item['pagado'] ?? 0), $etapa1['mano_obra'] ?? []));
+            $totalManoObraP2 = array_sum(array_map(fn($item) => (float) ($item['pagado'] ?? 0), $etapa2['mano_obra'] ?? []));
+
+            $manoObraCombinada = [];
+            if ($totalManoObraP1 != 0 || $totalManoObraP2 != 0) {
+                $manoObraCombinada[] = [
+                    'item_base' => ['pagado' => $totalManoObraP1 + $totalManoObraP2],
+                    'p1' => ['total' => $totalManoObraP1, 'pagado' => $totalManoObraP1],
+                    'p2' => ['total' => $totalManoObraP2, 'pagado' => $totalManoObraP2],
+                    'diff' => [
+                        'cantidad' => 0,
+                        'total' => $totalManoObraP1 - $totalManoObraP2,
+                        'pagos' => 0,
+                        'saldo' => 0,
+                    ],
+                ];
+            }
 
             // 3. Combinar Materiales y LUEGO ordenarlos (sin cambios)
             $materialesCombinados = self::combinarCategoria(
