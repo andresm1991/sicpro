@@ -58,20 +58,8 @@ class ReporteController extends Controller
                 if ($tipo_reporte == 'operativo') {
                     $reportData = Adquisicion::dataReporteAdquisiciones($request);
 
-                    // Calcula el gran total
-                    foreach ($reportData as $categoria => $items) {
-                        if ($categoria === 'Mano de Obra') {
-                            // Asegúrate de que el campo 'costo' existe y es numérico
-                            $grandTotal += collect($items)->sum('total_recibir');
-                        } elseif ($categoria === 'Contratistas') {
-                            // Asegúrate de que el campo 'monto total' existe y es numérico
-                            $grandTotal += collect($items)->sum('total_contratado');
-                        } else {
-                            // Para Adquisiciones, asumiendo que tienes un campo numérico como 'total_general'
-                            // ¡IMPORTANTE! No sumes el campo formateado ('total_general_formatted')
-                            $grandTotal += collect($items)->sum('total_general_formatted');
-                        }
-                    }
+                    // Calcula el gran total desde los campos numéricos de cada categoría
+                    $grandTotal = Adquisicion::granTotalReporte($reportData);
 
                     $html = view('jp_limpieza.reportes.partials.table_adquisiciones', compact('reportData', 'grandTotal'))->render();
                 } elseif ($tipo_reporte == 'global') {

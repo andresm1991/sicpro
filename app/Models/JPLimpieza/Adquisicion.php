@@ -71,6 +71,31 @@ class Adquisicion extends Model
     }
 
     /**
+     * Gran total del reporte operativo de adquisiciones.
+     *
+     * Cada categoría expone su total en un campo numérico propio: usar los
+     * campos formateados (por ejemplo total_general_formatted) trunca el valor,
+     * porque PHP convierte "1,500.0000" a 1.5 antes de sumar.
+     *
+     * @param  array  $reporte  Resultado de dataReporteAdquisiciones()
+     * @return float
+     */
+    public static function granTotalReporte(array $reporte): float
+    {
+        $granTotal = 0.0;
+
+        foreach ($reporte as $categoria => $items) {
+            $granTotal += (float) match ($categoria) {
+                'Mano de Obra' => collect($items)->sum('total_recibir'),
+                'Contratistas' => collect($items)->sum('total_contratado'),
+                default => collect($items)->sum('total_general'),
+            };
+        }
+
+        return $granTotal;
+    }
+
+    /**
      * Datos para el reporte de adquisiciones
      * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection
