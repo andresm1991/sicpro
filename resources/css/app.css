@@ -5,6 +5,45 @@
     padding: 0;
     box-sizing: border-box;
     font-family: "Quicksand", sans-serif;
+    scrollbar-width: thin;
+    /* Para Firefox: scroll delgado */
+    scrollbar-color: #888 #f1f1f1;
+    /* Color del scroll y del fondo */
+    text-transform: uppercase !important;
+}
+
+#show_hide_password input[name="password"] {
+    text-transform: none !important;
+}
+
+input[name="password"] {
+    text-transform: none !important;
+}
+
+/* Estilo global para el scroll */
+
+*::-webkit-scrollbar {
+    width: 8px;
+    /* Ancho del scroll */
+    height: 8px;
+    /* Altura del scroll horizontal */
+}
+
+*::-webkit-scrollbar-thumb {
+    background: #888;
+    /* Color del scroll */
+    border-radius: 4px;
+    /* Bordes redondeados */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    /* Color del scroll al pasar el mouse */
+}
+
+*::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    /* Color del fondo del scroll */
 }
 
 body {
@@ -244,6 +283,14 @@ button {
     /* Mitad de la anchura del nodo */
 }
 
+.bottom-center {
+    top: 90%;
+    margin-top: -90px;
+    /* Mitad de la altura del nodo */
+    margin-left: -90px;
+    /* Mitad de la anchura del nodo */
+}
+
 .bottom-right {
     top: 80%;
     left: 80%;
@@ -353,7 +400,7 @@ button {
     position: absolute;
     top: calc(100% + 24px);
     right: 16px;
-    width: 200px;
+    min-width: 200px;
     min-height: 100px;
     background: #fff;
     box-shadow: 0 10px 20px rgba(0, 0, 0, .2);
@@ -374,6 +421,15 @@ button {
     background: #fff;
     transform: rotate(45deg);
     z-index: -1;
+}
+
+/* Contenedor interno para el contenido del menú */
+.menu-content {
+    max-height: 300px;
+    overflow-y: auto;
+    /* Habilita el scroll vertical */
+    overflow-x: hidden;
+    /* Oculta el scroll horizontal */
 }
 
 .menu.active {
@@ -426,27 +482,27 @@ button {
 
 ::-webkit-input-placeholder {
     /* WebKit browsers */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 :-moz-placeholder {
     /* Mozilla Firefox 4 to 18 */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 ::-moz-placeholder {
     /* Mozilla Firefox 19+ */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 :-ms-input-placeholder {
     /* Internet Explorer 10+ */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 ::placeholder {
     /* Recent browsers */
-    text-transform: none;
+    text-transform: uppercase;
 }
 
 textarea {
@@ -591,6 +647,7 @@ textarea {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 3;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .text-truncate-max-line-1 {
@@ -598,6 +655,7 @@ textarea {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .neumorphism {
@@ -2072,8 +2130,599 @@ actividades-seleccionadas div {
     }
 }
 
+.font-size-10 {
+    font-size: 10px;
+}
+
+.font-size-11 {
+    font-size: 11px;
+}
+
+.font-size-12 {
+    font-size: 12px;
+}
+
+.input-group {
+    position: relative;
+}
+
+.input-group .form-control {
+    padding-right: 2.5rem;
+    /* Asegura espacio para el icono */
+}
+
+.input-group .input-group-addon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    /*pointer-events: none;  Elimina esta linea */
+    /* Asegura que el icono no interfiera con el input */
+    z-index: 10;
+    /* Asegura que el icono este por encima del input */
+}
+
+.input-group .input-group-addon a {
+    pointer-events: all;
+    /* Permite la interacción con el icono */
+}
+
+section {
+    padding-bottom: 20px;
+    margin: 20px 0 0 0;
+}
+
+.bd-callout-info {
+    border-left-color: #5bc0de !important;
+}
+
+.bd-callout-warning {
+    border-left-color: #f0ad4e !important;
+}
+
+.bd-callout-danger {
+    border-left-color: #d9534f !important;
+}
+
+.bd-callout-success {
+    border-left-color: #5cb85c !important;
+}
+
+.bd-callout-primary {
+    border-left-color: #337ab7 !important;
+}
+
+.bd-callout {
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid #eee;
+    border-left-width: .25rem;
+    border-radius: .25rem
+}
+
+/**/
+
+.bell-icon {
+    position: relative;
+    width: 100px;
+    /*height: 100px;
+    background: #fff;*/
+    border-radius: 50%;
+    display: flex;
+}
+
+.bell-icon svg {
+    margin: auto;
+    position: relative;
+    right: 2%;
+    width: 70%;
+    height: 70%;
+    stroke: rgba(0, 0, 0, 0.75);
+}
+
+.notification-amount {
+    opacity: 1;
+    visibility: visible;
+    position: absolute;
+    top: 5%;
+    right: 24%;
+    width: 25px;
+    height: 25px;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Copse", serif;
+    font-size: 10px;
+    background-color: #f72918;
+}
+
+.notification-amount span {
+    position: relative;
+}
+
+.content-notificaciones {
+    position: relative;
+    display: inline-block;
+    /* right: 200px; 
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    text-align: end;
+    z-index: +99;*/
+}
+
+.view-all {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 12px;
+}
+
+.view-all a {
+    color: #007bff !important;
+    text-decoration: none !important;
+    font-weight: bold !important;
+}
+
+.view-all a:hover {
+    text-decoration: underline;
+}
+
+/**/
 
 
+#descripcion {
+    box-sizing: border-box;
+    /* Incluye padding y border en el cálculo de altura */
+    min-height: 30px;
+    /* Altura mínima para evitar colapsos */
+    overflow: hidden;
+    /* Oculta el scroll vertical innecesario */
+    resize: none;
+    /* Desactiva el redimensionamiento manual */
+}
+
+.dropify-wrapper .dropify-message span.file-icon p {
+    font-size: 12px !important;
+}
+
+
+input.no-border {
+    border: none;
+    outline: none;
+    background: transparent;
+    box-shadow: none;
+    padding: 5px;
+}
+
+a[href="javascript:void(0);"] {
+    cursor: pointer;
+}
+
+/* Estilo para todos los enlaces dentro de popovers */
+.popover-body a {
+    cursor: pointer;
+}
+
+/* O específicamente para los que tienen javascript:void(0) */
+.popover-body a[href="javascript:void(0);"] {
+    cursor: pointer;
+}
+
+/*Pinta la semana en curso del proyecto en el cronograma valorado*/
+.pintar-semana-en-curso {
+    background-color: #53b450;
+}
+
+.pintar-semana-en-curso a {
+    color: white;
+}
+
+/* Selecciona el contenedor principal que Google Maps crea para tu contenido.
+   Forzamos a que su altura se ajuste automáticamente y que cualquier desbordamiento sea visible. */
+.gm-style-iw-d {
+    overflow: visible !important;
+    /* ¡CLAVE! Permite que el contenido se desborde si es necesario */
+    height: auto !important;
+}
+
+/* Selecciona el wrapper exterior del InfoWindow.
+   También le permitimos que su altura se ajuste al contenido. */
+.gm-style-iw-c {
+    padding: 0 !important;
+    /* Quitamos el padding por defecto para tener más control */
+    max-height: none !important;
+    /* Eliminamos cualquier restricción de altura máxima */
+}
+
+/* El contenedor que envuelve todo (incluida la 'flecha' del InfoWindow).
+   Nos aseguramos de que no tenga una altura fija. */
+.gm-style-iw {
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Oculta el botón de cerrar del InfoWindow */
+.gm-ui-hover-effect {
+    display: none !important;
+}
+
+
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* --- ✅ ESTILOS PARA EL MARCADOR PERSONALIZADO --- */
+.price-marker {
+    position: absolute;
+    background-color: #007bff;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+
+    /* Con esto centramos el marcador justo encima del punto */
+    transform: translate(-50%, -100%);
+}
+
+.price-marker:hover {
+    transform: translate(-50%, -100%) scale(1.1);
+    /* Mantenemos el centrado al escalar */
+    z-index: 10;
+}
+
+.price-marker::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #007bff;
+}
+
+.price-marker-casa {
+    background-color: #28a745 !important;
+}
+
+.price-marker-casa::after {
+    border-top: 10px solid #28a745 !important;
+}
+
+/* Estilo personalizado para el InfoWindow */
+
+.custom-infowindow {
+    padding: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+    width: 350px;
+    font-family: Arial, sans-serif;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.custom-infowindow-content {
+    padding-right: 10px;
+}
+
+.custom-infowindow strong {
+    color: #333;
+    font-weight: bold;
+}
+
+.custom-infowindow br {
+    margin-bottom: 5px;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    max-width: 320px;
+    /* Ancho del carrusel */
+    margin: 10px auto 15px;
+    overflow: hidden;
+    /* Clave para ocultar las imágenes que no se ven */
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    /* Color de fondo mientras carga la imagen */
+}
+
+.carousel-images {
+    display: flex;
+    transition: transform 0.4s ease-in-out;
+    /* La magia de la animación */
+    height: 200px;
+    /* Altura fija para el carrusel */
+}
+
+.carousel-image {
+    min-width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* Asegura que la imagen cubra el espacio sin deformarse */
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+    z-index: 10;
+    line-height: 1;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-button.prev {
+    left: 10px;
+}
+
+.carousel-button.next {
+    right: 10px;
+}
+
+.carousel-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.carousel-counter {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    z-index: 10;
+}
+
+.auto-resize {
+    resize: none;
+    /* Opcional: Deshabilita el handle para redimensionar manualmente */
+    overflow-y: hidden;
+    /* ¡Esta es la regla clave! Oculta el scroll vertical */
+}
+
+
+.fila-clicable:hover {
+    cursor: pointer;
+    /* Muestra una mano al pasar el ratón */
+    background-color: #f2f2f2;
+    /* Resalta la fila al pasar el ratón */
+}
+
+/*===== styles wizard steps ====*/
+
+.multisteps-form__progress {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+}
+
+.multisteps-form__progress-btn {
+    transition-property: all;
+    transition-duration: 0.15s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+    position: relative;
+    padding-top: 20px;
+    color: rgba(108, 117, 125, 0.7);
+    text-indent: -9999px;
+    border: none;
+    background-color: transparent;
+    outline: none !important;
+    cursor: pointer;
+}
+
+@media (min-width: 500px) {
+    .multisteps-form__progress-btn {
+        text-indent: 0;
+    }
+}
+
+.multisteps-form__progress-btn:before {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    display: block;
+    width: 13px;
+    height: 13px;
+    content: '';
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    transition: all 0.15s linear 0s, -webkit-transform 0.15s cubic-bezier(0.05, 1.09, 0.16, 1.4) 0s;
+    transition: all 0.15s linear 0s, transform 0.15s cubic-bezier(0.05, 1.09, 0.16, 1.4) 0s;
+    transition: all 0.15s linear 0s, transform 0.15s cubic-bezier(0.05, 1.09, 0.16, 1.4) 0s, -webkit-transform 0.15s cubic-bezier(0.05, 1.09, 0.16, 1.4) 0s;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    background-color: #fff;
+    box-sizing: border-box;
+    z-index: 3;
+}
+
+.multisteps-form__progress-btn:after {
+    position: absolute;
+    top: 5px;
+    left: calc(-50% - 13px / 2);
+    transition-property: all;
+    transition-duration: 0.15s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+    display: block;
+    width: 100%;
+    height: 2px;
+    content: '';
+    background-color: currentColor;
+    z-index: 1;
+}
+
+.multisteps-form__progress-btn:first-child:after {
+    display: none;
+}
+
+.multisteps-form__progress-btn.js-active {
+    color: #007bff;
+}
+
+.multisteps-form__progress-btn.js-active:before {
+    -webkit-transform: translateX(-50%) scale(1.2);
+    transform: translateX(-50%) scale(1.2);
+    background-color: currentColor;
+}
+
+.multisteps-form__form {
+    position: relative;
+}
+
+.multisteps-form__panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.multisteps-form__panel.js-active {
+    height: auto;
+    opacity: 1;
+    visibility: visible;
+}
+
+.multisteps-form__panel[data-animation="scaleOut"] {
+    -webkit-transform: scale(1.1);
+    transform: scale(1.1);
+}
+
+.multisteps-form__panel[data-animation="scaleOut"].js-active {
+    transition-property: all;
+    transition-duration: 0.2s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+.multisteps-form__panel[data-animation="slideHorz"] {
+    left: 50px;
+}
+
+.multisteps-form__panel[data-animation="slideHorz"].js-active {
+    transition-property: all;
+    transition-duration: 0.25s;
+    transition-timing-function: cubic-bezier(0.2, 1.13, 0.38, 1.43);
+    transition-delay: 0s;
+    left: 0;
+}
+
+.multisteps-form__panel[data-animation="slideVert"] {
+    top: 30px;
+}
+
+.multisteps-form__panel[data-animation="slideVert"].js-active {
+    transition-property: all;
+    transition-duration: 0.2s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+    top: 0;
+}
+
+.multisteps-form__panel[data-animation="fadeIn"].js-active {
+    transition-property: all;
+    transition-duration: 0.3s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+}
+
+.multisteps-form__panel[data-animation="scaleIn"] {
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+}
+
+.multisteps-form__panel[data-animation="scaleIn"].js-active {
+    transition-property: all;
+    transition-duration: 0.2s;
+    transition-timing-function: linear;
+    transition-delay: 0s;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+}
+
+/* Esta es la regla que cambia el texto del botón "Browse" */
+.custom-file-label::after {
+    content: "buscar...";
+    /* Puedes poner el texto que desees */
+    /* Opcional: Cambiar el color de fondo del botón */
+    /* background-color: #28a745; */
+    /* border-left: 1px solid #1e7e34; */
+    /* color: white; */
+}
+
+.note-editor .note-editable,
+.note-editor .note-editable * {
+    /* El '*' aplica la regla a todo lo que esté dentro (párrafos, spans, etc.) */
+    text-transform: none !important;
+}
+
+.input_errors {
+    color: red;
+    font-size: 10px;
+}
+
+/* Contenedor principal para alinear las campanas horizontalmente */
+.contenedor-notificaciones-doble {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Clase específica para volver verde la primera campana */
+.bell-green {
+    color: #28a745 !important;
+}
+
+.bell-green svg {
+    stroke: #28a745 !important;
+}
+
+.bell-green .notification-amount {
+    background-color: #28a745 !important;
+}
+
+/* Asegurar que el menú se posicione correctamente 
+.content-notificaciones {
+    position: relative;
+    display: inline-block;
+}
+    */
 
 /*===========================================================*/
 /* Aqui inicia css para responsive*/
