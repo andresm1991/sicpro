@@ -558,37 +558,7 @@ class GenerarPdfController extends Controller
     public function reportGaolinaCamioneta(Request $request, $tipo_reporte)
     {
         $fechas = $request->input('fechas');
-        $query = Adquisicion::dataReporteAdquisiciones($request, true);
-        $result = new \Illuminate\Support\Collection();
-        $fecha_inicio = '';
-        $km_anterior = 0;
-
-        foreach ($query as $index => $item) {
-            $galones = $item['adquisicion']->adquisiciones_detalle->first()->cantidad_solicitada;
-            $km_carga = $item['adquisicion']->adquisiciones_detalle->first()->kilometraje;
-            $km_recorrido = $km_anterior > 0 ? $km_carga - $km_anterior : 0;
-            $km_galon = $km_recorrido / $galones;
-            $valor = $item['adquisicion']->adquisiciones_detalle->first()->valor ?? 0;
-
-            if ($valor > 0) {
-                $iva = $item['adquisicion']->adquisiciones_detalle->first()->iva ?? 0;
-                $valor = calcularTotalProducto($galones, $valor, $iva);
-            }
-
-            $result->add([
-                'fecha' => Carbon::createFromFormat('Y-m-d', $item['adquisicion']->fecha)->format('d-m-Y'),
-                'dias' => $index > 0 ? diasEntreFechas($fecha_inicio, $item['adquisicion']->fecha) : 0,
-                'km_carga' => $km_carga,
-                'km_anterior' => $km_anterior,
-                'km_recorrido' => $km_recorrido,
-                'km_galon' => $km_galon,
-                'valor' => '$ ' . number_format($valor, 4),
-                'galones' => $galones,
-            ]);
-
-            $fecha_inicio = $item['adquisicion']->fecha;
-            $km_anterior = $item['adquisicion']->adquisiciones_detalle->first()->kilometraje;
-        }
+        $result = Adquisicion::reporteGasolinaCamioneta($request);
 
         if ($tipo_reporte === 'excel') {
             return Excel::download(new ReportGasolinaCamionetaExport($result, $fechas), 'reporte_gasolina_camioneta.xlsx');

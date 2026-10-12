@@ -28,6 +28,9 @@ class Adquisicion extends Model
         'subproyecto',
     ];
 
+    /** Producto que usa el reporte de kilometraje de la camioneta. */
+    public const PRODUCTO_GASOLINA_CAMIONETA = 'gasolina para camioneta';
+
     public function proyecto()
     {
         return $this->belongsTo(Proyecto::class, 'proyecto_id');
@@ -111,6 +114,66 @@ class Adquisicion extends Model
     }
 
     /**
+     * Detalle de gasolina de la camioneta dentro de una adquisicion.
+     *
+     * Un pedido puede traer varias lineas, asi que no alcanza con tomar la
+     * primera: hay que ubicar la de gasolina con kilometraje.
+     */
+    public function detalleGasolinaCamioneta(): ?AdquisicionDetalle
+    {
+        return $this->adquisiciones_detalle->first(fn($detalle) => $detalle->kilometraje > 0
+            && ($detalle->producto->descripcion ?? null) === self::PRODUCTO_GASOLINA_CAMIONETA);
+    }
+
+    /**
+     * Reporte de gasolina camioneta: kilometros recorridos y rendimiento.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Support\Collection
+     */
+    public static function reporteGasolinaCamioneta($request): \Illuminate\Support\Collection
+    {
+        $result = new \Illuminate\Support\Collection();
+        $fecha_inicio = '';
+        $km_anterior = 0;
+
+        foreach (self::dataReporteAdquisiciones($request, true) as $index => $item) {
+            $detalle = $item['adquisicion']->detalleGasolinaCamioneta();
+
+            if (!$detalle) {
+                continue;
+            }
+
+            $galones = (float) $detalle->cantidad_solicitada;
+            $km_carga = (float) $detalle->kilometraje;
+            $km_recorrido = $km_anterior > 0 ? $km_carga - $km_anterior : 0;
+            // Sin galones no hay rendimiento: se informa 0 en lugar de dividir por cero.
+            $km_galon = $galones > 0 ? $km_recorrido / $galones : 0;
+
+            $valor = (float) ($detalle->valor ?? 0);
+            if ($valor > 0) {
+                $valor = calcularTotalProducto($galones, $valor, $detalle->iva ?? 0);
+            }
+
+            $result->add([
+                'fecha' => Carbon::createFromFormat('Y-m-d', $item['adquisicion']->fecha)->format('d-m-Y'),
+                'dias' => $index > 0 ? diasEntreFechas($fecha_inicio, $item['adquisicion']->fecha) : '',
+                'km_carga' => $km_carga,
+                'km_anterior' => $km_anterior,
+                'km_recorrido' => $km_recorrido,
+                'km_galon' => $km_galon,
+                'valor' => '$ ' . number_format($valor, 4),
+                'galones' => $galones,
+            ]);
+
+            $fecha_inicio = $item['adquisicion']->fecha;
+            $km_anterior = $km_carga;
+        }
+
+        return $result;
+    }
+
+    /**
      * Aplica los filtros a la query de dataReporteAdquisiciones.
      */
     private static function applyDataReporteFilters(Builder $query, $request, bool $gasolina): void
@@ -170,10 +233,18 @@ class Adquisicion extends Model
         });
 
         if ($gasolina) {
-            $query->whereHas('adquisiciones_detalle', function ($q) {
-                $q->whereHas('producto', fn($p) => $p->where('descripcion', 'gasolina para camioneta'))
-                    ->where('kilometraje', '>', 0);
-            });
+            // El reporte de gasolina necesita saber cual detalle es el de
+            // combustible: se carga restringido en lugar de tomar la primera
+            // linea del pedido.
+            $soloGasolina = fn($q) => $q
+                ->where('kilometraje', '>', 0)
+                ->whereHas('producto', fn($p) => $p->where('descripcion', self::PRODUCTO_GASOLINA_CAMIONETA));
+
+            $query->whereHas('adquisiciones_detalle', $soloGasolina)
+                ->with(['adquisiciones_detalle' => function ($q) use ($soloGasolina) {
+                    $soloGasolina($q);
+                    $q->with('producto');
+                }]);
         }
     }
 
