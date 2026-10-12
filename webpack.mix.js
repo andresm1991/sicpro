@@ -25,4 +25,9 @@ const mix = require('laravel-mix');
  */
 
 mix.copyDirectory('resources/js', 'public/js')
-    .copyDirectory('resources/css', 'public/css');
+    .copyDirectory('resources/css', 'public/css')
+    // El service worker debe servirse desde la raiz: solo controla el
+    // directorio desde el que se sirve, y el registro apunta a
+    // /service-worker.js. Por eso vive fuera de resources/js, que se copia
+    // entero a public/js.
+    .copy('resources/service-worker.js', 'public/service-worker.js');

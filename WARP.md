@@ -39,7 +39,10 @@ No dedicated PHP linter or static analysis Composer scripts are defined in this 
 The frontend is **not bundled**. Blade views load the scripts as ES modules
 (`<script type="module" src="/js/...">`) and the browser resolves their `import`
 statements, so `helpers.js` must keep working as a real ES module.
-`webpack.mix.js` only copies `resources/js` and `resources/css` into `public/`.
+`webpack.mix.js` only copies `resources/js` and `resources/css` into `public/`,
+plus `resources/service-worker.js` to the root of `public/`: a service worker
+only controls the directory it is served from, and the registration
+(`resources/views/layouts/app.blade.php`) points at `/service-worker.js`.
 
 Do not turn those entries into `mix.js()` / `mix.sass()`:
 
@@ -107,7 +110,7 @@ When introducing a new feature, prefer creating a dedicated `routes/modules/<fea
 ### Frontend build
 - There is no bundling: `webpack.mix.js` copies `resources/js` and `resources/css` into `public/`, and the `package.json` scripts run that copy. Read "Frontend / assets" above before changing it.
 - JS/CSS sources live under `resources/js` and `resources/css` (plus feature-specific subdirectories such as `resources/js/jp_limpieza`). After changing assets, run `npm run dev` to sync them to `public/`.
-- `public/` is git-ignored, so the copies under `resources/` are the versioned source of truth. Keep `diff -r resources/js public/js` clean.
+- `public/` is git-ignored, so the copies under `resources/` are the versioned source of truth. Keep `diff -r resources/js public/js` clean (and `cmp public/service-worker.js resources/service-worker.js`).
 
 ## Key packages and integrations
 
