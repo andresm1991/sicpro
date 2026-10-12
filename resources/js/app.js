@@ -1,17 +1,90 @@
-
+// Selectores de Perfil
 let profile = document.querySelector('.profile');
-let menu = document.querySelector('.menu');
+let profileMenu = document.querySelector('.profile .menu');
 
-profile.onclick = function () {
-    menu.classList.toggle('active');
+// Seleccionamos TODOS los contenedores de notificaciones (la verde y la original)
+let allNotificaciones = document.querySelectorAll('.content-notificaciones');
+
+// --- LÓGICA DE PERFIL ---
+if (profile && profileMenu) {
+    profile.onclick = function (event) {
+        // Al abrir perfil, cerramos todos los menús de notificaciones abiertos
+        allNotificaciones.forEach(notif => {
+            let menu = notif.querySelector('.menu');
+            if (menu) menu.classList.remove('active');
+        });
+
+        if (event.target.closest('.user') || event.target.closest('.img-box')) {
+            profileMenu.classList.toggle('active');
+        }
+    };
 }
 
-document.onclick = function (event) {
-    // Verifica si el clic fue fuera del profile y del menu
-    if (!profile.contains(event.target) && !menu.contains(event.target)) {
-        menu.classList.remove('active');
+// --- LÓGICA DE NOTIFICACIONES (Múltiples campanas) ---
+allNotificaciones.forEach(notifContainer => {
+    let currentMenu = notifContainer.querySelector('.menu');
+
+    if (notifContainer && currentMenu) {
+        notifContainer.onclick = function (event) {
+            // 1. Cerramos el menú de perfil
+            if (profileMenu) profileMenu.classList.remove('active');
+
+            // 2. Cerramos OTROS menús de notificaciones que no sean este (opcional, para limpieza)
+            allNotificaciones.forEach(otherNotif => {
+                if (otherNotif !== notifContainer) {
+                    let otherMenu = otherNotif.querySelector('.menu');
+                    if (otherMenu) otherMenu.classList.remove('active');
+                }
+            });
+
+            // 3. Abrimos/Cerramos solo el menú relativo a la campana clickeada
+            if (event.target.closest('.bell-icon')) {
+                currentMenu.classList.toggle('active');
+            }
+        };
     }
-}
+});
+
+// --- EVENTO GLOBAL PARA CERRAR TODO ---
+document.addEventListener('click', function (event) {
+    // Cerrar perfil si se hace clic fuera
+    if (profile && profileMenu && !profile.contains(event.target)) {
+        profileMenu.classList.remove('active');
+    }
+
+    // Cerrar cada menú de notificaciones si se hace clic fuera de su contenedor
+    allNotificaciones.forEach(notifContainer => {
+        let menu = notifContainer.querySelector('.menu');
+        if (notifContainer && menu && !notifContainer.contains(event.target)) {
+            menu.classList.remove('active');
+        }
+    });
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    // Función para redimensionar un textarea
+    function autoResize(textarea) {
+        // Lo reseteamos a 'auto' para que pueda encogerse si se borra texto
+        textarea.style.height = 'auto';
+        // Establecemos la altura igual a la altura del contenido
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+
+    // Seleccionamos todos los textareas con la clase 'auto-resize'
+    const textareas = document.querySelectorAll('textarea.auto-resize');
+
+    textareas.forEach(textarea => {
+        // Redimensionamos al cargar la página por si ya tiene contenido
+        autoResize(textarea);
+
+        // Añadimos un listener para el evento 'input' (cuando se escribe, pega, etc.)
+        textarea.addEventListener('input', () => {
+            autoResize(textarea);
+        });
+    });
+
+});
 
 
 // Funcion para cargar bancos dentro del select
@@ -111,53 +184,72 @@ function cargarTipoCuentas() {
  * Calcular tiempo de entre fechas en formato H:m
  */
 function calcularTiempoLaboral(fechaDesde, horaDesde, fechaHasta, horaHasta) {
-    // Convertir fechas de 'd-m-Y' a 'Y-m-d'
+    // Función auxiliar para convertir el formato de fecha 'd-m-Y' a 'Y-m-d'
+    // que es más compatible con el constructor de Date.
     function parseDate(dmy) {
         let [day, month, year] = dmy.split('-');
         return `${year}-${month}-${day}`;
     }
 
+    // Crear los objetos Date para el inicio y el fin.
     let inicio = new Date(`${parseDate(fechaDesde)}T${horaDesde}:00`);
     let fin = new Date(`${parseDate(fechaHasta)}T${horaHasta}:00`);
 
-    // Definir el horario laboral
-    const horaInicioLaboral = 8; // 08:00
-    const horaFinLaboral = 16;   // 16:00
-
-    // Inicializar el total de minutos laborales
-    let totalMinutosLaborales = 0;
-
-    // Iterar sobre cada día en el rango de fechas
-    for (let dia = new Date(inicio); dia <= fin; dia.setDate(dia.getDate() + 1)) {
-        // Saltar los fines de semana (opcional)
-        if (dia.getDay() === 0 || dia.getDay() === 6) { // 0 = Domingo, 6 = Sábado
-            continue;
-        }
-
-        // Definir el inicio y fin del día laboral
-        let inicioDiaLaboral = new Date(dia);
-        inicioDiaLaboral.setHours(horaInicioLaboral, 0, 0, 0);
-
-        let finDiaLaboral = new Date(dia);
-        finDiaLaboral.setHours(horaFinLaboral, 0, 0, 0);
-
-        // Determinar el rango efectivo para este día
-        let inicioEfectivo = inicio > inicioDiaLaboral ? inicio : inicioDiaLaboral;
-        let finEfectivo = fin < finDiaLaboral ? fin : finDiaLaboral;
-
-        // Asegurarse de que el rango efectivo esté dentro del horario laboral
-        if (inicioEfectivo <= finEfectivo) {
-            totalMinutosLaborales += (finEfectivo - inicioEfectivo) / (1000 * 60); // Diferencia en minutos
-        }
+    // Validar que la fecha de fin sea posterior a la de inicio.
+    // Y también que las fechas sean válidas (no NaN).
+    if (fin <= inicio || isNaN(inicio.getTime()) || isNaN(fin.getTime())) {
+        return '00:00';
     }
 
-    // Convertir el total de minutos a horas y minutos
-    let horas = Math.floor(totalMinutosLaborales / 60);
-    let minutos = Math.floor(totalMinutosLaborales % 60);
+    // Calcular la diferencia total en milisegundos.
+    let diferenciaMs = fin.getTime() - inicio.getTime();
 
-    // Formatear el resultado como "H:m"
+    // Convertir la diferencia de milisegundos a minutos totales.
+    // Usamos Math.floor para no contar segundos parciales.
+    let totalMinutos = Math.floor(diferenciaMs / (1000 * 60));
+
+    // Calcular las horas y los minutos restantes.
+    let horas = Math.floor(totalMinutos / 60);
+    let minutos = totalMinutos % 60;
+
+    // Formatear el resultado como "H:mm", asegurando que los minutos tengan dos dígitos.
     return `${horas}:${String(minutos).padStart(2, '0')}`;
 }
+
+
+var currencyInputMaskOptions = {
+    alias: "currency",
+    prefix: "$ ",                // Símbolo de dólar
+    groupSeparator: "",         // Separador de miles
+    autoGroup: true,             // Agrupación automática
+    digits: 4,                   // Número de decimales
+    digitsOptional: false,       // Asegura siempre dos decimales
+    placeholder: "0",            // Marcador de posición
+    clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+    unmaskAsNumber: true
+};
+
+
+var numericInputMaskOptions = {
+    alias: 'numeric',
+    rightAlign: false,      // No alinear a la derecha
+    allowMinus: false,      // No permitir números negativos
+    digits: 0,              // No permitir decimales
+    min: 0,                 // Valor mínimo (0 o positivo)
+    placeholder: $('.input-enteros').data('placeholder'),         // Dejar vacío el placeholder si lo deseas
+    autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
+};
+
+var twoDecimalsInputMaskOptions = {
+    alias: 'decimal',  // Usar el alias "decimal"
+    radixPoint: ".",   // Definir el punto decimal
+    groupSeparator: "",  // Separador de miles (opcional)
+    digits: 2,         // Número de dígitos decimales
+    autoGroup: true,   // Agrupar los miles
+    rightAlign: false, // Alinear a la izquierda
+    allowMinus: false,   // Permitir números negativos
+    placeholder: $('.input-double').data('placeholder')
+};
 
 $(function () {
     $('[data-toggle="popover"]').popover({ html: true });
@@ -166,7 +258,78 @@ $(function () {
         container: 'body' // Forzar que el menú se renderice en el body
     });
 
+    $('.summernote').summernote({
+        placeholder: 'Escribe el contenido del contrato aquí...',
+        tabsize: 2,
+        height: 900, // Altura del editor
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'underline', 'clear']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'video']],
+            ['view', ['fullscreen', 'codeview', 'help']]
+        ]
+    });
 
+    /**
+     * evento para obetener el nombre del archivo seleccionado y mostralo en el file input de boostrap
+     */
+    $('.custom-file-input').on('change', function (event) {
+        // Obtenemos la referencia al label asociado con este input
+        var label = $(this).next('.custom-file-label');
+
+        // Guardamos el texto por defecto del label por si lo necesitamos
+        // Para este caso, lo escribimos directamente, pero podría leerse del label.
+        var defaultLabelText = 'Seleccionar archivo...';
+
+        // Comprobamos si el usuario ha seleccionado algún archivo
+        if (event.target.files.length > 0) {
+            // Si SÍ seleccionó, mostramos el nombre del primer archivo
+            var fileName = event.target.files[0].name;
+            label.html(fileName);
+        } else {
+            // Si NO seleccionó (canceló), volvemos al texto original
+            label.html(defaultLabelText);
+        }
+    });
+
+    $("#show_hide_password a").on('click', function (event) {
+        event.preventDefault();
+        if ($('#show_hide_password input').attr("type") == "text") {
+            $('#show_hide_password input').attr('type', 'password');
+            $('#show_hide_password i').addClass("fa-eye-slash");
+            $('#show_hide_password i').removeClass("fa-eye");
+        } else if ($('#show_hide_password input').attr("type") == "password") {
+            $('#show_hide_password input').attr('type', 'text');
+            $('#show_hide_password i').removeClass("fa-eye-slash");
+            $('#show_hide_password i').addClass("fa-eye");
+        }
+    });
+
+    $('#archivo').change(function (e) {
+        let fileName = (e.target.files.length > 0) ? e.target.files[0].name : 'seleccionar archivo...';
+        $('#archivo-label').text(fileName);
+    });
+    moment.locale('es');
+
+    $('.daterange').daterangepicker({
+        opens: 'left',
+        autoUpdateInput: false,
+        locale: {
+            cancelLabel: 'Clear'
+        }
+    }, function (start, end, label) {
+        console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+    });
+
+    $('.daterange').on('apply.daterangepicker', function (ev, picker) {
+        $(this).val(picker.startDate.format('MM/DD/YYYY') + ' - ' + picker.endDate.format('MM/DD/YYYY'));
+    });
+    $('.daterange').on('cancel.daterangepicker', function (ev, picker) {
+        $(this).val('');
+    });
 
     $('.datepicker').datepicker({
         language: "es",
@@ -211,37 +374,99 @@ $(function () {
         scrollbar: true,
         useSelect: true,
         change: function (time) {
-            // Obtener el campo de entrada
-            var element = $(this);
+            const element = $(this);
 
-            // Si `time` es un objeto Date, formatearlo manualmente
-            let formattedTime;
+            // Evita loops infinitos
+            if (element.data('changing')) return;
+            element.data('changing', true);
+
+            let formattedTime = '';
+
             if (time instanceof Date) {
-                let hours = String(time.getHours()).padStart(2, '0');
-                let minutes = String(time.getMinutes()).padStart(2, '0');
+                const hours = String(time.getHours()).padStart(2, '0');
+                const minutes = String(time.getMinutes()).padStart(2, '0');
                 formattedTime = `${hours}:${minutes}`;
             } else {
-                formattedTime = time; // Ya debería estar en formato 'HH:mm'
+                formattedTime = time;
             }
 
-            // Actualizar el valor del campo de entrada
+            // Establecer el nuevo valor y disparar el evento `change`
             element.val(formattedTime);
-            // Disparar el evento `change` del campo de entrada
             element.trigger('change');
 
+            element.data('changing', false); // Reset
         }
     });
 
-    $('.select2-basic-single').select2({
-        width: '100%',
-        placeholder: function () {
-            $(this).data('placeholder');
-        },
-        allowClear: false,
+    $('.timepickerSinHorario').timepicker({
+        timeFormat: 'HH:mm',
+        interval: 30,
+        defaultTime: false,
+        startTime: '06:00',
+        dynamic: false,
+        dropdown: true,
+        scrollbar: true,
+        useSelect: true,
+        change: function (time) {
+            const element = $(this);
+
+            // Evita loops infinitos
+            if (element.data('changing')) return;
+            element.data('changing', true);
+
+            let formattedTime = '';
+
+            if (time instanceof Date) {
+                const hours = String(time.getHours()).padStart(2, '0');
+                const minutes = String(time.getMinutes()).padStart(2, '0');
+                formattedTime = `${hours}:${minutes}`;
+            } else {
+                formattedTime = time;
+            }
+
+            // Establecer el nuevo valor y disparar el evento `change`
+            element.val(formattedTime);
+            element.trigger('change');
+
+            element.data('changing', false); // Reset
+        }
+    });
+
+    $("select").select2({
+        with: 'resolve',
+    });
+
+    $('.select2-basic-multiple').each(function () {
+        let $select = $(this);
+
+        let config = {
+            width: '100%',
+            placeholder: $select.data('placeholder'), // Get the placeholder from data-placeholder
+            allowClear: false,
+        };
+
+        // Guardar la configuración original en `data()`
+        $select.data('select2-config', config).select2(config);
+    });
+
+    $('.select2-basic-single').each(function () {
+        let $select = $(this);
+
+        let config = {
+            width: '100%',
+            placeholder: function () {
+                $(this).data('placeholder');
+            },
+            allowClear: false,
+        };
+
+        // Guardar la configuración original en `data()`
+        $select.data('select2-config', config).select2(config);
     });
 
     $('.select2-multiple').select2({
-        minimumResultsForSearch: Infinity,
+        width: '100%',
+        //minimumResultsForSearch: Infinity,
         placeholder: function () {
             $(this).data('placeholder');
         },
@@ -298,12 +523,32 @@ $(function () {
     $('.input-double').inputmask({
         alias: 'decimal',  // Usar el alias "decimal"
         radixPoint: ".",   // Definir el punto decimal
-        groupSeparator: ",",  // Separador de miles (opcional)
+        groupSeparator: "",  // Separador de miles (opcional)
         digits: 4,         // Número de dígitos decimales
         autoGroup: true,   // Agrupar los miles
         rightAlign: false, // Alinear a la izquierda
         allowMinus: false,   // Permitir números negativos
         placeholder: $('.input-double').data('placeholder')
+    });
+
+    $('.input-double-two-decimals').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ".",   // Definir el punto decimal
+        groupSeparator: "",  // Separador de miles (opcional)
+        digits: 2,         // Número de dígitos decimales
+        autoGroup: true,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: false,   // Permitir números negativos
+        placeholder: $('.input-double').data('placeholder')
+    });
+
+    $('.simple-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        digits: 100,
+        digitsOptional: true,
+        rightAlign: false,
+        allowMinus: true,
+        placeholder: $('.simple-double').data('placeholder'),
     });
 
     $('.input-enteros').inputmask({
@@ -312,9 +557,7 @@ $(function () {
         allowMinus: false,      // No permitir números negativos
         digits: 0,              // No permitir decimales
         min: 0,                 // Valor mínimo (0 o positivo)
-        max: undefined,         // Puedes establecer un valor máximo si lo deseas
-        integerDigits: undefined, // Número máximo de dígitos permitidos en el entero (opcional)
-        placeholder: "",         // Dejar vacío el placeholder si lo deseas
+        placeholder: $('.input-enteros').data('placeholder'),         // Dejar vacío el placeholder si lo deseas
         autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
     });
 
@@ -329,6 +572,18 @@ $(function () {
         clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
         unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
     }).mask(".currency");
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: ",",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 4,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_separador_miles");
 
     Inputmask({
         alias: "currency",
@@ -349,7 +604,8 @@ $(function () {
 
     }).mask(".dateTime");
 
-    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false });
+    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 4 });
+    $('.moneyDosDecimales').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false, precision: 2 });
 
     /// Solo numeros
     $(document).on('input', ".solo-numeros", function (evt) {
@@ -367,6 +623,26 @@ $(function () {
         }
 
         $(this).val(value); // Establece el valor validado
+    });
+
+    /*=========== Files Input style Dropify ========*/
+    var drEvent = $('.dropify').dropify({
+        tpl: {
+            wrap: '<div class="dropify-wrapper"></div>',
+            loader: '<div class="dropify-loader"></div>',
+            message: '<div class="dropify-message"><span class="file-icon" /> <p>{{ default }}</p></div>',
+            preview: '<div class="dropify-preview"><span class="dropify-render"></span><div class="dropify-infos"><div class="dropify-infos-inner"><p class="dropify-infos-message">{{ replace }}</p></div></div></div>',
+            filename: '',
+            clearButton: '<button type="button" class="dropify-clear">{{ remove }}</button>',
+            errorLine: '<p class="dropify-error">{{ error }}</p>',
+            errorsContainer: '<div class="dropify-errors-container"><ul></ul></div>'
+        },
+        messages: {
+            default: 'arrastre y suelte un archivo aquí o haga click',
+            replace: 'arrastrar y soltar o hacer clic para reemplazar',
+            remove: 'BORRAR',
+            error: 'Lo sentimos, el archivo es demasiado grande',
+        }
     });
 
     //** Permite el ingreso del numero con el formato 1234-1//
@@ -447,9 +723,8 @@ $(function () {
     /**
      * Calculpo entre valor unitario y cantidad
      */
-    $('#table-adquisiciones').on('input', '.cantidad input, .iva-producto, .precio-unitario', function () {
-        console.log('cargo')
-        calcularTotal();
+    $(document).on('input', '#table-adquisiciones', '.cantidad input, .iva-producto, .precio-unitario, .costo-indirecto', function () {
+        calcularTotalFilasYGeneral();
     });
 
 
@@ -476,38 +751,6 @@ $(function () {
             }
         }
     });
-
-
-    // Función para calcular el total de cada fila y el total general
-    function calcularTotal() {
-        let totalGeneral = 0;
-
-        $('.precio-unitario').each(function () {
-            let index = $(this).data('index');
-            let cantidad;
-
-            // Verifica si 'cantidad' es un campo input o un texto en td
-            if ($(`.cantidad[data-index='${index}'] input`).length > 0) {
-                cantidad = parseFloat($(`.cantidad[data-index='${index}'] input`).val()) || 0;
-            } else {
-                cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
-            }
-
-            let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
-            let totalFila = cantidad * precioUnitario;
-            let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
-            let iva = (totalFila * porcentaje_iva) / 100;
-            let total = totalFila + iva;
-            // Actualiza el total de la fila en el td.calculo-total correspondiente
-            $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(4)}`);
-
-            // Sumar el total de esta fila al total general
-            totalGeneral += total;
-        });
-
-        // Actualiza el total general
-        $('#total-general').text(`$ ${totalGeneral.toFixed(4)}`);
-    }
 
 
     /*$('#form_proyectos').on('submit', function (event) {
@@ -599,4 +842,439 @@ $(function () {
         return false;
     }
 
+    $('.leer-notificacion').on('click', function () {
+        var id = $(this).data('id');
+        var url = $(this).data('url');
+        // Redirigir a la URL de la notificación
+        $.ajax({
+            url: base_url + "/notificaciones/leer-notificacion",
+            type: "POST",
+            data: {
+                id: id,
+                _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function (response) {
+                if (response.success) {
+                    // Abrir la URL en otra pestaña
+                    if (url != '/') {
+                        window.open(url,
+                            '_blank'); // '_blank' abre la URL en una nueva pestaña
+                    }
+                    // Actualizar el contador de notificaciones
+                    var cantidad = parseInt($('.notification-amount').text());
+                    if (cantidad > 0) {
+                        var cantidad = parseInt($('.notification-amount').text()) - 1;
+                        $('.notification-amount').text(cantidad);
+                    }
+
+                    // Cambiar el color de la notificación a gris
+                    $('.leer-notificacion[data-id="' + id + '"]').removeClass('list-group-item-dark');
+                }
+            }
+        });
+    });
+
+    $('.content-notificaciones').on('click', function () {
+        $.ajax({
+            url: base_url + "/notificaciones/marcar-todos-leido",
+            type: "POST",
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            success: function (response) {
+                $('.notification-amount').text('0');
+            }
+        });
+    });
+
+
+    // -- Validar si el nro de proforma es valido -- //
+    $('input[name=nro_proforma]').on('change', function () {
+        var input = $(this);
+        var nro_proforma = input.val();
+
+        $('input[name=nroProforma]').val(nro_proforma);
+        if (nro_proforma == '') {
+            $('.input_errors').remove();
+            return;
+        }
+        $.ajax({
+            url: base_url + '/proformas/validar-nro-proforma',
+            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+            method: 'POST',
+            data: { 'nro_proforma': nro_proforma },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+                $('.input_errors').remove();
+            },
+            success: function (response) {
+                if (!response.success) {
+                    input.after($('<small class="input_errors" style="color: red;">' + response.message + '</small>'));
+                }
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire(
+                            'Error!',
+                            errorMsg,
+                            'error',
+                        );
+                }
+            }
+        });
+    });
+
 });
+
+function calcularPorcentaje(total, porcentaje) {
+    return parseFloat(total) / (1 - (porcentaje / 100));
+}
+
+function calcularTotalProducto($cantidad, $valor, $iva) {
+    console.log($cantidad);
+    console.log($valor);
+    console.log($iva);
+    let totalFila = $cantidad * $valor;
+    let iva = (totalFila * $iva) / 100;
+    let total = totalFila + iva;
+    return total;
+}
+
+// Función para calcular el total de cada fila y el total general
+function calcularTotalFilasYGeneral() {
+    let totalGeneral = 0;
+    // Itera sobre cada fila de productos
+    $('.precio-unitario').each(function () {
+        let index = $(this).data('index');
+        let cantidad;
+
+        // Verifica si 'cantidad' es un campo input o un texto en td
+        if ($(`.cantidad[data-index='${index}'] input`).length > 0) {
+            cantidad = parseFloat($(`.cantidad[data-index='${index}'] input`).val()) || 0;
+        } else {
+            cantidad = parseFloat($(`.cantidad[data-index='${index}']`).text()) || 0;
+        }
+
+        let precioUnitario = parseFloat($(this).val().replace(/[^0-9.]/g, '')) || 0;
+        let costoIndirecto = parseFloat($(`.costo-indirecto[data-index='${index}']`).val().replace(/[^0-9.]/g, '')) || 0;
+
+        precioUnitario = calcularPorcentaje(precioUnitario.toFixed(4), costoIndirecto);
+
+        let totalFila = cantidad * precioUnitario.toFixed(4);
+        let porcentaje_iva = parseFloat($(`.iva-producto[data-index='${index}']`).val()) || 0;
+        let iva = (totalFila * porcentaje_iva) / 100;
+        let total = totalFila + iva;
+        // Actualiza el total de la fila en el td.calculo-total correspondiente
+        $(`.calculo-total[data-index='${index}']`).text(`$ ${total.toFixed(4)}`);
+
+        // Sumar el total de esta fila al total general
+        totalGeneral += total;
+    });
+
+    // Actualiza el total general
+    $('#total-general').text(`$ ${totalGeneral.toFixed(4)}`);
+}
+
+
+// Calcular el total de cada fila
+function calcularTotal($element, $decimales = 4) {
+    let subtotal = 0;
+
+    // Iterar por cada fila del tbody
+    $($element).each(function () {
+        let total = parsePrecio($(this).find('.total_unitario').text());
+        // Sumar al subtotal
+        subtotal += total;
+    });
+    // Actualizar el total general
+    return subtotal.toFixed($decimales);
+}
+
+function inicializarPlugins() {
+    // Input mask
+    $('.input-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ",",   // Definir el punto decimal
+        groupSeparator: ".",  // Separador de miles (opcional)
+        digits: 4,         // Número de dígitos decimales
+        autoGroup: true,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: false,   // Permitir números negativos
+        placeholder: $('.input-double').data('placeholder')
+    });
+
+    $('.simple-double').inputmask({
+        alias: 'decimal',  // Usar el alias "decimal"
+        radixPoint: ",",   // Definir el punto decimal
+        groupSeparator: ".",  // Separador de miles (opcional)
+        autoGroup: false,   // Agrupar los miles
+        rightAlign: false, // Alinear a la izquierda
+        allowMinus: true,   // Permitir números negativos
+        placeholder: $('.simple-double').data('placeholder')
+    });
+
+    $('.input-enteros').inputmask({
+        alias: 'numeric',
+        rightAlign: false,      // No alinear a la derecha
+        allowMinus: false,      // No permitir números negativos
+        digits: 0,              // No permitir decimales
+        min: 0,                 // Valor mínimo (0 o positivo)
+        max: undefined,         // Puedes establecer un valor máximo si lo deseas
+        integerDigits: undefined, // Número máximo de dígitos permitidos en el entero (opcional)
+        placeholder: "",         // Dejar vacío el placeholder si lo deseas
+        autoUnmask: true         // Para que el valor sea guardado sin el formato de máscara
+    });
+
+
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: "",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 4,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency");
+
+
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: ",",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 4,                   // Número de decimales
+        digitsOptional: false,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_separador_miles");
+
+    Inputmask({
+        alias: "currency",
+        prefix: "$ ",                // Símbolo de dólar
+        groupSeparator: "",         // Separador de miles
+        autoGroup: true,             // Agrupación automática
+        digits: 2,                   // Número de decimales
+        digitsOptional: true,       // Asegura siempre dos decimales
+        placeholder: "0",            // Marcador de posición
+        clearMaskOnLostFocus: true,   // Limpia la máscara si está vacío
+        unmaskAsNumber: true,          // Convierte el valor en número sin el símbolo
+    }).mask(".currency_two_decimals");
+
+    Inputmask({
+        alias: "datetime",
+        inputFormat: "HH:MM",
+        placeholder: "00:00",
+
+    }).mask(".dateTime");
+
+    $('.money').maskMoney({ prefix: '$ ', allowNegative: true, affixesStay: false });
+
+    $('.select2-tag').each(function () {
+        let $select = $(this);
+
+        let config = {
+            width: '100%',
+            allowClear: false, // Permite limpiar la selección
+            tags: true, // Permite agregar nuevas opciones escribiendo
+            placeholder: function () {
+                return $(this).data('placeholder');
+            },
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') {
+                    return null;
+                }
+                return {
+                    id: term,
+                    text: term,
+                    newTag: true
+                };
+            },
+            insertTag: function (data, tag) {
+                data.unshift(tag); // Inserta la nueva opción al principio
+            }
+        };
+
+        // Guardar la configuración original en `data()`
+        $select.data('select2-config', config).select2(config);
+    });
+
+    $("select").select2({
+        with: 'resolve',
+    });
+}
+
+function formatearUSD(valor, tipo = 'currency') {
+    return Intl.NumberFormat('en-US', {
+        style: tipo,
+        currency: 'USD',
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4
+    }).format(valor)
+}
+
+
+/**
+ * Validar campos de un formulario
+ * @param {Array} campos - Array de objetos con los selectores y mensajes de error
+ * @returns {boolean} - Retorna true si todos los campos son válidos, false si no
+ */
+function validarCampos(campos) {
+    let isValid = true;
+
+    // Limpiar errores previos
+    $('.error-border').removeClass('error-border');
+    $('.error-message').remove();
+
+    campos.forEach(campo => {
+        const elemento = $(campo.selector);
+        const valor = elemento.val();
+
+        if (campo.selector != '#iva' && valor != undefined && (valor === null || valor.trim() === '' || valor === '0')) {
+            isValid = false;
+            // Agregar borde rojo y mensaje de error
+            if (elemento.prop('tagName').toLowerCase() === 'select') {
+                elemento.next('.select2-container').find('.select2-selection').addClass('error-border');
+            } else {
+                elemento.addClass('error-border');
+            }
+
+            elemento.parent().append(`<span class="error-message">${campo.mensaje}</span>`);
+        }
+    });
+
+    return isValid;
+}
+
+/**
+ * Limpiar los campos de un formulario
+ * @param {Array} campos - Array de selectores de los campos a limpiar
+ */
+function limpiarCampos(campos) {
+    campos.forEach(campo => {
+        const elemento = $(campo.selector);
+        if (elemento.prop('tagName') != undefined) {
+            if (elemento.prop('tagName').toLowerCase() === 'select') {
+                elemento.val(null).trigger('change');
+            } else {
+                elemento.val('');
+            }
+        }
+    });
+}
+
+// Función para formatear el precio (ejemplo: "1,500.50" → 1500.50)
+function parsePrecio(texto) {
+    return parseFloat(texto.replace(/[^\d.-]/g, '')) || 0;
+}
+
+
+
+//** Función para obtener la ubicación*/
+function getLocation() {
+    return new Promise(function (resolve, reject) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    // Resuelve la promesa con las coordenadas
+                    resolve({
+                        latitud: position.coords.latitude.toFixed(8),
+                        longitud: position.coords.longitude.toFixed(8)
+                    });
+                },
+                function (error) {
+                    // Rechaza la promesa con el error
+                    reject(error);
+                }
+            );
+        } else {
+            reject("La geolocalización no es compatible con este navegador.");
+        }
+    });
+}
+
+// Función para manejar errores
+function showError(error) {
+    switch (error.code) {
+        case error.PERMISSION_DENIED:
+            alert("El usuario denegó la solicitud de geolocalización.");
+            break;
+        case error.POSITION_UNAVAILABLE:
+            alert("La información de ubicación no está disponible.");
+            break;
+        case error.TIMEOUT:
+            alert("La solicitud para obtener la ubicación del usuario excedió el tiempo de espera.");
+            break;
+        case error.UNKNOWN_ERROR:
+            alert("Ocurrió un error desconocido.");
+            break;
+    }
+}
+
+
+/**
+ * Función para sumar todos los tiempos
+ * @param {Array} arrayTiempos 
+ * @returns 
+ */
+function sumarTiempos(arrayTiempos) {
+    var minutosTotales = 0;
+
+    // Sumar todos los tiempos
+    $.each(arrayTiempos, function (index, tiempo) {
+        var partes = tiempo.split(':');
+        var minutos = parseInt(partes[0]) * 60 + parseInt(partes[1]);
+        minutosTotales += minutos;
+    });
+
+    // Calcular días, horas y minutos
+    var dias = Math.floor(minutosTotales / (60 * 24));
+    var horas = Math.floor((minutosTotales % (60 * 24)) / 60);
+    var minutos = minutosTotales % 60;
+
+    // Formatear según corresponda
+    var resultado = '';
+
+    if (dias > 0) {
+        resultado += dias + (dias === 1 ? ' día' : ' días');
+    }
+
+    if (horas > 0) {
+        if (resultado !== '') resultado += ' ';
+        resultado += horas + (horas === 1 ? ' hora' : ' horas');
+    }
+
+    if (minutos > 0) {
+        if (resultado !== '') resultado += ' ';
+        resultado += minutos + (minutos === 1 ? ' minuto' : ' minutos');
+    }
+
+    // Si todo es 0
+    if (resultado === '') {
+        resultado = '0 minutos';
+    }
+
+    return resultado;
+}

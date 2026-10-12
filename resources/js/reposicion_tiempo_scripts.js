@@ -2,6 +2,7 @@ $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     var btnGuardar = $("#btn-guardar");
 
+
     $('select[name=user]').on('change', function () {
         let $selectedOption = $(this).find('option:selected').val();
         $.ajax({
@@ -14,8 +15,9 @@ $(function () {
                 $('#loading').addClass('show');
             },
             success: function (response) {
-                console.log(response.tiempo_total);
                 $('#tiempo_pendiente').val(response.tiempo_total);
+                calcularYMostrarTiempoLaboral()
+
             },
             complete: function () {
                 // Ocultar el loading cuando termine la petición
@@ -30,6 +32,10 @@ $(function () {
             )
         });
     });
+
+    if ($('select[name=user]').val()) {
+        $('select[name=user]').trigger('change');
+    }
 
     /**
      * Buscar solcitud
@@ -56,8 +62,108 @@ $(function () {
         });
     });
 
+    /**
+     * Buscar solcitud resposicion
+     * @param String
+     * return JSON
+    */
+    $('input:text[name=solicitud_reposicion_search]').on('keyup', function () {
+        var usuario_id = $(this).data('usuario-id');
+        var $value = $(this).val();
+        $.ajax({
+            url: base_url + '/solicitudes/reposicion/buscar-solicitud/' + usuario_id,
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'GET',
+            data: { 'text': $value },
+            beforeSend: function () {
+            },
+            success: function (data) {
+                $('tbody').html(data);
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            var errors = JSON.parse(jqXHR.responseText);
+            console.log(errors)
+        });
+    });
+
+    $('#hora_inicio, #hora_fin').on('change', function () {
+        console.log($(this).val());
+        calcularYMostrarTiempoLaboral();
+    });
+
+    // Forzar la actualización del timepicker para valores predefinidos
+    $('.timepicker').each(function (index) {
+        var initialValue = $(this).val(); // Obtener el valor predefinido del campo
+        if (initialValue) {
+            if (index == 0) {
+                $('#hora_inicio').timepicker('setTime', initialValue); // Establecer el valor en el timepicker
+            } else {
+                $('#hora_fin').timepicker('setTime', initialValue); // Establecer el valor en el timepicker
+            }
+
+        }
+    });
+
+
+    // Eliminar solicitud de reposición
+    $(document).on('click', '.eliminar-solicitid-reposicion', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'eliminar-solicitud-reposicion/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "7" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        })
+    });
     // Validar los campos en tiempo real
-    $("#hora_inicio, #hora_fin").on("input", function () {
+    function calcularYMostrarTiempoLaboral() {
         let mensaje = $("#mensaje");
         let tiempoResposicion = $("#tiempo_reposicion");
         let botonEnviar = $("#btn-guardar");
@@ -66,7 +172,7 @@ $(function () {
 
         // Limpiar mensaje inicialmente
         mensaje.text("");
-        tiempoResposicion.val("0 horas y 0 minutos");
+        tiempoResposicion.html("0 horas y 0 minutos");
         botonEnviar.prop("disabled", true);
 
         // Validar que ambos campos estén completos
@@ -74,7 +180,7 @@ $(function () {
             return;
         }
 
-        // Validar que ambas horas estén dentro del rango permitido
+        /*// Validar que ambas horas estén dentro del rango permitido
         if (!validarRangoHora(horaInicio)) {
             mensaje.text("La hora desde debe estar entre 08:00 y 18:00.");
             return;
@@ -82,7 +188,7 @@ $(function () {
         if (!validarRangoHora(horaFin)) {
             mensaje.text("La hora hasta debe estar entre 08:00 y 18:00.");
             return;
-        }
+        }*/
 
         // Convertir las horas a minutos para compararlas
         let [inicioHoras, inicioMinutos] = horaInicio.split(":").map(Number);
@@ -119,7 +225,9 @@ $(function () {
         // Convertir ambos tiempos a minutos
         let minutosPendiente = tiempoPendiente.horas * 60 + tiempoPendiente.minutos;
         let minutosReposicion = tiempoReposicion.horas * 60 + tiempoReposicion.minutos;
-
+        console.log(tiempoPendienteValue)
+        console.log('miutos pendientes: ' + minutosPendiente)
+        console.log('minutos reposicion' + minutosReposicion)
         // Validar que el tiempo de reposición no sea mayor al tiempo pendiente
         if (minutosReposicion > minutosPendiente) {
             mensaje.text("El tiempo de reposición no puede ser mayor al tiempo pendiente de reposición.");
@@ -127,10 +235,10 @@ $(function () {
         }
 
         // Mostrar el tiempo total si todo está correcto
-        tiempoResposicion.val(tiempoCalculado);
+        tiempoResposicion.html(tiempoCalculado);
         // Habilitar el botón de envío si todas las validaciones pasan
         botonEnviar.prop("disabled", false);
-    });
+    };
 
     // Función para validar una hora dentro del rango permitido
     function validarRangoHora(hora) {

@@ -114,48 +114,34 @@ $(function () {
             return;
         }
 
-
         var numeroFila = $('.elementos-agregados').length + 1;
-        precio_unitario = parseFloat(precio_unitario).toFixed(4);
-        var total = parseFloat(cantidad.replace(/,/g, '')) * parseFloat(precio_unitario.replace(/,/g, ''));
-        var formattedNumber = total.toFixed(4);//total.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+        precio_unitario = parseFloat(precio_unitario);
+        var total = parseFloat(cantidad) * precio_unitario;
+        var formattedNumber = formatoMoneda(total);//total.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 
         var nuevaFila = `
             <tr class="elementos-agregados">
-                <td>${numeroFila}</td>
-                <td>
+                <td class="align-middle">${numeroFila}</td>
+                <td class="align-middle">
                     ${producto_name}
                     <input type="hidden" name="productos[]" value="${producto_id}">
                 </td>
-                <td class="edit-item">
-                    <span>${cantidad}</span>
-                    <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
-                            value="${cantidad}">
-                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                class="fa-solid fa-check"></i></button>
-                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                class="fa-solid fa-xmark"></i></button>
-                    </div>
+                <td class="align-middle" style="width: 1px">
+                    <input type="text" class="form-control mr-2 input-double" name="cantidad[]"
+                        value="${cantidad}">
                 </td>
-                <td>
+                <td class="align-middle">
                     <span>${medida_name}</span>
                     <div class="d-flex align-items-center hidden">
                         <input type="hidden" name="unidad_medida[]" value="${medida_id}">
                     </div>
                 </td>
-                <td class="edit-item">
-                    <span>$ ${precio_unitario}</span>
-                    <div class="d-flex align-items-center hidden">
-                        <input type="text" class="form-control mr-2" name="precio_unitario[]"
-                            value="${precio_unitario}">
-                        <button type="button" class="btn btn-outline-dark btn-sm mr-1 aceptar"><i
-                                class="fa-solid fa-check"></i></button>
-                        <button type="button" class="btn btn-outline-dark btn-sm cancelar"><i
-                                class="fa-solid fa-xmark"></i></button>
-                    </div>
+                <td class="align-middle" style="width: 1px">
+                    <input type="text" class="form-control mr-2 currency" name="precio_unitario[]"
+                        value="${precio_unitario}">
                 </td>
-                <td class="total_unitario">$ ${formattedNumber}</td>
+                <td class="align-middle total_unitario"><span
+                        class="total">${formattedNumber}</span></td>
                 <td class="align-middle table-actions">
                     <div class="action-buttons">
                         <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto" id=""><i class="fa-solid fa-trash-can"></i></a>
@@ -169,6 +155,12 @@ $(function () {
         calcularTotal();
         // Limpiar campos 
         clearInputs();
+
+        Inputmask(currencyInputMaskOptions).mask(".currency");
+    });
+
+    $(document).on('keyup', 'input[name="cantidad[]"], input[name="precio_unitario[]"], input[name="costo_indirecto[]"]', function () {
+        actualizarTotal($(this).closest('tr'));
     });
 
     /**
@@ -211,7 +203,6 @@ $(function () {
     // Botón "aceptar" para confirmar el cambio
     $(document).on('click', '.aceptar', function (event) {
         event.stopPropagation(); // Evitar que se dispare el evento del <td>
-
         // Obtener el valor del input
         var newValue = $(this).closest('.edit-item').find('input').val();
         // Actualizar el valor del span
@@ -250,6 +241,10 @@ $(function () {
         $('#total-general').val(`$ ${totalGeneral.toFixed(4)}`);
     });
 
+    /**
+     * Eliminar orden de trabajo
+     * @param String id
+     */
     $(document).on('click', '.eliminar-orden-trabajo', function () {
         var $this = $(this);
         var id = $(this).attr('id');
@@ -304,6 +299,67 @@ $(function () {
             }
         });
     });
+
+    /**
+     * Eliminar pago orden de trabajo
+     * @param String id
+     */
+    $(document).on('click', '.eliminar-pago-orden-trabajo', function () {
+        console.log('eliminar pago orden de trabajo')
+        var $this = $(this);
+        var id = $(this).attr('id');
+
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: url + '/eliminar-pago-orden-trabajo/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#" + id).remove();
+
+                            if ($('tbody').children().length == 0) {
+                                $('tbody').html('<tr>' +
+                                    '<td colspan = "7" class="text-center text-danger">No se encontraron datos para mostrar.</td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+
 
     /**
      * Buscar
@@ -361,6 +417,40 @@ $(function () {
         $('#text-fecha').html('Fecha. ' + resultadoFinal + ' ');
     });
 
+    //* Validar formulario antes de enviar//
+    $('#form_orden_trabajo').on('submit', function (event) {
+        let isValid = true;
+
+        const camposAValidar = [
+            { selector: '#proveedor', mensaje: 'Seleccione proveedor.' },
+            { selector: '#categoria', mensaje: 'Seleccione categoria.' },
+            { selector: '#plazo_semanas', mensaje: 'Ingrese plazo en semanas.' },
+        ];
+
+        // Validar campos
+        if (!validarCampos(camposAValidar)) {
+            isValid = false;
+        } else {
+            // Validar el campo "total"
+            let totalGeneral = $('#total-general').val().replace(/[$.]/g, '').trim(); // Eliminar el símbolo de dólar y espacios
+
+            if (totalGeneral === '' || totalGeneral <= 0) {
+                isValid = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se ha agregado ningún producto.',
+                    confirmButtonText: 'Aceptar'
+                });
+            }
+        }
+
+        // Si alguna validación falla, evitar el envío del formulario
+        if (!isValid) {
+            event.preventDefault();
+        }
+    });
+
     function clearInputs() {
         $('#producto').val(null).trigger('change');
         $('#unidad-medida').val(null).trigger('change');
@@ -373,13 +463,14 @@ $(function () {
     function actualizarTotal($row) {
         // Obtener los valores de cantidad y precio unitario
         var cantidad = parseFloat($row.find('input[name="cantidad[]"]').val()) || 0;
-        var precioUnitario = parseFloat($row.find('input[name="precio_unitario[]"]').val()) || 0;
-
+        var precioUnitario = parseFloat($row.find('input[name="precio_unitario[]"]').val().replace(/[^0-9.-]+/g, "")) || 0;
+        var costoIndirecto = parseFloat($row.find('input[name="costo_indirecto[]"]').val().replace(/[^0-9.-]+/g, "")) || 0;
         // Calcular el nuevo total
+        precioUnitario = calcularPorcentaje(precioUnitario, costoIndirecto);
         var total = cantidad * precioUnitario;
-
         // Actualizar el valor del td de total con el nuevo valor calculado
         $row.find('td .total').text('$ ' + total.toFixed(4));
+        calcularTotal();
     }
 
     function formatoMoneda(numero) {
@@ -390,16 +481,24 @@ $(function () {
 
     function calcularTotal() {
         let subtotal = 0;
-
+        let nroCasa = $('#numero_casas').val() || 0;
         // Iterar por cada fila del tbody
         $('.elementos-agregados').each(function () {
             let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
-            let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+            let total = parseFloat(totalText.replace(/[^0-9.]/g, '')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
             // Sumar al subtotal
             subtotal += total;
         });
         // Actualizar el total general
-        $('#subtotal').val(subtotal.toFixed(4));
+        $('#subtotal').val(formatoMoneda(subtotal));
+
+        if (nroCasa > 0) {
+            let totalGeneral = 0;
+            totalGeneral = nroCasa * subtotal;
+
+            $('#total-general').val(formatoMoneda(totalGeneral));
+        }
+
     }
 
 });

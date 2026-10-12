@@ -1,3 +1,5 @@
+import { getFormData, limpiarValores } from './helpers.js';
+
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
     // Obtén la URL completa
@@ -21,7 +23,7 @@ $(function () {
         var $tipo = $(this).attr('id');
 
         $.ajax({
-            url: url + '/buscar-adquisicion',
+            url: base_url + '/administrativo/adquisiciones/operativo/buscar-adquisicion',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'buscar': $value, 'tipo': $tipo },
@@ -101,7 +103,7 @@ $(function () {
         var $tipo = $(this).attr('id');
 
         $.ajax({
-            url: '/administrativo/buscar-orden-trabajo',
+            url: base_url + '/administrativo/buscar-orden-trabajo',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'buscar': $value, 'tipo': $tipo },
@@ -125,7 +127,7 @@ $(function () {
         var $tipo = $(this).attr('id');
 
         $.ajax({
-            url: '/administrativo/buscar-mano-obra',
+            url: base_url + '/administrativo/buscar-mano-obra',
             headers: { 'X-CSRF-TOKEN': csrf },
             type: 'GET',
             data: { 'buscar': $value, 'tipo': $tipo },
@@ -145,7 +147,6 @@ $(function () {
 
     //** Agregar elementos a la tabla de pedidos */
     $('#add-producto-adquisicion').on('click', function () {
-
         var producto_id = $('#productos').val();
         var producto = $('#productos option:selected').text();
         var unidad_medida_id = $('#unidad_medida').val();
@@ -200,10 +201,10 @@ $(function () {
 
         numeroFila = $('.elementos-agregados').length + 1;
         // Calcular el subtotal
-        let subtotal = parseFloat(cantidad) * parseFloat(valor_unitario);
+        let subtotal = limpiarValores(cantidad) * limpiarValores(valor_unitario);
 
         // Calcular el total con IVA
-        let totalConIva = subtotal * (1 + parseFloat(iva) / 100);
+        let totalConIva = parseFloat(subtotal) * (1 + parseFloat(iva) / 100);
 
         // Crear una nueva fila con los datos
         var nuevaFila = `
@@ -252,7 +253,7 @@ $(function () {
                     <input type="hidden" name="iva_producto[]" value="${iva}">
                 </td>
                 <td class="total_unitario">
-                   $ ${totalConIva.toFixed(2)}
+                   ${formatearUSD(totalConIva)}
                     <input type="hidden" name="total[]" value="${totalConIva.toFixed(2)}">
                 </td>
                 <td>
@@ -398,6 +399,7 @@ $(function () {
             $('select[name=proyecto]').next('.select2-container').find('.select2-selection').addClass('error-border');
             $('select[name=proyecto]').parent().append('<span class="error-message">Seleccione proyecto.</span>');
         }
+
         if ($('select[name=etapa]').val() == "") {
             var valid = false;
             $('select[name=etapa]').next('.select2-container').find('.select2-selection').addClass('error-border');
@@ -409,6 +411,14 @@ $(function () {
             $('select[name=actividad]').next('.select2-container').find('.select2-selection').addClass('error-border');
             $('select[name=actividad]').parent().append('<span class="error-message">Seleccione tipo.</span>');
         }
+
+        if ($('select[name=tipo_costo]').val() == "") {
+            var valid = false;
+            $('select[name=tipo_costo]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=tipo_costo]').parent().append('<span class="error-message">Seleccione tipo de costo.</span>');
+        }
+
+
         if ($('select[name=proveedor]').val() == "") {
             var valid = false;
             $('select[name=proveedor]').next('.select2-container').find('.select2-selection').addClass('error-border');
@@ -419,6 +429,12 @@ $(function () {
             var valid = false;
             $('input:text[name=numero_factura]').addClass('error-border');
             $('input:text[name=numero_factura]').parent().append('<span class="error-message">Ingrese factura.</span>');
+        }
+
+        if ($('select[name=subproyecto]').val() != "" && $('input[name=nro_proforma]').val() == "" && completo) {
+            var valid = false;
+            $('input:text[name=nro_proforma]').addClass('error-border');
+            $('input:text[name=nro_proforma]').parent().append('<span class="error-message">Ingrese proforma.</span>');
         }
 
         if (!forma_pago) {
@@ -437,6 +453,286 @@ $(function () {
         this.submit();
     });
 
+    $("#form_order_recepcion").on("submit", function (event) {
+
+        $(".input_errors").remove();
+
+        let proyecto = $('#proyecto').data('proyecto');
+        let subproyecto = $('input[name=subproyecto]').attr('id');
+        let nroProforma = $('input[name=nro_proforma]').val().trim();
+
+        if (proyecto.toLowerCase().trim() == 'adecentamientos' && subproyecto != '' && nroProforma == '') {
+            event.preventDefault();
+            $('input[name=nro_proforma]').after($('<small class="input_errors" style="color: red;">campo requerido.</small>'));
+        }
+
+    });
+
+    $(document).on('click', '.eliminar-adquisicion', function () {
+        let adquisicionId = $(this).attr('id');
+        Swal.fire({
+            title: '¿Esta Seguro?',
+            text: "Una vez se elimina el registro no podrá recuperarlo.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, deseo Eliminarlo',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.value) {
+                $.ajax({
+                    url: 'eliminar/' + adquisicionId,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'DELETE',
+                    dataType: 'json',
+                })
+                    .done(function (data) {
+                        if (data.success) {
+                            Toast.fire({
+                                icon: 'success',
+                                title: data.message,
+                            });
+
+                            $("#table-list-pedidos-pendientes #" + id).remove();
+
+                            if ($('#table-list-pedidos-pendientes tbody').children().length == 0) {
+                                $('#table-list-pedidos-pendientes tbody').html('<tr>' +
+                                    '<td colspan = "6" class="text-center text-danger"><strong>No se encontraron datos para mostrar.</strong></td>' +
+                                    '</tr>');
+                            }
+                        } else {
+                            Swal.fire(
+                                'Error!',
+                                data.message,
+                                'error'
+                            )
+                        }
+
+                    })
+                    .fail(function () {
+                        Swal.fire(
+                            'Error Inesperado!',
+                            'No se pudo realizar la acción de eliminado, comuníquese con el administrador del sistema.',
+                            'error'
+                        )
+                    });
+            }
+        });
+    });
+
+    $(document).on('shown.bs.modal', '#agregarProductosModal', function () {
+
+        $(this).find('.select2-tag').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+    });
+
+    $('#agregar-producto').on('click', function () {
+        var form = $("#form_agregar_productos");
+        var data = getFormData(form);
+
+        var valid = true;
+
+        $('select[name=producto], select[name=unidad_medida], select[name=necesidad],  input[name=cantidad], input[name=valor_unitario]').removeClass('error-border');
+        $('.select2-tag').removeClass('error-border');  // Remover borde rojo en select2
+        $('.error-message').remove();  // Elimina los mensajes de error anteriores
+
+        if (data.producto == "") {
+            var valid = false;
+            $('select[name=producto]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=producto]').parent().append('<span class="error-message">Seleccione el producto.</span>');
+        }
+        if (data.necesidad == "") {
+            var valid = false;
+            $('select[name=necesidad]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=necesidad]').parent().append('<span class="error-message">Seleccione o ingrese una necesidad.</span>');
+        }
+        if (data.unidad_medida == "") {
+            var valid = false;
+            $('select[name=unidad_medida]').next('.select2-container').find('.select2-selection').addClass('error-border');
+            $('select[name=unidad_medida]').parent().append('<span class="error-message">Seleccione la unidad de medida.</span>');
+        }
+
+        if (data.cantidad == "") {
+            var valid = false;
+            $('input:text[name=cantidad]').addClass('error-border');
+            $('input:text[name=cantidad]').parent().append('<span class="error-message">Ingrese la cantidad.</span>');
+        }
+
+        if (data.valor_unitario == "" || data.valor_unitario == 0) {
+            var valid = false;
+            $('input:text[name=valor_unitario]').addClass('error-border');
+            $('input:text[name=valor_unitario]').parent().append('<span class="error-message">Ingrese un valor mayor a 0.</span>');
+        }
+
+        if (!valid) return;
+
+        numeroFila = $('.elementos-agregados').length + 1;
+        // Calcular el subtotal
+        let subtotal = parseFloat(data.cantidad) * parseFloat(data.valor_unitario);
+        // Calcular el total con IVA
+        let totalConIva = subtotal * (1 + parseFloat(data.iva) / 100);
+
+        // Seleccionar el último <select> con nombre que comience con "unidad_medida"
+        const unidadMedidaSelect = $('select[name^="unidad_medida"]').last();
+        // Crear el nuevo <select> dinámicamente
+        const nuevoSelectHTML = `<select name="unidad_medida[${numeroFila - 1}]" class="form-control col-sm-12 select2-tag" data-placeholder="Seleccione">${unidadMedidaSelect.find('option').map(function () {
+            return `<option value="${$(this).val()}" ${$(this).val() == data.unidad_medida ? 'selected' : ''}>${$(this).text()}</option>`;
+        }).get().join('')}</select>`;
+
+        // Crear una nueva fila con los datos
+        var nuevaFila = `
+            <tr class="elementos-agregados">
+                <td class="align-middle">${numeroFila}</td>
+                <td class="align-middle">
+                ${$('#producto option:selected').text()}
+                <input type="hidden" name="productos[${numeroFila - 1}]" value="${data.producto}">
+                </td>
+                <td class="align-middle text-center cantidad col-md-1 col-12" data-index = "${numeroFila - 1}">
+                    <input type="text" class="form-control input-double" name="cantidad[${numeroFila - 1}]" value="${data.cantidad}" placeholder="0" data-index = "${numeroFila - 1}">
+                </td>
+                <td class="align-middle">
+                    ${nuevoSelectHTML}
+                </td>
+                <td class="align-middle col-md-1 col-12">
+                    <input type="text" class="form-control currency precio-unitario" name="valor[${numeroFila - 1}]"
+                        value="${data.valor_unitario}" placeholder="$ 0.00" data-index = "${numeroFila - 1}">
+                </td>
+                
+                <td class="align-middle col-md-1 col-12">
+                    <input type="text" class="form-control col-sm-12 input-enteros iva-producto" name="iva_producto[${numeroFila - 1}]" value="${data.iva}" placeholder="0" data-index = "${numeroFila - 1}">
+                </td>
+                <td class="align-middle col-md-1 col-12">
+                    <input type="text" class="form-control col-sm-12 input-enteros costo-indirecto" name="indirecto[${numeroFila - 1}]" value="${data.indirecto}" placeholder="0" data-index = "${numeroFila - 1}">
+                </td>
+                <td class="align-middle calculo-total" data-index="${numeroFila - 1}">
+                     $ ${totalConIva.toFixed(4)}
+                </td>
+                <td class="align-middle">
+                    <span>${$('#necesidad option:selected').text()}</span>
+                    <input type="hidden" name="necesidad[${numeroFila - 1}]" value="${$('#necesidad option:selected').text()}">
+                </td>
+                <td class="align-middle table-actions">
+                        <div class="action-buttons">
+                            <a href="javascript:void(0);" class="btn btn-danger btn-sm eliminar-fila-producto"
+                                id="">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+        `;
+
+        $('tbody').append(nuevaFila);
+
+
+        inicializarPlugins();
+        calcularTotalFilasYGeneral();
+        clearInputs();
+        $('#tr-default').hide();
+
+        Toast.fire({
+            icon: 'success',
+            title: 'Producto agregado correctamente.',
+        });
+    });
+
+
+    $('select[name=proyecto]').on('change', function () {
+        var proyectoId = $(this).val();
+        // Limpiar el select de subproyectos
+        $('select[name=subproyecto]').empty();
+        if (proyectoId <= 0) {
+            $(".contenedor-nro-proforma").html('');
+            $(".contenedor-nro-proforma").removeClass('col-md-4 col-12');
+            return;
+        }
+        $.ajax({
+            url: base_url + '/administrativo/subproyectos-por-proyecto',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            method: 'POST',
+            data: { 'proyecto_id': proyectoId },
+            beforeSend: function () {
+                $('#loading').addClass('show');
+                $('.input_errors').remove();
+            },
+            success: function (response) {
+                var subproyectos = response.subproyectos;
+                var subproyectoSelect = $('select[name=subproyecto]');
+                $.each(subproyectos, function (id, nombre) {
+                    subproyectoSelect.append($('<option>', { value: id, text: nombre }));
+                });
+                // Inicializar Select2 después de agregar las opciones
+                subproyectoSelect.trigger('change');
+            },
+            complete: function () {
+                $('#loading').removeClass('show');
+            },
+            error: function (jqXHR) {
+                switch (jqXHR.status) {
+                    case 422: // ERROR INPUT VALIDATE
+                        $.each(jqXHR.responseJSON.errors, function (i, error) {
+                            var el = $(document).find('[name="' + i + '"]');
+                            el.after($('<small class="input_errors" style="color: red;">' + error[0] + '</small>'));
+                        });
+                        break;
+
+                    case 419: // ERROR EXPIRATE SESSION
+                        window.location = '/';
+                        break;
+
+                    default:
+                        let errorMsg = 'Ocurrió un error inesperado.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMsg = xhr.responseJSON.message;
+                        }
+                        Swal.fire(
+                            'Error!',
+                            errorMsg,
+                            'error',
+                        );
+                }
+            }
+        });
+    });
+
+    $('select[name=subproyecto]').on('change', function () {
+        var subproyectoId = $(this).val();
+        if (subproyectoId) {
+            $(".contenedor-nro-proforma").addClass('col-md-4 col-12').html(`
+                <div class="form-group">
+                    <label for="nro_proforma">Nro. Proforma *</label>
+                    <input type="text" name="nro_proforma" id="nro_proforma" class="form-control" placeholder="Ingrese Nro. de Proforma" >
+                </div>
+            `);
+        } else {
+            $(".contenedor-nro-proforma").html('');
+            $(".contenedor-nro-proforma").removeClass('col-md-4 col-12');
+        }
+    });
+
 
     function calcularTotal() {
         let subtotal = 0;
@@ -444,13 +740,12 @@ $(function () {
         // Iterar por cada fila del tbody
         $('.elementos-agregados').each(function () {
             let totalText = $(this).find('.total_unitario').text().replace(/[^0-9.,]/g, ''); // Extraer números y coma/decimal
-            let total = parseFloat(totalText.replace(',', '.')) || 0; // Reemplazar la coma decimal por un punto y convertir a número
+            let total = limpiarValores(totalText) || 0; // Reemplazar la coma decimal por un punto y convertir a número
             // Sumar al subtotal
-            subtotal += total;
+            subtotal += parseFloat(total);
         });
-
-        console.log(subtotal.toFixed(2));
         // Actualizar el total general
-        $('#total-general').text(subtotal.toFixed(2));
+        $('#total-general').text(formatearUSD(subtotal));
     }
+
 });

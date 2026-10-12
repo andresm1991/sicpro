@@ -1,5 +1,181 @@
+import { getFormData } from './helpers.js';
+
 $(function () {
     var csrf = $('meta[name="csrf-token"]').attr('content');
+
+    $(document).on('click', '#guardar', function () {
+        var form = $("#form_rubro_cronograma");
+        var data = getFormData(form);
+        $.ajax({
+            url: 'guardar/rubro-cronograma',
+            headers: { 'X-CSRF-TOKEN': csrf },
+            type: 'POST',
+            data: data,
+            beforeSend: function () {
+                $('#modal-overlay').show();
+            },
+            success: function (response) {
+
+                Swal.fire({
+                    icon: response.success ? "success" : "error",
+                    text: response.message,
+                    confirmButtonText: 'Aceptar',
+                }).then((result) => {
+                    if (response.success) {
+                        location.reload();
+                    }
+                });
+
+
+                $('[data-toggle="tooltip"]').tooltip();
+                $('[data-toggle="popover"]').popover({ html: true });
+            },
+            complete: function () {
+                $('#modal-overlay').hide();
+            }
+        }).fail(function (jqXHR, textStatus, errorThrown) {
+            switch (jqXHR.status) {
+                case 422: // ERROR INPUT VALIDATE
+
+                    break;
+
+                case 419: // ERROR EXPIRATE SESSION
+                    window.location = '/';
+                    break;
+
+                default:
+                    var errors = JSON.parse(jqXHR.responseText);
+                    Swal.fire(
+                        'Ups.!',
+                        'Algo salió mal, por favor vuelva a intentarlo.',
+                        'error'
+                    )
+                    console.log(errors)
+            }
+        });
+    });
+
+    $('.editar-rubro').on('click', function () {
+        console.log('Editar Rubro');
+        // Obtener el número de semana desde el atributo 'data-semana'
+        let semana = $(this).data('semana');
+        let rubro = $(this).data('rubro');
+        let dias = $(this).data('dias');
+
+
+        $('#titleModal').html('Editar Actividades');
+        $('select[name=rubro_cronograma]').val(rubro).trigger('change');
+        $('select[name=semana]').val(semana).trigger('change');
+        if (dias) {
+            let diasArray = dias.split(", ").map(dia => dia.trim()); // Convertir a array y limpiar espacios
+
+            // Recorrer los días y marcar los checkboxes correspondientes
+            diasArray.forEach(dia => {
+                $("#check_" + dia).prop("checked", true);
+            });
+        }
+        console.log(dias);
+
+        $('#modalRubroCronograma').modal({
+            backdrop: 'static', // No permite cerrar el modal al hacer clic fuera
+            keyboard: false     // No permite cerrar el modal usando la tecla ESC
+        }).modal('show');
+    });
+
+    // Capturar clic en las columnas con la clase 'editar-semana'
+    $('.editar-semana').on('click', function () {
+        // Obtener el número de semana desde el atributo 'data-semana'
+        let semana = $(this).data('semana');
+
+        // Crear un objeto para almacenar los datos de la semana
+        let datosSemana = {};
+
+        // Iterar sobre las filas de la tabla para recopilar los datos de la semana
+        $('#table-rubros-cronograma tbody tr').each(function () {
+            let rubro = $(this).find('td:eq(1)').text().trim(); // Nombre del rubro
+            let celdaSemana = $(this).find('td:eq(' + (semana + 1) + ')'); // Celda correspondiente a la semana
+            let dias = celdaSemana.data('dias'); // Obtener los días desde el atributo 'data-dias'
+
+            if (dias) {
+                // Almacenar los datos del rubro para esta semana
+                datosSemana[rubro] = dias;
+            }
+
+        });
+
+        // Mostrar los datos en la consola (o puedes usarlos como desees)
+        console.log(`Datos de la semana ${semana}:`, datosSemana);
+
+        // Ejemplo: Mostrar los datos en un modal o alerta
+        alert(`Datos de la semana ${semana}:\n${JSON.stringify(datosSemana, null, 2)}`);
+    });
+
+
+    // Inicializar Select2 dentro del modal
+    $(document).on('shown.bs.modal', '#modalRubroCronograma', function () {
+        $(this).find('.select2-tag').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+
+        $(this).find('.select2-basic-single').each(function () {
+            let $select = $(this);
+
+            // Destruir Select2 si ya está inicializado
+            if ($select.data('select2')) {
+                $select.select2('destroy');
+            }
+
+            // Obtener la configuración original almacenada en `data()`
+            let originalOptions = $select.data('select2-config') || {};
+
+            // Extender las opciones sin perder `createTag` ni `insertTag`
+            let newOptions = $.extend(true, {}, originalOptions, {
+                dropdownParent: $select.closest('.modal'),
+                placeholder: $select.data('placeholder') || 'Seleccione una opción',
+                allowClear: false
+            });
+
+            // Guardar la nueva configuración
+            $select.data('select2-config', newOptions);
+
+            // Inicializar Select2 con la configuración fusionada
+            $select.select2(newOptions);
+        });
+    });
+    // Cerrar el modal
+    $('#modalRubroCronograma').on('hidden.bs.modal', function () {
+        $('#titleModal').html('Agregar Actividades');
+        // Restablecer el formulario completo
+        $('#form_rubro_cronograma')[0].reset();
+
+        // Restablecer los select2
+        $('.select2-tag, .select2-basic-single').val(null).trigger('change');
+
+        // Desmarcar los checkboxes manualmente
+        $('input[type="checkbox"]').prop('checked', false);
+    });
+
 
     $(document).on('click', '.click-semana', function () {
         window.location = 'semana/' + $(this).data('semana') + '/rubro/' + $(this).data('rubro');
@@ -83,4 +259,121 @@ $(function () {
             );
         });
     }
+
+    $(document).on('click', '.editar-actividad', function () {
+        // Aquí va tu lógica
+        let id = $(this).attr('id');
+        let nombre = $(this).text().trim();
+        Swal.fire({
+            title: 'Informacion de la Actividad',
+            input: 'text',
+            inputValue: nombre,
+            showDenyButton: true,
+            showCancelButton: true,
+            confirmButtonText: 'Actualizar',
+            denyButtonText: 'Eliminar',
+            cancelButtonText: 'Cancelar',
+            didOpen: () => {
+
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                let nuevoNombre = result.value;
+                $.ajax({
+                    url: 'actualizar-actividad/' + id,
+                    headers: { 'X-CSRF-TOKEN': csrf },
+                    type: 'PUT',
+                    data: { nombre: nuevoNombre },
+                    beforeSend: function () {
+
+                    },
+                    success: function (response) {
+                        Swal.fire({
+                            icon: response.success ? "success" : "error",
+                            text: response.message,
+                            confirmButtonText: 'Aceptar',
+                        }).then((result) => {
+                            if (response.success) {
+                                location.reload();
+                            }
+                        });
+                    },
+                    complete: function () {
+                        $('#modal-overlay').hide();
+                    }
+                }).fail(function (jqXHR, textStatus, errorThrown) {
+                    switch (jqXHR.status) {
+                        case 422: // ERROR INPUT VALIDATE
+                            break;
+
+                        case 419: // ERROR EXPIRATE SESSION
+                            window.location = '/';
+                            break;
+
+                        default:
+                            var errors = JSON.parse(jqXHR.responseText);
+                            Swal.fire(
+                                'Ups.!',
+                                'Algo salió mal, por favor vuelva a intentarlo.',
+                                'error'
+                            )
+                            console.log(errors)
+                    }
+                });
+
+            } else if (result.isDenied) {
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "Esta acción eliminará la actividad.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: 'eliminar-actividad/' + id,
+                            headers: { 'X-CSRF-TOKEN': csrf },
+                            type: 'DELETE',
+                            beforeSend: function () {
+
+                            },
+                            success: function (response) {
+                                Swal.fire({
+                                    icon: response.success ? "success" : "error",
+                                    text: response.message,
+                                    confirmButtonText: 'Aceptar',
+                                }).then((result) => {
+                                    if (response.success) {
+                                        location.reload();
+                                    }
+                                });
+                            },
+                            complete: function () {
+
+                            }
+                        }).fail(function (jqXHR, textStatus, errorThrown) {
+                            switch (jqXHR.status) {
+                                case 422: // ERROR INPUT VALIDATE
+                                    break;
+
+                                case 419: // ERROR EXPIRATE SESSION
+                                    window.location = '/';
+                                    break;
+
+                                default:
+                                    var errors = JSON.parse(jqXHR.responseText);
+                                    Swal.fire(
+                                        'Ups.!',
+                                        'Algo salió mal, por favor vuelva a intentarlo.',
+                                        'error'
+                                    )
+                                    console.log(errors)
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    });
 });
