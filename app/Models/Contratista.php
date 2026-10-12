@@ -163,7 +163,14 @@ class Contratista extends Model
                 $query->orderBy('fecha', 'asc');
                 break;
             case 'alfabetico':
-                $query->orderBy('proveedor.razon_social', 'asc');
+                // La tabla proveedores no esta en el FROM: se ordena por
+                // subconsulta en lugar de un join ambiguo con select *.
+                $query->orderBy(
+                    Proveedor::select('proveedores.razon_social')
+                        ->whereColumn('proveedores.id', 'contratistas.proveedor_id')
+                        ->limit(1),
+                    'asc'
+                );
                 break;
             default:
                 # code...

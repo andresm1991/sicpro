@@ -268,10 +268,20 @@ class ManoObra extends Model
                 $query->orderBy('id', 'asc');
                 break;
             case 'fecha':
-                $query->orderBy('fecha', 'asc');
+                // mano_obra no tiene columna fecha: el periodo es fecha_inicio.
+                $query->orderBy('fecha_inicio', 'asc');
                 break;
             case 'alfabetico':
-                $query->orderBy('proveedor.razon_social', 'asc');
+                // El proveedor de mano de obra vive en el detalle, no en la
+                // cabecera: se ordena por subconsulta.
+                $query->orderBy(
+                    Proveedor::select('proveedores.razon_social')
+                        ->join('detalle_mano_obra', 'detalle_mano_obra.proveedor_id', '=', 'proveedores.id')
+                        ->whereColumn('detalle_mano_obra.mano_obra_id', 'mano_obra.id')
+                        ->orderBy('proveedores.razon_social')
+                        ->limit(1),
+                    'asc'
+                );
                 break;
             default:
                 # code...
