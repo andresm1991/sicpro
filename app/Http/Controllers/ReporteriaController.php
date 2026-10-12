@@ -50,8 +50,9 @@ class ReporteriaController extends Controller
         $etapas = CatalogoDato::getChildrenCatalogo('menu.adquisiciones')->pluck('descripcion', 'id')->prepend('', '');
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->where('slug', '!=', 'profecionales')->pluck('descripcion', 'id')->prepend('', '');
         $necesidades = DiccionarioPalabra::pluck('palabra', 'palabra')->prepend('', '');
+        $tipoCostos = getTipoCostosProyecto();
 
-        return view('reportes.adquisiciones', compact('title_page', 'breadcrumbs', 'proyectos', 'etapas', 'tipoAdquisiciones', 'necesidades'));
+        return view('reportes.adquisiciones', compact('title_page', 'breadcrumbs', 'proyectos', 'etapas', 'tipoAdquisiciones', 'necesidades', 'tipoCostos'));
     }
 
     public function filtroReportesAdquisiciones(Request $request)

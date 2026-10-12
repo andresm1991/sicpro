@@ -108,7 +108,7 @@
 
                         <div class="form-group col-sm-4">
                             <label for="" class="col-form-label">Costos </label>
-                            {{ Form::select('costo', ['' => ''] + ['directos' => 'directos', 'indirectos' => 'indirectos'], '', ['class' => 'form-control', 'data-placeholder' => 'seleccione costo', 'data-allow-clear' => 'true']) }}
+                            {{ Form::select('costo', $tipoCostos, '', ['class' => 'form-control', 'data-placeholder' => 'seleccione costo', 'data-allow-clear' => 'true']) }}
                         </div>
 
                         <div class="form-group col-sm-4">

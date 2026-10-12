@@ -121,7 +121,7 @@ class Adquisicion extends Model
         });
         $query->when($request->input('etapa'), fn($q) => $q->where('etapa_id', $request->input('etapa')));
         $query->when($request->input('tipo'), fn($q) => $q->where('tipo_etapa_id', $request->input('tipo')));
-        $query->when($request->input('costo'), fn($q) => $q->where('etapa_id', $request->input('costo')));
+        $query->when($request->input('costo'), fn($q) => $q->where('tipo_costo_id', $request->input('costo')));
         $query->when($request->input('subproyecto'), fn($q) => $q->where('subproyecto', $request->input('subproyecto')));
         if ($request->input('tipo_reporte') != 'global') {
             $query->when($request->input('tipo_reporte'), fn($q) => $q->where('tipo_adquisicion', $request->input('tipo_reporte')));
@@ -372,7 +372,7 @@ class Adquisicion extends Model
             'etapa' => $request->input('etapa'),
             'tipo' => $tipoId,
             'tipo_slug' => $tipoId ? CatalogoDato::find($tipoId)->slug : null,
-            'costo_directo' => $request->input('costo'), // Asumiendo que 'costo' es un ID de etapa para costos directos/indirectos
+            'tipo_costo' => $request->input('costo'), // ID del catalogo tipo.costos (72 directos / 73 indirectos)
             'proveedor' => $request->input('proveedor'),
             'producto' => $request->input('producto'),
             'necesidad' => $request->input('necesidad'),
@@ -522,7 +522,7 @@ class Adquisicion extends Model
         });
 
         $query->when($filters['necesidad'], fn($q) => $q->where('adquisiciones_detalle.necesidad', $filters['necesidad']));
-        $query->when($filters['costo_directo'], fn($q) => $q->where('adquisiciones.etapa_id', $filters['costo_directo']));
+        $query->when($filters['tipo_costo'], fn($q) => $q->where('adquisiciones.tipo_costo_id', $filters['tipo_costo']));
         $query->when($filters['tipo_slug'], function ($q, $slug) {
             if (in_array($slug, ['meteriales.herramientas', 'servicios'])) {
                 $q->where('tipo_etapa_catalogo.slug', $slug);
