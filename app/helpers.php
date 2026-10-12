@@ -125,6 +125,29 @@ if (!function_exists('dateFormat')) {
         return $fechas;
     }
 
+    /**
+     * Etiquetas de fecha del reporte de caja (flujo de efectivo).
+     *
+     * El saldo inicial corresponde al día anterior al inicio del rango, por eso
+     * se calcula UNA sola vez: Carbon::subDay() muta la instancia, así que
+     * encadenarlo en cada etiqueta hace retroceder un día de más.
+     *
+     * @param  \Carbon\Carbon  $fechaInicio  Inicio del rango (startOfDay)
+     * @param  \Carbon\Carbon  $fechaFin     Fin del rango (endOfDay)
+     * @return array<string, string>
+     */
+    function etiquetasReporteCaja($fechaInicio, $fechaFin)
+    {
+        $diaAnterior = $fechaInicio->copy()->subDay();
+        $formato = 'd \d\e F \d\e Y';
+
+        return [
+            'fecha_reporte' => 'del ' . $diaAnterior->translatedFormat($formato) . ' al ' . $fechaFin->translatedFormat($formato),
+            'fecha_saldo_inicio' => 'SALDO AL ' . $diaAnterior->translatedFormat($formato),
+            'fecha_saldo_fin' => 'SALDO AL ' . $fechaFin->translatedFormat($formato),
+        ];
+    }
+
     // Función para validar y formatear la fecha
     function validarYFormatearFecha($fecha)
     {

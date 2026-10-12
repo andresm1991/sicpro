@@ -168,11 +168,9 @@ class MovimientoCaja extends Model
         $saldo_final = $saldoAcumulado;
 
         // ---- 5. PREPARAR LA RESPUESTA ----
-        return [
-            'fecha_reporte' => 'del ' . $fechaInicio->subDay()->translatedFormat('d \d\e F \d\e Y') . ' al ' . $fechaFin->translatedFormat('d \d\e F \d\e Y'),
+        return array_merge([
             // Datos para la primera fila (saldo inicial)
             'saldo_inicial' => number_format($saldo_inicial, 4),
-            'fecha_saldo_inicio' => 'SALDO AL ' . $fechaInicio->subDay()->translatedFormat('d \d\e F \d\e Y'),
 
             // Lista de movimientos para el cuerpo de la tabla
             'movimientos' => $movimientos_periodo,
@@ -180,8 +178,7 @@ class MovimientoCaja extends Model
             // Datos para el pie de tabla
             'total_ingresos' => number_format($totalIngresosPeriodo, 4),
             'total_egresos' => number_format($totalEgresosPeriodo, 4),
-            'fecha_saldo_fin' => 'SALDO AL ' . $fechaFin->translatedFormat('d \d\e F \d\e Y'),
             'saldo_final' => number_format($saldo_final, 4),
-        ];
+        ], etiquetasReporteCaja($fechaInicio, $fechaFin));
     }
 }
