@@ -2,33 +2,27 @@ const mix = require('laravel-mix');
 
 /*
  |--------------------------------------------------------------------------
- | Mix Asset Management
+ | Front-end de SICPRO
  |--------------------------------------------------------------------------
  |
- | Mix provides a clean, fluent API for defining some Webpack build steps
- | for your Laravel application. By default, we are compiling the Sass
- | file for the application as well as bundling up all the JS files.
+ | Las vistas cargan los scripts como modulos ES (type="module") desde /js/ y
+ | el navegador resuelve sus imports; la hoja de estilos es CSS escrito a mano.
+ | No hay bundling: resources/js y resources/css son la fuente y este build
+ | solo los copia a public/.
+ |
+ | No convertir estas entradas a mix.js() ni mix.sass():
+ |
+ |  - un bundle de webpack no expone los exports con nombre que usan los 11
+ |    archivos que hacen `import { ... } from './helpers.js'`
+ |    (reportes_scripts, gerencial_scripts, caja, administrativo_scripts,
+ |    mano_obra_scripts, prestamos_scripts, presupuesto_scripts,
+ |    tareas_scripts, resumen_pagos_semanales_scripts, cronograma_scripts,
+ |    articulo_scripts), asi que se rompen en runtime;
+ |
+ |  - resources/sass/app.scss son 8 lineas del esqueleto de Laravel y
+ |    reemplazaria la hoja de estilos real de public/css/app.css.
  |
  */
 
-mix.js('resources/js/app.js', 'public/js')
-    .js('resources/js/administrativo_scripts.js', 'public/js')
-    .js('resources/js/adquisiciones_script.js', 'public/js')
-    .js('resources/js/articulo_scripts.js', 'public/js')
-    .js('resources/js/cronograma_scripts.js', 'public/js')
-    .js('resources/js/datatables.js', 'public/js')
-    .js('resources/js/dynamic_form.js', 'public/js')
-    .js('resources/js/helpers.js', 'public/js')
-    .js('resources/js/inventario_scripts.js', 'public/js')
-    .js('resources/js/mano_obra_scripts.js', 'public/js')
-    .js('resources/js/orden_trabajo_contratistas_scripts.js', 'public/js')
-    .js('resources/js/prestamos_scripts.js', 'public/js')
-    .js('resources/js/presupuesto_scripts.js', 'public/js')
-    .js('resources/js/proveedor_scripts.js', 'public/js')
-    .js('resources/js/proyectos_scripts.js', 'public/js')
-    .js('resources/js/reposicion_tiempo_scripts.js', 'public/js')
-    .js('resources/js/solicitud_scripts.js', 'public/js')
-    .js('resources/js/treeview.js', 'public/js')
-    .js('resources/js/user_scripts.js', 'public/js')
-    .sass('resources/css/app.scss', 'public/css')
-    .sourceMaps();
+mix.copyDirectory('resources/js', 'public/js')
+    .copyDirectory('resources/css', 'public/css');

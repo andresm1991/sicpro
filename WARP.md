@@ -7,8 +7,8 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 - Environment file (Windows / PowerShell): `copy .env.example .env; php artisan key:generate`
 - Database (local): `php artisan migrate --seed`
 - Frontend dependencies: `npm install`
-- Frontend build (dev): `npm run dev`
-- Frontend build (prod): `npm run production`
+- Frontend assets sync (dev): `npm run dev`
+- Frontend assets sync (prod): `npm run production`
 - Local serve: use Laragon (recommended on Windows) or `php artisan serve`
 
 ## Core commands
@@ -31,10 +31,25 @@ No dedicated PHP linter or static analysis Composer scripts are defined in this 
 
 ### Frontend / assets
 `package.json` defines Laravel Mix scripts:
-- Development build: `npm run dev` (alias for `npm run development` / `mix`)
+- Development sync: `npm run dev` (alias for `npm run development` / `mix`)
 - Watch for changes: `npm run watch`
 - Hot reloading: `npm run hot`
-- Production build: `npm run prod` (alias for `npm run production` / `mix --production`)
+- Production sync: `npm run prod` (alias for `npm run production` / `mix --production`)
+
+The frontend is **not bundled**. Blade views load the scripts as ES modules
+(`<script type="module" src="/js/...">`) and the browser resolves their `import`
+statements, so `helpers.js` must keep working as a real ES module.
+`webpack.mix.js` only copies `resources/js` and `resources/css` into `public/`.
+
+Do not turn those entries into `mix.js()` / `mix.sass()`:
+
+- 11 files import named exports from `./helpers.js` (`reportes_scripts`,
+  `gerencial_scripts`, `caja`, `administrativo_scripts`, `mano_obra_scripts`,
+  `prestamos_scripts`, `presupuesto_scripts`, `tareas_scripts`,
+  `resumen_pagos_semanales_scripts`, `cronograma_scripts`, `articulo_scripts`).
+  A webpack bundle exposes no named exports, so they break at runtime.
+- `resources/sass/app.scss` is an 8-line Laravel skeleton and would replace the
+  real `public/css/app.css`.
 
 ## High-level architecture
 
@@ -90,8 +105,9 @@ When introducing a new feature, prefer creating a dedicated `routes/modules/<fea
 - `backup_db/` contains SQL dumps (e.g. `sicpro-20241004.sql`) used as snapshots of real data for local/test environments. Coordinate before updating or adding large dumps.
 
 ### Frontend build
-- Frontend assets are built with Laravel Mix (`webpack.mix.js`) and the scripts defined in `package.json`.
-- JS/CSS sources live under `resources/js` and `resources/css` (plus feature-specific subdirectories). After changing assets, run `npm run dev` (or `npm run prod` for optimized builds).
+- There is no bundling: `webpack.mix.js` copies `resources/js` and `resources/css` into `public/`, and the `package.json` scripts run that copy. Read "Frontend / assets" above before changing it.
+- JS/CSS sources live under `resources/js` and `resources/css` (plus feature-specific subdirectories such as `resources/js/jp_limpieza`). After changing assets, run `npm run dev` to sync them to `public/`.
+- `public/` is git-ignored, so the copies under `resources/` are the versioned source of truth. Keep `diff -r resources/js public/js` clean.
 
 ## Key packages and integrations
 

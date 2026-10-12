@@ -42,7 +42,7 @@ SICPRO es una plataforma empresarial de alto rendimiento diseñada para centrali
 ### **Frontend**
 - **Estilos**: [Bootstrap 5](https://getbootstrap.com/) & Sass
 - **Interactividad**: JavaScript (ES6+), Axios, Popper.js
-- **Assets**: Laravel Mix
+- **Assets**: Laravel Mix (copia `resources/js` y `resources/css` a `public/`; sin bundling)
 
 ### **Librerías Clave**
 - **[Spatie Permission](https://spatie.be/docs/laravel-permission)**: Gestión avanzada de autorizaciones.
@@ -88,11 +88,13 @@ SICPRO es una plataforma empresarial de alto rendimiento diseñada para centrali
    php artisan migrate --seed
    ```
 
-5. **Compilación y Servidor**
+5. **Assets y Servidor**
    ```bash
    npm run dev
    php artisan serve
    ```
+
+   > **Nota**: el front no usa bundling. `npm run dev` copia `resources/js` y `resources/css` a `public/`, que esta fuera de git.
 
 ---
 
