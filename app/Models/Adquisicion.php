@@ -267,6 +267,49 @@ class Adquisicion extends Model
     }
 
     /**
+     * Totales monetarios del reporte global de adquisiciones.
+     *
+     * El subtotal se calcula siempre del lado del servidor a partir de los
+     * datos consultados, y el porcentaje de costos indirectos se aplica sobre
+     * ese subtotal. El total general nunca proviene del navegador.
+     *
+     * @param  array  $data        Resultado de reporteGlobalAdquisiciones()
+     * @param  float  $porcentaje  Costos indirectos como % del total final
+     * @return array<string, float>
+     */
+    public static function totalesReporteGlobal(array $data, float $porcentaje = 0): array
+    {
+        // La fórmula divide por (1 - porcentaje/100): se acota para que un 100
+        // no provoque una división por cero.
+        $porcentaje = max(0.0, min($porcentaje, 99.99));
+
+        $camposPorCategoria = [
+            'contratista' => 'total_contratado',
+            'mano_obra' => 'total',
+            'materiales_herramientas' => 'total',
+            'servicios' => 'total',
+        ];
+
+        $subtotal = 0.0;
+        foreach ($data['data'] ?? [] as $categorias) {
+            foreach ($camposPorCategoria as $categoria => $campo) {
+                $subtotal += (float) collect($categorias[$categoria] ?? [])->sum($campo);
+            }
+        }
+
+        $totalGeneral = $porcentaje > 0
+            ? (float) calcularProcentaje($subtotal, $porcentaje, 4)
+            : $subtotal;
+
+        return [
+            'subtotal' => $subtotal,
+            'costos_indirectos' => $totalGeneral - $subtotal,
+            'total_general' => $totalGeneral,
+            'porcentaje' => $porcentaje,
+        ];
+    }
+
+    /**
      * NUEVA FUNCIÓN REFACTORIZADA
      * Genera todos los datos del reporte para UN SOLO proyecto.
      *

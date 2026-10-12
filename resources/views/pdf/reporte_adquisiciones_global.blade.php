@@ -155,8 +155,6 @@
             <h6 style="color:#007bff;">SubProyecto: {{ $data['subproyecto'] }}</h6>
         @endif
 
-        @php $totalGeneralProyecto = 0; @endphp
-
         @foreach ($data['data'] as $etapaNombre => $categorias)
             @php $totalEtapa = 0; @endphp
             <div class="titulo_etapa">Etapa: {{ $etapaNombre }}</div>
@@ -318,20 +316,19 @@
                 </tr>
             </table>
 
-            @php $totalGeneralProyecto += $totalEtapa; @endphp
         @endforeach
 
         <hr>
         <div style="text-align:right; font-size: 14px; margin-top: 10px;">
-            <strong>SubTotal del proyecto: ${{ number_format($totalGeneralProyecto, 4) }}</strong>
+            <strong>SubTotal del proyecto: ${{ number_format($totales['subtotal'], 4) }}</strong>
         </div>
-        @if ($costos_indirecto > 0)
+        @if ($totales['costos_indirectos'] > 0)
             <div style="text-align:right; font-size: 14px; margin-top: 10px;">
-                <strong>Costos Indirectos: ${{ number_format($costos_indirecto - $totalGeneralProyecto, 4) }}</strong>
+                <strong>Costos Indirectos: ${{ number_format($totales['costos_indirectos'], 4) }}</strong>
             </div>
             <div style="text-align:right; font-size: 14px; margin-top: 10px;">
                 <strong>Total general:
-                    ${{ number_format($total_general, 4) }}</strong>
+                    ${{ number_format($totales['total_general'], 4) }}</strong>
             </div>
         @endif
     </main>

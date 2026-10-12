@@ -477,6 +477,10 @@ class GenerarPdfController extends Controller
      */
     public function reportAdquisiciones(Request $request, $tipo_reporte)
     {
+        $request->validate([
+            'costos_indirectos' => 'nullable|numeric|min:0|max:99.99',
+        ]);
+
         $ordenado = $request->input('ordenado'); // Ejemplo: "secuencial"
         $fechas = $request->input('fechas'); // Ejemplo: "03/12/2025 - 03/30/2025"
         $estado = $request->input('estado'); // Ejemplo: null o "Completado"
@@ -492,12 +496,11 @@ class GenerarPdfController extends Controller
 
         $tipoAdquisisicon = CatalogoDato::find($tipo);
         if ($tipo_reporte == 'global') {
-            $total_general = $request->input('total_general', 0);
-            $costos_indirecto = calcularProcentaje($total_general, $request->input('costos_indirecto', 0), 4);
             $data = Adquisicion::reporteGlobalAdquisiciones($request);
+            $totales = Adquisicion::totalesReporteGlobal($data, (float) $request->input('costos_indirectos', 0));
             $view = 'reporte_adquisiciones_global';
 
-            $pdf = PDF::loadView('pdf.' . $view, compact('data', 'costos_indirecto', 'total_general'))->setPaper('a4', 'landscape');
+            $pdf = PDF::loadView('pdf.' . $view, compact('data', 'totales'))->setPaper('a4', 'landscape');
         } elseif ($tipo_reporte == 'comparativo') { //* Reporte comparativo de adquisiciones//
             $data = Adquisicion::reporteComparativoAdquisiciones($request);
             $view = 'reporte_adquisiciones_comparativo';
