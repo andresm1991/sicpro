@@ -232,7 +232,8 @@ class ManoObra extends Model
         $query = self::with(['proyecto', 'etapa', 'actividad', 'usuario']);
 
         $query->when($proveedor, function ($query) use ($proveedor) {
-            $query->where('proveedor_id', $proveedor);
+            // mano_obra no tiene proveedor_id: el proveedor vive en el detalle.
+            $query->whereHas('detalle_mano_obra', fn($detalle) => $detalle->where('proveedor_id', $proveedor));
         });
         $query->when($proyecto, function ($query) use ($proyecto) {
             $query->where('proyecto_id', $proyecto);
@@ -248,7 +249,11 @@ class ManoObra extends Model
             list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
             $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
             $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+            // mano_obra no tiene columna fecha: el periodo es
+            // fecha_inicio/fecha_fin, asi que se seleccionan los que solapan
+            // el rango pedido, igual que el balance gerencial.
+            $q->where('fecha_inicio', '<=', $fechaFinFormatted)
+                ->where('fecha_fin', '>=', $fechaInicioFormatted);
         });
 
         $query->when($cargo, function ($q, $cargo) {

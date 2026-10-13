@@ -559,7 +559,8 @@ class Adquisicion extends Model
                     ->whereColumn('pagos_mano_obra.mano_obra_id', 'mano_obra.id');
             });
 
-        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'etapa'], 'mano_obra');
+        // El proveedor de mano de obra vive en el detalle, no en la cabecera.
+        self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'etapa'], 'mano_obra', ['proveedor' => 'dmo.proveedor_id']);
 
         // Agrupamos por ID y los campos seleccionados (necesario en SQL estricto)
         $query->groupBy(
