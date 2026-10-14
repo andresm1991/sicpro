@@ -499,7 +499,7 @@ class GenerarPdfController extends Controller
             $data = Adquisicion::reporteGlobalAdquisiciones($request);
             $totales = Adquisicion::totalesReporteGlobal($data, (float) $request->input('costos_indirectos', 0));
             $view = 'reporte_adquisiciones_global';
-            $empresa = getInfoEmpresa()->firstWhere('slug', 'informacion.general.nombre.empresa');
+            $empresa = CatalogoDato::where('slug', 'informacion.general.nombre.empresa')->first();
 
             $pdf = PDF::loadView('pdf.' . $view, compact('data', 'totales', 'empresa'))->setPaper('a4', 'landscape');
         } elseif ($tipo_reporte == 'comparativo') { //* Reporte comparativo de adquisiciones//

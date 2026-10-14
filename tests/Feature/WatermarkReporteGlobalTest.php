@@ -77,4 +77,23 @@ class WatermarkReporteGlobalTest extends TestCase
 
         $this->assertStringContainsString('PrimeJP Construcciones', $html);
     }
+
+    public function test_sin_catalogo_de_empresa_el_reporte_global_igual_sale(): void
+    {
+        // Catalogo ausente por completo: resolver el nombre de la empresa no
+        // puede tumbar el reporte.
+        $this->actingAs($this->usuario())
+            ->post(route('pdf.reporte.adquisiciones', 'pdf'), ['tipo_reporte' => 'global'])
+            ->assertStatus(200);
+    }
+
+    public function test_sin_catalogo_el_watermark_cae_al_fallback(): void
+    {
+        $html = view('pdf.reporte_adquisiciones_global', [
+            'data' => $this->datosDelReporte(),
+            'totales' => ['subtotal' => 0.0, 'costos_indirectos' => 0.0, 'total_general' => 0.0],
+        ])->render();
+
+        $this->assertStringContainsString('SICPRO', $html);
+    }
 }
