@@ -499,8 +499,9 @@ class GenerarPdfController extends Controller
             $data = Adquisicion::reporteGlobalAdquisiciones($request);
             $totales = Adquisicion::totalesReporteGlobal($data, (float) $request->input('costos_indirectos', 0));
             $view = 'reporte_adquisiciones_global';
+            $empresa = getInfoEmpresa()->firstWhere('slug', 'informacion.general.nombre.empresa');
 
-            $pdf = PDF::loadView('pdf.' . $view, compact('data', 'totales'))->setPaper('a4', 'landscape');
+            $pdf = PDF::loadView('pdf.' . $view, compact('data', 'totales', 'empresa'))->setPaper('a4', 'landscape');
         } elseif ($tipo_reporte == 'comparativo') { //* Reporte comparativo de adquisiciones//
             $data = Adquisicion::reporteComparativoAdquisiciones($request);
             $view = 'reporte_adquisiciones_comparativo';
@@ -779,6 +780,19 @@ class GenerarPdfController extends Controller
     {
 
         $tipo_reporte = $request->tipo_reporte;
+
+        // El formato se resuelve antes de consultar nada: sin esto la ruta
+        // respondia 200 con el cuerpo vacio cuando la combinacion no existia.
+        if (!in_array($export, ['pdf', 'excel'], true)) {
+            return back()->with('error', 'No es posible exportar el reporte en ese formato.');
+        }
+
+        // Global y balance solo tienen salida en PDF. El excel ya esta bloqueado
+        // en el JS de la pantalla, aca se corta el POST directo.
+        if ($export == 'excel' && in_array($tipo_reporte, ['global', 'balance'], true)) {
+            return back()->with('error', 'Lo sentimos, no es posible generar el excel de este reporte. Genera el pdf.');
+        }
+
         if ($tipo_reporte == 'operativo') {
             return $this->reporteAdquisicionesOperativo($request, $export);
         } elseif ($tipo_reporte == 'global') {
@@ -786,6 +800,8 @@ class GenerarPdfController extends Controller
         } elseif ($tipo_reporte == 'balance') {
             return $this->reporteAdquisicionesFinanciero($request, $export);
         }
+
+        return back()->with('error', 'No se reconoce el tipo de reporte solicitado.');
     }
 
     private function reporteAdquisicionesOperativo($request, $export, $tipo = 'operativo')

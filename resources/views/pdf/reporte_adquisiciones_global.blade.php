@@ -133,7 +133,7 @@
 </head>
 
 <body>
-    <div class="watermark">{{ $empresa->nombre_comercial ?? 'SICPRO' }}</div>
+    <div class="watermark">{{ $empresa->detalle ?? 'SICPRO' }}</div>
 
     <footer class="footer">Página <span class="pagenum"></span></footer>
 
