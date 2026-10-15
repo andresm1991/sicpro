@@ -683,7 +683,7 @@ class GenerarPdfController extends Controller
             $proforma = ProformaPlano::with('programaArquitectonico.espacios.categoria')->find($id);
         }
 
-        $empresa = getInfoEmpresa();
+        $empresa = getDatosEmpresa();
 
         if (!$proforma) {
             return back()->with('error', 'No se encontró la proforma solicitada.');

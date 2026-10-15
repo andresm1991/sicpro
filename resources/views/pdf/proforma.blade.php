@@ -56,8 +56,8 @@
                             <img src="{{ logoBase64() }}" style="width: 170px; height: auto;" alt="Logo">
                         </td>
                         <td style="width: 50%; text-align: right; vertical-align: top;">
-                            <h1 style="margin: 0; font-size: 18px; color: #000;">{{ $empresa[0]->detalle }}</h1>
-                            <p style="margin: 5px 0; font-size: 14px;"><strong>RUC: {{ $empresa[4]->detalle }}</strong>
+                            <h1 style="margin: 0; font-size: 18px; color: #000;">{{ $empresa['nombre'] }}</h1>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>RUC: {{ $empresa['ruc'] }}</strong>
                             </p>
                             <h2
                                 style="margin: 15px 0 0; font-size: 16px; color: #000; border-bottom: 2px solid #000; display: inline-block; padding-bottom: 2px;">
@@ -268,11 +268,11 @@
                         </p>
                         <p style="margin: 5px 0; font-size: 13px;"><strong>Tiempo de entrega:</strong>
                             {{ $proforma->plazo_entrega }}</p>
-                        <p style="margin: 5px 0; font-size: 13px;"><strong>Email:</strong> {{ $empresa[3]->detalle }}
+                        <p style="margin: 5px 0; font-size: 13px;"><strong>Email:</strong> {{ $empresa['correo'] }}
                         </p>
-                        <p style="margin: 5px 0; font-size: 13px;"><strong>Telf.:</strong> {{ $empresa[2]->detalle }}
+                        <p style="margin: 5px 0; font-size: 13px;"><strong>Telf.:</strong> {{ $empresa['telefono'] }}
                         </p>
-                        <p style="margin: 5px 0; font-size: 13px;"><strong>Dir.:</strong> {{ $empresa[1]->detalle }}
+                        <p style="margin: 5px 0; font-size: 13px;"><strong>Dir.:</strong> {{ $empresa['direccion'] }}
                         </p>
                     </div>
                 @endif

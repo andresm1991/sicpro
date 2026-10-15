@@ -30,7 +30,7 @@ totales que `gerencia.reportes.tabla_balance` usa en su pie.
 |----|-------|------|--------|
 | T1 | S1 | inline | cerrada — sin cambio de código |
 | T2 | S2 | inline | pendiente |
-| T3 | S3 | inline | pendiente |
+| T3 | S3 | inline | cerrada — commit pendiente |
 | T4 | S4 | inline | pendiente |
 
 ## Log
@@ -48,6 +48,19 @@ sin pisarse: `pdf.reporte.caja` (POST /generar-pdf/reporte-caja/{tipo_reporte}, 
 `resources/views/reportes/index.blade.php:32` usa `reporte.caja` para el enlace de la pantalla.
 El "conflicto" del cierre anterior fue **mi error de diagnostico**: en un test use `route('reporte.caja', 'pdf')`,
 que resuelve a la GET con un query param, y de ahi salio el 405. No se toca codigo.
+
+L5 (T3, S3 cerrada): los datos de la empresa se resuelven por **slug** con `getDatosEmpresa()` (nuevo helper en
+`app/helpers.php`, al lado de `getInfoEmpresa()`); `GenerarPdfController::proformas` pasa ese array y
+`pdf/proforma.blade.php` dejo de indexar `$empresa[0..4]` (los cinco campos ahora son `['nombre'|'direccion'|'telefono'|'correo'|'ruc']`,
+con `''` cuando falta el dato).
+- Evidencia de produccion del porque: el padre `informacion.general` (id 28) tiene 6 hijos y **dos filas de RUC**
+  (ids 127 y 132), y el orden 0..4 solo funcionaba de casualidad.
+- RED observado: `Call to undefined function Tests\Feature\getDatosEmpresa()` (3 tests). GREEN: 3/3.
+- Verificacion extra: `grep` de `$empresa[<n>]` en `resources` y `app` sin resultados, y `php artisan view:cache`
+  compila todos los blades.
+- Limite conocido: no hay test end-to-end del PDF de proforma (necesitaria fixtures de ProformaAdecentamiento +
+  cliente + detalles + relaciones); lo que se testea es la resolucion por slug, que era la fragilidad real.
+- Suite: 142 tests, 337 assertions, los mismos 4 fallos preexistentes.
 
 L3 (estado al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel` (los 5 commits de la tanda anterior
 ya pusheados), working tree limpio, HEAD `e42c629d`. RDD encendido. Sin PR (decision del usuario).

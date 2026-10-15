@@ -885,6 +885,29 @@ if (!function_exists('palabras')) {
         return $empresa;
     }
 
+    /**
+     * Datos de la empresa para los documentos, resueltos por slug.
+     *
+     * La proforma los leia por posicion ($empresa[0..4]) sobre los hijos de
+     * 'informacion.general': con el catalogo incompleto, desordenado o con un
+     * duplicado (en produccion hay DOS filas de RUC) mostraba el dato
+     * equivocado o rompia el documento.
+     */
+    function getDatosEmpresa()
+    {
+        $porSlug = getInfoEmpresa()->keyBy('slug');
+
+        $dato = fn (string $slug) => $porSlug->get($slug)?->detalle ?? '';
+
+        return [
+            'nombre' => $dato('informacion.general.nombre.empresa'),
+            'direccion' => $dato('informacion.general.direccion'),
+            'telefono' => $dato('informacion.general.telefono'),
+            'correo' => $dato('informacion.general.correo'),
+            'ruc' => $dato('informacion.general.ruc'),
+        ];
+    }
+
     function calcularTotalProforma($subtotal, $iva = 0, $descuento = 0)
     {
         if ($descuento > 0) {
