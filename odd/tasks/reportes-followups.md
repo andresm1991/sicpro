@@ -29,7 +29,7 @@ totales que `gerencia.reportes.tabla_balance` usa en su pie.
 | ID | Specs | Ruta | Estado |
 |----|-------|------|--------|
 | T1 | S1 | inline | cerrada — sin cambio de código |
-| T2 | S2 | inline | pendiente |
+| T2 | S2 | inline | cerrada — commit pendiente |
 | T3 | S3 | inline | cerrada — commit pendiente |
 | T4 | S4 | inline | cerrada — commit pendiente |
 
@@ -72,6 +72,18 @@ calculo de totales del balance; la usan `Gerencia\ReporteGerencialController::ge
 - Tests: `tests/Unit/TotalesBalanceSicproTest.php` y `tests/Feature/ExportarBalancePrimeTest.php` (fixture: 1
   CatalogoDato + 1 Proyecto; el PDF sale 200 donde antes daba 500).
 - Suite: 145 tests, 345 assertions, los mismos 4 fallos preexistentes.
+
+L7 (T2, S2 cerrada; decision del usuario: **hacer vivo el filtro por tipo**):
+- `$tipoId = $request->route('tipo')` (antes `input('tipo')`, que no ve los parametros de ruta: por eso la rama nunca corria).
+- `CatalogoDato::find($tipoId)` con null-check -> respuesta clara si el tipo no existe.
+- En la rama contratista, `where('proveedor_id', $proyectoId)` -> `where('proyecto_id', $proyectoId)`: medido en produccion,
+  `contratistas.proveedor_id` (max 607) **nunca** coincide con `proyectos.id` (max 29): 0 coincidencias en 118 filas.
+- `$proyecto` nulo -> `success: true` con la lista vacia, en vez de 500.
+- RED observado: con un tipo inexistente respondia `success: true`; **500** `Attempt to read property "adquisiciones" on null`
+  (ReporteriaController:129) con proyecto inexistente; y filtrando por `mano.obra` aparecia el subproyecto de un contratista.
+- Tests: `tests/Feature/FiltroSubProyectosTest.php` (fixtures de FK con `DB::table`: proveedor + articulo + 2 proyectos + contratista).
+- **Cambio visible para el usuario**: el desplegable de subproyecto ahora acota por el tipo elegido; antes listaba todos los del proyecto.
+- Suite: 150 tests, 360 assertions, los mismos 4 fallos preexistentes.
 
 L3 (estado al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel` (los 5 commits de la tanda anterior
 ya pusheados), working tree limpio, HEAD `e42c629d`. RDD encendido. Sin PR (decision del usuario).

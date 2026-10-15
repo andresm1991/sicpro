@@ -104,12 +104,25 @@ class ReporteriaController extends Controller
     {
         if ($request->ajax()) {
             $proyectoId = $request->proyecto;
-            $tipoId = $request->input('tipo');
+            // El JS manda los dos ids en el path (subproyectos/{proyecto}/{tipo}) y
+            // input() no ve los parametros de ruta: con input('tipo') la rama por
+            // tipo nunca corria y el desplegable ignoraba el tipo elegido.
+            $tipoId = $request->route('tipo');
             $result = [];
             if ($tipoId) {
                 $tipo = CatalogoDato::find($tipoId);
+
+                if (!$tipo) {
+                    return response()->json([
+                        'success' => false,
+                        'mensaje' => 'El tipo de adquisición seleccionado no es válido.',
+                    ]);
+                }
+
                 if ($tipo->slug == 'contratista') {
-                    $subproyecto = Contratista::where('proveedor_id', $proyectoId)->where('subproyecto', '!=', null)
+                    // Los contratistas se buscan por proyecto_id: proveedor_id es el
+                    // proveedor de la orden y nunca coincide con un id de proyecto.
+                    $subproyecto = Contratista::where('proyecto_id', $proyectoId)->where('subproyecto', '!=', null)
                         ->pluck('subproyecto', 'subproyecto')->prepend('', '');
                 } elseif ($tipo->slug == 'mano.obra') {
                     $subproyecto = ManoObra::where('proyecto_id', $proyectoId)->where('subproyecto', '!=', null)
@@ -121,6 +134,13 @@ class ReporteriaController extends Controller
                 }
             } else {
                 $proyecto = Proyecto::with(['adquisiciones', 'mano_obra', 'contratista'])->find($proyectoId);
+
+                if (!$proyecto) {
+                    return response()->json([
+                        'success' => true,
+                        'subproyectos' => collect()->prepend('', ''),
+                    ]);
+                }
 
                 $subproyectos = collect();
 
