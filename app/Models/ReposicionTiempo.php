@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Support\RangoFechas;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -50,12 +49,17 @@ class ReposicionTiempo extends Model
         $query = Solicitud::selectRaw('solicitudes.usuario_id, SUM(TIME_TO_SEC(total_tiempo)) as total_segundos, MAX(fecha_solicitud) as max_fecha')
             ->join('usuarios as usuario', 'solicitudes.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
             ->with([
-                'reposiciones' => function ($query) use ($fechaInicioFormatted, $fechaFinFormatted) {
+                'reposiciones' => function ($query) use ($fechaInicioFormatted, $fechaFinFormatted, $estado) {
                     $query->select('id', 'usuario_id', 'fecha', 'hora_desde', 'hora_hasta', 'total', 'estado_id', 'detalle')
                         ->with('estado', 'usuario');
                     // Filtrar reposiciones por el mismo rango de fechas
                     if ($fechaInicioFormatted && $fechaFinFormatted) {
                         $query->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
+                    }
+                    // El filtro de estado tiene que llegar tambien a las filas del
+                    // detalle (reposiciones_detallado), no solo al agrupado.
+                    if ($estado) {
+                        $query->where('estado_id', $estado);
                     }
                 },
                 'usuario'
@@ -131,156 +135,5 @@ class ReposicionTiempo extends Model
 
             return $item;
         });
-    }
-
-    public static function dataReporteReposiciones($request)
-    {
-        $usuario = $request->input('usuario');
-        $fechas = $request->input('fechas');
-        $estado = $request->input('estado');
-        $ordernar = $request->input('ordenado');
-
-        $query = self::select('reposicion_tiempos.*')
-            ->join('usuarios as usuario', 'reposicion_tiempos.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
-            ->with(['usuario', 'estado']); // Cargar relaciones necesarias
-
-        // Filtrar por usuario
-        $query->when($usuario, function ($q, $usuario) {
-            $q->where('usuario_id', $usuario);
-        });
-
-        // Filtrar por rango de fechas
-        $query->when($fechas, function ($q) use ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
-        });
-
-        // Filtrar por estado
-        $query->when($estado, function ($q, $estado) {
-            $q->where('estado_id', $estado);
-        });
-
-        // Ordenar los resultados
-        switch ($ordernar) {
-            case 'secuencial':
-                $query->orderBy('reposicion_tiempos.id', 'asc');
-                break;
-            case 'fecha':
-                $query->orderBy('reposicion_tiempos.fecha', 'asc');
-                break;
-            case 'alfabetico':
-                $query->orderBy('usuario.nombre', 'asc'); // Ordenar por nombre del usuario
-                break;
-            default:
-                $query->orderBy('reposicion_tiempos.id', 'asc'); // Valor por defecto
-                break;
-        }
-        return $query->get();
-    }
-
-
-    public static function dataReporteSolicitudesYReposiciones($request)
-    {
-        $usuario = $request->input('usuario');
-        $fechas = $request->input('fechas');
-        $estado = $request->input('estado');
-        $ordernar = $request->input('ordenado');
-
-        // Construir la consulta principal para solicitudes
-        $querySolicitudes = Solicitud::select('solicitudes.*')
-            ->join('usuarios as usuario', 'solicitudes.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
-            ->with(['usuario', 'estado_solicitud', 'reposiciones']); // Cargar relaciones necesarias
-
-        // Filtrar por usuario
-        $querySolicitudes->when($usuario, function ($q, $usuario) {
-            $q->where('usuario_id', $usuario);
-        });
-
-        // Filtrar por rango de fechas
-        $querySolicitudes->when($fechas, function ($q) use ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha_solicitud', [$fechaInicioFormatted, $fechaFinFormatted]);
-        });
-
-        // Filtrar por estado
-        $querySolicitudes->when($estado, function ($q, $estado) {
-            $q->where('estado_id', $estado);
-        });
-
-        // Construir la consulta principal para reposiciones
-        $queryReposiciones = ReposicionTiempo::select('reposicion_tiempos.*')
-            ->join('usuarios as usuario', 'reposicion_tiempos.usuario_id', '=', 'usuario.id') // Unir la tabla usuarios
-            ->with(['usuario', 'estado']); // Cargar relaciones necesarias
-
-        // Filtrar por usuario
-        $queryReposiciones->when($usuario, function ($q, $usuario) {
-            $q->where('usuario_id', $usuario);
-        });
-
-        // Filtrar por rango de fechas
-        $queryReposiciones->when($fechas, function ($q) use ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
-            $q->whereBetween('fecha', [$fechaInicioFormatted, $fechaFinFormatted]);
-        });
-
-        // Filtrar por estado
-        $queryReposiciones->when($estado, function ($q, $estado) {
-            $q->where('estado_id', $estado);
-        });
-
-        // Ordenar los resultados
-        switch ($ordernar) {
-            case 'secuencial':
-                $querySolicitudes->orderBy('solicitudes.id', 'asc');
-                $queryReposiciones->orderBy('reposicion_tiempos.id', 'asc');
-                break;
-            case 'fecha':
-                $querySolicitudes->orderBy('solicitudes.fecha_solicitud', 'asc');
-                $queryReposiciones->orderBy('reposicion_tiempos.fecha', 'asc');
-                break;
-            case 'alfabetico':
-                $querySolicitudes->orderBy('usuario.nombre', 'asc');
-                $queryReposiciones->orderBy('usuario.nombre', 'asc');
-                break;
-            default:
-                $querySolicitudes->orderBy('solicitudes.id', 'asc');
-                $queryReposiciones->orderBy('reposicion_tiempos.id', 'asc');
-                break;
-        }
-
-        // Obtener los resultados de ambas consultas
-        $solicitudes = $querySolicitudes->get();
-        $reposiciones = $queryReposiciones->get();
-
-        // Combinar los resultados en un solo arreglo
-        $resultados = $solicitudes->map(function ($solicitud) {
-            return [
-                'tipo' => 'solicitud',
-                'id' => $solicitud->id,
-                'usuario' => $solicitud->usuario->nombre,
-                'fecha' => $solicitud->fecha_solicitud,
-                'estado' => $solicitud->estado_solicitud->descripcion,
-                'detalle' => $solicitud->detalle,
-            ];
-        })->merge(
-                $reposiciones->map(function ($reposicion) {
-                    return [
-                        'tipo' => 'reposicion',
-                        'id' => $reposicion->id,
-                        'usuario' => $reposicion->usuario->nombre,
-                        'fecha' => $reposicion->fecha,
-                        'estado' => $reposicion->estado->descripcion,
-                        'detalle' => $reposicion->detalle,
-                    ];
-                })
-            );
-
-        return $resultados->sortBy($ordernar === 'fecha' ? 'fecha' : 'id')->values();
     }
 }

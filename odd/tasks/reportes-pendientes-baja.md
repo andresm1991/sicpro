@@ -38,7 +38,7 @@ el preview y el PDF calculan por caminos distintos."
 |----|-------|------|--------|
 | T1 | S1 | inline | cerrada — commit `022a96b2` |
 | T2 | S2 | inline | cerrada — commit pendiente |
-| T3 | S3 | inline | pendiente |
+| T3 | S3 | inline | cerrada — commit pendiente |
 | T4 | S4 | inline | pendiente |
 | T5 | S5 | inline | pendiente |
 
@@ -70,6 +70,19 @@ L5 (T2, S2 cerrada):
 - Observacion para el usuario (no tocada): hay una **colision preexistente** del nombre de ruta `reporte.caja`
   (routes/modules/reporteria.php -> GET /reportes/flujo-de-efectivo y routes/modules/export_pdf.php -> POST
   /generar-pdf/reporte-caja/{tipo}). `route('reporte.caja', ...)` resuelve a la GET, asi que un POST por nombre da 405.
+
+L6 (T3, S3 cerrada):
+- `ReposicionTiempo::getTotalReposiciones` ahora aplica el `estado` tambien al eager load de `reposiciones`
+  (antes solo al `whereHas` del agrupado), asi que las filas de `reposiciones_detallado` respetan el filtro.
+- Borradas las dos funciones sin llamadores: `dataReporteReposiciones` (la que nombra S3) y
+  `dataReporteSolicitudesYReposiciones` (misma regla, misma clase, 0 llamadores en app/resources/routes/tests).
+  El archivo pasa de 291 a 141 lineas. Con eso desaparecen los 3 `explode(' - ')` que quedaban.
+- Alcance del filtro: el JS deshabilita el select de estado para `reposiciones_global`, asi que el unico caso alcanzable
+  es el detallado; el unico campo que podria cambiar de valor (`tiempo_recuperado_formateado`) solo se dibuja en la
+  rama global, donde el filtro esta deshabilitado.
+- RED observado: con `estado=<pendiente>` la tabla devolvia las dos reposiciones ([aprobada, pendiente]).
+- Tests: `tests/Feature/ReporteReposicionesEstadoTest.php` (filtro + no-regresion sin filtro).
+- Suite: 127 tests, 299 assertions, los mismos 4 fallos preexistentes.
 
 L3 (estado del repo al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel`, working tree limpio,
 HEAD `b7a24d0e`. Runner: `php vendor/phpunit/phpunit/phpunit` (PHP 8.5.1 en Git Bash).
