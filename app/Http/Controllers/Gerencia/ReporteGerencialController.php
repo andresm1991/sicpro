@@ -22,11 +22,13 @@ class ReporteGerencialController extends Controller
     public function generarReporteBalance(Request $request)
     {
         $query = Proyecto::dataReporteBalance($request);
-        $totalIngresosGeneral = $query->sum('total_ingresos');
-        $totalGatosDirectosGeneral = $query->sum('gastos_operativos');
-        $totalGastosIndirectosGeneral = $query->sum('gastos_administrativos');
-        $totalGastosGeneral = $query->sum('total_gastos');
-        $utilidadGeneral = $query->sum('utilidad');
+        $totales = Proyecto::totalesBalanceReporte($query);
+
+        $totalIngresosGeneral = $totales['total_ingresos'];
+        $totalGatosDirectosGeneral = $totales['gastos_operativos'];
+        $totalGastosIndirectosGeneral = $totales['gastos_administrativos'];
+        $totalGastosGeneral = $totales['total_gastos'];
+        $utilidadGeneral = $totales['utilidad'];
 
         // return $query;
 

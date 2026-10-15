@@ -31,7 +31,7 @@ totales que `gerencia.reportes.tabla_balance` usa en su pie.
 | T1 | S1 | inline | cerrada — sin cambio de código |
 | T2 | S2 | inline | pendiente |
 | T3 | S3 | inline | cerrada — commit pendiente |
-| T4 | S4 | inline | pendiente |
+| T4 | S4 | inline | cerrada — commit pendiente |
 
 ## Log
 
@@ -61,6 +61,17 @@ con `''` cuando falta el dato).
 - Limite conocido: no hay test end-to-end del PDF de proforma (necesitaria fixtures de ProformaAdecentamiento +
   cliente + detalles + relaciones); lo que se testea es la resolucion por slug, que era la fragilidad real.
 - Suite: 142 tests, 337 assertions, los mismos 4 fallos preexistentes.
+
+L6 (T4, S4 cerrada): `App\Models\Proyecto::totalesBalanceReporte()` (funcion pura con las 5 claves) es el unico
+calculo de totales del balance; la usan `Gerencia\ReporteGerencialController::generarReporteBalance` y
+`GenerarPdfController::exportarReporteBalancePrime`, que ahora pasa los **cinco** totales que la vista usa.
+- **No era solo duplicacion: era un 500.** RED observado en el PDF de Prime con balance no vacio:
+  `ErrorException: Undefined variable $totalGatosDirectosGeneral` (la vista solo usa esos dos totales dentro de
+  `@if ($query->isNotEmpty())`, por eso pasaba desapercibido con el balance vacio). Tambien en unit:
+  `BadMethodCallException: Call to undefined method Proyecto::totalesBalanceReporte()`.
+- Tests: `tests/Unit/TotalesBalanceSicproTest.php` y `tests/Feature/ExportarBalancePrimeTest.php` (fixture: 1
+  CatalogoDato + 1 Proyecto; el PDF sale 200 donde antes daba 500).
+- Suite: 145 tests, 345 assertions, los mismos 4 fallos preexistentes.
 
 L3 (estado al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel` (los 5 commits de la tanda anterior
 ya pusheados), working tree limpio, HEAD `e42c629d`. RDD encendido. Sin PR (decision del usuario).

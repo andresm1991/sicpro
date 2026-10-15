@@ -918,12 +918,16 @@ class GenerarPdfController extends Controller
     public function exportarReporteBalancePrime(Request $request)
     {
         $query = Proyecto::dataReporteBalance($request);
-        $totalIngresosGeneral = $query->sum('total_ingresos');
-        $totalGastosGeneral = $query->sum('total_gastos');
-        $utilidadGeneral = $query->sum('utilidad');
+        $totales = Proyecto::totalesBalanceReporte($query);
+
+        $totalIngresosGeneral = $totales['total_ingresos'];
+        $totalGatosDirectosGeneral = $totales['gastos_operativos'];
+        $totalGastosIndirectosGeneral = $totales['gastos_administrativos'];
+        $totalGastosGeneral = $totales['total_gastos'];
+        $utilidadGeneral = $totales['utilidad'];
         $tipoReporte = $request->tipo_reporte == 'balance_global' ? 'Global' : 'Proyecto';
 
-        $vista = view('gerencia.reportes.tabla_balance', compact('query', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral'))->render();
+        $vista = view('gerencia.reportes.tabla_balance', compact('query', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral', 'totalGatosDirectosGeneral', 'totalGastosIndirectosGeneral'))->render();
 
         $proyecto = Proyecto::find($request->proyecto);
 

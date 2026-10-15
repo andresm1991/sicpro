@@ -406,4 +406,28 @@ class Proyecto extends Model
 
         return $balance;
     }
+
+    /**
+     * Totales del pie del reporte de balance.
+     *
+     * El AJAX de gerencia y el PDF de Prime los calculaban por separado con
+     * cinco sum() inline cada uno, y el PDF pasaba solo tres de los cinco a la
+     * vista: la tabla del pie usa los cinco, asi que reventaba con
+     * "Undefined variable" en cuanto el balance tenia filas.
+     *
+     * @param  iterable  $balance
+     * @return array{total_ingresos: float, gastos_operativos: float, gastos_administrativos: float, total_gastos: float, utilidad: float}
+     */
+    public static function totalesBalanceReporte($balance): array
+    {
+        $filas = collect($balance);
+
+        return [
+            'total_ingresos' => (float) $filas->sum('total_ingresos'),
+            'gastos_operativos' => (float) $filas->sum('gastos_operativos'),
+            'gastos_administrativos' => (float) $filas->sum('gastos_administrativos'),
+            'total_gastos' => (float) $filas->sum('total_gastos'),
+            'utilidad' => (float) $filas->sum('utilidad'),
+        ];
+    }
 }
