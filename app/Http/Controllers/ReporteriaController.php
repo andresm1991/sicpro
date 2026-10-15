@@ -174,6 +174,14 @@ class ReporteriaController extends Controller
                 }
             } else {
                 $tipoAdquisisicon = CatalogoDato::find($tipo);
+
+                if (!$tipoAdquisisicon) {
+                    return response()->json([
+                        'success' => false,
+                        'mensaje' => 'El tipo de adquisición seleccionado no es válido.',
+                    ]);
+                }
+
                 if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
                     $query = Adquisicion::dataReporteAdquisiciones($request);
                 } elseif ($tipoAdquisisicon->slug == 'contratista') {

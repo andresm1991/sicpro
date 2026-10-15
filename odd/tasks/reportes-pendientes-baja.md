@@ -39,7 +39,7 @@ el preview y el PDF calculan por caminos distintos."
 | T1 | S1 | inline | cerrada — commit `022a96b2` |
 | T2 | S2 | inline | cerrada — commit pendiente |
 | T3 | S3 | inline | cerrada — commit pendiente |
-| T4 | S4 | inline | pendiente |
+| T4 | S4 | inline | cerrada — commit pendiente |
 | T5 | S5 | inline | pendiente |
 
 ## Log
@@ -83,6 +83,20 @@ L6 (T3, S3 cerrada):
 - RED observado: con `estado=<pendiente>` la tabla devolvia las dos reposiciones ([aprobada, pendiente]).
 - Tests: `tests/Feature/ReporteReposicionesEstadoTest.php` (filtro + no-regresion sin filtro).
 - Suite: 127 tests, 299 assertions, los mismos 4 fallos preexistentes.
+
+L7 (T4, S4 cerrada):
+- `reportAdquisiciones`: guarda si el `tipo` no existe (antes 500 en la linea 511) y el `$tipo = CatalogoDato::find($tipo)`
+  duplicado pasa a reusar el modelo ya resuelto (sitio 520 de S4).
+- `reportSolicitudes`: resuelve y valida el tipo de solicitud **antes** de consultar (antes 500 en la linea 580).
+- `ReporteriaController::visualizarReporteAdquisiciones` (AJAX): mensaje claro en lugar del error crudo de PHP.
+- RED observado: 500 `Attempt to read property "slug" on null` (PDF adquisiciones) y `"descripcion" on null`
+  (PDF solicitudes); y `Error al generar el reporte: Attempt to read property "slug" on null` en el preview.
+- Tests: `tests/Feature/ReporteTipoInvalidoTest.php` (3 RED + 1 no-regresion con tipo valido).
+- Suite: 131 tests, 310 assertions, los mismos 4 fallos preexistentes.
+- NO tocado (se reporta al usuario, fuera de los 4 sitios de S4):
+  `ReporteriaController::filtroSubProyectosAdquisiciones` lee `$request->input('tipo')` pero la ruta lo manda en el path
+  (`{tipo}`) y el JS no lo agrega a la query, asi que esa rama esta muerta en el flujo real; y `$proyecto->adquisiciones`
+  sin null-check si el proyecto no existe (contrato distinto al de CatalogoDato::find).
 
 L3 (estado del repo al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel`, working tree limpio,
 HEAD `b7a24d0e`. Runner: `php vendor/phpunit/phpunit/phpunit` (PHP 8.5.1 en Git Bash).

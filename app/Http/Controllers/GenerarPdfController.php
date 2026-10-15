@@ -508,6 +508,10 @@ class GenerarPdfController extends Controller
             $view = 'reporte_adquisiciones_comparativo';
             $pdf = PDF::loadView('pdf.' . $view, compact('data'))->setPaper('a4', 'landscape');
         } else {
+            if (!$tipoAdquisisicon) {
+                return back()->with('error', 'El tipo de adquisición seleccionado no es válido.');
+            }
+
             if ($tipoAdquisisicon->slug == 'meteriales.herramientas' || $tipoAdquisisicon->slug == 'servicios') {
                 $query = Adquisicion::dataReporteAdquisiciones($request);
                 $view = 'reporte_adquisiciones';
@@ -519,7 +523,7 @@ class GenerarPdfController extends Controller
                 $view = 'reporte_mano_obra';
             }
 
-            $tipo = CatalogoDato::find($tipo);
+            $tipo = $tipoAdquisisicon;
 
             $totalGeneral = $query->map(function ($item) {
                 // Verificar si 'total' existe antes de usarlo
@@ -576,8 +580,14 @@ class GenerarPdfController extends Controller
         $tipo_solicitud = $request->input('tipo_solicitud');
 
         if ($tipo_solicitud != 'reposiciones_global' && $tipo_solicitud != 'reposiciones_detallado') {
+            $tipoSolicitudCatalogo = CatalogoDato::find($tipo_solicitud);
+
+            if (!$tipoSolicitudCatalogo) {
+                return back()->with('error', 'El tipo de solicitud seleccionado no es válido.');
+            }
+
             $query = Solicitud::dataReporteSolicitudes($request);
-            $tipo_solicitud = CatalogoDato::find($tipo_solicitud)->descripcion;
+            $tipo_solicitud = $tipoSolicitudCatalogo->descripcion;
         } else {
             $query = ReposicionTiempo::getTotalReposiciones($request);
         }
