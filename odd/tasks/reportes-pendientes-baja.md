@@ -71,6 +71,11 @@ L5 (T2, S2 cerrada):
   (routes/modules/reporteria.php -> GET /reportes/flujo-de-efectivo y routes/modules/export_pdf.php -> POST
   /generar-pdf/reporte-caja/{tipo}). `route('reporte.caja', ...)` resuelve a la GET, asi que un POST por nombre da 405.
 
+  **CORRECCION (15/10/2026)**: esto era **falso**, fue un error de diagnostico propio. Los nombres son distintos
+  (`reporte.caja` para la GET de la pantalla y `pdf.reporte.caja` para el POST del export), cada uso apunta al
+  correcto y **no hay colision**. El 405 salio de usar `route('reporte.caja', 'pdf')` en un test, que genera la URL
+  de la GET con un query param. Ver el Log de `odd/tasks/reportes-followups.md` (L4).
+
 L6 (T3, S3 cerrada):
 - `ReposicionTiempo::getTotalReposiciones` ahora aplica el `estado` tambien al eager load de `reposiciones`
   (antes solo al `whereHas` del agrupado), asi que las filas de `reposiciones_detallado` respetan el filtro.
