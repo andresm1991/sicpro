@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,6 +37,14 @@ class CatalogoDato extends Model
     public static function getChildrenCatalogo($value, $slugsADescartar = [])
     {
         $catalogo = CatalogoDato::where('slug', $value)->first();
+
+        // Helper compartido por getInfoEmpresa() y decenas de controladores: si
+        // el nodo padre no existe se devuelve una coleccion vacia en lugar de
+        // reventar con "Attempt to read property \"id\" on null".
+        if (!$catalogo) {
+            return new Collection();
+        }
+
         return CatalogoDato::where('padre_id', $catalogo->id)
             ->whereNotIn('slug', $slugsADescartar)
             ->get();
