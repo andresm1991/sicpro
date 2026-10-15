@@ -17,11 +17,18 @@ use App\Models\ReposicionTiempo;
 use App\Models\RevisionCaja;
 use App\Models\Solicitud;
 use App\Models\User;
-use App\Support\RangoFechas;
 use Carbon\Carbon;
+use App\Http\Controllers\Concerns\GuardaRevisionCaja;
 
 class ReporteriaController extends Controller
 {
+    use GuardaRevisionCaja;
+
+    protected function modeloRevisionCaja(): string
+    {
+        return RevisionCaja::class;
+    }
+
     public function index(Request $request)
     {
         $title_page = 'Reportes';
@@ -318,38 +325,6 @@ class ReporteriaController extends Controller
             return response()->json([
                 'success' => false,
                 'mensaje' => 'Error al generar el reporte: ' . $th->getMessage(),
-                'error' => $th->getLine(),
-            ]);
-        }
-    }
-
-    public function guardarRevisionCaja(Request $request)
-    {
-        try {
-            $request->validate([
-                'fechas' => 'required',
-            ]);
-
-            [$fechaInicio, $fechaFin] = RangoFechas::requerido($request->input('fechas'));
-
-            $data = [
-                'fecha_revision_inicio' => $fechaInicio,
-                'fecha_revision_fin' => $fechaFin,
-                'usuario_id' => auth()->id(),
-                'observaciones' => $request->observaciones,
-            ];
-
-            RevisionCaja::create($data);
-
-            return response()->json([
-                'success' => true,
-                'mensaje' => 'Revisión de caja guardada exitosamente.',
-                'data' => $data,
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'Error al guardar la revisión de caja: ' . $th->getMessage(),
                 'error' => $th->getLine(),
             ]);
         }

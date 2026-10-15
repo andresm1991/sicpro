@@ -205,4 +205,22 @@ class Proyecto extends Model
 
         return $balance;
     }
+
+    /**
+     * Totales del pie del reporte de balance. El preview y el PDF los
+     * calculaban por separado con tres sum() inline cada uno.
+     *
+     * @param  iterable  $balance
+     * @return array{total_ingresos: float, total_gastos: float, utilidad: float}
+     */
+    public static function totalesBalance($balance): array
+    {
+        $filas = collect($balance);
+
+        return [
+            'total_ingresos' => (float) $filas->sum('total_ingresos'),
+            'total_gastos' => (float) $filas->sum('total_gastos'),
+            'utilidad' => (float) $filas->sum('utilidad'),
+        ];
+    }
 }

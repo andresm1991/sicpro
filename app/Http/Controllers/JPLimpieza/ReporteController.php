@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\JPLimpieza;
 
 use Illuminate\Http\Request;
-use App\Support\RangoFechas;
 use App\Models\JPLimpieza\Caja;
 use App\Models\JPLimpieza\Producto;
 use App\Models\JPLimpieza\Proyecto;
@@ -12,9 +11,17 @@ use App\Models\JPLimpieza\Adquisicion;
 use App\Models\JPLimpieza\Contratista;
 use App\Models\JPLimpieza\ManoObra;
 use App\Models\JPLimpieza\RevisionCaja;
+use App\Http\Controllers\Concerns\GuardaRevisionCaja;
 
 class ReporteController extends Controller
 {
+    use GuardaRevisionCaja;
+
+    protected function modeloRevisionCaja(): string
+    {
+        return RevisionCaja::class;
+    }
+
     public function index()
     {
         $title_page = 'Reportes';
@@ -65,15 +72,16 @@ class ReporteController extends Controller
                     $html = view('jp_limpieza.reportes.partials.table_adquisiciones', compact('reportData', 'grandTotal'))->render();
                 } elseif ($tipo_reporte == 'global') {
                     $reportData = Adquisicion::dataReportePorArticulo($request);
-                    $grandTotal = collect($reportData)->flatten(1)->sum('monto_total');
+                    $grandTotal = Adquisicion::granTotalReportePorArticulo($reportData);
 
                     $html = view('jp_limpieza.reportes.partials.table_adquisiciones_global', compact('reportData', 'grandTotal'))->render();
                 } elseif ($tipo_reporte == 'balance') {
                     $reportData = Proyecto::dataReporteBalance($request);
                     // 2. Calcular los totales generales para el pie de página del reporte
-                    $totalIngresosGeneral = $reportData->sum('total_ingresos');
-                    $totalGastosGeneral = $reportData->sum('total_gastos');
-                    $utilidadGeneral = $reportData->sum('utilidad');
+                    $totales = Proyecto::totalesBalance($reportData);
+                    $totalIngresosGeneral = $totales['total_ingresos'];
+                    $totalGastosGeneral = $totales['total_gastos'];
+                    $utilidadGeneral = $totales['utilidad'];
 
                     $html = view('jp_limpieza.reportes.partials.table_balance', compact('reportData', 'totalIngresosGeneral', 'totalGastosGeneral', 'utilidadGeneral'))->render();
                 }
@@ -129,41 +137,6 @@ class ReporteController extends Controller
                     'error' => $th->getLine(),
                 ]);
             }
-        }
-    }
-
-    /**
-     * Guardar revisión de caja
-     */
-    public function guardarRevisionCaja(Request $request)
-    {
-        try {
-            $request->validate([
-                'fechas' => 'required',
-            ]);
-
-            [$fechaInicio, $fechaFin] = RangoFechas::requerido($request->input('fechas'));
-
-            $data = [
-                'fecha_revision_inicio' => $fechaInicio,
-                'fecha_revision_fin' => $fechaFin,
-                'usuario_id' => auth()->id(),
-                'observaciones' => $request->observaciones,
-            ];
-
-            RevisionCaja::create($data);
-
-            return response()->json([
-                'success' => true,
-                'mensaje' => 'Revisión de caja guardada exitosamente.',
-                'data' => $data,
-            ]);
-        } catch (\Throwable $th) {
-            return response()->json([
-                'success' => false,
-                'mensaje' => 'Error al guardar la revisión de caja: ' . $th->getMessage(),
-                'error' => $th->getLine(),
-            ]);
         }
     }
 

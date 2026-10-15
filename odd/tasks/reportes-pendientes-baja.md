@@ -40,7 +40,7 @@ el preview y el PDF calculan por caminos distintos."
 | T2 | S2 | inline | cerrada — commit pendiente |
 | T3 | S3 | inline | cerrada — commit pendiente |
 | T4 | S4 | inline | cerrada — commit pendiente |
-| T5 | S5 | inline | pendiente |
+| T5 | S5 | inline | cerrada — commit pendiente |
 
 ## Log
 
@@ -97,6 +97,27 @@ L7 (T4, S4 cerrada):
   `ReporteriaController::filtroSubProyectosAdquisiciones` lee `$request->input('tipo')` pero la ruta lo manda en el path
   (`{tipo}`) y el JS no lo agrega a la query, asi que esa rama esta muerta en el flujo real; y `$proyecto->adquisiciones`
   sin null-check si el proyecto no existe (contrato distinto al de CatalogoDato::find).
+
+L8 (T5, S5 cerrada):
+- Gran total: `JPLimpieza\Adquisicion::granTotalReportePorArticulo()` y `JPLimpieza\Proyecto::totalesBalance()`
+  (funciones puras) pasan a ser el unico camino: las usan el preview (`JPLimpieza\ReporteController`)
+  y el PDF (`GenerarPdfController::reporteAdquisicionesGlobal` y `reporteAdquisicionesFinanciero`).
+  El operativo ya compartia `granTotalReporte` desde el fix A.
+- `guardarRevisionCaja` duplicado identico en los dos controladores -> trait
+  `App\Http\Controllers\Concerns\GuardaRevisionCaja` con `modeloRevisionCaja()` abstracto (la unica
+  diferencia era el modelo, uno por base).
+- RED observado: los 4 tests unitarios de las funciones nuevas fallaban con
+  `BadMethodCallException: Call to undefined method`.
+- Tests: `tests/Unit/TotalesReporteJPTest.php` (puras, sin base), `tests/Feature/GuardarRevisionCajaTest.php`
+  (camino feliz del trait, conexion de testing), `tests/Feature/GuardarRevisionCajaJPTest.php`
+  (solo rechazo: el modelo JP escribe en la base real) y `tests/Feature/ReporteJPPreviewTest.php`
+  (red de seguridad del cableado del preview de JP, escrito despues del refactor: es caracterizacion, no RED-GREEN).
+- Suite: 139 tests, 330 assertions, los mismos 4 fallos preexistentes.
+
+L9 (alcance dejado fuera, para decision del usuario):
+- `Gerencia\ReporteGerencialController:25` y `GenerarPdfController::exportarReporteBalancePrime` (~921)
+  siguen calculando sus propios totales de balance (no son JP; S5 hablaba solo de JP).
+- Duplicacion preview/PDF equivalente en los reportes de SICPRO (adquisiciones/caja): fuera de S5.
 
 L3 (estado del repo al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel`, working tree limpio,
 HEAD `b7a24d0e`. Runner: `php vendor/phpunit/phpunit/phpunit` (PHP 8.5.1 en Git Bash).

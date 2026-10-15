@@ -97,6 +97,17 @@ class Adquisicion extends Model
     }
 
     /**
+     * Gran total del reporte por articulo. El preview y el PDF sumaban
+     * collect($reportData)->flatten(1)->sum('monto_total') cada uno por su lado.
+     *
+     * @param  iterable  $reporte
+     */
+    public static function granTotalReportePorArticulo($reporte): float
+    {
+        return (float) collect($reporte)->flatten(1)->sum('monto_total');
+    }
+
+    /**
      * Datos para el reporte de adquisiciones
      * @param Request $request
      * @return \Illuminate\Database\Eloquent\Collection

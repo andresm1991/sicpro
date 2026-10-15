@@ -842,7 +842,7 @@ class GenerarPdfController extends Controller
     private function reporteAdquisicionesGlobal($request, $export, $tipo = 'global')
     {
         $reportData = JPLimpiezaAdquisicion::dataReportePorArticulo($request);
-        $grandTotal = collect($reportData)->flatten(1)->sum('monto_total');
+        $grandTotal = JPLimpiezaAdquisicion::granTotalReportePorArticulo($reportData);
         $proyecto = JPLimpiezaProyecto::find($request->proyecto);
         $fechaReporte = now()->format('d/m/Y');
 
@@ -861,9 +861,10 @@ class GenerarPdfController extends Controller
     private function reporteAdquisicionesFinanciero($request, $export, $tipo = 'balance')
     {
         $reportData = JPLimpiezaProyecto::dataReporteBalance($request);
-        $totalIngresosGeneral = $reportData->sum('total_ingresos');
-        $totalGastosGeneral = $reportData->sum('total_gastos');
-        $utilidadGeneral = $reportData->sum('utilidad');
+        $totales = JPLimpiezaProyecto::totalesBalance($reportData);
+        $totalIngresosGeneral = $totales['total_ingresos'];
+        $totalGastosGeneral = $totales['total_gastos'];
+        $utilidadGeneral = $totales['utilidad'];
 
         $proyecto = JPLimpiezaProyecto::find($request->proyecto);
         $fechaReporte = now()->format('d/m/Y');
