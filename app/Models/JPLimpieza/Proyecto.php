@@ -3,6 +3,7 @@
 namespace App\Models\JPLimpieza;
 
 use Carbon\Carbon;
+use App\Support\RangoFechas;
 use AWS\CRT\HTTP\Request;
 use App\Models\CatalogoDato;
 use Illuminate\Support\Facades\DB;
@@ -86,9 +87,7 @@ class Proyecto extends Model
         $proyectoInput = $request->input('proyecto');
 
         if ($request->filled('fechas')) {
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicioF = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFinF = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$fechaInicioF, $fechaFinF] = RangoFechas::requerido($request->input('fechas'));
         }
 
         // --- 2. PRE-CÁLCULO DE GASTOS POR PROYECTO ---

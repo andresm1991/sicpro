@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -127,9 +128,9 @@ class MovimientoCaja extends Model
     public static function dataReporteCaja($request)
     {
         $fechas = $request->input('fechas');
-        list($fechaInicioStr, $fechaFinStr) = explode(' - ', $fechas);
-        $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($fechaInicioStr))->startOfDay();
-        $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fechaFinStr))->endOfDay();
+        [$fechaInicioStr, $fechaFinStr] = RangoFechas::requerido($fechas);
+        $fechaInicio = Carbon::parse($fechaInicioStr)->startOfDay();
+        $fechaFin = Carbon::parse($fechaFinStr)->endOfDay();
 
 
         // ---- 1. CALCULAR EL SALDO INICIAL ----

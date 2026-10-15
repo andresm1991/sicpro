@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\JPLimpieza;
 
 use Illuminate\Http\Request;
+use App\Support\RangoFechas;
 use App\Models\JPLimpieza\Caja;
 use App\Models\JPLimpieza\Producto;
 use App\Models\JPLimpieza\Proyecto;
@@ -137,12 +138,11 @@ class ReporteController extends Controller
     public function guardarRevisionCaja(Request $request)
     {
         try {
-            $data = $request->validate([
+            $request->validate([
                 'fechas' => 'required',
-                'fechas.*' => 'required|date',
             ]);
 
-            list($fechaInicio, $fechaFin) = explode(' - ', $request->fechas);
+            [$fechaInicio, $fechaFin] = RangoFechas::requerido($request->input('fechas'));
 
             $data = [
                 'fecha_revision_inicio' => $fechaInicio,

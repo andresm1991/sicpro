@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use PDF;
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 use App\Models\Tarea;
 use setasign\Fpdi\Fpdi;
@@ -812,14 +813,9 @@ class GenerarPdfController extends Controller
         $fechaReporte = now()->format('d/m/Y');
 
         if ($request->filled('fechas')) {
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$inicio, $fin] = RangoFechas::partes($request->input('fechas'));
 
             $fechaReporte = $inicio . ' hasta ' . $fin;
-        } else {
-            $fechaInicio = null;
-            $fechaFin = null;
         }
         // Calcula el gran total desde los campos numéricos de cada categoría
         $grandTotal = JPLimpiezaAdquisicion::granTotalReporte($reportData);
@@ -841,14 +837,9 @@ class GenerarPdfController extends Controller
         $fechaReporte = now()->format('d/m/Y');
 
         if ($request->filled('fechas')) {
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$inicio, $fin] = RangoFechas::partes($request->input('fechas'));
 
             $fechaReporte = $inicio . ' hasta ' . $fin;
-        } else {
-            $fechaInicio = null;
-            $fechaFin = null;
         }
 
         if ($export == 'pdf') {
@@ -868,14 +859,9 @@ class GenerarPdfController extends Controller
         $fechaReporte = now()->format('d/m/Y');
 
         if ($request->filled('fechas')) {
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$inicio, $fin] = RangoFechas::partes($request->input('fechas'));
 
             $fechaReporte = $inicio . ' hasta ' . $fin;
-        } else {
-            $fechaInicio = null;
-            $fechaFin = null;
         }
 
 

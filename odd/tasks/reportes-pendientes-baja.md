@@ -36,8 +36,8 @@ el preview y el PDF calculan por caminos distintos."
 
 | ID | Specs | Ruta | Estado |
 |----|-------|------|--------|
-| T1 | S1 | inline | pendiente |
-| T2 | S2 | inline | pendiente |
+| T1 | S1 | inline | cerrada — commit `022a96b2` |
+| T2 | S2 | inline | cerrada — commit pendiente |
 | T3 | S3 | inline | pendiente |
 | T4 | S4 | inline | pendiente |
 | T5 | S5 | inline | pendiente |
@@ -50,6 +50,26 @@ L2 (origen de los pendientes, verbatim de la nota `sicpro/reportes-baja-pendient
 "**PENDIENTES (BAJA) EN ORDEN DE PRIORIDAD**: 1. `CatalogoDato::getChildrenCatalogo` sin null-check — el mas valioso ...
 2. Fechas sin validar ... 3. Codigo muerto y filtro que no llega ... 4. `CatalogoDato::find($tipo)->slug` sin null-check ...
 5. Duplicacion preview/PDF de la logica de JP"
+
+L4 (T1, S1 cerrada): commit `022a96b2` — `getChildrenCatalogo` devuelve coleccion vacia si falta el padre.
+Tests nuevos `tests/Feature/CatalogoDatoChildrenTest.php` (RED observado: `Attempt to read property "id" on null` en `CatalogoDato.php:39`;
+GREEN 3/3). Suite: 99 tests, 229 assertions, los mismos 4 fallos preexistentes.
+Residual anotado (no introducido por este cambio): `pdf/proforma.blade.php:59,60,271,273,275` indexa `$empresa[0..4]`
+sobre `getInfoEmpresa()`; con la coleccion vacia el fallo pasa del helper al blade. Antes tambien era un 500
+(la coleccion vacia ya era alcanzable cuando `informacion.general` existia sin hijos), asi que no es regresion.
+
+L5 (T2, S2 cerrada):
+- Nuevos: `app/Support/RangoFechas.php` (parser unico `m/d/Y - m/d/Y`) y `app/Exceptions/RangoFechasInvalidoException.php`;
+  `app/Exceptions/Handler.php` traduce la excepcion a 302+flash (formularios) o JSON 422 (AJAX).
+- Los 21 `explode(' - ')` de reportes pasaron a `RangoFechas` (solo quedan los 3 de las dos funciones muertas, que borra T3).
+- RED observado: PDF de caja con `basura - basura` daba **500** con `Carbon\Exceptions\InvalidFormatException` en
+  `MovimientoCaja.php:131`; `guardarRevisionCaja` con `02/30/2025 - 03/30/2025` guardaba `success: true` (2025-03-02 por rollover).
+- `checkdate()` ademas de `Carbon::hasFormat()`: hasFormat acepta 02/30/2025 y Carbon la corre en silencio.
+- Tests: `tests/Unit/RangoFechasTest.php`, `tests/Feature/GuardarRevisionCajaTest.php`, `tests/Feature/ReporteFechasInvalidasTest.php` (26 tests).
+- Suite: 125 tests, 292 assertions, los mismos 4 fallos preexistentes.
+- Observacion para el usuario (no tocada): hay una **colision preexistente** del nombre de ruta `reporte.caja`
+  (routes/modules/reporteria.php -> GET /reportes/flujo-de-efectivo y routes/modules/export_pdf.php -> POST
+  /generar-pdf/reporte-caja/{tipo}). `route('reporte.caja', ...)` resuelve a la GET, asi que un POST por nombre da 405.
 
 L3 (estado del repo al arrancar): rama `sicpro-laravel` en sync con `origin/sicpro-laravel`, working tree limpio,
 HEAD `b7a24d0e`. Runner: `php vendor/phpunit/phpunit/phpunit` (PHP 8.5.1 en Git Bash).

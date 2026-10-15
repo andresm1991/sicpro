@@ -3,6 +3,7 @@
 namespace App\Models\JPLimpieza;
 
 use Carbon\Carbon;
+use App\Support\RangoFechas;
 use App\Models\User;
 use App\Models\Articulo;
 use App\Models\Proveedor;
@@ -133,9 +134,9 @@ class Caja extends Model
     public static function dataReporteCaja($request)
     {
         $fechas = $request->input('fechas');
-        list($fechaInicioStr, $fechaFinStr) = explode(' - ', $fechas);
-        $fechaInicio = Carbon::createFromFormat('m/d/Y', trim($fechaInicioStr))->startOfDay();
-        $fechaFin = Carbon::createFromFormat('m/d/Y', trim($fechaFinStr))->endOfDay();
+        [$fechaInicioStr, $fechaFinStr] = RangoFechas::requerido($fechas);
+        $fechaInicio = Carbon::parse($fechaInicioStr)->startOfDay();
+        $fechaFin = Carbon::parse($fechaFinStr)->endOfDay();
 
 
         // ---- 1. CALCULAR EL SALDO INICIAL ----

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,9 +43,7 @@ class ReposicionTiempo extends Model
         $fechaInicioFormatted = null;
         $fechaFinFormatted = null;
         if ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            [$fechaInicioFormatted, $fechaFinFormatted] = RangoFechas::parse($fechas);
         }
 
         // Consulta principal: Agrupar por usuario_id y calcular el tiempo total

@@ -17,6 +17,7 @@ use App\Models\ReposicionTiempo;
 use App\Models\RevisionCaja;
 use App\Models\Solicitud;
 use App\Models\User;
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 
 class ReporteriaController extends Controller
@@ -317,12 +318,11 @@ class ReporteriaController extends Controller
     public function guardarRevisionCaja(Request $request)
     {
         try {
-            $data = $request->validate([
+            $request->validate([
                 'fechas' => 'required',
-                'fechas.*' => 'required|date',
             ]);
 
-            list($fechaInicio, $fechaFin) = explode(' - ', $request->fechas);
+            [$fechaInicio, $fechaFin] = RangoFechas::requerido($request->input('fechas'));
 
             $data = [
                 'fecha_revision_inicio' => $fechaInicio,

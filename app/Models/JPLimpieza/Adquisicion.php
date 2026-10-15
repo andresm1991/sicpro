@@ -3,6 +3,7 @@
 namespace App\Models\JPLimpieza;
 
 use Carbon\Carbon;
+use App\Support\RangoFechas;
 use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use Illuminate\Support\Facades\DB;
@@ -109,9 +110,7 @@ class Adquisicion extends Model
         $producto = $request->input('producto');
 
         if ($request->filled('fechas')) { // Usar filled() es más robusto
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicioF = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFinF = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$fechaInicioF, $fechaFinF] = RangoFechas::requerido($request->input('fechas'));
         }
 
         // 1. OBTENER LAS ADQUISICIONES
@@ -321,9 +320,7 @@ class Adquisicion extends Model
         $dbMysql = DB::connection('mysql')->getDatabaseName();
 
         if ($request->filled('fechas')) {
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicioF = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFinF = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$fechaInicioF, $fechaFinF] = RangoFechas::requerido($request->input('fechas'));
         }
 
         $reportData = [];

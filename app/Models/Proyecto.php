@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Marketing\ProcesoVenta;
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -156,9 +157,7 @@ class Proyecto extends Model
         $anioF = null;
 
         if ($tipoReporte === 'balance_proyecto' && $request->filled('fechas')) {
-            list($inicio, $fin) = explode(' - ', $request->input('fechas'));
-            $fechaInicioF = Carbon::createFromFormat('m/d/Y', trim($inicio))->format('Y-m-d');
-            $fechaFinF = Carbon::createFromFormat('m/d/Y', trim($fin))->format('Y-m-d');
+            [$fechaInicioF, $fechaFinF] = RangoFechas::requerido($request->input('fechas'));
         } elseif ($tipoReporte === 'balance_global' && $request->filled('anio')) {
             $anioF = $request->input('anio');
         }

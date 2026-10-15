@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -246,9 +247,7 @@ class ManoObra extends Model
         });
 
         $query->when($fechas, function ($q) use ($fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $fechaInicioFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d');
-            $fechaFinFormatted = Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d');
+            [$fechaInicioFormatted, $fechaFinFormatted] = RangoFechas::parse($fechas);
             // mano_obra no tiene columna fecha: el periodo es
             // fecha_inicio/fecha_fin, asi que se seleccionan los que solapan
             // el rango pedido, igual que el balance gerencial.

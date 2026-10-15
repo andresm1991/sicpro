@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\RangoFechas;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
@@ -221,11 +222,8 @@ class Adquisicion extends Model
         });
 
         $query->when($request->input('fechas'), function ($q, $fechas) {
-            list($fechaInicio, $fechaFin) = explode(' - ', $fechas);
-            $q->whereBetween('fecha', [
-                Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->format('Y-m-d'),
-                Carbon::createFromFormat('m/d/Y', trim($fechaFin))->format('Y-m-d')
-            ]);
+            [$fechaInicio, $fechaFin] = RangoFechas::parse($fechas);
+            $q->whereBetween('fecha', [$fechaInicio, $fechaFin]);
         });
 
         $query->when($request->input('forma_pago'), function ($q, $formaPago) {
@@ -707,10 +705,10 @@ class Adquisicion extends Model
         }
         if (in_array('fechas', $applicableFilters)) {
             $query->when($filters['fechas'], function ($q) use ($filters, $prefix) {
-                list($fechaInicio, $fechaFin) = explode(' - ', $filters['fechas']);
+                [$fechaInicio, $fechaFin] = RangoFechas::parse($filters['fechas']);
                 $q->whereBetween("{$prefix}fecha", [
-                    Carbon::createFromFormat('m/d/Y', trim($fechaInicio))->startOfDay(),
-                    Carbon::createFromFormat('m/d/Y', trim($fechaFin))->endOfDay(),
+                    Carbon::parse($fechaInicio)->startOfDay(),
+                    Carbon::parse($fechaFin)->endOfDay(),
                 ]);
             });
         }
