@@ -75,6 +75,21 @@ class PrestamoController extends Controller
                             ]);
                         }
                     }
+                    LogService::auditar(
+                        'crear',
+                        'prestamo',
+                        $prestamo->id,
+                        'Préstamo de $' . number_format((float) $prestamo->monto, 2) . ' registrado (' . $prestamo->plazo . ' semanas, motivo: ' . $prestamo->motivo . ').',
+                        [],
+                        [
+                            'monto' => (float) $prestamo->monto,
+                            'interes' => (float) $prestamo->interes,
+                            'plazo' => (int) $prestamo->plazo,
+                            'saldo' => (float) $prestamo->saldo,
+                            'estado' => $prestamo->estado->descripcion,
+                            'motivo' => $prestamo->motivo,
+                        ]
+                    );
                     DB::commit();
                     $prestamos = Prestamo::orderBy('fecha_solicitud', 'desc')->paginate(15);
                     $list_prestamos = $this->htmlTable($prestamos);
@@ -98,7 +113,16 @@ class PrestamoController extends Controller
                     return response()->json(['success' => false, 'mensaje' => 'No es posible actualizar la información del préstamo porque está pagado.']);
                 }
 
-                DB::transaction(function () use ($request, $prestamo) {
+                $antes = [
+                    'monto' => (float) $prestamo->monto,
+                    'interes' => (float) $prestamo->interes,
+                    'plazo' => (int) $prestamo->plazo,
+                    'saldo' => (float) $prestamo->saldo,
+                    'estado' => $prestamo->estado->descripcion,
+                    'motivo' => $prestamo->motivo,
+                ];
+
+                DB::transaction(function () use ($request, $prestamo, $antes) {
                     // Campos editables
                     $prestamo->trabajador_id = $request->proveedor ?? $prestamo->trabajador_id;
                     $prestamo->monto = $request->monto !== null ? preg_replace('/[^0-9.]/', '', $request->monto) : $prestamo->monto;
@@ -190,6 +214,24 @@ class PrestamoController extends Controller
                     }
 
                     $prestamo->save();
+
+                    $prestamo->load('estado');
+
+                    LogService::auditar(
+                        'actualizar',
+                        'prestamo',
+                        $prestamo->id,
+                        'Préstamo #' . $prestamo->id . ' actualizado (monto $' . number_format((float) $prestamo->monto, 2) . ', plazo ' . $prestamo->plazo . ' semanas).',
+                        $antes,
+                        [
+                            'monto' => (float) $prestamo->monto,
+                            'interes' => (float) $prestamo->interes,
+                            'plazo' => (int) $prestamo->plazo,
+                            'saldo' => (float) $prestamo->saldo,
+                            'estado' => $prestamo->estado->descripcion,
+                            'motivo' => $prestamo->motivo,
+                        ]
+                    );
                 });
 
                 return response()->json(['success' => true, 'mensaje' => 'Préstamo actualizado correctamente.']);
@@ -293,6 +335,9 @@ class PrestamoController extends Controller
                     throw new Exception("Ya se ecuentra registrado el pago.");
                 }
 
+                $saldoAntes = (float) $prestamo->saldo;
+                $estadoAntes = $prestamo->estado->descripcion;
+
                 // Actualizar el estado del pago y el monto pagado
                 $pago->monto_pagado = $monto_pagado;
                 $pago->estado_id = CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pagado');
@@ -304,6 +349,18 @@ class PrestamoController extends Controller
                 $prestamo->saldo = $prestamo->saldo - $monto_pagado;
                 $prestamo->estado_id = $prestamo->saldo - $monto_pagado <= 0 ? CatalogoDato::getIdCatalogo('estados.prestamos.pagado') : CatalogoDato::getIdCatalogo('estados.prestamos.pendiente');
                 $prestamo->save();
+
+                $prestamo->load('estado');
+                $saldoDespues = (float) $prestamo->saldo;
+
+                LogService::auditar(
+                    'pagar',
+                    'prestamo',
+                    $prestamo->id,
+                    'Pago de $' . number_format((float) $monto_pagado, 2) . ' registrado al préstamo #' . $prestamo->id . '. Saldo restante: $' . number_format($saldoDespues, 2) . '.',
+                    ['saldo' => $saldoAntes, 'estado' => $estadoAntes],
+                    ['saldo' => $saldoDespues, 'estado' => $prestamo->estado->descripcion]
+                );
 
                 DB::commit();
                 return response()->json(['success' => true, 'mensaje' => 'Pago registrado correctamente.']);
