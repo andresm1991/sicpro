@@ -45,6 +45,8 @@ mantiene su firma) y el visor es de solo lectura.
 | T7 | S3 | Adquisiciones: alta, edicion, baja de pedido y orden de recepcion con id de entidad | |
 | T8 | S3 | Usuarios y roles: alta/edicion/baja, cambio de clave, `roles()->sync()` y `syncPermissions()` con antes/despues | |
 | T9 | S2, S3 | Cierre del tramo: documentar la convencion en WARP.md, verificar el visor end-to-end y correr la suite completa | |
+| T10 | S3 | Auditar `AdministrativoController::pagoOrdenTrabajo` (`:676`): pone `pagado = true`, el flag que decide si ese dinero entra al balance, y cambia el estado de la orden; hoy solo tiene un `log()` generico | |
+| T11 | S3 | Auditar `AdministrativoController::actualizarContratista` (`:615`): muta cantidades, valores y costo indirecto de la orden y hasta `Articulo::valor_unitario`, hoy sin antes/despues | |
 
 ## Log
 
@@ -72,3 +74,34 @@ L4 (decision de implementacion para T1): el visor reusa el permiso existente
 `sistema.ver` (el modulo ya es solo-admin, ver `routes/modules/sistema.php:11`)
 en vez de crear un permiso nuevo, para no tocar el catalogo de permisos ni sus
 tests. Se documenta aca por si el humano quiere un permiso mas fino despues.
+
+L5 (hallazgos del worker de T6, NO editados por estar en un archivo que otro
+agente estaba tocando en paralelo): `AdministrativoController::pagoOrdenTrabajo`
+(`:676`) escribe `pagado = true`, el flag que decide si el dinero entra al
+balance, y cambia el estado de la orden, con un `log()` generico y sin
+entidad/valores; `AdministrativoController::actualizarContratista` (`:615`) muta
+cantidades, valores y costo indirecto de la orden y hasta
+`Articulo::valor_unitario`, con el mismo `log()` generico. Quedan como T10 y T11.
+
+L6 (hallazgo del worker de T8, NO editado por estar fuera del alcance):
+`Auth/RegisterController.php:70` usa `Hash::make` al registrar un usuario en el
+flujo publico y no deja auditoria.
+
+## Evidencia de commits
+
+| Task | Commit |
+|------|--------|
+| T1 | `70b9909c` |
+| T3 | `b82698fa` |
+| T4 | `f7fb029a` |
+| T5 | `74c8d463` |
+| T6 | `5655da9e` |
+| T7 | `eff22068` |
+| T8 | `6949e550` |
+| T9 | el commit que agrega esta tabla |
+| T2, T10, T11, T12 | pendientes |
+
+Verificacion del cierre: suite completa `227 tests, 801 assertions, 4 fallos` (los
+4 preexistentes de roles/modulo sistema, 0 errores) y el visor probado end-to-end
+contra la base real: el registro se ve, el antes/despues se despliega y la fila
+guarda actor e IP.

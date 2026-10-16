@@ -119,6 +119,26 @@ When introducing a new feature, prefer creating a dedicated `routes/modules/<fea
 - JS/CSS sources live under `resources/js` and `resources/css` (plus feature-specific subdirectories such as `resources/js/jp_limpieza`). After changing assets, run `npm run dev` to sync them to `public/`.
 - `public/` is git-ignored, so the copies under `resources/` are the versioned source of truth. Keep `diff -r resources/js public/js` clean (and `cmp public/service-worker.js resources/service-worker.js`).
 
+## Auditoria
+
+Money and permission mutations record an audit row with
+`LogService::auditar($accion, $entidad, $entidadId, $mensaje, $antes, $despues)`:
+
+- `entidad` is the domain noun (`movimiento_caja`, `adquisicion`, `prestamo`,
+  `pago_orden_trabajo_contratista`, `user`, `rol`), `entidad_id` the row id and
+  `accion` one of `crear`, `actualizar`, `eliminar`, plus flow verbs such as
+  `pagar` or `recalcular`.
+- `valores_antes` is mandatory for deletions: after the delete it is the only
+  record of what was lost.
+- Never store credentials: for a password change record only the fact
+  (`clave_cambiada => true`), never the value nor its hash.
+- Keep `LogService::log()` for operational messages; it has a different shape
+  (level/message/context) and its ~86 call sites must keep working.
+- The viewer is `/sistema/auditoria` (Sistema module, permission `sistema.ver`),
+  with filters and 50-row pagination.
+- Retention: `logs:purgar` (config `auditoria.retencion_dias`, default 365) runs
+  daily, and `config/logging.php` keeps `laravel.log` on the `daily` channel.
+
 ## Key packages and integrations
 
 Important Composer dependencies and where they are typically used:

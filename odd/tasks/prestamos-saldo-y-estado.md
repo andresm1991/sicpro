@@ -46,3 +46,28 @@ parciales pequenos podria marcar 'pagado' antes de tiempo".
 
 L3 (decision del humano, verbatim de la opcion elegida): "Arreglarlo y revisar
 todos los saldos".
+
+L4 (revision completa del flujo, hallazgos con path:line que NO se tocan por ser
+de otra clase que S2):
+- MEDIA, deriva de centavos: `recalcularPagos` (`:413,416-423`) reparte con
+  `round($saldo/$n, 2)` sin asignar el residuo a la ultima cuota (1000/3 ->
+  3 x 333,33 = 999,99), asi que el plan puede no sumar el saldo al centavo.
+  Mismo patron en `updatePrestamo` (`:180,194,198,202`) y en `agregarTodosPagos`
+  (`:285-299`).
+- BAJA, contabilidad muerta: en el closure de `recalcularPagos` el decremento de
+  `$saldoRestante` se pierde (captura `use` por valor, sin referencia).
+- BAJA, relacion posiblemente stale: `updatePrestamo` (`:158,213`) usa
+  `$prestamo->pago_prestamo->sum(...)` (coleccion en memoria) en vez de
+  `->pago_prestamo()->sum(...)`.
+- Los helpers compartidos (`app/helpers.php:454-487`, `calcularCuotaSemanalPrestamo`
+  y `calcularFechasPago`) no tienen defecto y no se tocaron (S3).
+
+## Evidencia de commits
+
+| Task | Commit |
+|------|--------|
+| T1 | evidencia en L4 |
+| T2, T3 | `e38ba7e2` |
+
+Los hallazgos de L4 quedan como follow-ups (deriva de centavos y `sum()` en
+memoria), fuera del alcance que autorizo el humano.
