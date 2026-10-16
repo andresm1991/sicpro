@@ -235,6 +235,27 @@ class AdquisicionController extends Controller
                 PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Adquisicion Operativa NRO. ' . $adquisicion->numero, 'El usuario ' . Auth::user()->nombre . ' registro una nueva adquisision', route('pdf.recepcion', $adquisicion->id));
 
                 LogService::log('info', 'Adquisición creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                $adquisicion->load('adquisiciones_detalle');
+                $total_adquisicion = $adquisicion->adquisiciones_detalle->sum(fn ($detalle) => calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva));
+                LogService::auditar(
+                    'crear',
+                    'adquisicion',
+                    $adquisicion->id,
+                    sprintf(
+                        'Se creó el pedido NRO. %s por un total de $%s',
+                        $adquisicion->numero,
+                        number_format((float) $total_adquisicion, 2)
+                    ),
+                    [],
+                    [
+                        'numero' => $adquisicion->numero,
+                        'fecha' => $adquisicion->fecha,
+                        'proyecto' => $adquisicion->proyecto_id,
+                        'etapa' => $adquisicion->etapa_id,
+                        'tipo_adquisicion' => $adquisicion->tipo_adquisicion,
+                        'total' => (float) $total_adquisicion,
+                    ]
+                );
                 return redirect()->route('proyecto.adquisiciones.tipo.create', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_adquisicion' => $tipo_adquisicion, 'tipo_etapa' => $tipo_etapa])->with('success', 'Orden de pedido generada con éxito.');
             } else {
                 DB::rollback();
@@ -303,6 +324,7 @@ class AdquisicionController extends Controller
             DB::beginTransaction();
             $pedido_id = $request->route('pedido');
             $pedido = Adquisicion::find($pedido_id);
+            $antes_pedido = $pedido->only(['fecha', 'etapa_id', 'tipo_etapa_id', 'tipo_costo_id', 'estado', 'tipo_adquisicion', 'factura', 'subproyecto']);
             $unidad_medida = isset($request->unidad_medida) ? $request->unidad_medida : [];
             $precio = $request->precio;
             $inventario = $request->inventario;
@@ -409,6 +431,18 @@ class AdquisicionController extends Controller
 
             DB::commit();
             LogService::log('info', 'Adquisición actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
+            $despues_pedido = $pedido->fresh()->only(['fecha', 'etapa_id', 'tipo_etapa_id', 'tipo_costo_id', 'estado', 'tipo_adquisicion', 'factura', 'subproyecto']);
+            LogService::auditar(
+                'actualizar',
+                'adquisicion',
+                $pedido->id,
+                sprintf(
+                    'Se actualizó el pedido NRO. %s',
+                    $pedido->numero
+                ),
+                $antes_pedido,
+                $despues_pedido
+            );
             $route_params = array_merge($route_params, ['pedido' => $pedido_id]);
             return redirect()->route('proyecto.adquisiciones.orden.pedido.edit', $route_params)->with('success', 'Orden de pedido actualizada con éxito.');
         } catch (Throwable $e) {
@@ -428,14 +462,33 @@ class AdquisicionController extends Controller
         $pedido = Adquisicion::find($request->route('pedido'));
 
         if ($pedido->estado != 'Finalizado' && $pedido->estado != 'Completado') {
-            $info_pedido = $pedido;
-            if ($pedido->delete()) {
-                if (Storage::disk('digitalocean')->exists($info_pedido->archivo)) {
-                    Storage::disk('digitalocean')->delete($info_pedido->archivo);
+            DB::beginTransaction();
+            try {
+                $info_pedido = $pedido;
+                LogService::auditar(
+                    'eliminar',
+                    'adquisicion',
+                    $pedido->id,
+                    sprintf(
+                        'Se eliminó el pedido NRO. %s',
+                        $pedido->numero
+                    ),
+                    array_merge($pedido->toArray(), [
+                        'detalle' => $pedido->adquisiciones_detalle()->get()->toArray(),
+                    ])
+                );
+                if ($pedido->delete()) {
+                    if (!empty($info_pedido->archivo) && Storage::disk('digitalocean')->exists($info_pedido->archivo)) {
+                        Storage::disk('digitalocean')->delete($info_pedido->archivo);
+                    }
+                    DB::commit();
+                    LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
+                    return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
                 }
-                LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
-                return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
-            } else {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'Ocurrió un error al intentar eliminar el registro, por favor vuelva a intentar si el problema persiste comuníquese con el administrador del sistema.']);
+            } catch (Throwable $e) {
+                DB::rollBack();
                 return response()->json(['success' => false, 'message' => 'Ocurrió un error al intentar eliminar el registro, por favor vuelva a intentar si el problema persiste comuníquese con el administrador del sistema.']);
             }
         } else {
@@ -627,6 +680,22 @@ class AdquisicionController extends Controller
                 }
                 DB::commit();
                 LogService::log('info', 'Orden recepción creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                LogService::auditar(
+                    'crear',
+                    'orden_recepcion',
+                    $orden_recepcion->id,
+                    sprintf(
+                        'Se creó la orden de recepción del pedido NRO. %s',
+                        $info_pedido->numero
+                    ),
+                    [],
+                    [
+                        'adquisicion' => $orden_recepcion->adquisicion_id,
+                        'proveedor' => $orden_recepcion->proveedor_id,
+                        'forma_pago' => $orden_recepcion->forma_pago_id,
+                        'completado' => (bool) $orden_recepcion->completado,
+                    ]
+                );
                 return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción generada con éxito.');
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
@@ -663,6 +732,7 @@ class AdquisicionController extends Controller
 
         $orden_recepcion->proveedor_id = $request->proveedor;
         $orden_recepcion->forma_pago_id = $request->forma_pago;
+        $antes_orden_recepcion = $orden_recepcion->only(['proveedor_id', 'forma_pago_id', 'completado', 'editar']);
         $orden_recepcion->completado = $orden_completa;
         $orden_recepcion->editar = $orden_completa ? false : true;
 
@@ -711,6 +781,17 @@ class AdquisicionController extends Controller
 
                 DB::commit();
                 LogService::log('info', 'Orden de recepción actualizada', ['user_id' => auth()->id(), 'action' => 'update']);
+                LogService::auditar(
+                    'actualizar',
+                    'orden_recepcion',
+                    $orden_recepcion->id,
+                    sprintf(
+                        'Se actualizó la orden de recepción del pedido NRO. %s',
+                        $info_pedido->numero
+                    ),
+                    $antes_orden_recepcion,
+                    $orden_recepcion->fresh()->only(['proveedor_id', 'forma_pago_id', 'completado', 'editar'])
+                );
                 return redirect()->route('proyecto.adquisiciones.orden.recepcion', $routeParametres)->with('success', 'Orden de recepción actualizada con éxito.');
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
@@ -736,6 +817,22 @@ class AdquisicionController extends Controller
         $code = generateProductCode($type);
         $create =  Articulo::create(['categoria_id' => $categoria->id, 'codigo' => $code, 'descripcion' => $descripcion, 'activo' => true]);
         LogService::log('info', 'Articulo creado', ['user_id' => auth()->id(), 'action' => 'create']);
+        LogService::auditar(
+            'crear',
+            'articulo',
+            $create->id,
+            sprintf(
+                'Se creó el artículo "%s" con código %s',
+                $descripcion,
+                $code
+            ),
+            [],
+            [
+                'codigo' => $code,
+                'descripcion' => $descripcion,
+                'categoria' => $categoria->id,
+            ]
+        );
 
         return $create;
     }
@@ -992,6 +1089,27 @@ class AdquisicionController extends Controller
 
                 DB::commit();
                 LogService::log('info', 'Adquisición administrativa creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                $adquisicion->load('adquisiciones_detalle');
+                $total_adquisicion = $adquisicion->adquisiciones_detalle->sum(fn ($detalle) => calcularTotalProducto($detalle->cantidad_solicitada, $detalle->valor, $detalle->iva));
+                LogService::auditar(
+                    'crear',
+                    'adquisicion',
+                    $adquisicion->id,
+                    sprintf(
+                        'Se creó la adquisición administrativa NRO. %s por un total de $%s',
+                        $adquisicion->numero,
+                        number_format((float) $total_adquisicion, 2)
+                    ),
+                    [],
+                    [
+                        'numero' => $adquisicion->numero,
+                        'fecha' => $adquisicion->fecha,
+                        'proyecto' => $adquisicion->proyecto_id,
+                        'etapa' => $adquisicion->etapa_id,
+                        'tipo_adquisicion' => $adquisicion->tipo_adquisicion,
+                        'total' => (float) $total_adquisicion,
+                    ]
+                );
                 return redirect()->route('administrativo.adquisiciones.create', $tipo)->with('success', 'Pedido generado con éxito.');
             } else {
                 DB::rollback();
