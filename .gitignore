@@ -1,5 +1,4 @@
 /app/Providers/AppServiceProvider.php
-/app/Console/Commands/*
 /public
 public/*
 /node_modules
