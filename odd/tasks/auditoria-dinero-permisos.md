@@ -109,7 +109,8 @@ T13.
 | T9 | el commit que agrega esta tabla |
 | T10, T11 | `f0e07ba7` |
 | T12 | `df70cbaa` y `64c6901d` (cierre del registro publico) |
-| T2, T13 | pendientes |
+| T2 | `b3e2d91e` |
+| T13 | `c573a5d6` |
 
 Follow-ups de prestamos (documento `odd/tasks/prestamos-saldo-y-estado.md`):
 `e38ba7e2` (fix del estado y auditoria del recalculo) y `bb9bd2f8` (residuo de
