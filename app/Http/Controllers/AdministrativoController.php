@@ -187,6 +187,10 @@ class AdministrativoController extends Controller
         $adquisicionesActuales = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->pluck('articulo_id')->toArray();
         $productos_eliminar = array_diff($adquisicionesActuales, $array_productos);
 
+        $detallesAntes = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)
+            ->get(['articulo_id', 'cantidad_solicitada', 'unidad_medida_id', 'valor', 'costo_indirecto', 'iva'])
+            ->keyBy('articulo_id');
+
         try {
             DB::beginTransaction();
 
@@ -219,9 +223,19 @@ class AdministrativoController extends Controller
 
                 // registrar precio unitario del producto y el iva
                 $articulo = Articulo::find($item['producto']);
-                $articulo->valor_unitario = $item['valor'];
-                $articulo->iva = $item['iva'];
-                $articulo->save();
+                if ($articulo) {
+                    $valorArticuloAntes = $articulo->valor_unitario;
+                    $articulo->valor_unitario = $item['valor'];
+                    $articulo->iva = $item['iva'];
+                    $articulo->save();
+                    if ($valorArticuloAntes != $item['valor']) {
+                        $cambiosArticulo[] = [
+                            'articulo' => $articulo,
+                            'antes' => $valorArticuloAntes,
+                            'despues' => $item['valor'],
+                        ];
+                    }
+                }
             }
 
             $adquisicion->factura = $request->numero_factura;
@@ -233,6 +247,7 @@ class AdministrativoController extends Controller
                 // Registrar en caja si el pago esta completado y si fue pagado en efectivo
                 if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->forma_pago->slug == 'forma.pago.contado') {
                     $detalles = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->get();
+                    $movimientosCaja = [];
 
                     foreach ($detalles as $detalle) {
 
@@ -247,7 +262,7 @@ class AdministrativoController extends Controller
                             'origen_id' => $adquisicion->id,
                         ]);
 
-                        MovimientoCaja::registrarMovimiento($request);
+                        $movimientosCaja[] = MovimientoCaja::registrarMovimiento($request);
                     }
                 }
 
@@ -258,6 +273,89 @@ class AdministrativoController extends Controller
             if (!empty($productos_eliminar)) {
                 AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)
                     ->whereIn('articulo_id', $productos_eliminar)->delete();
+            }
+
+            $lineasAntes = [];
+            $lineasDespues = [];
+            foreach ($items as $item) {
+                $detalleAntes = $detallesAntes->get((int) $item['producto']);
+                $antesLinea = $detalleAntes ? [
+                    'cantidad_solicitada' => (float) $detalleAntes->cantidad_solicitada,
+                    'valor' => (float) $detalleAntes->valor,
+                    'iva' => (float) $detalleAntes->iva,
+                    'costo_indirecto' => $detalleAntes->costo_indirecto,
+                    'unidad_medida_id' => $detalleAntes->unidad_medida_id,
+                ] : null;
+                $despuesLinea = [
+                    'cantidad_solicitada' => (float) $item['cantidad'],
+                    'valor' => (float) $item['valor'],
+                    'iva' => (float) $item['iva'],
+                    'costo_indirecto' => $item['costo_indirecto'],
+                    'unidad_medida_id' => $item['unidad_medida'],
+                ];
+                if ($antesLinea != $despuesLinea) {
+                    $lineasAntes[$item['producto']] = $antesLinea;
+                    $lineasDespues[$item['producto']] = $despuesLinea;
+                }
+            }
+
+            LogService::auditar(
+                'actualizar',
+                'adquisicion',
+                $adquisicion->id,
+                sprintf(
+                    'Se actualizó la adquisición NRO. %s: %d línea(s) modificada(s).',
+                    $adquisicion->numero,
+                    count($lineasDespues)
+                ),
+                [
+                    'numero' => $adquisicion->numero,
+                    'lineas' => $lineasAntes,
+                ],
+                [
+                    'numero' => $adquisicion->numero,
+                    'lineas' => $lineasDespues,
+                ]
+            );
+
+            foreach ($cambiosArticulo ?? [] as $cambio) {
+                LogService::auditar(
+                    'actualizar',
+                    'articulo',
+                    $cambio['articulo']->id,
+                    sprintf(
+                        'Se actualizó el valor unitario del artículo %s por la adquisición NRO. %s: $%s → $%s.',
+                        $cambio['articulo']->descripcion ?? ('#' . $cambio['articulo']->id),
+                        $adquisicion->numero,
+                        number_format((float) $cambio['antes'], 2),
+                        number_format((float) $cambio['despues'], 2)
+                    ),
+                    ['valor_unitario' => $cambio['antes'] === null ? null : (float) $cambio['antes']],
+                    ['valor_unitario' => (float) $cambio['despues']]
+                );
+            }
+
+            foreach ($movimientosCaja ?? [] as $movimiento) {
+                LogService::auditar(
+                    'crear',
+                    'movimiento_caja',
+                    $movimiento->id,
+                    sprintf(
+                        'Se registró un %s de caja por $%s por la adquisición NRO. %s%s',
+                        $movimiento->tipo,
+                        number_format((float) $movimiento->monto, 2),
+                        $adquisicion->numero,
+                        $movimiento->descripcion ? " ({$movimiento->descripcion})" : ''
+                    ),
+                    [],
+                    [
+                        'tipo' => $movimiento->tipo,
+                        'monto' => (float) $movimiento->monto,
+                        'descripcion' => $movimiento->descripcion,
+                        'origen_type' => $movimiento->origen_type,
+                        'origen_id' => $movimiento->origen_id,
+                    ]
+                );
             }
 
             DB::commit();
@@ -294,6 +392,10 @@ class AdministrativoController extends Controller
                 ];
             }, $request->productos, $request->cantidad, $request->necesidad, $request->unidad_medida, $request->iva_producto, $request->valor);
 
+            $detallesAntes = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)
+                ->get(['articulo_id', 'cantidad_solicitada', 'cantidad_recibida', 'unidad_medida_id', 'valor', 'iva', 'necesidad'])
+                ->keyBy('articulo_id');
+
             DB::beginTransaction();
 
             $adquisicion->proyecto_id = $request->proyecto;
@@ -328,9 +430,19 @@ class AdministrativoController extends Controller
 
                 // registrar precio unitario del producto y el iva
                 $articulo = Articulo::find($data['articulo_id']);
-                $articulo->valor_unitario = $data['valor'];
-                $articulo->iva = $data['iva'];
-                $articulo->save();
+                if ($articulo) {
+                    $valorArticuloAntes = $articulo->valor_unitario;
+                    $articulo->valor_unitario = $data['valor'];
+                    $articulo->iva = $data['iva'];
+                    $articulo->save();
+                    if ($valorArticuloAntes != $data['valor']) {
+                        $cambiosArticulo[] = [
+                            'articulo' => $articulo,
+                            'antes' => $valorArticuloAntes,
+                            'despues' => $data['valor'],
+                        ];
+                    }
+                }
             }
 
             $orden_recepcion = OrdenRecepcion::updateOrCreate([
@@ -362,6 +474,7 @@ class AdministrativoController extends Controller
                 // Registrar en caja si el pago esta completado y si fue pagado en efectivo
                 if ($adquisicion->orden_recepcion && $adquisicion->orden_recepcion->forma_pago->slug == 'forma.pago.contado') {
                     $detalles = AdquisicionDetalle::where('adquisicion_id', $adquisicion->id)->get();
+                    $movimientosCaja = [];
 
                     foreach ($detalles as $detalle) {
 
@@ -376,7 +489,7 @@ class AdministrativoController extends Controller
                             'origen_id' => $adquisicion->id,
                         ]);
 
-                        MovimientoCaja::registrarMovimiento($request);
+                        $movimientosCaja[] = MovimientoCaja::registrarMovimiento($request);
                     }
                 }
             }
@@ -393,6 +506,90 @@ class AdministrativoController extends Controller
                     ->whereIn('articulo_id', $productos_eliminar)->delete();
             }
 
+            $lineasAntes = [];
+            $lineasDespues = [];
+            foreach ($result as $data) {
+                $detalleAntes = $detallesAntes->get((int) $data['articulo_id']);
+                $antesLinea = $detalleAntes ? [
+                    'cantidad_solicitada' => (float) $detalleAntes->cantidad_solicitada,
+                    'cantidad_recibida' => $detalleAntes->cantidad_recibida === null ? null : (float) $detalleAntes->cantidad_recibida,
+                    'valor' => (float) $detalleAntes->valor,
+                    'iva' => (float) $detalleAntes->iva,
+                    'unidad_medida_id' => $detalleAntes->unidad_medida_id,
+                    'necesidad' => $detalleAntes->necesidad,
+                ] : null;
+                $despuesLinea = [
+                    'cantidad_solicitada' => (float) $data['cantidad_solicitada'],
+                    'cantidad_recibida' => (float) $data['cantidad_solicitada'],
+                    'valor' => $detalleAntes ? (float) $detalleAntes->valor : null,
+                    'iva' => (float) $data['iva'],
+                    'unidad_medida_id' => $data['unidad_medida_id'],
+                    'necesidad' => $data['necesidad'],
+                ];
+                if ($antesLinea != $despuesLinea) {
+                    $lineasAntes[$data['articulo_id']] = $antesLinea;
+                    $lineasDespues[$data['articulo_id']] = $despuesLinea;
+                }
+            }
+
+            LogService::auditar(
+                'actualizar',
+                'adquisicion',
+                $adquisicion->id,
+                sprintf(
+                    'Se actualizó la adquisición administrativa NRO. %s: %d línea(s) modificada(s).',
+                    $adquisicion->numero,
+                    count($lineasDespues)
+                ),
+                [
+                    'numero' => $adquisicion->numero,
+                    'lineas' => $lineasAntes,
+                ],
+                [
+                    'numero' => $adquisicion->numero,
+                    'lineas' => $lineasDespues,
+                ]
+            );
+
+            foreach ($cambiosArticulo ?? [] as $cambio) {
+                LogService::auditar(
+                    'actualizar',
+                    'articulo',
+                    $cambio['articulo']->id,
+                    sprintf(
+                        'Se actualizó el valor unitario del artículo %s por la adquisición NRO. %s: $%s → $%s.',
+                        $cambio['articulo']->descripcion ?? ('#' . $cambio['articulo']->id),
+                        $adquisicion->numero,
+                        number_format((float) $cambio['antes'], 2),
+                        number_format((float) $cambio['despues'], 2)
+                    ),
+                    ['valor_unitario' => $cambio['antes'] === null ? null : (float) $cambio['antes']],
+                    ['valor_unitario' => (float) $cambio['despues']]
+                );
+            }
+
+            foreach ($movimientosCaja ?? [] as $movimiento) {
+                LogService::auditar(
+                    'crear',
+                    'movimiento_caja',
+                    $movimiento->id,
+                    sprintf(
+                        'Se registró un %s de caja por $%s por la adquisición NRO. %s%s',
+                        $movimiento->tipo,
+                        number_format((float) $movimiento->monto, 2),
+                        $adquisicion->numero,
+                        $movimiento->descripcion ? " ({$movimiento->descripcion})" : ''
+                    ),
+                    [],
+                    [
+                        'tipo' => $movimiento->tipo,
+                        'monto' => (float) $movimiento->monto,
+                        'descripcion' => $movimiento->descripcion,
+                        'origen_type' => $movimiento->origen_type,
+                        'origen_id' => $movimiento->origen_id,
+                    ]
+                );
+            }
 
             DB::commit();
             LogService::log('info', 'Actualizacion la informacion de la adquisicion #' . $adquisicion->id, ['user_id' => auth()->id(), 'action' => 'update']);
@@ -458,6 +655,13 @@ class AdministrativoController extends Controller
 
         try {
             DB::beginTransaction();
+            $detallesRecepcionAntes = $adquisicion->adquisiciones_detalle
+                ->keyBy('articulo_id')
+                ->map(fn ($detalle) => [
+                    'cantidad_recibida' => $detalle->cantidad_recibida === null ? null : (float) $detalle->cantidad_recibida,
+                    'valor' => (float) $detalle->valor,
+                    'unidad_medida_id' => $detalle->unidad_medida_id,
+                ])->toArray();
             $orden_recepcion = OrdenRecepcion::updateOrCreate(
                 [
                     'adquisicion_id' => $adquisicion->id
@@ -473,6 +677,7 @@ class AdministrativoController extends Controller
                 $adquisicion->nro_proforma = $request->nro_proforma;
                 $adquisicion->save();
                 // Actualiza la cantidad recibiba en el detalle del pedido
+                $inventarioIngresado = [];
                 foreach ($adquisicion->adquisiciones_detalle as $index => $detalle) {
                     $detalle->cantidad_recibida = str_replace(',', '', $cantidades_recibidas[$index]);
 
@@ -491,6 +696,7 @@ class AdministrativoController extends Controller
 
 
                     if ($inventario[$index] && $orden_completa) {
+                        $cantidadInventario = (float) str_replace(',', '', $cantidades_recibidas[$index]);
                         Inventario::create([
                             'orden_recepcion_id' => $orden_recepcion->id,
                             'producto_id' => $detalle->articulo_id,
@@ -499,6 +705,7 @@ class AdministrativoController extends Controller
                             'usuario_id' => Auth::user()->id,
                             'estado' => 10,
                         ]);
+                        $inventarioIngresado[$detalle->articulo_id] = $cantidadInventario;
                     }
                     if (!$detalle->save()) {
                         throw new Exception('Error al intentar guardar la orden de recepcion.');
@@ -506,6 +713,37 @@ class AdministrativoController extends Controller
                 }
                 DB::commit();
                 LogService::log('info', 'Orden recepción creada', ['user_id' => auth()->id(), 'action' => 'create']);
+                $lineasRecepcion = [];
+                foreach ($adquisicion->adquisiciones_detalle as $detalle) {
+                    $detalle->refresh();
+                    $lineasRecepcion[$detalle->articulo_id] = [
+                        'cantidad_recibida' => $detalle->cantidad_recibida === null ? null : (float) $detalle->cantidad_recibida,
+                        'valor' => (float) $detalle->valor,
+                        'inventario' => $inventarioIngresado[$detalle->articulo_id] ?? 0,
+                    ];
+                }
+                LogService::auditar(
+                    'crear',
+                    'orden_recepcion',
+                    $orden_recepcion->id,
+                    sprintf(
+                        'Se creó la orden de recepción del pedido NRO. %s del proveedor %s (%s, %d unidad(es) al stock).',
+                        $adquisicion->numero,
+                        $orden_recepcion->proveedor->razon_social ?? 'sin proveedor',
+                        $orden_completa ? 'completada' : 'parcial',
+                        count(array_filter($inventarioIngresado))
+                    ),
+                    [],
+                    [
+                        'adquisicion' => $adquisicion->id,
+                        'numero' => $adquisicion->numero,
+                        'proveedor' => $orden_recepcion->proveedor_id,
+                        'forma_pago' => $orden_recepcion->forma_pago_id,
+                        'completado' => (bool) $orden_recepcion->completado,
+                        'lineas_antes' => $detallesRecepcionAntes,
+                        'lineas' => $lineasRecepcion,
+                    ]
+                );
                 return redirect()->route('administrativo.adquisicion.recepcion', ['tipo' => $tipo, 'adquisicion' => $adquisicion->id])->with('success', 'Orden de recepción generada con éxito.');
             } else {
                 throw new Exception('Error al intentar guardar la orden de recepcion');
@@ -524,19 +762,46 @@ class AdministrativoController extends Controller
             $pedido = Adquisicion::find($adquisicionId);
 
             if ($pedido) {
-                // Eliminar el registro de la base de datos
-                if ($pedido->delete()) {
-                    // Verificar si hay un archivo asociado
-                    if ($pedido->archivo && Storage::disk('digitalocean')->exists($pedido->archivo)) {
-                        // Eliminar el archivo
-                        Storage::disk('digitalocean')->delete($pedido->archivo);
+                DB::beginTransaction();
+                try {
+                    $detallePedido = $pedido->adquisiciones_detalle()->get()->toArray();
+                    LogService::auditar(
+                        'eliminar',
+                        'adquisicion',
+                        $pedido->id,
+                        sprintf(
+                            'Se eliminó la adquisición NRO. %s con %d línea(s).',
+                            $pedido->numero,
+                            count($detallePedido)
+                        ),
+                        array_merge($pedido->toArray(), [
+                            'detalle' => $detallePedido,
+                        ])
+                    );
+                    $archivoPedido = $pedido->archivo;
+                    // Eliminar el registro de la base de datos
+                    if ($pedido->delete()) {
+                        // Verificar si hay un archivo asociado
+                        if ($archivoPedido && Storage::disk('digitalocean')->exists($archivoPedido)) {
+                            // Eliminar el archivo
+                            Storage::disk('digitalocean')->delete($archivoPedido);
+                        }
+
+                        DB::commit();
+                        // Registrar el log
+                        LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
+
+                        return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
                     }
+                    DB::rollBack();
 
-                    // Registrar el log
-                    LogService::log('info', 'Adquisición eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Ocurrió un error al intentar eliminar el registro, por favor vuelva a intentar si el problema persiste comuníquese con el administrador del sistema.'
+                    ]);
+                } catch (Throwable $e) {
+                    DB::rollBack();
 
-                    return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
-                } else {
                     return response()->json([
                         'success' => false,
                         'message' => 'Ocurrió un error al intentar eliminar el registro, por favor vuelva a intentar si el problema persiste comuníquese con el administrador del sistema.'
