@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use App\Constants\MessagesConstant;
+use App\Services\LogService;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
@@ -91,6 +92,22 @@ class UserController extends Controller
 
             $user = User::create($parametros);
             if ($user->roles()->sync($request->get('perfil'))) {
+                $rolesAsignados = Role::whereIn('id', (array) $request->get('perfil'))->pluck('name')->toArray();
+                LogService::auditar(
+                    'crear',
+                    'user',
+                    $user->id,
+                    'Se creó el usuario ' . $user->usuario . ' con el perfil: ' . ($rolesAsignados !== [] ? implode(', ', $rolesAsignados) : 'sin perfil asignado') . '.',
+                    [],
+                    [
+                        'nombre' => $user->nombre,
+                        'usuario' => $user->usuario,
+                        'correo' => $user->correo,
+                        'telefono' => $user->telefono,
+                        'activo' => $user->activo,
+                        'roles' => $rolesAsignados,
+                    ]
+                );
                 DB::commit();
                 return redirect()->route('sistema.users.create')
                     ->with('success', 'Usuario creado con éxito.');
@@ -148,6 +165,19 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
+            $rolesAntes = $user->roles()->pluck('name')->toArray();
+            sort($rolesAntes);
+            $antes = [
+                'nombre' => $user->nombre,
+                'usuario' => $user->usuario,
+                'correo' => $user->correo,
+                'telefono' => $user->telefono,
+                'activo' => $user->activo,
+                'roles' => $rolesAntes,
+            ];
+            // Solo se registra el hecho del cambio, nunca la clave ni su hash.
+            $cambioClave = (bool) $request->get('password');
+
             if ($user->id > 1) {
                 $user->nombre = $request->get('nombres');
                 $user->usuario = $request->get('usuario');
@@ -163,6 +193,40 @@ class UserController extends Controller
 
             if ($user->save()) {
                 $user->roles()->sync($request->get('perfil'));
+                $rolesDespues = $user->roles()->pluck('name')->toArray();
+                sort($rolesDespues);
+                $completoDespues = [
+                    'nombre' => $user->nombre,
+                    'usuario' => $user->usuario,
+                    'correo' => $user->correo,
+                    'telefono' => $user->telefono,
+                    'activo' => $user->activo,
+                    'roles' => $rolesDespues,
+                ];
+                if ($cambioClave) {
+                    $completoDespues['clave_cambiada'] = true;
+                }
+                // Solo los campos que cambian; los roles siempre, que es el rastro de la escalada.
+                $antesDiff = [];
+                $despuesDiff = [];
+                foreach ($completoDespues as $campo => $valor) {
+                    if ($campo === 'clave_cambiada') {
+                        $despuesDiff[$campo] = $valor;
+                        continue;
+                    }
+                    if ($campo === 'roles' || $antes[$campo] != $valor) {
+                        $antesDiff[$campo] = $antes[$campo];
+                        $despuesDiff[$campo] = $valor;
+                    }
+                }
+                $mensaje = 'Se actualizó el usuario ' . $user->usuario . '.';
+                if ($cambioClave) {
+                    $mensaje .= ' Se cambió la clave.';
+                }
+                if ($rolesAntes != $rolesDespues) {
+                    $mensaje .= ' Roles: ' . implode(', ', $rolesAntes) . ' → ' . implode(', ', $rolesDespues) . '.';
+                }
+                LogService::auditar('actualizar', 'user', $user->id, $mensaje, $antesDiff, $despuesDiff);
                 DB::commit();
                 return redirect()->route('sistema.users.edit', $user->id)->with('success', 'Datos actualizados con éxito.');
             } else {
@@ -179,6 +243,10 @@ class UserController extends Controller
     {
         DB::beginTransaction();
         try {
+            // Solo se registra el hecho del cambio, nunca la clave ni su hash.
+            $cambioClave = (bool) $request->get('password');
+            $correoAntes = $user->correo;
+            $telefonoAntes = $user->telefono;
             if ($request->get('password')) {
                 $user->clave = bcrypt($request->get('password'));
             }
@@ -189,6 +257,25 @@ class UserController extends Controller
                 $user->telefono = $request->get('telefono');
             }
             if ($user->save()) {
+                if ($cambioClave) {
+                    LogService::auditar(
+                        'cambiar_clave',
+                        'user',
+                        $user->id,
+                        'El usuario ' . $user->usuario . ' cambió su clave.',
+                        [],
+                        ['clave_cambiada' => true]
+                    );
+                } elseif ($user->correo !== $correoAntes || $user->telefono !== $telefonoAntes) {
+                    LogService::auditar(
+                        'actualizar',
+                        'user',
+                        $user->id,
+                        'El usuario ' . $user->usuario . ' actualizó su perfil.',
+                        ['correo' => $correoAntes, 'telefono' => $telefonoAntes],
+                        ['correo' => $user->correo, 'telefono' => $user->telefono]
+                    );
+                }
                 DB::commit();
                 return redirect()->route('perfil.show')->with('success', 'Datos actualizados con éxito.');
             }
@@ -207,12 +294,32 @@ class UserController extends Controller
     public function destroy($id)
     {
         if ($id > 1) {
-            $user = User::find($id)->delete();
-            if ($user) {
-                return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
-            } else {
+            $modelo = User::with('roles')->find($id);
+            if ($modelo) {
+                // La auditoria es el unico rastro: se guarda ANTES del delete y sin el hash de la clave.
+                LogService::auditar(
+                    'eliminar',
+                    'user',
+                    $modelo->id,
+                    'Se eliminó el usuario ' . $modelo->usuario . '.',
+                    [
+                        'nombre' => $modelo->nombre,
+                        'usuario' => $modelo->usuario,
+                        'correo' => $modelo->correo,
+                        'telefono' => $modelo->telefono,
+                        'activo' => $modelo->activo,
+                        'roles' => $modelo->roles->pluck('name')->toArray(),
+                    ],
+                    []
+                );
+                if ($modelo->delete()) {
+                    return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
+                }
+
                 return response()->json(['success' => false, 'message' => 'Error al intentar eliminar el registro.']);
             }
+
+            return response()->json(['success' => false, 'message' => 'Error al intentar eliminar el registro.']);
         } else {
             return response()->json(['success' => false, 'message' => 'Acción no permitida, por seguridad el usuario Administrador no puede ser eliminado.']);
         }

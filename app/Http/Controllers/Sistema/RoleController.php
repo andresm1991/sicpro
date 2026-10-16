@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sistema;
 
 use App\Http\Controllers\Controller;
+use App\Services\LogService;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -81,11 +82,26 @@ class RoleController extends Controller
         // form checkboxes can trigger findByName instead of findById in some versions.
         $permissionIds = array_map('intval', $permissionIds);
 
+        $permisosAntes = $role->permissions()->pluck('name')->toArray();
+        sort($permisosAntes);
+
         $role->syncPermissions($permissionIds);
 
         // Force-clear the permission cache so role changes take effect immediately
         // for all users, not just the admin making the change.
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $permisosDespues = $role->permissions()->pluck('name')->toArray();
+        sort($permisosDespues);
+
+        LogService::auditar(
+            'actualizar',
+            'rol',
+            $role->id,
+            'Se actualizaron los permisos del rol ' . $role->name . '.',
+            ['permisos' => $permisosAntes],
+            ['permisos' => $permisosDespues]
+        );
 
         return redirect()->route('sistema.roles.edit', $role)
             ->with('success', 'Permisos actualizados con éxito.');
