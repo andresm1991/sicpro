@@ -617,6 +617,12 @@ class AdministrativoController extends Controller
         try {
             DB::beginTransaction();
 
+            $proformaAntes = $contratista->nro_proforma;
+            $montoAntes = (float) $contratista->total_contratistas;
+            $detallesAntes = DetalleContratista::where('contratista_id', $contratista->id)
+                ->get(['articulo_id', 'cantidad', 'unidad_medida_id', 'valor_unitario', 'costo_indirecto'])
+                ->keyBy('articulo_id');
+
             $contratista->nro_proforma = $request->nro_proforma;
             $contratista->save();
 
@@ -643,8 +649,83 @@ class AdministrativoController extends Controller
 
                 // registrar precio unitario del producto y el iva
                 $articulo = Articulo::find($item['producto']);
-                $articulo->valor_unitario = $item['valor_unitario'];
-                $articulo->save();
+                if ($articulo) {
+                    $valorArticuloAntes = $articulo->valor_unitario;
+                    $articulo->valor_unitario = $item['valor_unitario'];
+                    $articulo->save();
+                    if ($valorArticuloAntes != $item['valor_unitario']) {
+                        $cambiosArticulo[] = [
+                            'articulo' => $articulo,
+                            'antes' => $valorArticuloAntes,
+                            'despues' => $item['valor_unitario'],
+                        ];
+                    }
+                }
+            }
+
+            $contratista->load('detalle_contratistas');
+            $montoDespues = (float) $contratista->total_contratistas;
+
+            $lineasAntes = [];
+            $lineasDespues = [];
+            foreach ($items as $item) {
+                $detalleAntes = $detallesAntes->get((int) $item['producto']);
+                $antesLinea = $detalleAntes ? [
+                    'cantidad' => (float) $detalleAntes->cantidad,
+                    'valor_unitario' => (float) $detalleAntes->valor_unitario,
+                    'costo_indirecto' => $detalleAntes->costo_indirecto,
+                    'unidad_medida_id' => $detalleAntes->unidad_medida_id,
+                ] : null;
+                $despuesLinea = [
+                    'cantidad' => (float) $item['cantidad'],
+                    'valor_unitario' => (float) $item['valor_unitario'],
+                    'costo_indirecto' => $item['costo_indirecto'],
+                    'unidad_medida_id' => $item['unidad_medida'],
+                ];
+                if ($antesLinea != $despuesLinea) {
+                    $lineasAntes[$item['producto']] = $antesLinea;
+                    $lineasDespues[$item['producto']] = $despuesLinea;
+                }
+            }
+
+            LogService::auditar(
+                'actualizar',
+                'orden_trabajo_contratista',
+                $contratista->id,
+                sprintf(
+                    'Se actualizó la orden de trabajo #%d del contratista %s: monto $%s → $%s.',
+                    $contratista->id,
+                    $contratista->proveedor->razon_social ?? 'el contratista',
+                    number_format($montoAntes, 2),
+                    number_format($montoDespues, 2)
+                ),
+                [
+                    'nro_proforma' => $proformaAntes,
+                    'monto' => $montoAntes,
+                    'lineas' => $lineasAntes,
+                ],
+                [
+                    'nro_proforma' => $request->nro_proforma,
+                    'monto' => $montoDespues,
+                    'lineas' => $lineasDespues,
+                ]
+            );
+
+            foreach ($cambiosArticulo ?? [] as $cambio) {
+                LogService::auditar(
+                    'actualizar',
+                    'articulo',
+                    $cambio['articulo']->id,
+                    sprintf(
+                        'Se actualizó el valor unitario del artículo %s por la orden de trabajo #%d: $%s → $%s.',
+                        $cambio['articulo']->descripcion ?? ('#' . $cambio['articulo']->id),
+                        $contratista->id,
+                        number_format((float) $cambio['antes'], 2),
+                        number_format((float) $cambio['despues'], 2)
+                    ),
+                    ['valor_unitario' => $cambio['antes'] === null ? null : (float) $cambio['antes']],
+                    ['valor_unitario' => (float) $cambio['despues']]
+                );
             }
 
             DB::commit();
@@ -678,10 +759,12 @@ class AdministrativoController extends Controller
         if ($request->ajax()) {
             try {
                 DB::beginTransaction();
+                $pagadoAntes = (bool) $pago->pagado;
                 $pago->pagado = true;
 
                 if ($pago->save()) {
                     $contratista = Contratista::find($pago->contratista_id);
+                    $estadoOrdenAntes = $contratista ? $contratista->estado_id : null;
                     $total_pagado = $pago::where('contratista_id', $pago->contratista_id)->where('pagado', true)->sum('valor');
 
                     if ($contratista->total_contratistas == $total_pagado) {
@@ -689,6 +772,28 @@ class AdministrativoController extends Controller
                         $contratista->estado_id = $estado_id;
                         $contratista->save();
                     }
+                    $estadoOrdenDespues = $contratista ? $contratista->estado_id : null;
+                    LogService::auditar(
+                        'pagar',
+                        'pago_orden_trabajo_contratista',
+                        $pago->id,
+                        sprintf(
+                            'Se registró el pago de $%s de la orden de trabajo #%d (%s).',
+                            number_format((float) $pago->valor, 2),
+                            $pago->contratista_id,
+                            ($contratista && $contratista->proveedor) ? $contratista->proveedor->razon_social : 'el contratista'
+                        ),
+                        [
+                            'pagado' => $pagadoAntes,
+                            'valor' => (float) $pago->valor,
+                            'estado_orden_id' => $estadoOrdenAntes,
+                        ],
+                        [
+                            'pagado' => true,
+                            'valor' => (float) $pago->valor,
+                            'estado_orden_id' => $estadoOrdenDespues,
+                        ]
+                    );
                     DB::commit();
                     LogService::log('info', 'Pago de contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
                     PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Pago orden de trabajo', 'El usuario ' . Auth::user()->nombre . ' genero pago a contratista ' . $contratista->proveedor->razon_social, route('pdf.pago.orden.trabajo', $pago->id));
