@@ -51,5 +51,5 @@
 
 
 @section('scripts')
-    <script src="{{ asset('js/proceso_ventas.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset_version('js/proceso_ventas.js') }}" type="module"></script>
 @endsection

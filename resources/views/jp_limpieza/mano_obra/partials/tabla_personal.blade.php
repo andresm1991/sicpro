@@ -119,5 +119,5 @@
         var manoObraUrl =
             "{{ isset($proyecto) ? route('jp.limpieza.mano.obra.create', $proyecto->id) : route('jp.limpieza.mano.obra.administrativa.create') }}"
     </script>
-    <script src="{{ asset('js/jp_limpieza/mano_obra.js?v=' . config('app.version', '')) }}"></script>
+    <script src="{{ asset_version('js/jp_limpieza/mano_obra.js') }}"></script>
 @endsection

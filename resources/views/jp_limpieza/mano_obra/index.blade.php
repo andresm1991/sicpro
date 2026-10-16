@@ -93,5 +93,5 @@
     <script>
         var manObraUrl = "{{ route('jp.limpieza.mano.obra.index', isset($proyecto) ? $proyecto->id : 0) }}";
     </script>
-    <script src="{{ asset('js/jp_limpieza/mano_obra.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset_version('js/jp_limpieza/mano_obra.js') }}" type="module"></script>
 @endsection

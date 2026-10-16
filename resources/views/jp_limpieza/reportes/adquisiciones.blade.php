@@ -125,5 +125,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/jp_limpieza/reportes_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset_version('js/jp_limpieza/reportes_scripts.js') }}" type="module"></script>
 @endsection

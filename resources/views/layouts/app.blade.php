@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="{{ asset('plugins/jquery-timepicker-1.3.5/jquery.timepicker.min.css') }}">
 
     <!-- Styles -->
-    <link href="{{ asset('css/app.css?v=' . config('app.version', '')) }}" rel="stylesheet">
+    <link href="{{ asset_version('css/app.css') }}" rel="stylesheet">
     <!-- Dropify-->
     {!! Html::style('plugins/dropify/css/dropify.min.css') !!}
     <!-- Summernote -->
@@ -83,7 +83,7 @@
 <script src="{{ asset('plugins/sweetalert2/sweetalert2.min.js') }}"></script>
 <!-- Dropify -->
 {!! Html::script('plugins/dropify/js/dropify.min.js') !!}
-<script src="{{ asset('js/app.js?v=' . config('app.version', '')) }}"></script>
+<script src="{{ asset_version('js/app.js') }}"></script>
 <script src="{{ asset('plugins/dataTables/datatables.min.js') }}"></script>
 <script src="{{ asset('plugins/summernote/summernote-bs4.min.js') }}"></script>
 

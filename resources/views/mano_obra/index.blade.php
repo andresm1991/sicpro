@@ -101,5 +101,5 @@
         var url =
             "{{ route('proyecto.adquisiciones.mano.obra', ['tipo' => $tipo, 'tipo_id' => $tipo_id, 'proyecto' => $proyecto->id, 'tipo_etapa' => $tipo_etapa->id, 'tipo_adquisicion' => $tipo_adquisicion->id]) }}";
     </script>
-    <script src="{{ asset('js/mano_obra_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset_version('js/mano_obra_scripts.js') }}" type="module"></script>
 @endsection

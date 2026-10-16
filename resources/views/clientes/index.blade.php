@@ -82,5 +82,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/clientes.js?v=' . config('app.version', '')) }}"></script>
+    <script src="{{ asset_version('js/clientes.js') }}"></script>
 @endsection

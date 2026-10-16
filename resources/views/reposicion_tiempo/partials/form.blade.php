@@ -83,5 +83,5 @@
 
 
 @section('scripts')
-    <script src="{{ asset('js/reposicion_tiempo_scripts.js?v=' . config('app.version', '')) }}"></script>
+    <script src="{{ asset_version('js/reposicion_tiempo_scripts.js') }}"></script>
 @endsection

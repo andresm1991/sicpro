@@ -39,6 +39,13 @@ No dedicated PHP linter or static analysis Composer scripts are defined in this 
 The frontend is **not bundled**. Blade views load the scripts as ES modules
 (`<script type="module" src="/js/...">`) and the browser resolves their `import`
 statements, so `helpers.js` must keep working as a real ES module.
+
+Asset URLs in Blade views are built with `asset_version('js/...')`
+(`app/helpers.php`), which appends the file's modification time as the `?v=`
+query. Do not go back to `?v=` + `config('app.version')`: that value is a
+constant, so the URL does not change when a script changes and the browser keeps
+serving its cached copy — the user then sees the old behavior of a fixed report
+until a hard reload.
 `webpack.mix.js` only copies `resources/js` and `resources/css` into `public/`,
 plus `resources/service-worker.js` to the root of `public/`: a service worker
 only controls the directory it is served from, and the registration

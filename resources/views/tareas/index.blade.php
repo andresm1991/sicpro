@@ -88,7 +88,7 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/tareas_scripts.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset_version('js/tareas_scripts.js') }}" type="module"></script>
 
     <script>
         var url = "{{ route('tarea.index') }}";

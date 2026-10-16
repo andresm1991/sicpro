@@ -211,5 +211,5 @@
     <script>
         var presupuestoUrl = "{{ route('jp.limpieza.presupuesto.index', $proyecto->id) }}";
     </script>
-    <script src="{{ asset('js/jp_limpieza/presupuesto.js?v=' . config('app.version', '')) }}" type="module"></script>
+    <script src="{{ asset_version('js/jp_limpieza/presupuesto.js') }}" type="module"></script>
 @endsection

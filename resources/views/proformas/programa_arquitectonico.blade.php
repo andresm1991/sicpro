@@ -150,5 +150,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/proformas.js?v=' . config('app.version', '')) }}"></script>
+    <script src="{{ asset_version('js/proformas.js') }}"></script>
 @endsection

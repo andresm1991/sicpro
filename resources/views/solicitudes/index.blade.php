@@ -98,5 +98,5 @@
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('js/solicitud_scripts.js?v=' . config('app.version', '')) }}"></script>
+    <script src="{{ asset_version('js/solicitud_scripts.js') }}"></script>
 @endsection

@@ -22,6 +22,24 @@ use App\Models\JPLimpieza\Proyecto as ProyectoJPLimpieza;
 use App\Models\ProformaProducto;
 use App\Models\Proyecto;
 
+if (!function_exists('asset_version')) {
+    /**
+     * URL de un asset con la version del propio archivo en el query string.
+     *
+     * Las vistas versionaban con config('app.version'), un literal que hay que
+     * acordarse de subir a mano: si no cambia, el navegador sirve el JS viejo
+     * desde su cache y el usuario sigue viendo el calculo anterior (paso con el
+     * reporte de adquisiciones). El mtime cambia solo cuando el archivo cambia.
+     */
+    function asset_version(string $path): string
+    {
+        $ruta = public_path($path);
+        $version = is_file($ruta) ? filemtime($ruta) : config('app.version', '');
+
+        return asset($path) . '?v=' . $version;
+    }
+}
+
 if (!function_exists('encrypted_route')) {
     function encrypted_route($name, $parameters = [], $absolute = true)
     {
