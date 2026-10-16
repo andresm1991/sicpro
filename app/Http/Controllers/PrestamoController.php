@@ -347,7 +347,7 @@ class PrestamoController extends Controller
 
                 // Actualizar el saldo del préstamo
                 $prestamo->saldo = $prestamo->saldo - $monto_pagado;
-                $prestamo->estado_id = $prestamo->saldo - $monto_pagado <= 0 ? CatalogoDato::getIdCatalogo('estados.prestamos.pagado') : CatalogoDato::getIdCatalogo('estados.prestamos.pendiente');
+                $prestamo->estado_id = $prestamo->saldo <= 0 ? CatalogoDato::getIdCatalogo('estados.prestamos.pagado') : CatalogoDato::getIdCatalogo('estados.prestamos.pendiente');
                 $prestamo->save();
 
                 $prestamo->load('estado');
@@ -387,7 +387,17 @@ class PrestamoController extends Controller
 
             if ($saldoRestante <= 0) {
                 return response()->json(['success' => false, 'mensaje' => 'No es posible recalcular los pagos porque no existe pagos pendiente.']);
-            } else if ($pagosPendientes->count() == 0) {
+            }
+
+            $saldoAntes = (float) $prestamo->saldo;
+            $planAntes = $pagosPendientes->mapWithKeys(fn ($pago) => [$pago->id => (float) $pago->monto_programado])->toArray();
+            $antes = [
+                'saldo' => $saldoAntes,
+                'cantidad_pagos' => $pagosPendientes->count(),
+                'plan' => $planAntes,
+            ];
+
+            if ($pagosPendientes->count() == 0) {
                 $cuota_semanal = calcularCuotaSemanalPrestamo($prestamo->monto, $prestamo->interes, $prestamo->plazo);
                 $fechasPago = calcularFechasPago($prestamo->fecha_solicitud, $prestamo->plazo);
 
@@ -406,6 +416,20 @@ class PrestamoController extends Controller
                         'metodo_pago_id' => $metodo_pago,
                     ]);
                 }
+                $planDespues = $prestamo->pago_prestamo()->orderBy('fecha_pago', 'asc')->get()
+                    ->mapWithKeys(fn ($pago) => [$pago->id => (float) $pago->monto_programado])->toArray();
+                LogService::auditar(
+                    'recalcular',
+                    'prestamo',
+                    $prestamo->id,
+                    'Recálculo de pagos del préstamo #' . $prestamo->id . ' (plan generado, saldo $' . number_format($saldoAntes, 2) . ').',
+                    $antes,
+                    [
+                        'saldo' => (float) $prestamo->fresh()->saldo,
+                        'cantidad_pagos' => count($planDespues),
+                        'plan' => $planDespues,
+                    ]
+                );
                 return response()->json(['success' => true, 'mensaje' => 'Se han generado los pagos programados para el préstamo.']);
             }
 
@@ -423,6 +447,21 @@ class PrestamoController extends Controller
                         $saldoRestante -= $nuevaCuota;
                     }
                 });
+
+                $planDespues = $prestamo->pago_prestamo()->orderBy('fecha_pago', 'asc')->get()
+                    ->mapWithKeys(fn ($pago) => [$pago->id => (float) $pago->monto_programado])->toArray();
+                LogService::auditar(
+                    'recalcular',
+                    'prestamo',
+                    $prestamo->id,
+                    'Recálculo de pagos del préstamo #' . $prestamo->id . ' (' . $pagosPendientes->count() . ' pagos pendientes, saldo $' . number_format($saldoAntes, 2) . ').',
+                    $antes,
+                    [
+                        'saldo' => (float) $prestamo->fresh()->saldo,
+                        'cantidad_pagos' => $pagosPendientes->count(),
+                        'plan' => $planDespues,
+                    ]
+                );
 
                 $pagos = PagoPrestamo::where('prestamo_id', $prestamoId)->orderBy('fecha_pago', 'asc')->paginate(15);
                 $htmlPagos = '';
