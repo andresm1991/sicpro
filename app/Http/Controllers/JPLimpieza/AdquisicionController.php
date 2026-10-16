@@ -6,7 +6,7 @@ use Exception;
 use Throwable;
 use App\Models\Proveedor;
 use App\Models\CatalogoDato;
-use App\Services\LogService;
+use App\Services\JPLimpieza\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\JPLimpieza\Caja;
@@ -449,11 +449,14 @@ class AdquisicionController extends Controller
             DB::beginTransaction();
             $adquisicion = Adquisicion::find($id);
             if ($adquisicion) {
+                $antes = $adquisicion->toArray();
                 if ($adquisicion->archivo && Storage::disk('digitalocean')->exists($adquisicion->archivo)) {
                     Storage::disk('digitalocean')->delete($adquisicion->archivo);
                 }
+                $adquisicionId = $adquisicion->id;
                 $adquisicion->delete();
                 LogService::log('info', 'Adquisición JPLimpieza eliminada', ['user_id' => auth()->id(), 'action' => 'destroy']);
+                LogService::auditar('eliminar', 'adquisicion_jp', $adquisicionId, 'Adquisición JPLimpieza eliminada', $antes);
                 DB::commit();
                 return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente.']);
             }

@@ -13,6 +13,15 @@
                         <div class="row">
                             <div class="col-md-2 col-12">
                                 <div class="form-group">
+                                    <label>Base</label>
+                                    <select name="base" class="form-control form-control-sm" onchange="this.form.submit()">
+                                        <option value="principal" {{ ($base ?? 'principal') === 'principal' ? 'selected' : '' }}>Principal</option>
+                                        <option value="jp" {{ ($base ?? 'principal') === 'jp' ? 'selected' : '' }}>JP Limpieza</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-12">
+                                <div class="form-group">
                                     <label>Entidad</label>
                                     <select name="entidad" class="form-control form-control-sm">
                                         <option value="">Todas</option>
@@ -78,6 +87,11 @@
                             </div>
                         </div>
                     </form>
+                    @if (($base ?? 'principal') === 'jp')
+                        <div class="alert alert-info py-2">
+                            Estas filas viven en la base de JP Limpieza (<code>jp_limpieza</code>), no en la base principal.
+                        </div>
+                    @endif
                     <div class="table-responsive">
                         <table class="table table-bordered table-hover table-sm">
                             <thead class="thead-dark">

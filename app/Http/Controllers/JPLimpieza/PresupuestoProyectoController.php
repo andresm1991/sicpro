@@ -13,7 +13,7 @@ use App\Models\JPLimpieza\PresupuestoProyecto;
 use App\Models\JPLimpieza\CategoriaPresupuesto;
 use App\Models\JPLimpieza\PlantillaPresupuesto;
 use App\Http\Resources\JPLimpieza\PresupuestoResource;
-use App\Services\LogService;
+use App\Services\JPLimpieza\LogService;
 
 class PresupuestoProyectoController extends Controller
 {
