@@ -202,7 +202,9 @@
                         </tr>
                     </tfoot>
                 </table>
-                @php $totalEtapa += $totalContratistas; @endphp
+                {{-- La etapa suma lo mismo que el pie del reporte y que el balance:
+                     del contratista cuenta lo pagado, no lo contratado. --}}
+                @php $totalEtapa += $totalPagos; @endphp
             @endif
 
             {{-- Mano de Obra --}}
@@ -218,12 +220,12 @@
                     </thead>
                     <tbody>
                         @foreach ($categorias['mano_obra'] as $m)
-                            {{-- CAMBIO: Corregido a 4 decimales (aunque 'cantidad' podría ser entero, lo mantenemos por consistencia) --}}
+                            {{-- Las filas traen 'periodo' y 'pagado' (no cantidad/total). --}}
                             <tr>
-                                <td>{{ number_format($m['cantidad'], 4) }}</td>
-                                <td class="text-right">${{ number_format($m['total'], 4) }}</td>
+                                <td>{{ $m['periodo'] }}</td>
+                                <td class="text-right">${{ number_format($m['pagado'], 4) }}</td>
                             </tr>
-                            @php $totalManoObra += $m['total']; @endphp
+                            @php $totalManoObra += $m['pagado']; @endphp
                         @endforeach
                     </tbody>
                     <tfoot class="total-row">

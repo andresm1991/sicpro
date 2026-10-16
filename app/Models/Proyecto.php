@@ -341,7 +341,14 @@ class Proyecto extends Model
         $gastoAdministrativoTotal = $gastoAdminTotalOperativo + $gastoAdminTotalAdministrativo;
 
         // --- 4. OBTENER PROYECTOS Y CONSOLIDAR DATOS ---
-        $estadosEjecutadosIds = CatalogoDato::whereIn('slug', ['estados.proyectos.ejecucion', 'estados.proyectos.finalizado'])->pluck('id');
+        // El balance incluye tambien los proyectos en estado pendiente: el reporte
+        // de adquisiciones muestra su gasto, y si el balance no los listaba los
+        // dos reportes no cuadraban.
+        $estadosConsideradosIds = CatalogoDato::whereIn('slug', [
+            'estados.proyectos.pendiente',
+            'estados.proyectos.ejecucion',
+            'estados.proyectos.finalizado',
+        ])->pluck('id');
 
         $proyectosQuery = self::query()
             ->when($proyectoInput, function ($q) use ($proyectoInput) {
@@ -349,8 +356,8 @@ class Proyecto extends Model
             })
             ->when($tipoReporte === 'balance_global' && $anioF, fn($q) => $q->whereYear('created_at', $anioF));
 
-        if ($estadosEjecutadosIds->isNotEmpty()) {
-            $proyectosQuery->whereIn('estado_id', $estadosEjecutadosIds);
+        if ($estadosConsideradosIds->isNotEmpty()) {
+            $proyectosQuery->whereIn('estado_id', $estadosConsideradosIds);
         }
 
         if ($tipoReporte === 'balance_proyecto' && $proyectoInput) {

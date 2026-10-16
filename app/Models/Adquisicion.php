@@ -342,6 +342,11 @@ class Adquisicion extends Model
      * datos consultados, y el porcentaje de costos indirectos se aplica sobre
      * ese subtotal. El total general nunca proviene del navegador.
      *
+     * La base de cada categoria es la misma que usa el Reporte Balance de
+     * Gerencia: los contratistas aportan lo PAGADO (no el valor contratado) y
+     * la mano de obra aporta el campo 'pagado' de sus filas. Asi el Total
+     * General del reporte cuadra con los gastos del balance.
+     *
      * @param  array  $data        Resultado de reporteGlobalAdquisiciones()
      * @param  float  $porcentaje  Costos indirectos como % del total final
      * @return array<string, float>
@@ -353,8 +358,8 @@ class Adquisicion extends Model
         $porcentaje = max(0.0, min($porcentaje, 99.99));
 
         $camposPorCategoria = [
-            'contratista' => 'total_contratado',
-            'mano_obra' => 'total',
+            'contratista' => 'pagos',
+            'mano_obra' => 'pagado',
             'materiales_herramientas' => 'total',
             'servicios' => 'total',
         ];
@@ -494,6 +499,39 @@ class Adquisicion extends Model
     }
 
     /**
+     * Rango de fechas del reporte ya normalizado, o null si no vino filtro.
+     *
+     * @return array{0:string,1:string}|null
+     */
+    private static function rangoFechas(array $filters): ?array
+    {
+        return !empty($filters['fechas']) ? RangoFechas::parse($filters['fechas']) : null;
+    }
+
+    /**
+     * Pagos de orden de trabajo efectivamente pagados.
+     *
+     * Con filtro de fechas se acotan al rango (por fecha de pago), igual que la
+     * consulta del Reporte Balance de Gerencia; sin filtro son todos.
+     */
+    private static function pagosContratista($contratista, ?array $rango)
+    {
+        $pagos = $contratista->pagosOrdenTrabajoContratista->where('pagado', true);
+
+        if ($rango === null) {
+            return $pagos;
+        }
+
+        [$inicio, $fin] = $rango;
+
+        return $pagos->filter(function ($pago) use ($inicio, $fin) {
+            $fecha = Carbon::parse($pago->fecha)->toDateString();
+
+            return $fecha >= $inicio && $fecha <= $fin;
+        });
+    }
+
+    /**
      * Obtiene y procesa los datos de Contratistas, agrupados por etapa.
      * La lógica de cálculo es compleja, por lo que agrupamos en PHP después de filtrar en la DB.
      */
@@ -509,29 +547,45 @@ class Adquisicion extends Model
 
         $contratistas = $query->get();
 
+        $rango = self::rangoFechas($filters);
+
         // CAMBIO: Se reemplaza el groupBy por una función de callback para evitar la ambigüedad con SQL.
         // Esto asegura que la agrupación se realice en la colección de PHP.
         return $contratistas->groupBy('etapa_nombre')
-            ->map(function ($contratistasPorEtapa) {
+            ->map(function ($contratistasPorEtapa) use ($rango) {
                 return $contratistasPorEtapa->groupBy(function ($item) {
                     return ($item->proveedor->razon_social ?? 'Sin proveedor') . '|' . ($item->articulo->descripcion ?? 'Sin categoría');
-                })->map(function ($group) {
-                    $first = $group->first();
-                    $totalContratado = $group->sum(function ($c) {
-                        return $c->detalle_contratistas->sum(fn($d) => ($d->cantidad ?? 0) * ($d->valor_unitario ?? 0)) * ($c->numero_casas ?? 1);
-                    });
-                    $pagos = $group->sum(fn($c) => $c->pagosOrdenTrabajoContratista->where('pagado', true)->sum('valor'));
+                })
+                    // Con rango de fechas solo interesan los contratistas con algun
+                    // pago dentro del rango, igual que la consulta del balance.
+                    ->filter(fn($group) => $rango === null
+                        || $group->contains(fn($c) => self::pagosContratista($c, $rango)->isNotEmpty()))
+                    ->map(function ($group) use ($rango) {
+                        $first = $group->first();
+                        $totalContratado = $group->sum(function ($c) {
+                            return $c->detalle_contratistas->sum(fn($d) => ($d->cantidad ?? 0) * ($d->valor_unitario ?? 0)) * ($c->numero_casas ?? 1);
+                        });
+                        $pagos = $group->sum(fn($c) => self::pagosContratista($c, $rango)->sum('valor'));
+                        // El saldo es la deuda real del contrato, no un valor del rango:
+                        // si no, achicar el rango haria "crecer" lo que falta pagar.
+                        $pagosTotales = $rango === null
+                            ? $pagos
+                            : $group->sum(fn($c) => self::pagosContratista($c, null)->sum('valor'));
 
-                    return [
-                        'proveedor' => $first->proveedor->razon_social ?? 'Sin proveedor',
-                        'categoria' => $first->articulo->descripcion ?? 'Sin categoría',
-                        'cantidad' => $group->sum('numero_casas'),
-                        'total_contratado' => $totalContratado,
-                        'pagos' => $pagos,
-                        'saldo' => $totalContratado - $pagos,
-                    ];
-                })->values()->all();
-            })->all();
+                        return [
+                            'proveedor' => $first->proveedor->razon_social ?? 'Sin proveedor',
+                            'categoria' => $first->articulo->descripcion ?? 'Sin categoría',
+                            'cantidad' => $group->sum('numero_casas'),
+                            'total_contratado' => $totalContratado,
+                            'pagos' => $pagos,
+                            'saldo' => $totalContratado - $pagosTotales,
+                        ];
+                    })->values()->all();
+            })
+            // Una etapa sin filas no se informa: sin esto la pantalla mostraria
+            // una etapa vacia en lugar de "Sin resultados".
+            ->filter(fn($filas) => !empty($filas))
+            ->all();
     }
 
     /**
@@ -559,6 +613,16 @@ class Adquisicion extends Model
 
         // El proveedor de mano de obra vive en el detalle, no en la cabecera.
         self::applyCommonFilters($query, $filters, ['subproyecto', 'proveedor', 'etapa'], 'mano_obra', ['proveedor' => 'dmo.proveedor_id']);
+
+        // Con filtro de fechas se listan los periodos que solapan el rango (no
+        // solo los que arrancan dentro), igual que el Reporte Balance de Gerencia.
+        $rango = self::rangoFechas($filters);
+        if ($rango !== null) {
+            [$inicio, $fin] = $rango;
+
+            $query->where('mano_obra.fecha_inicio', '<=', $fin)
+                ->where('mano_obra.fecha_fin', '>=', $inicio);
+        }
 
         // Agrupamos por ID y los campos seleccionados (necesario en SQL estricto)
         $query->groupBy(

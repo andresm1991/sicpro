@@ -1499,7 +1499,9 @@ $(function () {
                         </tfoot>
                     </table>
                 </div>`;
-                totalEtapa += totalContratistas;
+                // La etapa suma la misma base que el pie del PDF y el Reporte Balance
+                // de Gerencia: del contratista cuenta lo pagado, no lo contratado.
+                totalEtapa += totalPagos;
             }
 
             // Tabla de Mano de Obra
