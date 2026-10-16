@@ -47,6 +47,8 @@ mantiene su firma) y el visor es de solo lectura.
 | T9 | S2, S3 | Cierre del tramo: documentar la convencion en WARP.md, verificar el visor end-to-end y correr la suite completa | |
 | T10 | S3 | Auditar `AdministrativoController::pagoOrdenTrabajo` (`:676`): pone `pagado = true`, el flag que decide si ese dinero entra al balance, y cambia el estado de la orden; hoy solo tiene un `log()` generico | |
 | T11 | S3 | Auditar `AdministrativoController::actualizarContratista` (`:615`): muta cantidades, valores y costo indirecto de la orden y hasta `Articulo::valor_unitario`, hoy sin antes/despues | |
+| T12 | S3 | Auditar el registro publico (`Auth/RegisterController.php:70`): crea una credencial sin ningun rastro | |
+| T13 | S3 | Auditar las mutaciones administrativas de adquisiciones (`AdministrativoController::actualizarAdquisicion`, `createRecepcionAdministrativo`, `destroyPedido`, `agergarProductoAdquisicion`), reportadas por el worker de T7 | |
 
 ## Log
 
@@ -87,6 +89,12 @@ L6 (hallazgo del worker de T8, NO editado por estar fuera del alcance):
 `Auth/RegisterController.php:70` usa `Hash::make` al registrar un usuario en el
 flujo publico y no deja auditoria.
 
+L7 (hallazgo del worker de T7, NO editado por estar en un archivo que otro agente
+estaba tocando): en `AdministrativoController` quedan sin auditar
+`actualizarAdquisicion`, `createRecepcionAdministrativo`, `destroyPedido` y
+`agergarProductoAdquisicion`, que mutan adquisiciones y recepciones. Queda como
+T13.
+
 ## Evidencia de commits
 
 | Task | Commit |
@@ -99,7 +107,13 @@ flujo publico y no deja auditoria.
 | T7 | `eff22068` |
 | T8 | `6949e550` |
 | T9 | el commit que agrega esta tabla |
-| T2, T10, T11, T12 | pendientes |
+| T10, T11 | `f0e07ba7` |
+| T12 | `df70cbaa` |
+| T2, T13 | pendientes |
+
+Follow-ups de prestamos (documento `odd/tasks/prestamos-saldo-y-estado.md`):
+`e38ba7e2` (fix del estado y auditoria del recalculo) y `bb9bd2f8` (residuo de
+redondeo y `sum()` a la base).
 
 Verificacion del cierre: suite completa `227 tests, 801 assertions, 4 fallos` (los
 4 preexistentes de roles/modulo sistema, 0 errores) y el visor probado end-to-end
