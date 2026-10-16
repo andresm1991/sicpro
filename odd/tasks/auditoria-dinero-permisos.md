@@ -47,7 +47,7 @@ mantiene su firma) y el visor es de solo lectura.
 | T9 | S2, S3 | Cierre del tramo: documentar la convencion en WARP.md, verificar el visor end-to-end y correr la suite completa | |
 | T10 | S3 | Auditar `AdministrativoController::pagoOrdenTrabajo` (`:676`): pone `pagado = true`, el flag que decide si ese dinero entra al balance, y cambia el estado de la orden; hoy solo tiene un `log()` generico | |
 | T11 | S3 | Auditar `AdministrativoController::actualizarContratista` (`:615`): muta cantidades, valores y costo indirecto de la orden y hasta `Articulo::valor_unitario`, hoy sin antes/despues | |
-| T12 | S3 | Auditar el registro publico (`Auth/RegisterController.php:70`): crea una credencial sin ningun rastro | |
+| T12 | S3 | Auditar el registro publico (`Auth/RegisterController.php:70`): crea una credencial sin ningun rastro. **Dormido**: el humano decidio apagar el registro publico en `64c6901d`, asi que el mapeo y la auditoria del controlador quedan sin ruta que los alcance (sirven si algun dia se vuelve a exponer) | |
 | T13 | S3 | Auditar las mutaciones administrativas de adquisiciones (`AdministrativoController::actualizarAdquisicion`, `createRecepcionAdministrativo`, `destroyPedido`, `agergarProductoAdquisicion`), reportadas por el worker de T7 | |
 
 ## Log
@@ -108,7 +108,7 @@ T13.
 | T8 | `6949e550` |
 | T9 | el commit que agrega esta tabla |
 | T10, T11 | `f0e07ba7` |
-| T12 | `df70cbaa` |
+| T12 | `df70cbaa` y `64c6901d` (cierre del registro publico) |
 | T2, T13 | pendientes |
 
 Follow-ups de prestamos (documento `odd/tasks/prestamos-saldo-y-estado.md`):
