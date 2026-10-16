@@ -138,6 +138,29 @@ class ContratistaController extends Controller
                         'valor_unitario' => $item['valor'],
                     ]);
                 }
+
+                $montoContratado = collect($items)->sum(fn ($item) => ((float) $item['cantidad']) * ((float) $item['valor'])) * ($nro_casas ?? 1);
+
+                LogService::auditar(
+                    'crear',
+                    'orden_trabajo_contratista',
+                    $orden_trabajo->id,
+                    sprintf(
+                        'Se creó la orden de trabajo #%d para %s por $%s',
+                        $orden_trabajo->id,
+                        $orden_trabajo->proveedor->razon_social ?? 'el contratista',
+                        number_format($montoContratado, 2)
+                    ),
+                    [],
+                    [
+                        'monto' => $montoContratado,
+                        'numero_casas' => $orden_trabajo->numero_casas,
+                        'plazo_semanas' => $orden_trabajo->plazo_semanas,
+                        'proveedor_id' => $orden_trabajo->proveedor_id,
+                        'contratista' => $orden_trabajo->proveedor->razon_social ?? null,
+                    ]
+                );
+
                 DB::commit();
 
                 PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Contratista', 'Se registro una nueva orden de trabajo para el contratisa ' . $orden_trabajo->proveedor->razon_social, route('administrativo.index.contratistas'));
@@ -231,6 +254,17 @@ class ContratistaController extends Controller
             }, $request->productos, $request->cantidad, $request->precio_unitario, $request->unidad_medida);
 
             $orden_trabajo = Contratista::find($request->contratista);
+
+            $montoAntes = (float) $orden_trabajo->total_contratistas;
+            $antesOrden = [
+                'monto' => $montoAntes,
+                'plazo_semanas' => $orden_trabajo->plazo_semanas,
+                'etapa_id' => $orden_trabajo->etapa_id,
+                'tipo_etapa_id' => $orden_trabajo->tipo_etapa_id,
+                'numero_casas' => $orden_trabajo->numero_casas,
+                'subproyecto' => $orden_trabajo->subproyecto,
+            ];
+
             $orden_trabajo->plazo_semanas = $plazo;
             $orden_trabajo->numero_casas = $nro_casas;
             $orden_trabajo->subproyecto = $request->subproyecto;
@@ -257,6 +291,29 @@ class ContratistaController extends Controller
                     DetalleContratista::where('contratista_id', $orden_trabajo->id)
                         ->whereIn('articulo_id', $productosEliminar)->delete();
                 }
+
+                $montoDespues = collect($items)->sum(fn ($item) => ((float) $item['cantidad']) * ((float) $item['valor'])) * ($nro_casas ?? 1);
+
+                LogService::auditar(
+                    'actualizar',
+                    'orden_trabajo_contratista',
+                    $orden_trabajo->id,
+                    sprintf(
+                        'Se actualizó la orden de trabajo #%d: monto $%s → $%s',
+                        $orden_trabajo->id,
+                        number_format($montoAntes, 2),
+                        number_format($montoDespues, 2)
+                    ),
+                    $antesOrden,
+                    [
+                        'monto' => $montoDespues,
+                        'plazo_semanas' => $plazo,
+                        'etapa_id' => $orden_trabajo->etapa_id,
+                        'tipo_etapa_id' => $orden_trabajo->tipo_etapa_id,
+                        'numero_casas' => $nro_casas,
+                        'subproyecto' => $request->subproyecto,
+                    ]
+                );
 
                 DB::commit();
                 $route_params = array_merge($route_params, ['contratista' => $request->contratista]);
@@ -345,11 +402,30 @@ class ContratistaController extends Controller
                 'detalle' => $request->detalle,
             ];
 
-            if (PagoOrdenTrabajoContratista::create($pago)) {
+            $pagoCreado = PagoOrdenTrabajoContratista::create($pago);
+
+            if ($pagoCreado) {
                 if ($pagos == $total_pagar) {
                     $orden_trabajo->estado_id = CatalogoDato::getIdCatalogo('estados.contratistas.pagado'); // Pagado
                     $orden_trabajo->save();
                 }
+
+                LogService::auditar(
+                    'crear',
+                    'pago_orden_trabajo_contratista',
+                    $pagoCreado->id,
+                    sprintf(
+                        'Se registró un pago de $%s para la orden de trabajo #%d',
+                        number_format((float) $pagoCreado->valor, 2),
+                        $orden_trabajo->id
+                    ),
+                    [],
+                    [
+                        'valor' => (float) $pagoCreado->valor,
+                        'fecha' => $pagoCreado->fecha,
+                        'pagado' => (bool) $pagoCreado->pagado,
+                    ]
+                );
 
                 DB::commit();
                 PushNotificationService::sendNotification(PushNotificationsEnum::OPERATIVO, 'Pago contratista', 'Se genero un nuevo pago para el contratista ' . $orden_trabajo->proveedor->razon_social, route('administrativo.contratista.detalle', $orden_trabajo->id));
@@ -402,6 +478,15 @@ class ContratistaController extends Controller
             if ($pago_orden_trabajo->pagado) {
                 return redirect()->back()->with('error', 'No es posible actualizar el pago, porque ya fue registrado como pagado en administrativo.');
             }
+
+            $antesPago = [
+                'valor' => (float) $pago_orden_trabajo->valor,
+                'fecha' => $pago_orden_trabajo->fecha,
+                'tipo_pago' => $pago_orden_trabajo->tipo_pago,
+                'forma_pago' => $pago_orden_trabajo->forma_pago,
+                'pagado' => (bool) $pago_orden_trabajo->pagado,
+            ];
+
             $pago_orden_trabajo->fecha = $request->fecha;
             $pago_orden_trabajo->tipo_pago = $request->tipo;
             $pago_orden_trabajo->forma_pago = $request->forma_pago;
@@ -409,6 +494,27 @@ class ContratistaController extends Controller
             $pago_orden_trabajo->detalle = $request->detalle;
 
             if ($pago_orden_trabajo->save()) {
+                LogService::auditar(
+                    'actualizar',
+                    'pago_orden_trabajo_contratista',
+                    $pago_orden_trabajo->id,
+                    sprintf(
+                        'Se actualizó el pago #%d de la orden de trabajo #%d: valor $%s → $%s',
+                        $pago_orden_trabajo->id,
+                        $pago_orden_trabajo->contratista_id,
+                        number_format((float) $antesPago['valor'], 2),
+                        number_format((float) $pago_orden_trabajo->valor, 2)
+                    ),
+                    $antesPago,
+                    [
+                        'valor' => (float) $pago_orden_trabajo->valor,
+                        'fecha' => $pago_orden_trabajo->fecha,
+                        'tipo_pago' => $pago_orden_trabajo->tipo_pago,
+                        'forma_pago' => $pago_orden_trabajo->forma_pago,
+                        'pagado' => (bool) $pago_orden_trabajo->pagado,
+                    ]
+                );
+
                 DB::commit();
                 LogService::log('success', 'Pago orden de trabajo contratista actualizado', ['user_id' => auth()->id(), 'action' => 'update']);
 
@@ -426,7 +532,37 @@ class ContratistaController extends Controller
 
     public function eliminarOrdenTrabajo($id)
     {
-        $is_delete = Contratista::find($id)->delete();
+        try {
+            DB::beginTransaction();
+
+            $orden_trabajo = Contratista::find($id);
+            if (!$orden_trabajo) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+            }
+
+            $total = (float) $orden_trabajo->total_contratistas;
+
+            LogService::auditar(
+                'eliminar',
+                'orden_trabajo_contratista',
+                $orden_trabajo->id,
+                sprintf(
+                    'Se eliminó la orden de trabajo #%d (%s) por $%s',
+                    $orden_trabajo->id,
+                    $orden_trabajo->proveedor->razon_social ?? 'contratista',
+                    number_format($total, 2)
+                ),
+                $orden_trabajo->toArray(),
+                []
+            );
+
+            $is_delete = $orden_trabajo->delete();
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+        }
         if ($is_delete) {
             return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
         } else {
@@ -436,7 +572,35 @@ class ContratistaController extends Controller
 
     public function eliminarPagoOrdenTrabajo(Request $request)
     {
-        $is_delete = PagoOrdenTrabajoContratista::find($request->id)->delete();
+        try {
+            DB::beginTransaction();
+
+            $pago = PagoOrdenTrabajoContratista::find($request->id);
+            if (!$pago) {
+                DB::rollBack();
+                return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+            }
+
+            LogService::auditar(
+                'eliminar',
+                'pago_orden_trabajo_contratista',
+                $pago->id,
+                sprintf(
+                    'Se eliminó el pago #%d de $%s de la orden de trabajo #%d',
+                    $pago->id,
+                    number_format((float) $pago->valor, 2),
+                    $pago->contratista_id
+                ),
+                $pago->toArray(),
+                []
+            );
+
+            $is_delete = $pago->delete();
+            DB::commit();
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);
+        }
         if ($is_delete) {
             return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
         } else {
