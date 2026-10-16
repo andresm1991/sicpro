@@ -491,13 +491,28 @@ if (!function_exists('numeroOrden')) {
         return $numero_orden;
     }
 
+    /**
+     * Numero provisorio que se muestra al abrir el formulario de alta. Es solo
+     * una vista previa: el numero definitivo lo asigna numeroAdquisicion() al
+     * guardar, porque entre abrir y enviar el formulario puede cambiar el
+     * ultimo registro.
+     */
     function generarNumeroOrden()
     {
-        $ultimo_registro = Adquisicion::latest()->first();
-        $ultimo_id = $ultimo_registro ? $ultimo_registro->id + 1 : 1;
-        $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+        $ultimo_id = (int) Adquisicion::max('id') + 1;
+        $numero_orden = now()->format('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
 
         return $numero_orden;
+    }
+
+    /**
+     * Numero de adquisicion de un registro ya guardado: fecha de registro mas
+     * su propio id. Al derivarse del id autoincremental no puede repetirse
+     * aunque dos usuarios guarden al mismo tiempo.
+     */
+    function numeroAdquisicion($registro)
+    {
+        return $registro->created_at->format('Ymd') . '-' . str_pad($registro->id, 3, '0', STR_PAD_LEFT);
     }
 
     function numeroPedido($registro)

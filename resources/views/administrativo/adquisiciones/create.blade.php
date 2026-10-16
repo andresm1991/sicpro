@@ -18,7 +18,6 @@
                 'enctype' => 'multipart/form-data',
                 'id' => 'form_order_pedido',
             ]) !!}
-            {{ Form::hidden('numero_orden', $numero_orden) }}
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">

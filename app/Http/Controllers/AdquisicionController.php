@@ -13,6 +13,7 @@ use App\Models\Adquisicion;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use App\Models\MovimientoCaja;
 use App\Models\OrdenRecepcion;
 use App\Models\AdquisicionDetalle;
@@ -91,9 +92,7 @@ class AdquisicionController extends Controller
         $tipo_adquisicion = $route_parametres['tipo_etapa']->slug != 'meteriales.herramientas' ? 19 : 18;
         $orden_pedido = new Adquisicion();
 
-        $ultimo_registro = Adquisicion::latest()->first();
-        $ultimo_id = $ultimo_registro ? $ultimo_registro->id + 1 : 1;
-        $numero_orden = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+        $numero_orden = generarNumeroOrden();
         $productos = Articulo::where('activo', true)
             ->where('categoria_id', $tipo_adquisicion)
             ->orderBy('descripcion', 'asc')->pluck('descripcion', 'id');
@@ -134,7 +133,6 @@ class AdquisicionController extends Controller
         $request->merge(['precio' => $valoresLimpios]);
 
         $fecha = $request->fecha;
-        $numero_pedido = $request->numero_pedido;
         $proyecto_id = $request->proyecto_id;
         $adquisicion_id = $request->tipo_adquisicion;
         $etapa_id = $request->tipo_etapa;
@@ -156,7 +154,7 @@ class AdquisicionController extends Controller
 
             $adquisicion = Adquisicion::create([
                 'fecha' => $fecha,
-                'numero' => $numero_pedido,
+                'numero' => $this->numeroProvisorio(),
                 'proyecto_id' => $proyecto_id,
                 'etapa_id' => $adquisicion_id,
                 'tipo_etapa_id' => $etapa_id,
@@ -166,6 +164,8 @@ class AdquisicionController extends Controller
             ]);
 
             if ($adquisicion) {
+                $this->asignarNumero($adquisicion);
+
                 foreach ($productos as $index => $producto) {
                     // Validar si el producto es 504 y si $km[$index] tiene un valor
                     if ($producto == 504 && (is_null($km[$index]) || $km[$index] === '')) {
@@ -799,6 +799,32 @@ class AdquisicionController extends Controller
         }
     }
     /**
+     * Numero desechable con el que se inserta la fila, porque la columna numero
+     * no acepta nulos. Se genera unico para que en ningun instante dos filas
+     * compartan el valor provisorio, de modo que un futuro indice unico sobre
+     * numero siga siendo posible. asignarNumero() lo reemplaza dentro de la
+     * misma transaccion del alta.
+     */
+    private function numeroProvisorio(): string
+    {
+        return (string) Str::uuid();
+    }
+
+    /**
+     * Reemplaza el numero provisorio por el definitivo, derivado del propio
+     * registro, dentro de la misma transaccion del alta. El id es unico y
+     * autoincremental, asi que dos altas simultaneas no pueden coincidir.
+     */
+    private function asignarNumero(Adquisicion $adquisicion): void
+    {
+        $adquisicion->numero = numeroAdquisicion($adquisicion);
+
+        if (!$adquisicion->save()) {
+            throw new Exception('Error al intentar asignar el número de la adquisición.');
+        }
+    }
+
+    /**
      * Método para obtener los parámetros comunes de la ruta
      * @param request
      * @return array
@@ -847,7 +873,6 @@ class AdquisicionController extends Controller
     public function storeAdquisicionAdministrativo(AdquisicionAdministrativoRequest $request, $tipo)
     {
         $fecha =  date('Y-m-d');
-        $numero_pedido = $request->numero_orden;
         $proyecto_id = $request->proyecto;
         $adquisicion_id = $request->actividad;
         $etapa_id = $request->etapa;
@@ -867,7 +892,7 @@ class AdquisicionController extends Controller
 
             $adquisicion = Adquisicion::create([
                 'fecha' => $fecha,
-                'numero' => $numero_pedido,
+                'numero' => $this->numeroProvisorio(),
                 'proyecto_id' => $proyecto_id,
                 'etapa_id' => $etapa_id,
                 'tipo_etapa_id' => $adquisicion_id,
@@ -880,6 +905,7 @@ class AdquisicionController extends Controller
             ]);
 
             if ($adquisicion) {
+                $this->asignarNumero($adquisicion);
 
                 $items = array_map(function ($producto, $cantidad, $precio_unitario, $iva, $unidad_medida, $necesidad, $inventario) use ($adquisicion) {
                     return [
