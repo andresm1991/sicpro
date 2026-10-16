@@ -26,6 +26,8 @@ class Kernel extends ConsoleKernel
     {
         // Programar la tarea para ejecutarse diariamente
         $schedule->command('files:delete-old')->daily();
+        // Purga de la tabla logs segun config/auditoria.php (retencion_dias)
+        $schedule->command('logs:purgar')->daily();
     }
 
     /**

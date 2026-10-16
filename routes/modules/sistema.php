@@ -7,6 +7,7 @@ use App\Http\Controllers\ArticuloController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\RubroController;
 use App\Http\Controllers\ConfiguracionController;
+use App\Http\Controllers\Sistema\AuditoriaController;
 use App\Http\Controllers\Sistema\RoleController;
 use App\Http\Controllers\UserController;
 
@@ -14,6 +15,9 @@ use App\Http\Controllers\UserController;
 // Sistema — requires sistema.ver permission to access the module
 Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'permission:sistema.ver'], function () {
     Route::get('/', [SistemaController::class, 'index'])->name('index');
+
+    // Auditoria de logs — solo lectura (sin create/update/delete)
+    Route::get('/auditoria', [AuditoriaController::class, 'index'])->name('auditoria.index');
 
     // Proveedores
     Route::group(['middleware' => 'decrypt.param', 'prefix' => 'proveedores', 'as' => 'proveedor.'], function () {
