@@ -155,7 +155,7 @@ class PrestamoController extends Controller
 
                     // Si el plazo se incrementa, calcular nuevos pagos adicionales
                     if ($nuevoPlazo > $plazoActual) {
-                        $saldoRestante = $prestamo->saldo > 0 ? $prestamo->saldo : ($prestamo->monto - $prestamo->pago_prestamo->sum('monto_pagado'));
+                        $saldoRestante = $prestamo->saldo > 0 ? $prestamo->saldo : ($prestamo->monto - $prestamo->pago_prestamo()->sum('monto_pagado'));
                         if ($saldoRestante <= 0) {
                             throw new Exception('No hay saldo pendiente para recalcular.');
                         }
@@ -178,8 +178,10 @@ class PrestamoController extends Controller
                             }
 
                             $montoPorSemanaAdicional = round($saldoParaAdicionales / $semanasAdicionales, 2);
+                            // Residuo de redondeo a la ULTIMA cuota para que el plan sume exactamente el saldo.
+                            $montoUltimaAdicional = round($saldoParaAdicionales - $montoPorSemanaAdicional * ($semanasAdicionales - 1), 2);
                             $ultimaFechaPago = Carbon::parse($pagosPendientes->last()->fecha_pago);
-                            $this->agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoPorSemanaAdicional, $ultimaFechaPago);
+                            $this->agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoPorSemanaAdicional, $ultimaFechaPago, $montoUltimaAdicional);
                         } else {
                             $pagosRealizados = $prestamo->pago_prestamo()
                                 ->whereHas('estado', function ($query) {
@@ -192,15 +194,21 @@ class PrestamoController extends Controller
 
                                 if ($ultimoPago) {
                                     $montoPorSemanaAdicional = round($saldoRestante / $semanasAdicionales, 2);
+                                    // Residuo de redondeo a la ULTIMA cuota para que el plan sume exactamente el saldo.
+                                    $montoUltimaAdicional = round($saldoRestante - $montoPorSemanaAdicional * ($semanasAdicionales - 1), 2);
                                     $ultimaFechaPago = Carbon::parse($ultimoPago->fecha_pago);
-                                    $this->agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoPorSemanaAdicional, $ultimaFechaPago);
+                                    $this->agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoPorSemanaAdicional, $ultimaFechaPago, $montoUltimaAdicional);
                                 } else {
                                     $montoPorSemana = round($saldoRestante / $nuevoPlazo, 2);
-                                    $this->agregarTodosPagos($prestamo, $nuevoPlazo, $montoPorSemana);
+                                    // Residuo de redondeo a la ULTIMA cuota para que el plan sume exactamente el saldo.
+                                    $montoUltima = round($saldoRestante - $montoPorSemana * ($nuevoPlazo - 1), 2);
+                                    $this->agregarTodosPagos($prestamo, $nuevoPlazo, $montoPorSemana, $montoUltima);
                                 }
                             } else {
                                 $montoPorSemana = round($saldoRestante / $nuevoPlazo, 2);
-                                $this->agregarTodosPagos($prestamo, $nuevoPlazo, $montoPorSemana);
+                                // Residuo de redondeo a la ULTIMA cuota para que el plan sume exactamente el saldo.
+                                $montoUltima = round($saldoRestante - $montoPorSemana * ($nuevoPlazo - 1), 2);
+                                $this->agregarTodosPagos($prestamo, $nuevoPlazo, $montoPorSemana, $montoUltima);
                             }
                         }
                     } elseif ($nuevoPlazo < $plazoActual) {
@@ -210,7 +218,7 @@ class PrestamoController extends Controller
 
                     // Recalcular saldo si se modifica monto
                     if ($request->monto !== null) {
-                        $prestamo->saldo = $prestamo->monto - $prestamo->pago_prestamo->sum('monto_pagado');
+                        $prestamo->saldo = $prestamo->monto - $prestamo->pago_prestamo()->sum('monto_pagado');
                     }
 
                     $prestamo->save();
@@ -253,7 +261,7 @@ class PrestamoController extends Controller
     /**
      * Agrega pagos adicionales para el aumento del plazo
      */
-    private function agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoSemanal, Carbon $ultimaFechaPago)
+    private function agregarPagosAdicionales($prestamo, $semanasAdicionales, $montoSemanal, Carbon $ultimaFechaPago, $montoUltimo = null)
     {
         // Si no hay semanas adicionales, no hacer nada
         if ($semanasAdicionales <= 0) {
@@ -265,13 +273,16 @@ class PrestamoController extends Controller
             throw new Exception('El monto por semana adicional no puede ser cero o negativo.');
         }
 
+        // El residuo de redondeo va en la ULTIMA cuota para que el plan sume exactamente el saldo.
+        $montoUltimo = $montoUltimo ?? $montoSemanal;
+
         // Generar fechas para las semanas adicionales
         for ($i = 1; $i <= $semanasAdicionales; $i++) {
             $nuevaFecha = $ultimaFechaPago->copy()->addWeeks($i);
 
             $prestamo->pago_prestamo()->create([
                 'fecha_pago' => $nuevaFecha,
-                'monto_programado' => $montoSemanal,
+                'monto_programado' => $i === $semanasAdicionales ? $montoUltimo : $montoSemanal,
                 'estado_id' => CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pendiente'),
                 'metodo_pago_id' => CatalogoDato::getIdCatalogo('metodos.pagos.otro'),
                 'monto_pagado' => 0,
@@ -282,16 +293,20 @@ class PrestamoController extends Controller
     /**
      * Agrega todos los pagos del nuevo plazo (solo cuando no hay pagos existentes)
      */
-    private function agregarTodosPagos($prestamo, $nuevoPlazo, $montoSemanal)
+    private function agregarTodosPagos($prestamo, $nuevoPlazo, $montoSemanal, $montoUltimo = null)
     {
         // Generar todas las fechas de pago desde hoy
         $nuevasFechasPago = calcularFechasPago(Carbon::now(), $nuevoPlazo);
 
+        // El residuo de redondeo va en la ULTIMA cuota para que el plan sume exactamente el saldo.
+        $montoUltimo = $montoUltimo ?? $montoSemanal;
+        $totalCuotas = count($nuevasFechasPago);
+
         // Crear todos los pagos
-        foreach ($nuevasFechasPago as $fecha) {
+        foreach ($nuevasFechasPago as $indice => $fecha) {
             $prestamo->pago_prestamo()->create([
                 'fecha_pago' => $fecha,
-                'monto_programado' => $montoSemanal,
+                'monto_programado' => $indice === $totalCuotas - 1 ? $montoUltimo : $montoSemanal,
                 'estado_id' => CatalogoDato::getIdCatalogo('estados.pagos.prestamos.pendiente'),
                 'metodo_pago_id' => CatalogoDato::getIdCatalogo('metodos.pagos.otro'),
                 'monto_pagado' => 0,
@@ -433,18 +448,22 @@ class PrestamoController extends Controller
                 return response()->json(['success' => true, 'mensaje' => 'Se han generado los pagos programados para el préstamo.']);
             }
 
-            // Distribuir saldo restante proporcionalmente entre los pagos pendientes
-            $nuevaCuota = round($saldoRestante / $pagosPendientes->count(), 2);
+            // Distribuir saldo restante entre los pagos pendientes. El residuo
+            // de redondeo se asigna a la ULTIMA cuota para que el plan sume
+            // exactamente el saldo (misma regla en updatePrestamo). El decremento
+            // de $saldoRestante que habia en el closure era contabilidad muerta
+            // (captura por valor) y se elimino sin cambiar el reparto.
+            $cantidadPendientes = $pagosPendientes->count();
+            $cuotaBase = round($saldoRestante / $cantidadPendientes, 2);
+            $ultimaCuota = round($saldoRestante - $cuotaBase * ($cantidadPendientes - 1), 2);
 
             try {
-                DB::transaction(function () use ($pagosPendientes, $nuevaCuota, $saldoRestante) {
-                    foreach ($pagosPendientes as $pago) {
+                DB::transaction(function () use ($pagosPendientes, $cuotaBase, $ultimaCuota) {
+                    $total = $pagosPendientes->count();
+                    foreach ($pagosPendientes->values() as $indice => $pago) {
                         // Actualizar el monto de la cuota
-                        $pago->monto_programado = $nuevaCuota;
+                        $pago->monto_programado = $indice === $total - 1 ? $ultimaCuota : $cuotaBase;
                         $pago->save();
-
-                        // Restar el monto del saldo restante
-                        $saldoRestante -= $nuevaCuota;
                     }
                 });
 
