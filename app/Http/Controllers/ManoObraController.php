@@ -186,6 +186,12 @@ class ManoObraController extends Controller
 
             $personalExistente = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
                 ->where('fecha', $fecha)->pluck('proveedor_id')->toArray();
+            // Foto de los trabajadores ya registrados ese dia: es el antes
+            // de la auditoria (si la planificacion es nueva, queda vacio).
+            $detallesPrevios = DetalleManoObra::where('mano_obra_id', $request->mano_obra)
+                ->where('fecha', $fecha)
+                ->get(['proveedor_id', 'articulo_id', 'jornada', 'valor', 'adicional', 'descuento'])
+                ->toArray();
             // Eliminar todos los registros del personal
             if (empty($personal)) {
                 DetalleManoObra::where('mano_obra_id', $request->mano_obra)
@@ -225,6 +231,32 @@ class ManoObraController extends Controller
             }
             DB::commit();
             LogService::log('info', 'Se creo planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
+            $accionTrabajadores = empty($personalExistente) ? 'crear' : 'actualizar';
+            $detallesNuevos = [];
+            foreach ((array) $personal as $index => $proveedorId) {
+                $detallesNuevos[] = [
+                    'proveedor_id' => $proveedorId,
+                    'articulo_id' => $categoria[$index] ?? null,
+                    'jornada' => $jornada[$index] ?? null,
+                    'valor' => $valor[$index] ?? null,
+                    'adicional' => $adicional[$index] ?? null,
+                    'descuento' => $descuento[$index] ?? null,
+                ];
+            }
+            LogService::auditar(
+                $accionTrabajadores,
+                'mano_obra_trabajador',
+                (int) $request->mano_obra,
+                sprintf(
+                    'Se %s el personal de la planificación #%d del día %s (%d trabajador(es)).',
+                    $accionTrabajadores === 'crear' ? 'registró' : 'actualizó',
+                    $request->mano_obra,
+                    $fecha,
+                    count($detallesNuevos)
+                ),
+                ['fecha' => $fecha, 'detalles' => $detallesPrevios],
+                ['fecha' => $fecha, 'detalles' => $detallesNuevos]
+            );
             return redirect()->back()->with('success', 'Se creo planificación de mano de obra');
         } catch (Throwable $e) {
             DB::rollBack();
@@ -331,7 +363,7 @@ class ManoObraController extends Controller
                     $mano_obra['actividad_id'] = $create_actividad;
                 }
 
-                if (ManoObra::create($mano_obra)) {
+                if ($nuevaPlanificacion = ManoObra::create($mano_obra)) {
                     DB::commit();
                     $list_mano_obra = ManoObra::where('proyecto_id', $request->proyecto_id)
                         ->where('etapa_id', $request->tipo_adquisicion)
@@ -342,6 +374,28 @@ class ManoObraController extends Controller
                     $response = $this->htmlTable($list_mano_obra, $route_params);
 
                     LogService::log('info', 'Se creo planificaciòn mano de obra', ['user_id' => auth()->id(), 'action' => 'create']);
+                    LogService::auditar(
+                        'crear',
+                        'mano_obra',
+                        $nuevaPlanificacion->id,
+                        sprintf(
+                            'Se creó la planificación de mano de obra semana %d (del %s al %s).',
+                            $nuevaPlanificacion->semana,
+                            $nuevaPlanificacion->fecha_inicio,
+                            $nuevaPlanificacion->fecha_fin
+                        ),
+                        [],
+                        [
+                            'semana' => $nuevaPlanificacion->semana,
+                            'fecha_inicio' => $nuevaPlanificacion->fecha_inicio,
+                            'fecha_fin' => $nuevaPlanificacion->fecha_fin,
+                            'proyecto_id' => $nuevaPlanificacion->proyecto_id,
+                            'etapa_id' => $nuevaPlanificacion->etapa_id,
+                            'tipo_etapa_id' => $nuevaPlanificacion->tipo_etapa_id,
+                            'actividad_id' => $nuevaPlanificacion->actividad_id,
+                            'subproyecto' => $nuevaPlanificacion->subproyecto,
+                        ]
+                    );
                     return response()->json(['success' => true, 'mensaje' => 'Planificación creada correctamente.', 'planificacion' => $response]);
                 }
 
@@ -417,6 +471,12 @@ class ManoObraController extends Controller
             try {
                 DB::beginTransaction();
 
+                $antesPlanificacion = [
+                    'fecha_fin' => $mano_obra->fecha_fin,
+                    'subproyecto' => $mano_obra->subproyecto,
+                    'actividad_id' => $mano_obra->actividad_id,
+                ];
+
                 $mano_obra->fecha_fin = $fechaFin;
                 $mano_obra->subproyecto = $request->subproyecto;
                 $mano_obra->actividad_id = $request->actividad;
@@ -431,6 +491,23 @@ class ManoObraController extends Controller
                     $response = $this->htmlTable($list_mano_obra, $route_params);
 
                     LogService::log('info', 'Se actualizo la planificación mano de obra', ['user_id' => auth()->id(), 'action' => 'update']);
+                    LogService::auditar(
+                        'actualizar',
+                        'mano_obra',
+                        $mano_obra->id,
+                        sprintf(
+                            'Se actualizó la planificación de mano de obra #%d (nuevo fin: %s, subproyecto: %s).',
+                            $mano_obra->id,
+                            $mano_obra->fecha_fin,
+                            $mano_obra->subproyecto ?? '—'
+                        ),
+                        $antesPlanificacion,
+                        [
+                            'fecha_fin' => $mano_obra->fecha_fin,
+                            'subproyecto' => $mano_obra->subproyecto,
+                            'actividad_id' => $mano_obra->actividad_id,
+                        ]
+                    );
                     return response()->json(['success' => true, 'mensaje' => 'Planificación actualizada correctamente.', 'planificacion' => $response]);
                 }
 
@@ -546,6 +623,11 @@ class ManoObraController extends Controller
                 return response()->json(['success' => false, 'message' => 'No es posible eliminar la planificación porque esta ya se encuentra pagada.']);
             }
 
+            // Foto de la fila antes de borrarla: es el unico rastro que
+            // queda de la planificacion una vez eliminada.
+            $datosEliminados = $mano_obra->toArray();
+            $datosEliminados['detalles_eliminados'] = DetalleManoObra::where('mano_obra_id', $id)->count();
+
             // Eliminar los detalles asociados para no violar la llave foránea
             DetalleManoObra::where('mano_obra_id', $id)->delete();
             $is_delete = $mano_obra->delete();
@@ -553,6 +635,18 @@ class ManoObraController extends Controller
 
             if ($is_delete) {
                 LogService::log('info', 'Planificacion mano obra eliminado', ['user' => auth()->id(), 'action' => 'destroy ' . $id]);
+                LogService::auditar(
+                    'eliminar',
+                    'mano_obra',
+                    (int) $id,
+                    sprintf(
+                        'Se eliminó la planificación de mano de obra semana %s (del %s al %s).',
+                        $datosEliminados['semana'] ?? '—',
+                        $datosEliminados['fecha_inicio'] ?? '—',
+                        $datosEliminados['fecha_fin'] ?? '—'
+                    ),
+                    $datosEliminados
+                );
                 return response()->json(['success' => true, 'message' => 'Registro eliminado correctamente']);
             } else {
                 return response()->json(['success' => false, 'message' => 'No se pudo eliminar el registro']);

@@ -12,6 +12,7 @@ use App\Models\Inventario;
 use App\Models\Adquisicion;
 use App\Models\Contratista;
 use App\Models\CatalogoDato;
+use App\Models\DetalleManoObra;
 use App\Models\PagoManoObra;
 use App\Services\LogService;
 use Illuminate\Http\Request;
@@ -835,20 +836,48 @@ class AdministrativoController extends Controller
             $manoObra->save();
 
             // Insertar registros en la tabla `pago_mano_obras`
+            $pagosCreados = [];
             if (!empty($pagoIds)) {
                 foreach ($pagoIds as $pagoId) {
-                    PagoManoObra::create([
+                    $pagosCreados[] = PagoManoObra::create([
                         'pago_prestamo_id' => $pagoId,
                         'mano_obra_id' => $mano_obra_id,
-                    ]);
+                    ])->id;
                 }
             } else {
-                PagoManoObra::create([
+                $pagosCreados[] = PagoManoObra::create([
                     'mano_obra_id' => $mano_obra_id,
-                ]);
+                ])->id;
             }
 
             DB::commit();
+            // La fila de pago solo enlaza la planificacion (y el prestamo):
+            // el monto auditado es la nomina (valor + adicional - descuento).
+            $montoNomina = (float) DetalleManoObra::where('mano_obra_id', $mano_obra_id)
+                ->get(['valor', 'adicional', 'descuento'])
+                ->sum(fn ($detalle) => (float) $detalle->valor + (float) ($detalle->adicional ?? 0) - (float) ($detalle->descuento ?? 0));
+            LogService::auditar(
+                'pagar',
+                'pago_mano_obra',
+                (int) $mano_obra_id,
+                sprintf(
+                    'Se registró el pago de nómina de la semana %d (del %s al %s) por $%s.',
+                    $manoObra->semana,
+                    $manoObra->fecha_inicio,
+                    $manoObra->fecha_fin,
+                    number_format($montoNomina, 2)
+                ),
+                [],
+                [
+                    'mano_obra_id' => (int) $mano_obra_id,
+                    'semana' => $manoObra->semana,
+                    'periodo' => $manoObra->fecha_inicio . ' al ' . $manoObra->fecha_fin,
+                    'monto' => $montoNomina,
+                    'nro_proforma' => $nroProforma,
+                    'pagos_mano_obra_ids' => $pagosCreados,
+                    'pagos_prestamo_ids' => is_array($pagoIds) ? array_values($pagoIds) : [],
+                ]
+            );
             PushNotificationService::sendNotification(PushNotificationsEnum::ADMINISTRATIVO, 'Pago Mano de obra', 'El usuario ' . Auth::user()->nombre . ' genero pago para la mano de obra.', route('pago.mano.obra', ['mano_obra' => $mano_obra_id, 'pago' => true]));
             return redirect()->route('administrativo.index.mano.obra')->with('success', 'Pago de mano obra generada con éxito.');
         } catch (Throwable $e) {
