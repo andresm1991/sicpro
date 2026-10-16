@@ -515,13 +515,6 @@ if (!function_exists('numeroOrden')) {
         return $registro->created_at->format('Ymd') . '-' . str_pad($registro->id, 3, '0', STR_PAD_LEFT);
     }
 
-    function numeroPedido($registro)
-    {
-        $ultimo_id = $registro ? $registro->id + 1 : 1;
-        $numero_pedido = date('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
-        return $numero_pedido;
-    }
-
 
     /**
      * Genera el número de proforma basado en la fecha actual y el último ID

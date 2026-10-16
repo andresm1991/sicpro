@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\JPLimpieza;
 
+use Throwable;
 use App\Models\Articulo;
 use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use App\Models\JPLimpieza\Proyecto;
 use App\Http\Controllers\Controller;
@@ -14,6 +16,45 @@ use App\Models\JPLimpieza\DetalleContratista;
 
 class ContratistaController extends Controller
 {
+    /**
+     * Numero desechable con el que se inserta la fila, porque la columna numero
+     * no acepta nulos. Se genera unico para que en ningun instante dos filas
+     * compartan el valor provisorio. asignarNumero() lo reemplaza dentro de la
+     * misma transaccion del alta.
+     */
+    private function numeroProvisorio(): string
+    {
+        return (string) Str::uuid();
+    }
+
+    /**
+     * Vista previa del numero que se muestra al abrir el formulario de alta. El
+     * definitivo lo deriva numeroAdquisicion() del propio registro al guardar:
+     * entre abrir y enviar el formulario el ultimo id puede cambiar. Antes esto
+     * usaba Contratista::first(), o sea que la vista previa siempre proponia el
+     * sufijo 002.
+     */
+    private function numeroVistaPrevia(): string
+    {
+        $ultimo_id = (int) Contratista::max('id') + 1;
+
+        return now()->format('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Reemplaza el numero provisorio por el definitivo, derivado del propio
+     * registro, dentro de la misma transaccion del alta. El id es unico y
+     * autoincremental, asi que dos altas simultaneas no pueden coincidir.
+     */
+    private function asignarNumero(Contratista $contratista): void
+    {
+        $contratista->numero = numeroAdquisicion($contratista);
+
+        if (!$contratista->save()) {
+            throw new \Exception('Error al intentar asignar el número del contratista.');
+        }
+    }
+
     public function index(Request $request, $proyecto)
     {
         $proyectoInfo = Proyecto::find($proyecto);
@@ -39,7 +80,7 @@ class ContratistaController extends Controller
         ];
 
         $contratista = new Contratista();
-        $numero = numeroPedido(Contratista::first());
+        $numero = $this->numeroVistaPrevia();
 
         $tipo_proveedor = CatalogoDato::getIdCatalogo('contratista');
 
@@ -65,20 +106,40 @@ class ContratistaController extends Controller
                 ];
             }, $request->producto, $request->cantidad, $request->precio, $request->iva, $request->unidad_medida);
 
-            $contratista = Contratista::create([
-                'numero' => $request->numero,
-                'proyecto_id' => $request->proyecto,
-                'proveedor_id' => $request->proveedor,
-                'categoria_id' => $request->categoria,
-                'fecha' => $request->fecha,
-                'plazo' => $request->plazo ?? 0,
-                'estado_id' => CatalogoDato::getIdCatalogo('estados.contratistas.proceso'),
-            ])->id;
+            // El numero se deriva del propio registro, asi que se inserta con un
+            // valor provisorio y se reemplaza por el definitivo enseguida. Ese
+            // par de escrituras tiene que ser atomico y va en una transaccion de
+            // la conexion JP: el DB::beginTransaction() de mas arriba abre la de
+            // la conexion default, que no cubre las escrituras de este modulo.
+            $conexionJp = DB::connection('mysql_jp_limpieza');
+            $conexionJp->beginTransaction();
+
+            try {
+                $contratista = Contratista::create([
+                    'numero' => $this->numeroProvisorio(),
+                    'proyecto_id' => $request->proyecto,
+                    'proveedor_id' => $request->proveedor,
+                    'categoria_id' => $request->categoria,
+                    'fecha' => $request->fecha,
+                    'plazo' => $request->plazo ?? 0,
+                    'estado_id' => CatalogoDato::getIdCatalogo('estados.contratistas.proceso'),
+                ]);
+
+                if ($contratista) {
+                    $this->asignarNumero($contratista);
+                }
+
+                $conexionJp->commit();
+            } catch (Throwable $e) {
+                $conexionJp->rollBack();
+
+                throw $e;
+            }
 
             if ($contratista) {
                 foreach ($items as $item) {
                     DetalleContratista::create([
-                        'contratista_id' => $contratista,
+                        'contratista_id' => $contratista->id,
                         'producto_id' => $item['producto'],
                         'cantidad' => $item['cantidad'],
                         'unidad_medida_id' => $item['unidad_medida'],

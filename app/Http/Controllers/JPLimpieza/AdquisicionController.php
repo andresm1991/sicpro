@@ -8,6 +8,7 @@ use App\Models\Proveedor;
 use App\Models\CatalogoDato;
 use App\Services\LogService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use App\Models\JPLimpieza\Caja;
 use Illuminate\Support\Facades\DB;
 use App\Models\JPLimpieza\Producto;
@@ -33,6 +34,45 @@ class AdquisicionController extends Controller
             $this->path_files = 'adquisiciones';
         } else {
             $this->path_files = 'pruebas/jp_limpieza/adquisiciones';
+        }
+    }
+
+    /**
+     * Numero desechable con el que se inserta la fila, porque la columna numero
+     * no acepta nulos. Se genera unico para que en ningun instante dos filas
+     * compartan el valor provisorio. asignarNumero() lo reemplaza dentro de la
+     * misma transaccion del alta.
+     */
+    private function numeroProvisorio(): string
+    {
+        return (string) Str::uuid();
+    }
+
+    /**
+     * Vista previa del numero que se muestra al abrir el formulario de alta. El
+     * definitivo lo deriva numeroAdquisicion() del propio registro al guardar:
+     * entre abrir y enviar el formulario el ultimo id puede cambiar. Sobre
+     * mysql_jp_limpieza.adquisiciones esto dejo 28 numeros repetidos, con un
+     * caso de 41 filas con el mismo numero.
+     */
+    private function numeroVistaPrevia(): string
+    {
+        $ultimo_id = (int) Adquisicion::max('id') + 1;
+
+        return now()->format('Ymd') . '-' . str_pad($ultimo_id, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Reemplaza el numero provisorio por el definitivo, derivado del propio
+     * registro, dentro de la misma transaccion del alta. El id es unico y
+     * autoincremental, asi que dos altas simultaneas no pueden coincidir.
+     */
+    private function asignarNumero(Adquisicion $adquisicion): void
+    {
+        $adquisicion->numero = numeroAdquisicion($adquisicion);
+
+        if (!$adquisicion->save()) {
+            throw new Exception('Error al intentar asignar el número de la adquisición.');
         }
     }
 
@@ -100,7 +140,7 @@ class AdquisicionController extends Controller
             ['name' => $tipoAdquisicion->descripcion, 'url' => route('jp.limpieza.adquisiciones.tipo.adquisicion', [$proyecto->id, $tipoAdquisicion->slug])],
             ['name' => 'Nuevo', 'url' => ''],
         ];
-        $numero = numeroPedido(Adquisicion::latest()->first());
+        $numero = $this->numeroVistaPrevia();
         $adquisicion = new Adquisicion();
 
         return view('jp_limpieza.adquisiciones.create', compact('breadcrumbs', 'proyecto', 'tipoAdquisicion', 'numero', 'adquisicion'));
@@ -109,12 +149,6 @@ class AdquisicionController extends Controller
     public function store(Request $request)
     {
         try {
-            $request->validate([
-                'numero' => 'required|string|unique:mysql_jp_limpieza.adquisiciones,numero',
-            ], [
-                'numero.unique' => 'El número de adquisición ya existe. Por favor, ingrese un número diferente.',
-            ]);
-
             DB::beginTransaction();
 
             $administrativo = $request->administrativo ?? false;
@@ -133,7 +167,6 @@ class AdquisicionController extends Controller
             }
 
             $proveedor = $request->input('proveedor');
-            $numero = $request->input('numero');
             $fecha = $request->input('fecha');
             $completado = $request->input('orden_completa');
             $formaPago = $request->input('forma_pago');
@@ -154,18 +187,38 @@ class AdquisicionController extends Controller
                 ];
             }, $request->producto, $request->cantidad, $request->precio, $request->iva, $request->unidad_medida, $request->necesidad, $request->input('inventario', []));
 
-            $adquisicion = Adquisicion::create([
-                'fecha' => $fecha,
-                'numero' => $numero,
-                'proyecto_id' => $proyecto ? $proyecto->id : null,
-                'proveedor_id' => $proveedor,
-                'tipo_id' => $tipoAdquisicion->id,
-                'estado' => $completado ? 'completado' : 'pendiente',
-                'nro_factura' => $factura,
-                'archivo' => $archivo ? Storage::disk('digitalocean')->put($this->path_files, $archivo) : null,
-                'forma_pago_id' => $formaPago,
-                'administrativo' => $administrativo,
-            ]);
+            // El numero se deriva del propio registro, asi que se inserta con un
+            // valor provisorio y se reemplaza por el definitivo enseguida. Ese
+            // par de escrituras tiene que ser atomico y va en una transaccion de
+            // la conexion JP: el DB::beginTransaction() de mas arriba abre la de
+            // la conexion default, que no cubre las escrituras de este modulo.
+            $conexionJp = DB::connection('mysql_jp_limpieza');
+            $conexionJp->beginTransaction();
+
+            try {
+                $adquisicion = Adquisicion::create([
+                    'fecha' => $fecha,
+                    'numero' => $this->numeroProvisorio(),
+                    'proyecto_id' => $proyecto ? $proyecto->id : null,
+                    'proveedor_id' => $proveedor,
+                    'tipo_id' => $tipoAdquisicion->id,
+                    'estado' => $completado ? 'completado' : 'pendiente',
+                    'nro_factura' => $factura,
+                    'archivo' => $archivo ? Storage::disk('digitalocean')->put($this->path_files, $archivo) : null,
+                    'forma_pago_id' => $formaPago,
+                    'administrativo' => $administrativo,
+                ]);
+
+                if ($adquisicion) {
+                    $this->asignarNumero($adquisicion);
+                }
+
+                $conexionJp->commit();
+            } catch (Throwable $e) {
+                $conexionJp->rollBack();
+
+                throw $e;
+            }
 
             if ($adquisicion) {
                 foreach ($items as $item) {
@@ -533,7 +586,7 @@ class AdquisicionController extends Controller
             ['name' => 'Nuevo', 'url' => ''],
         ];
 
-        $numero = numeroPedido(Adquisicion::latest()->first());
+        $numero = $this->numeroVistaPrevia();
         $tipoAdquisiciones = CatalogoDato::getChildrenCatalogo('proveedor')->pluck('descripcion', 'id')->prepend("", "");
         $proyectos = Proyecto::orderBy('nombre_proyecto')->pluck('nombre_proyecto', 'id')->prepend("Gastos Administrativos (sin proyecto)", "null");
 

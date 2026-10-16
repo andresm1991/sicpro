@@ -44,11 +44,13 @@ class PagoContratistaController extends Controller
         ];
 
         $pago = new PagoContratista();
-        $numero = numeroPedido(PagoContratista::first());
         $formaPagos = CatalogoDato::getChildrenCatalogo('metodos.pagos');
         $estados = CatalogoDato::getChildrenCatalogo('estados.pagos.prestamos');
 
-        return view('jp_limpieza.contratistas.pagos.create', compact('numero', 'proyecto', 'contratista', 'pago', 'formaPagos', 'estados', 'breadcrumbs'));
+        // Sin vista previa de numero: pagos_contratistas no tiene columna numero y
+        // el que se muestra se deriva al leer (getNumeroFormattedAttribute), asi que
+        // ya es unico por construccion. La vista tampoco usaba la variable.
+        return view('jp_limpieza.contratistas.pagos.create', compact('proyecto', 'contratista', 'pago', 'formaPagos', 'estados', 'breadcrumbs'));
     }
 
     public function store(PagoContratistaStoreRequest $request, $proyecto, $contratista)

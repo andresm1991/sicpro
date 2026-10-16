@@ -23,6 +23,11 @@
         <server name="CACHE_DRIVER" value="array"/>
         <server name="DB_CONNECTION" value="mysql"/>
         <server name="DB_DATABASE" value="sicpro_testing"/>
+        <!-- Aisla el modulo JP Limpieza: sin esto la conexion apunta a la base real
+             jp_limpieza y cualquier test que escriba ahi tocaria datos de produccion.
+             La base jp_limpieza_testing y su esquema se crean una vez por maquina;
+             los comandos exactos estan en odd/tasks/jp-limpieza-numero-unico.md. -->
+        <server name="DB_JPLIMPIEZA_DATABASE" value="jp_limpieza_testing"/>
         <server name="MAIL_MAILER" value="array"/>
         <server name="QUEUE_CONNECTION" value="sync"/>
         <server name="SESSION_DRIVER" value="array"/>
