@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Models\User;
+use App\Services\LogService;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -51,7 +52,7 @@ class RegisterController extends Controller
     {
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:usuarios,correo'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
     }
@@ -64,10 +65,32 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        return User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+        // El formulario publico no pide usuario: se usa el correo (validado
+        // como unico) para que la credencial funcione con el login por
+        // `usuario` y la clave quede en `clave` (ver User::getAuthPassword).
+        $user = User::create([
+            'nombre' => $data['name'],
+            'usuario' => $data['email'],
+            'correo' => $data['email'],
+            'clave' => Hash::make($data['password']),
+            'activo' => true,
         ]);
+
+        // Solo datos no sensibles: la clave y su hash nunca se guardan.
+        LogService::auditar(
+            'crear',
+            'user',
+            $user->id,
+            'Se registró el usuario ' . $user->usuario . ' con el nombre ' . $user->nombre . '.',
+            [],
+            [
+                'nombre' => $user->nombre,
+                'usuario' => $user->usuario,
+                'correo' => $user->correo,
+                'activo' => $user->activo,
+            ]
+        );
+
+        return $user;
     }
 }
