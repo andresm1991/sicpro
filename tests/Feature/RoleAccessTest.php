@@ -22,15 +22,22 @@ class RoleAccessTest extends TestCase
     }
 
     /**
-     * Test Gerencial role has broad access but NOT sistema permissions.
+     * Test Gerencial role has broad access, including sistema administration.
+     *
+     * Decision del 2026-10-19: Gerencial administra usuarios y configuracion.
      */
-    public function test_gerencial_has_broad_access_but_not_sistema()
+    public function test_gerencial_has_broad_access_including_sistema()
     {
         $role = Role::findByName('Gerencial');
         $this->assertTrue($role->hasPermissionTo('proyectos.ver'));
         $this->assertTrue($role->hasPermissionTo('solicitudes.aprobar'));
-        $this->assertFalse($role->hasPermissionTo('sistema.usuarios.gestionar'));
-        $this->assertFalse($role->hasPermissionTo('sistema.configuracion.gestionar'));
+        $this->assertTrue($role->hasPermissionTo('sistema.ver'));
+        $this->assertTrue($role->hasPermissionTo('sistema.usuarios.gestionar'));
+        $this->assertTrue($role->hasPermissionTo('sistema.configuracion.gestionar'));
+        // Rubros no cuelga de sistema.ver: tiene su propio grupo y su propio permiso
+        // (routes/modules/sistema.php:66), asi que sin esto Gerencial ve el menu
+        // pero no puede entrar a la pantalla.
+        $this->assertTrue($role->hasPermissionTo('sistema.rubros.ver'));
     }
 
     /**
@@ -59,26 +66,39 @@ class RoleAccessTest extends TestCase
     }
 
     /**
-     * Test non-Admin user gets 403 on sistema routes.
+     * Test Operativo (no sistema access) gets 403 on sistema routes.
      */
-    public function test_non_admin_gets_403_on_sistema_routes()
+    public function test_operativo_gets_403_on_sistema_routes()
     {
-        $gerencialRole = Role::findByName('Gerencial');
-        $user = User::factory()->create(['usuario' => 'gerencial_test']);
-        $user->assignRole($gerencialRole);
+        $operativoRole = Role::findByName('Operativo');
+        $user = User::factory()->create(['usuario' => 'operativo_test']);
+        $user->assignRole($operativoRole);
 
         $response = $this->actingAs($user)->get(route('sistema.index'));
         $response->assertForbidden();
     }
 
     /**
-     * Test non-Admin user gets 403 on user management routes.
+     * Test Gerencial can reach the user management screen.
      */
-    public function test_non_admin_gets_403_on_user_management()
+    public function test_gerencial_can_access_user_management()
     {
         $gerencialRole = Role::findByName('Gerencial');
         $user = User::factory()->create(['usuario' => 'gerencial_test']);
         $user->assignRole($gerencialRole);
+
+        $response = $this->actingAs($user)->get(route('sistema.users.index'));
+        $response->assertOk();
+    }
+
+    /**
+     * Test Operativo gets 403 on user management routes.
+     */
+    public function test_operativo_gets_403_on_user_management()
+    {
+        $operativoRole = Role::findByName('Operativo');
+        $user = User::factory()->create(['usuario' => 'operativo_test']);
+        $user->assignRole($operativoRole);
 
         $response = $this->actingAs($user)->get(route('sistema.users.index'));
         $response->assertForbidden();

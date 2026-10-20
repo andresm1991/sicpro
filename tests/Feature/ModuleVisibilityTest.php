@@ -152,15 +152,31 @@ class ModuleVisibilityTest extends TestCase
     }
 
     /**
-     * Test that Gerencial cannot see Sistema module.
+     * Test that Gerencial CAN see the Sistema module.
+     *
+     * Decision del 2026-10-19: Gerencial entra a /sistema porque ahi cuelgan
+     * Proveedores, Productos, Inventario y Rubros (routes/modules/sistema.php),
+     * y ademas administra usuarios y configuracion.
      */
-    public function test_gerencial_cannot_see_sistema_module()
+    public function test_gerencial_can_see_sistema_module()
     {
         $gerencialRole = Role::findByName('Gerencial');
         $gerencial = User::factory()->create(['usuario' => 'gerencial_sys', 'correo' => 'gerencial_sys@test.com']);
         $gerencial->assignRole($gerencialRole);
 
-        $this->assertFalse($gerencial->can('sistema.ver'));
+        $this->assertTrue($gerencial->can('sistema.ver'));
+    }
+
+    /**
+     * Test that Operativo cannot see Sistema module.
+     */
+    public function test_operativo_cannot_see_sistema_module()
+    {
+        $operativoRole = Role::findByName('Operativo');
+        $operativo = User::factory()->create(['usuario' => 'operativo_sys', 'correo' => 'operativo_sys@test.com']);
+        $operativo->assignRole($operativoRole);
+
+        $this->assertFalse($operativo->can('sistema.ver'));
     }
 
     /**
