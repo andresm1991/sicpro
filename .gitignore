@@ -27,3 +27,8 @@ openspec/
 
 # Material comercial de trabajo, no forma parte del sistema
 banner-sicpro.html
+
+# Workflow de deploy descartado: se sigue deployando a mano. El archivo queda en disco
+# para retomarlo, pero no entra al repo (un workflow_dispatch solo aparece en la UI de
+# Actions si el archivo esta commiteado, asi que tenerlo ignorado no habilita nada).
+.github/workflows/deploy.yml
