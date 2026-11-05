@@ -357,25 +357,47 @@ class Adquisicion extends Model
         // no provoque una división por cero.
         $porcentaje = max(0.0, min($porcentaje, 99.99));
 
-        $camposPorCategoria = [
-            'contratista' => 'pagos',
-            'mano_obra' => 'pagado',
-            'materiales_herramientas' => 'total',
-            'servicios' => 'total',
-        ];
-
+        $porEtapa = [];
         $subtotal = 0.0;
-        foreach ($data['data'] ?? [] as $categorias) {
-            foreach ($camposPorCategoria as $categoria => $campo) {
-                $subtotal += (float) collect($categorias[$categoria] ?? [])->sum($campo);
-            }
+        $totalProductos = 0.0;
+
+        foreach ($data['data'] ?? [] as $etapa => $categorias) {
+            $contratistas = collect($categorias['contratista'] ?? []);
+            $manoObra = collect($categorias['mano_obra'] ?? []);
+            $materiales = collect($categorias['materiales_herramientas'] ?? []);
+            $servicios = collect($categorias['servicios'] ?? []);
+
+            $fila = [
+                'contratistas' => (float) $contratistas->sum('total_contratado'),
+                'pagos' => (float) $contratistas->sum('pagos'),
+                'saldos' => (float) $contratistas->sum('saldo'),
+                'mano_obra' => (float) $manoObra->sum('pagado'),
+                'materiales' => (float) $materiales->sum('total'),
+                'servicios' => (float) $servicios->sum('total'),
+            ];
+
+            // La etapa suma la misma base que el pie del PDF y el Reporte
+            // Balance: lo pagado a contratistas, lo pagado de mano de obra y el
+            // total de materiales y servicios. Lo contratado y el saldo se
+            // muestran pero no son gasto todavia.
+            $fila['total'] = $fila['pagos'] + $fila['mano_obra'] + $fila['materiales'] + $fila['servicios'];
+
+            $totalProductos += (float) $materiales->sum('cantidad_total')
+                + (float) $servicios->sum('cantidad_total');
+
+            $subtotal += $fila['total'];
+            $porEtapa[$etapa] = $fila;
         }
 
         $totalGeneral = $porcentaje > 0
             ? (float) calcularProcentaje($subtotal, $porcentaje, 4)
             : $subtotal;
 
+        // El desglose viaja con el pie: la vista PDF y el preview lo muestran
+        // en vez de recorrer las filas por su cuenta.
         return [
+            'por_etapa' => $porEtapa,
+            'total_productos' => $totalProductos,
             'subtotal' => $subtotal,
             'costos_indirectos' => $totalGeneral - $subtotal,
             'total_general' => $totalGeneral,

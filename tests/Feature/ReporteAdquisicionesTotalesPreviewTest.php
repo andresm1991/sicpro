@@ -77,4 +77,29 @@ class ReporteAdquisicionesTotalesPreviewTest extends TestCase
             'total_cantidades' => 0.0,
         ], $response->json('totales'));
     }
+
+    /**
+     * La rama global trae ademas el desglose por etapa y el pie con costos
+     * indirectos: es lo que la vista PDF y el navegador sumaban por su cuenta.
+     */
+    public function test_el_preview_global_devuelve_el_desglose_y_el_pie(): void
+    {
+        $response = $this->actingAs($this->usuario())
+            ->post('/reportes/visulizar-reporte-adquisiciones', [
+                'tipo_reporte' => 'global',
+                'costos_indirectos' => '10',
+            ]);
+
+        $response->assertOk();
+
+        // Sin proyecto el filtro devuelve data vacia: el desglose es vacio.
+        $this->assertEquals([
+            'por_etapa' => [],
+            'total_productos' => 0.0,
+            'subtotal' => 0.0,
+            'costos_indirectos' => 0.0,
+            'total_general' => 0.0,
+            'porcentaje' => 10.0,
+        ], $response->json('totales'));
+    }
 }

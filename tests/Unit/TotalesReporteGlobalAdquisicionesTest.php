@@ -109,4 +109,57 @@ class TotalesReporteGlobalAdquisicionesTest extends TestCase
         $this->assertIsFloat($totales['total_general']);
         $this->assertGreaterThan($totales['subtotal'], $totales['total_general']);
     }
+
+    /**
+     * El desglose es lo que la vista PDF y el preview del navegador sumaban por
+     * su cuenta. Ahora sale de aca y los dos solo lo muestran.
+     */
+    public function test_devuelve_el_desglose_por_etapa_y_categoria(): void
+    {
+        $totales = Adquisicion::totalesReporteGlobal($this->data(), 0);
+        $etapa1 = $totales['por_etapa']['Etapa 1'];
+
+        $this->assertEqualsWithDelta(1000.0, $etapa1['contratistas'], 0.0001);
+        $this->assertEqualsWithDelta(400.0, $etapa1['pagos'], 0.0001);
+        $this->assertEqualsWithDelta(600.0, $etapa1['saldos'], 0.0001);
+        $this->assertEqualsWithDelta(500.0, $etapa1['mano_obra'], 0.0001);
+        $this->assertEqualsWithDelta(300.5, $etapa1['materiales'], 0.0001);
+        $this->assertEqualsWithDelta(199.5, $etapa1['servicios'], 0.0001);
+        // 400 + 500 + 300,5 + 199,5
+        $this->assertEqualsWithDelta(1400.0, $etapa1['total'], 0.0001);
+
+        $this->assertEqualsWithDelta(1000.0, $totales['por_etapa']['Etapa 2']['total'], 0.0001);
+    }
+
+    public function test_el_desglose_por_etapa_suma_lo_mismo_que_el_subtotal(): void
+    {
+        $totales = Adquisicion::totalesReporteGlobal($this->data(), 10);
+        $sumaEtapas = array_sum(array_column($totales['por_etapa'], 'total'));
+
+        $this->assertEqualsWithDelta($totales['subtotal'], $sumaEtapas, 0.0001);
+    }
+
+    public function test_el_total_de_productos_suma_materiales_y_servicios(): void
+    {
+        $data = [
+            'data' => [
+                'Etapa 1' => [
+                    'materiales_herramientas' => [['total' => 10.0, 'cantidad_total' => 4]],
+                    'servicios' => [['total' => 20.0, 'cantidad_total' => 2.5]],
+                ],
+            ],
+        ];
+
+        $totales = Adquisicion::totalesReporteGlobal($data, 0);
+
+        $this->assertEqualsWithDelta(6.5, $totales['total_productos'], 0.0001);
+    }
+
+    public function test_sin_etapas_el_desglose_queda_vacio(): void
+    {
+        $totales = Adquisicion::totalesReporteGlobal(['data' => []], 0);
+
+        $this->assertSame([], $totales['por_etapa']);
+        $this->assertSame(0.0, $totales['total_productos']);
+    }
 }

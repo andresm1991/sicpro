@@ -156,12 +156,11 @@
         @endif
 
         @foreach ($data['data'] as $etapaNombre => $categorias)
-            @php $totalEtapa = 0; @endphp
+            @php $desglose = $totales['por_etapa'][$etapaNombre] ?? []; @endphp
             <div class="titulo_etapa">Etapa: {{ $etapaNombre }}</div>
 
             {{-- Contratistas --}}
             @if (!empty($categorias['contratista']))
-                @php $totalContratistas = $totalPagos = $totalSaldos = 0; @endphp
                 <h6 class="tipo_adquisicion">Contratistas</h6>
                 <table>
                     <thead>
@@ -185,31 +184,25 @@
                                 <td class="text-right">${{ number_format($c['pagos'], 4) }}</td>
                                 <td class="text-right">${{ number_format($c['saldo'], 4) }}</td>
                             </tr>
-                            @php
-                                $totalContratistas += $c['total_contratado'];
-                                $totalPagos += $c['pagos'];
-                                $totalSaldos += $c['saldo'];
-                            @endphp
                         @endforeach
                     </tbody>
                     <tfoot class="total-row">
                         <tr>
                             <td colspan="3" class="text-right"><strong>Totales Contratista:</strong></td>
                             {{-- CAMBIO: Corregido a 4 decimales --}}
-                            <td class="text-right"><strong>${{ number_format($totalContratistas, 4) }}</strong></td>
-                            <td class="text-right"><strong>${{ number_format($totalPagos, 4) }}</strong></td>
-                            <td class="text-right"><strong>${{ number_format($totalSaldos, 4) }}</strong></td>
+                            <td class="text-right"><strong>${{ number_format($desglose['contratistas'] ?? 0, 4) }}</strong></td>
+                            <td class="text-right"><strong>${{ number_format($desglose['pagos'] ?? 0, 4) }}</strong></td>
+                            <td class="text-right"><strong>${{ number_format($desglose['saldos'] ?? 0, 4) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
-                {{-- La etapa suma lo mismo que el pie del reporte y que el balance:
-                     del contratista cuenta lo pagado, no lo contratado. --}}
-                @php $totalEtapa += $totalPagos; @endphp
+                {{-- Lo contratado y el saldo se muestran pero no son gasto: por eso
+                     no entran en el total de la etapa (esa cuenta la hace el
+                     servidor en Adquisicion::totalesReporteGlobal). --}}
             @endif
 
             {{-- Mano de Obra --}}
             @if (!empty($categorias['mano_obra']))
-                @php $totalManoObra = 0; @endphp
                 <h6 class="tipo_adquisicion">Mano de Obra</h6>
                 <table>
                     <thead>
@@ -225,22 +218,19 @@
                                 <td>{{ $m['periodo'] }}</td>
                                 <td class="text-right">${{ number_format($m['pagado'], 4) }}</td>
                             </tr>
-                            @php $totalManoObra += $m['pagado']; @endphp
                         @endforeach
                     </tbody>
                     <tfoot class="total-row">
                         <tr>
                             <td class="text-right"><strong>Total Mano de Obra:</strong></td>
-                            <td class="text-right"><strong>${{ number_format($totalManoObra, 4) }}</strong></td>
+                            <td class="text-right"><strong>${{ number_format($desglose['mano_obra'] ?? 0, 4) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
-                @php $totalEtapa += $totalManoObra; @endphp
             @endif
 
             {{-- Materiales y Herramientas --}}
             @if (!empty($categorias['materiales_herramientas']))
-                @php $totalMateriales = 0; @endphp
                 <h6 class="tipo_adquisicion">Materiales y Herramientas</h6>
                 <table>
                     <thead>
@@ -260,22 +250,19 @@
                                 <td class="text-center">{{ number_format($mat['cantidad_total'], 4) }}</td>
                                 <td class="text-right">${{ number_format($mat['total'], 4) }}</td>
                             </tr>
-                            @php $totalMateriales += $mat['total']; @endphp
                         @endforeach
                     </tbody>
                     <tfoot class="total-row">
                         <tr>
                             <td colspan="3" class="text-right"><strong>Total Materiales:</strong></td>
-                            <td class="text-right"><strong>${{ number_format($totalMateriales, 4) }}</strong></td>
+                            <td class="text-right"><strong>${{ number_format($desglose['materiales'] ?? 0, 4) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
-                @php $totalEtapa += $totalMateriales; @endphp
             @endif
 
             {{-- Servicios --}}
             @if (!empty($categorias['servicios']))
-                @php $totalServicios = 0; @endphp
                 <h6 class="tipo_adquisicion">Servicios</h6>
                 <table>
                     <thead>
@@ -295,17 +282,15 @@
                                 <td class="text-center">{{ number_format($serv['cantidad_total'], 4) }}</td>
                                 <td class="text-right">${{ number_format($serv['total'], 4) }}</td>
                             </tr>
-                            @php $totalServicios += $serv['total']; @endphp
                         @endforeach
                     </tbody>
                     <tfoot class="total-row">
                         <tr>
                             <td colspan="3" class="text-right"><strong>Total Servicios:</strong></td>
-                            <td class="text-right"><strong>${{ number_format($totalServicios, 4) }}</strong></td>
+                            <td class="text-right"><strong>${{ number_format($desglose['servicios'] ?? 0, 4) }}</strong></td>
                         </tr>
                     </tfoot>
                 </table>
-                @php $totalEtapa += $totalServicios; @endphp
             @endif
 
             {{-- Total por Etapa --}}
@@ -313,7 +298,7 @@
                 <tr>
                     <td class="text-right" style="border: none; font-size: 11px;">
                         {{-- CAMBIO: Corregido a 4 decimales --}}
-                        <strong>Total Etapa {{ $etapaNombre }}: ${{ number_format($totalEtapa, 4) }}</strong>
+                        <strong>Total Etapa {{ $etapaNombre }}: ${{ number_format($desglose['total'] ?? 0, 4) }}</strong>
                     </td>
                 </tr>
             </table>

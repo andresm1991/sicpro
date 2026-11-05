@@ -188,9 +188,18 @@ class ReporteriaController extends Controller
 
             if ($tipo_reporte == 'global') {
                 $query = Adquisicion::reporteGlobalAdquisiciones($request);
+
+                // El desglose por etapa y el pie salen del servidor: el preview
+                // los muestra y deja de recorrer las filas por su cuenta.
+                $totales = Adquisicion::totalesReporteGlobal(
+                    $query,
+                    (float) $request->input('costos_indirectos', 0)
+                );
+
                 return response()->json([
                     'success' => true,
                     'result' => $query,
+                    'totales' => $totales,
                 ]);
             } elseif ($tipo_reporte == 'comparativo') {
                 $query = Adquisicion::reporteComparativoAdquisiciones($request);
