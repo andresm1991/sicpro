@@ -4,7 +4,7 @@ Alinear el modulo JP Limpieza con el arreglo de numeros duplicados ya aplicado a
 modulo principal. El numero se calculaba al renderizar el formulario y se guardaba
 tal cual, asi que un formulario viejo repetia el mismo numero.
 
-Estado: en curso.
+Estado: cerrada.
 
 ## Specs
 
@@ -45,8 +45,8 @@ sin commitear del arbol de trabajo.
 - [x] **T6** (S4) Pagos de JP: retirar la vista previa muerta de `crear()`. No se toco el
   accessor `numero_formatted`: cambiaria numeros ya emitidos. Se retiro ademas
   `numeroPedido()` de `app/helpers.php`, que quedo sin llamadores.
-- [~] **T7** Suite completa y verificacion independiente. Verificacion final sin blockers;
-  suite pendiente de la ultima re-corrida tras agregar los guards de aislamiento.
+- [x] **T7** Suite completa y verificacion independiente. Verificacion final sin blockers.
+  Suite re-corrida tras agregar los guards de aislamiento: verde (ver L15).
 
 ## Log
 
@@ -121,3 +121,13 @@ sin commitear del arbol de trabajo.
   Verificado despues que `sicpro` quedo intacta: en `sicpro.proyectos`, `estado_id`
   conserva su FK a `catalogo_datos` (esquema principal), mientras que en la base de
   test quedo el `bigint unsigned default 151` sin FK que define la migracion JP.
+- **L15** — **T7 cerrada.** Suite completa con `php vendor/bin/phpunit --no-coverage`:
+  `Tests: 253, Assertions: 967`, exit 0, sin failures, errors, skipped, incomplete ni
+  risky. Corrida en 1m56s. Los guards de aislamiento de A1 no se dispararon: los 4 tests
+  de numero de adquisicion y contratista de JP corrieron y pasaron (22 aserciones),
+  o sea que la conexion apunto a `jp_limpieza_testing`.
+  Notas de la corrida, todas preexistentes y ajenas a este trabajo: 19 deprecations por
+  `PDO::MYSQL_ATTR_SSL_CA` en `config/database.php:62` y `:83` (PHP 8.5) y una por el
+  esquema XML de `phpunit.xml` (`--migrate-configuration`). Los 4 tests de roles y
+  visibilidad anotados en `odd/tasks/auditoria-dinero-permisos.md:119` ya pasan.
+  El arbol de trabajo queda igual que antes de la corrida; los commits los decide el usuario.
