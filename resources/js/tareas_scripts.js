@@ -60,8 +60,14 @@ $(function () {
 
     $('#guardar-comentario').on('click', function () {
         var form = $("#form_comentario_tarea");
-        form.append('<input type="hidden" name="titulo" value="' + $('input[name=titulo]').val() + '">');
-        form.append('<input type="hidden" name="descripcion" value="' + $('#descripcion').val() + '">');
+
+        // El título está en el encabezado del modal, fuera del formulario: se envía en
+        // un único campo oculto que se reemplaza en cada guardado. La descripción no
+        // necesita campo oculto porque el textarea ya forma parte del formulario.
+        form.find('input[type=hidden][name=titulo]').remove();
+        $('<input>', { type: 'hidden', name: 'titulo' })
+            .val($('#titleComentarioModal').val())
+            .appendTo(form);
 
         var data = getFormData(form);
 
@@ -407,6 +413,16 @@ $(function () {
     $(document).on('hidden.bs.modal', '#comentarioTareaModal', function () {
         //window.location.href = url;
 
+        // Al cerrar, el alto vuelve a automático: la próxima tarea puede tener una
+        // descripción más larga y no debe heredar el alto de la anterior.
+        $('#descripcion').css('height', 'auto');
+    });
+
+    // Se ajusta el alto de la descripción en un manejador propio para que un error
+    // al inicializar los select2 no deje el texto de la tarea oculto.
+    $(document).on('shown.bs.modal', '#comentarioTareaModal', function () {
+        adjustTextareaHeight($('#descripcion'));
+        observeDescripcionWidth();
     });
 
     $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal, #filtroExportarTareasModal', function () {
@@ -459,9 +475,6 @@ $(function () {
             // Inicializar Select2 con la configuración fusionada
             $select.select2(newOptions);
         });
-
-        // Ajustar la altura inicial del textarea al abrir el modal
-        adjustTextareaHeight($('#descripcion'));
     });
 
     $(document).on('click', '#exportar-tarea', function () {
@@ -510,6 +523,9 @@ $(function () {
             },
             complete: function () {
                 $('#comentarioTareaModal #modal-overlay').hide();
+                // Los comentarios cambian el ancho útil del cuerpo del modal y el
+                // texto se reacomoda en más líneas: hay que recalcular el alto.
+                adjustTextareaHeight($('#descripcion'));
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
             switch (jqXHR.status) {
@@ -536,10 +552,51 @@ $(function () {
         adjustTextareaHeight($(this));
     });
 
-    // Función para ajustar la altura del textarea
+    // Ajusta la altura del textarea al contenido. Se suman los bordes porque el
+    // textarea usa box-sizing: border-box y, sin ellos, la última línea queda cortada.
     function adjustTextareaHeight($textarea) {
-        $textarea.css('height', 'auto'); // Restablece la altura
-        $textarea.css('height', $textarea[0].scrollHeight + 'px'); // Ajusta la altura al contenido
+        const textarea = $textarea[0];
+
+        if (!textarea || !$textarea.is(':visible')) {
+            return;
+        }
+
+        const styles = window.getComputedStyle(textarea);
+        const borders = parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth);
+
+        textarea.style.height = 'auto'; // Restablece la altura
+        textarea.style.height = (textarea.scrollHeight + borders) + 'px'; // Ajusta la altura al contenido
+    }
+
+    // Cuando el ancho del cuerpo del modal cambia (por ejemplo al aparecer los
+    // comentarios o la barra de desplazamiento) el texto se reacomoda en más
+    // líneas. Sin recalcular el alto, el final de la descripción queda oculto.
+    function observeDescripcionWidth() {
+        const textarea = document.getElementById('descripcion');
+
+        if (!textarea || typeof ResizeObserver === 'undefined') {
+            return;
+        }
+
+        const container = textarea.closest('.modal-body') || textarea.parentElement;
+
+        if (!container || container.dataset.descripcionObserver === 'true') {
+            return;
+        }
+
+        let lastWidth = 0;
+
+        const observer = new ResizeObserver(function () {
+            if (container.clientWidth === lastWidth) {
+                return;
+            }
+
+            lastWidth = container.clientWidth;
+            adjustTextareaHeight($(textarea));
+        });
+
+        observer.observe(container);
+        container.dataset.descripcionObserver = 'true';
     }
 
     // Función para verificar si la URL tiene un número al final

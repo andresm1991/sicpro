@@ -2286,6 +2286,12 @@ section {
     /* Desactiva el redimensionamiento manual */
 }
 
+/* La descripción de una tarea puede ser larga: el alto se ajusta al contenido
+   y, si aun así no alcanza, el texto sigue siendo accesible con scroll. */
+#descripcion.textarea-autosize {
+    overflow-y: auto;
+}
+
 .dropify-wrapper .dropify-message span.file-icon p {
     font-size: 12px !important;
 }

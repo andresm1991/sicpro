@@ -44,7 +44,8 @@
                     {{ Form::hidden('tarea_id') }}
                     <div class="row">
                         <div class="col-12 form-group">
-                            <textarea name="descripcion" id="descripcion" class="form-control text-uppercase form-control-plaintext"></textarea>
+                            <textarea name="descripcion" id="descripcion" rows="4"
+                                class="form-control text-uppercase form-control-plaintext textarea-autosize"></textarea>
                         </div>
 
                         <div class="col-12 form-group">
