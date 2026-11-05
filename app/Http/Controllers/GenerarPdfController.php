@@ -525,27 +525,13 @@ class GenerarPdfController extends Controller
 
             $tipo = $tipoAdquisisicon;
 
-            $totalGeneral = $query->map(function ($item) {
-                // Verificar si 'total' existe antes de usarlo
-                $total = isset($item['total']) ? $item['total'] : 0;
-                return floatval(str_replace(['$', ','], '', $total));
-            })->sum() ?? 0;
+            // Una sola fuente: la misma funcion que alimenta el preview.
+            $totalesAdquisiciones = Adquisicion::totalesReporteAdquisiciones($query);
 
-            $totalPagado = $query->map(function ($item) {
-                $totalPagado = isset($item['total_pagado']) ? $item['total_pagado'] : 0;
-                return floatval(str_replace(['$', ','], '', $totalPagado));
-            })->sum() ?? 0;
-
-            $totalSaldos = $query->map(function ($item) {
-                $saldo = isset($item['saldo']) ? $item['saldo'] : 0;
-                return floatval(str_replace(['$', ','], '', $saldo));
-            })->sum() ?? 0;
-
-            $totalCantidades = $query->map(function ($item) {
-                // Verificar si 'cantidad' existe antes de usarlo
-                $total = isset($item['cantidad']) ? $item['cantidad'] : 0;
-                return $total;
-            })->sum() ?? 0;
+            $totalGeneral = $totalesAdquisiciones['total_general'];
+            $totalPagado = $totalesAdquisiciones['total_pagado'];
+            $totalSaldos = $totalesAdquisiciones['total_saldos'];
+            $totalCantidades = $totalesAdquisiciones['total_cantidades'];
 
             $producto = $producto != '' ? Articulo::find($producto) : '';
             $proveedor = $proveedor != '' ? Proveedor::find($proveedor) : '';

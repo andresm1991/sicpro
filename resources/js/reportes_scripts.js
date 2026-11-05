@@ -76,8 +76,16 @@ $(function () {
             },
             success: function (response) {
                 let data = response.result;
-                let totalGeneral = 0;
-                let totalProductos = 0;
+
+                // Los totales los calcula el servidor
+                // (Adquisicion::totalesReporteAdquisiciones), la misma funcion que
+                // arma el PDF y el Excel. El preview no suma: si sumara por su
+                // cuenta, la pantalla y el PDF podrian mostrar numeros distintos.
+                const totalesServidor = response.totales || {};
+                const totalGeneral = Number(totalesServidor.total_general || 0);
+                const totalPagado = Number(totalesServidor.total_pagado || 0);
+                const totalSaldo = Number(totalesServidor.total_saldos || 0);
+                const totalProductos = Number(totalesServidor.total_cantidades || 0);
 
                 $('#table-view-reporte').empty();
                 if (!response.success || data.length == 0) {
@@ -89,8 +97,6 @@ $(function () {
                     return;
                 }
                 if (tipo_reporte_text.toLowerCase() == 'contratistas' && reporte != 'global' && reporte != 'comparativo') {
-                    let totalPagado = 0;
-                    let totalSaldo = 0;
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
                             <thead class="thead-dark">
@@ -109,11 +115,6 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-
-                        totalGeneral += totales(item.total);
-                        totalPagado += totales(item.total_pagado);
-                        totalSaldo += totales(item.saldo)
-
                         return `
                                 <tr>
                                     <td>${item.contratista.fecha}</td>
@@ -164,16 +165,6 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-                        let valor = item.total;
-                        // Paso 1: Eliminar el símbolo "$" y espacios
-                        valor = valor.replace('$', '').trim();
-                        // Paso 2: Eliminar las comas ","
-                        valor = valor.replace(/,/g, '');
-                        // Paso 3: Convertir a número
-                        valor = parseFloat(valor);
-
-                        totalGeneral += valor
-
                         return `
                                 <tr>
                                     <td>${item.mano_obra.proyecto.nombre_proyecto}</td>
@@ -222,17 +213,6 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-                        let valor = item.total;
-                        // Paso 1: Eliminar el símbolo "$" y espacios
-                        valor = valor.replace('$', '').trim();
-                        // Paso 2: Eliminar las comas ","
-                        valor = valor.replace(/,/g, '');
-                        // Paso 3: Convertir a número
-                        valor = parseFloat(valor);
-
-                        totalGeneral += valor
-                        totalProductos += item.cantidad;
-
                         return `
                                 <tr>
                                     <td>${item.adquisicion.fecha}</td>
@@ -816,18 +796,6 @@ $(function () {
         }
 
     }
-
-    function totales($valor) {
-        let total = $valor;
-        // Paso 1: Eliminar el símbolo "$" y espacios
-        total = total.replace('$', '').trim();
-        // Paso 2: Eliminar las comas ","
-        total = total.replace(/,/g, '');
-        // Paso 3: Convertir a número
-        total = parseFloat(total);
-        return total;
-    }
-
 
     $('#generar-reporte-caja').on('click', function () {
         var form = $("#form-reporte");

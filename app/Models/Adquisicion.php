@@ -384,6 +384,56 @@ class Adquisicion extends Model
     }
 
     /**
+     * Totales del pie del reporte de adquisiciones (materiales, servicios,
+     * contratistas y mano de obra).
+     *
+     * Es la unica fuente del reporte: el PDF y el Excel la llaman desde
+     * GenerarPdfController, y el preview recibe el resultado en su JSON. Antes
+     * cada camino sumaba por su cuenta (PHP en el PDF, el navegador en el
+     * preview), asi que una correccion en uno solo dejaba los dos numeros
+     * distintos y nadie se enteraba.
+     *
+     * Los modelos devuelven los importes ya formateados ('$ 1,234.0000'), por
+     * eso se limpian antes de convertir. Una clave ausente cuenta como cero:
+     * las filas de materiales y mano de obra no traen 'total_pagado' ni 'saldo'.
+     *
+     * @param  iterable  $reporte  Filas de dataReporteAdquisiciones(),
+     *                             filtroContratista() o filtroManoObra()
+     * @return array<string, float>
+     */
+    public static function totalesReporteAdquisiciones(iterable $reporte): array
+    {
+        $totales = [
+            'total_general' => 0.0,
+            'total_pagado' => 0.0,
+            'total_saldos' => 0.0,
+            'total_cantidades' => 0.0,
+        ];
+
+        foreach ($reporte as $fila) {
+            $totales['total_general'] += self::importeDeReporte($fila['total'] ?? 0);
+            $totales['total_pagado'] += self::importeDeReporte($fila['total_pagado'] ?? 0);
+            $totales['total_saldos'] += self::importeDeReporte($fila['saldo'] ?? 0);
+            $totales['total_cantidades'] += (float) ($fila['cantidad'] ?? 0);
+        }
+
+        return $totales;
+    }
+
+    /**
+     * Convierte un importe del reporte a float: acepta numeros y los formatos
+     * que ya vienen formateados por los modelos ('$ 1,234.0000').
+     */
+    private static function importeDeReporte(mixed $valor): float
+    {
+        if (is_int($valor) || is_float($valor)) {
+            return (float) $valor;
+        }
+
+        return (float) str_replace(['$', ',', ' '], '', (string) $valor);
+    }
+
+    /**
      * NUEVA FUNCIÓN REFACTORIZADA
      * Genera todos los datos del reporte para UN SOLO proyecto.
      *

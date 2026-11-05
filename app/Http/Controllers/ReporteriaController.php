@@ -184,6 +184,7 @@ class ReporteriaController extends Controller
         try {
             $tipo = $request->input('tipo');
             $tipo_reporte = $request->input('tipo_reporte');
+            $totales = null;
 
             if ($tipo_reporte == 'global') {
                 $query = Adquisicion::reporteGlobalAdquisiciones($request);
@@ -216,12 +217,22 @@ class ReporteriaController extends Controller
                 } else {
                     $query = ManoObra::filtroManoObra($request);
                 }
+
+                // Una sola fuente: el PDF y el Excel leen esta misma funcion,
+                // asi que el preview no vuelve a sumar en el navegador.
+                $totales = Adquisicion::totalesReporteAdquisiciones($query);
             }
 
-            return response()->json([
+            $respuesta = [
                 'success' => true,
                 'result' => $query,
-            ]);
+            ];
+
+            if ($totales !== null) {
+                $respuesta['totales'] = $totales;
+            }
+
+            return response()->json($respuesta);
         } catch (\Throwable $th) {
             return response()->json([
                 'success' => false,
