@@ -76,8 +76,16 @@ $(function () {
             },
             success: function (response) {
                 let data = response.result;
-                let totalGeneral = 0;
-                let totalProductos = 0;
+
+                // Los totales los calcula el servidor
+                // (Adquisicion::totalesReporteAdquisiciones), la misma funcion que
+                // arma el PDF y el Excel. El preview no suma: si sumara por su
+                // cuenta, la pantalla y el PDF podrian mostrar numeros distintos.
+                const totalesServidor = response.totales || {};
+                const totalGeneral = Number(totalesServidor.total_general || 0);
+                const totalPagado = Number(totalesServidor.total_pagado || 0);
+                const totalSaldo = Number(totalesServidor.total_saldos || 0);
+                const totalProductos = Number(totalesServidor.total_cantidades || 0);
 
                 $('#table-view-reporte').empty();
                 if (!response.success || data.length == 0) {
@@ -89,8 +97,6 @@ $(function () {
                     return;
                 }
                 if (tipo_reporte_text.toLowerCase() == 'contratistas' && reporte != 'global' && reporte != 'comparativo') {
-                    let totalPagado = 0;
-                    let totalSaldo = 0;
                     $('#table-view-reporte').append(`<div class="table-responsive">
                         <table class="table table-bordered table-sm" id="table-view-reporte">
                             <thead class="thead-dark">
@@ -109,11 +115,6 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-
-                        totalGeneral += totales(item.total);
-                        totalPagado += totales(item.total_pagado);
-                        totalSaldo += totales(item.saldo)
-
                         return `
                                 <tr>
                                     <td>${item.contratista.fecha}</td>
@@ -164,16 +165,6 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-                        let valor = item.total;
-                        // Paso 1: Eliminar el símbolo "$" y espacios
-                        valor = valor.replace('$', '').trim();
-                        // Paso 2: Eliminar las comas ","
-                        valor = valor.replace(/,/g, '');
-                        // Paso 3: Convertir a número
-                        valor = parseFloat(valor);
-
-                        totalGeneral += valor
-
                         return `
                                 <tr>
                                     <td>${item.mano_obra.proyecto.nombre_proyecto}</td>
@@ -198,7 +189,7 @@ $(function () {
                         </div>
                         `);
                 } else if (reporte == 'global') { //* Mostrar el reporte global de adquisiciones //
-                    reporteGlobal(response.result);
+                    reporteGlobal(response.result, response.totales);
                 } else if (reporte == 'comparativo') { //* Mostrar el reporte comparativo de adquisiciones //
                     renderizarReporteComparativo(response.result);
                 } else { //* Mostrar el reporte de adquisiciones //
@@ -222,17 +213,6 @@ $(function () {
                             </thead>
                         <tbody>
                         ${data.map((item) => {
-                        let valor = item.total;
-                        // Paso 1: Eliminar el símbolo "$" y espacios
-                        valor = valor.replace('$', '').trim();
-                        // Paso 2: Eliminar las comas ","
-                        valor = valor.replace(/,/g, '');
-                        // Paso 3: Convertir a número
-                        valor = parseFloat(valor);
-
-                        totalGeneral += valor
-                        totalProductos += item.cantidad;
-
                         return `
                                 <tr>
                                     <td>${item.adquisicion.fecha}</td>
@@ -816,18 +796,6 @@ $(function () {
         }
 
     }
-
-    function totales($valor) {
-        let total = $valor;
-        // Paso 1: Eliminar el símbolo "$" y espacios
-        total = total.replace('$', '').trim();
-        // Paso 2: Eliminar las comas ","
-        total = total.replace(/,/g, '');
-        // Paso 3: Convertir a número
-        total = parseFloat(total);
-        return total;
-    }
-
 
     $('#generar-reporte-caja').on('click', function () {
         var form = $("#form-reporte");
@@ -1419,10 +1387,14 @@ $(function () {
      * @param {*} result 
      * @returns 
      */
-    function reporteGlobal(result) {
+    function reporteGlobal(result, totalesServidor) {
         let html = '';
-        let totalGeneral = 0;
-        let totalProductos = 0;
+        // El desglose por etapa y el pie los calcula el servidor
+        // (Adquisicion::totalesReporteGlobal): el preview solo los muestra.
+        const totalesReporte = totalesServidor || {};
+        const desgloses = totalesReporte.por_etapa || {};
+        const totalGeneral = Number(totalesReporte.subtotal || 0);
+        const totalProductos = Number(totalesReporte.total_productos || 0);
         let producto = $('select[name=producto]').val();
 
 
@@ -1454,11 +1426,10 @@ $(function () {
             html += '<hr>';
             html += `<h6 class="mb-2" style="background-color: #e9ecef; padding: 8px; border-radius: 4px;">Etapa: <strong>${etapaNombre}</strong></h6>`;
 
-            let totalEtapa = 0; // Para sumar el total de esta etapa específica
+            const desgloseEtapa = desgloses[etapaNombre] || {};
 
             // Tabla de Contratistas
             if (categorias.contratista && categorias.contratista.length > 0) {
-                let totalContratistas = 0, totalPagos = 0, totalSaldos = 0;
                 html += `<h6 class="mb-1 text-info">Contratistas</h6>
                         <div class="table-responsive mb-3">
                             <table class="table table-bordered table-sm">
@@ -1484,29 +1455,25 @@ $(function () {
                                 <td class="text-right">${formatearUSD(c.saldo)}</td>
                             </tr>
                         `;
-                    totalContratistas += parseFloat(c.total_contratado);
-                    totalPagos += parseFloat(c.pagos);
-                    totalSaldos += parseFloat(c.saldo);
                 });
                 html += `</tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="2" class="text-right"><strong>Totales Contratista:</strong></td>
-                                <td class="text-right"><strong>${formatearUSD(totalContratistas)}</strong></td>
-                                <td class="text-right"><strong>${formatearUSD(totalPagos)}</strong></td>
-                                <td class="text-right"><strong>${formatearUSD(totalSaldos)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(desgloseEtapa.contratistas || 0)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(desgloseEtapa.pagos || 0)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(desgloseEtapa.saldos || 0)}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>`;
-                // La etapa suma la misma base que el pie del PDF y el Reporte Balance
-                // de Gerencia: del contratista cuenta lo pagado, no lo contratado.
-                totalEtapa += totalPagos;
+                // Lo contratado y el saldo se muestran pero no son gasto: el total
+                // de la etapa lo calcula el servidor con la misma base que el pie
+                // del PDF y el Reporte Balance.
             }
 
             // Tabla de Mano de Obra
             if (categorias.mano_obra && categorias.mano_obra.length > 0) {
-                let totalManoObra = 0;
                 html += `<h6 class="mb-1 text-info">Mano de obra</h6>
                         <div class="table-responsive mb-3">
                             <table class="table table-bordered table-sm">
@@ -1524,23 +1491,20 @@ $(function () {
                                 <td class="text-right">${formatearUSD(m.pagado)}</td>
                             </tr>
                         `;
-                    totalManoObra += parseFloat(m.pagado);
                 });
                 html += `</tbody>
                         <tfoot>
                             <tr>
                                 <td class="text-right"><strong>Total Mano de Obra:</strong></td>
-                                <td class="text-right"><strong>${formatearUSD(totalManoObra)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(desgloseEtapa.mano_obra || 0)}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>`;
-                totalEtapa += totalManoObra;
             }
 
             // Tabla de Materiales y Herramientas
             if (categorias.materiales_herramientas && categorias.materiales_herramientas.length > 0) {
-                let totalMateriales = 0;
                 html += `<h6 class="mb-1 text-info">Materiales y Herramientas</h6>
                         <div class="table-responsive mb-3">
                             <table class="table table-bordered table-sm">
@@ -1564,24 +1528,20 @@ $(function () {
                                 <td class="text-right">${formatearUSD(mat.total)}</td>
                             </tr>
                         `;
-                    totalMateriales += parseFloat(mat.total);
-                    totalProductos += parseFloat(mat.cantidad_total);
                 });
                 html += `</tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="3" class="text-right"><strong>Total Materiales:</strong></td>
-                                <td class="text-right"><strong>${formatearUSD(totalMateriales)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(desgloseEtapa.materiales || 0)}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>`;
-                totalEtapa += totalMateriales;
             }
 
             // Tabla de Servicios
             if (categorias.servicios && categorias.servicios.length > 0) {
-                let totalServicios = 0;
                 html += `<h6 class="mb-1 text-info">Servicios</h6>
                         <div class="table-responsive mb-3">
                             <table class="table table-bordered table-sm">
@@ -1605,27 +1565,22 @@ $(function () {
                                 <td class="text-right">${formatearUSD(serv.total)}</td>
                             </tr>
                         `;
-                    totalServicios += parseFloat(serv.total);
-                    totalProductos += parseFloat(serv.cantidad_total);
                 });
                 html += `</tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="3" class="text-right"><strong>Total Servicios:</strong></td>
-                                <td class="text-right"><strong>${formatearUSD(totalServicios)}</strong></td>
+                                <td class="text-right"><strong>${formatearUSD(desgloseEtapa.servicios || 0)}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>`;
-                totalEtapa += totalServicios;
             }
 
             // Total por Etapa
             html += `<div class="text-right mb-4">
-                        <h5>Total Etapa ${etapaNombre}: <span class="badge badge-success">${formatearUSD(totalEtapa)}</span></h5>
+                        <h5>Total Etapa ${etapaNombre}: <span class="badge badge-success">${formatearUSD(desgloseEtapa.total || 0)}</span></h5>
                     </div>`;
-
-            totalGeneral += totalEtapa; // Sumar el total de esta etapa al total general
 
         });
 
