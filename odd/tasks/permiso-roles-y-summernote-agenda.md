@@ -179,3 +179,11 @@ Verificacion:
   escapado: `A & B` se ve `A & B`, no `A &amp; B`.
 - La edicion inline de un comentario tambien es editor y conserva el formato al aceptar y al
   cancelar.
+
+**L13 (revisión nativa del comment editor, lineage `review-925acd3086f48112`):** la revisión de dos
+lentes (risk, reliability) sobre `b6193514..899d9dcc` encontró un CRITICAL: la edición inline
+renderizaba con `.html()` el HTML local del editor, sin pasar por la allowlist. Corregido en
+`899d9dcc`: `updateComentario` devuelve el comentario ya sanitizado y el handler renderiza esa
+respuesta. Resultado: `native-approved-acknowledgement-completed`, autoridad quemada.
+Follow-ups informativos: R3-002 (`restoreInlineEditors` descarta el texto sin guardar del editor
+anterior al cambiar de comentario) y R1-001 (el claim describe el código previo a la corrección).
