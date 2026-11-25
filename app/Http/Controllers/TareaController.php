@@ -229,7 +229,13 @@ class TareaController extends Controller
                 $comentario->comentario = HtmlSanitizer::clean((string) $request->comentario);
                 $comentario->save();
                 DB::commit();
-                return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);
+                // Se devuelve el valor YA sanitizado: la UI no puede confiar en
+                // el HTML que armo el editor en el navegador.
+                return response()->json([
+                    'success' => true,
+                    'message' => MessagesConstant::UPDATE,
+                    'comentario' => $comentario->comentario,
+                ]);
             } catch (\Throwable $e) {
                 DB::rollBack();
                 return response()->json(['success' => false, 'message' => MessagesConstant::DEFAUL_ERROR]);

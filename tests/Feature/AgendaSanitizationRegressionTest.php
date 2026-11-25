@@ -232,4 +232,35 @@ class AgendaSanitizationRegressionTest extends TestCase
         $this->assertStringContainsString("'class' => 'form-control summernote', 'id' => 'contenido'", $acta);
         $this->assertStringNotContainsString('data-height', $acta);
     }
+
+    /** @test */
+    public function s7_la_edicion_inline_devuelve_el_comentario_sanitizado()
+    {
+        $user = $this->admin('reg_inline_xss');
+        $tarea = $this->tarea($user, '<p>base</p>');
+
+        $comentario = ComentarioTarea::create([
+            'tarea_id' => $tarea->id,
+            'usuario_id' => $user->id,
+            'comentario' => '<p>original</p>',
+        ]);
+
+        $response = $this->actingAs($user)->put(
+            'agenda/comentarios-tarea/' . $comentario->id,
+            ['comentario' => '<p>ok <strong>si</strong></p><script>alert(1)</script><img src=x onerror="alert(2)">'],
+            $this->ajax()
+        );
+
+        $response->assertOk()->assertJson(['success' => true]);
+
+        // La UI renderiza la respuesta: tiene que venir ya sanitizada, no el
+        // HTML que armo el editor en el navegador.
+        $devuelto = $response->json('comentario');
+
+        $this->assertIsString($devuelto);
+        $this->assertStringNotContainsString('<script', $devuelto);
+        $this->assertStringNotContainsString('onerror', $devuelto);
+        $this->assertStringContainsString('<strong>si</strong>', $devuelto);
+        $this->assertSame($comentario->fresh()->comentario, $devuelto);
+    }
 }

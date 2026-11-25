@@ -331,11 +331,13 @@ $(function () {
                 $('#comentarioTareaModal #modal-overlay').show();
             },
             success: function (response) {
-                // Destruir el editor para no filtrar su HTML a otra fila y
-                // volver al estado original con el HTML en crudo (el servidor
-                // ya lo sanitizo).
+                // Destruir el editor para no filtrar su HTML a otra fila. Se
+                // renderiza el HTML que devuelve el servidor, sanitizado: el
+                // valor local del editor (codeview incluido) no paso por la
+                // allowlist y no debe inyectarse.
                 destroyComentarioEditor($field);
-                const $comentario = $('<div class="mb-1 comentario"></div>').html(nuevoComentario);
+                const $comentario = $('<div class="mb-1 comentario"></div>')
+                    .html(response.comentario || '');
                 $item.find('textarea').replaceWith($comentario);
 
                 // Restaurar los botones originales
