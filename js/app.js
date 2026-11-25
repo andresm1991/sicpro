@@ -258,19 +258,46 @@ $(function () {
         container: 'body' // Forzar que el menú se renderice en el body
     });
 
-    $('.summernote').summernote({
-        placeholder: 'Escribe el contenido del contrato aquí...',
-        tabsize: 2,
-        height: 900, // Altura del editor
-        toolbar: [
-            ['style', ['style']],
-            ['font', ['bold', 'underline', 'clear']],
-            ['color', ['color']],
-            ['para', ['ul', 'ol', 'paragraph']],
-            ['table', ['table']],
-            ['insert', ['link', 'picture', 'video']],
-            ['view', ['fullscreen', 'codeview', 'help']]
-        ]
+    // Valores del editor de contratos/actas: son los defaults para no
+    // romper esos formularios (S6). Cada agenda usa su propio data-height /
+    // data-placeholder en el textarea y cae aqui via .each().
+    var SUMMERNOTE_DEFAULT_PLACEHOLDER = 'Escribe el contenido del contrato aquí...';
+    var SUMMERNOTE_DEFAULT_HEIGHT = 900;
+    // Barra minima: solo formato. Se quitaron 'insert' (link/picture/video) y
+    // 'view' (fullscreen/codeview/help) porque el sanitizador descarta imagenes
+    // y video, y 'codeview' exponia el HTML crudo del editor sin pasar por la
+    // allowlist.
+    var SUMMERNOTE_DEFAULT_TOOLBAR = [
+        ['style', ['style']],
+        ['font', ['bold', 'underline', 'strikethrough', 'clear']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['table', ['table']]
+    ];
+
+    function summernoteOptions($el) {
+        var options = {
+            placeholder: $el.data('placeholder') || SUMMERNOTE_DEFAULT_PLACEHOLDER,
+            tabsize: 2,
+            height: $el.data('height') || SUMMERNOTE_DEFAULT_HEIGHT, // Altura del editor
+            toolbar: SUMMERNOTE_DEFAULT_TOOLBAR
+        };
+
+        var customToolbar = $el.data('toolbar');
+
+        if (customToolbar) {
+            try {
+                options.toolbar = typeof customToolbar === 'string' ? JSON.parse(customToolbar) : customToolbar;
+            } catch (e) {
+                // data-toolbar invalido: se conserva la barra por defecto.
+            }
+        }
+
+        return options;
+    }
+
+    $('.summernote').each(function () {
+        $(this).summernote(summernoteOptions($(this)));
     });
 
     /**
