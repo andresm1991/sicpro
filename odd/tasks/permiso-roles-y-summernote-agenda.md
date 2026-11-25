@@ -204,3 +204,11 @@ sanitizador descarta.
 Verificacion: un elemento sin `data-*` y uno de agenda reciben exactamente la misma toolbar de
 cinco grupos, sin `codeview`/`picture`/`video`/`link`/`fullscreen`/`help`; height y placeholder
 por defecto no cambian.
+
+**L15 (usuario, texto):** «sabes no veo en la occion de tachar el texto como en word, existe esto en summernote hay como incluilo ?»
+
+Se agrega `strikethrough` al grupo `font` de `SUMMERNOTE_DEFAULT_TOOLBAR`. Trampa encontrada antes
+de agregarlo: el boton dispara `execCommand('strikeThrough')`, que emite `<strike>` en Chrome y
+`<s>` en otros navegadores; la allowlist solo tenia `s`, asi que el tachado se habria perdido al
+guardar. Se agrego `strike` a `ALLOWED_TAGS` y un test que fija ambas etiquetas, el recorte de
+atributos y el descarte de un `<script>` anidado.

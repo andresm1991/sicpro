@@ -10,7 +10,7 @@ namespace App\Support;
  * se debe agregar ninguno (composer/npm).
  *
  * Reglas:
- * - Etiquetas conservadas: p, br, strong, b, em, i, u, s, ul, ol, li,
+ * - Etiquetas conservadas: p, br, strong, b, em, i, u, s, strike, ul, ol, li,
  *   a[href], h1-h6, blockquote, table, thead, tbody, tr, td, th.
  * - Cualquier otro elemento se elimina pero se conserva su contenido de
  *   texto (unwrap), excepto <script> y <style>, cuyo contenido se elimina
@@ -37,7 +37,7 @@ namespace App\Support;
 class HtmlSanitizer
 {
     private const ALLOWED_TAGS = [
-        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's',
+        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 's', 'strike',
         'ul', 'ol', 'li', 'a',
         'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'blockquote',

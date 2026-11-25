@@ -234,6 +234,7 @@ class AgendaSanitizationRegressionTest extends TestCase
         $toolbar = substr($app, $start, strpos($app, '];', $start) - $start);
 
         $this->assertStringContainsString("['table', ['table']]", $toolbar);
+        $this->assertStringContainsString("'strikethrough'", $toolbar);
         $this->assertStringNotContainsString('codeview', $toolbar);
         $this->assertStringNotContainsString('picture', $toolbar);
         $this->assertStringNotContainsString('video', $toolbar);
@@ -274,5 +275,25 @@ class AgendaSanitizationRegressionTest extends TestCase
         $this->assertStringNotContainsString('onerror', $devuelto);
         $this->assertStringContainsString('<strong>si</strong>', $devuelto);
         $this->assertSame($comentario->fresh()->comentario, $devuelto);
+    }
+
+    /** @test */
+    public function s8_el_tachado_del_editor_sobrevive_al_saneado()
+    {
+        // execCommand('strikeThrough') emite <strike> en Chrome y <s> en otros
+        // navegadores: la allowlist tiene que conservar las dos o el tachado
+        // desaparece al guardar y volver a abrir la tarea.
+        $this->assertSame('<strike>tachado</strike>', \App\Support\HtmlSanitizer::clean('<strike>tachado</strike>'));
+        $this->assertSame('<s>tachado</s>', \App\Support\HtmlSanitizer::clean('<s>tachado</s>'));
+        $this->assertSame(
+            '<p>normal <strike>tachado</strike> <s>otro</s></p>',
+            \App\Support\HtmlSanitizer::clean('<p>normal <strike>tachado</strike> <s>otro</s></p>')
+        );
+        // Ningun atributo sobrevive en el tachado (no hay on* ni style).
+        $this->assertSame(
+            '<strike>tachado</strike>',
+            \App\Support\HtmlSanitizer::clean('<strike onclick="x()" style="color:red">tachado</strike>')
+        );
+        $this->assertStringNotContainsString('script', \App\Support\HtmlSanitizer::clean('<strike><script>alert(1)</script>tachado</strike>'));
     }
 }

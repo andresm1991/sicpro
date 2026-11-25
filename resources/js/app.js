@@ -269,7 +269,7 @@ $(function () {
     // allowlist.
     var SUMMERNOTE_DEFAULT_TOOLBAR = [
         ['style', ['style']],
-        ['font', ['bold', 'underline', 'clear']],
+        ['font', ['bold', 'underline', 'strikethrough', 'clear']],
         ['color', ['color']],
         ['para', ['ul', 'ol', 'paragraph']],
         ['table', ['table']]
