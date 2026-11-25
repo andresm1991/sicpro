@@ -152,3 +152,12 @@ plano puede borrar texto que parece etiqueta (`use <file> now`); R3-003 un `</di
 parásito cierra el wrapper del sanitizador y deja caer texto posterior en silencio;
 R3-004 la allowlist permite `<a>` dentro del propio `<a class="agregar-comentario">` de
 la tarjeta del listado, así que los anchors anidados pueden romper el excerpt.
+
+**L11 (revisión nativa, lineage `review-a4511034dbf335d7`):** revisión ordinaria de tres lentes
+(risk, reliability, readability) sobre el rango `24b14747..7fdd6829`. Encontró el bypass de
+`href` ofuscado (R2-1/R3-001), que fue corregido en `7fdd6829` y validado por el validador
+dirigido del proveedor. Resultado: `native-approved-acknowledgement-completed`, autoridad
+quemada, entrega por política ordinaria del repositorio. Hallazgos informativos no bloqueantes
+que quedan como follow-up: R1-001 (`strip_tags` en comentarios puede perder texto con forma de
+etiqueta), R2-2, R3-003 (`</div>` suelto cierra el wrapper del sanitizador y descarta texto
+posterior), R3-004 (`<a>` permitido dentro del `<a>` de la tarjeta del listado), R3-005.
