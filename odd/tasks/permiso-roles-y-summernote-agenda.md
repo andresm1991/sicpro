@@ -187,3 +187,20 @@ renderizaba con `.html()` el HTML local del editor, sin pasar por la allowlist. 
 respuesta. Resultado: `native-approved-acknowledgement-completed`, autoridad quemada.
 Follow-ups informativos: R3-002 (`restoreInlineEditors` descarta el texto sin guardar del editor
 anterior al cambiar de comentario) y R1-001 (el claim describe el código previo a la corrección).
+
+**L14 (usuario, cambio de requisito, textual):** «solo un cambio en los elementos del summernote hay que quitar algunas que sea mas minimalista que solo muestre lo necesario lo que esta depues de elemento table en todos»
+
+### S8 — Barra minimalista, igual en todos los editores
+
+Se eliminan los grupos que estaban despues de `table` en `SUMMERNOTE_DEFAULT_TOOLBAR`
+(`resources/js/app.js`): `insert` (link/picture/video) y `view` (fullscreen/codeview/help).
+Quedan `style`, `font`, `color`, `para` y `table`. Como la agenda no define `data-toolbar`,
+el cambio aplica a contratos, actas, descripcion de tarea y comentarios por igual.
+
+Efecto colateral buscado: sin `codeview` desaparece la via que permitia tipear HTML crudo que
+nunca pasaba por la allowlist, y sin `picture`/`video` no se pueden incrustar los base64 que el
+sanitizador descarta.
+
+Verificacion: un elemento sin `data-*` y uno de agenda reciben exactamente la misma toolbar de
+cinco grupos, sin `codeview`/`picture`/`video`/`link`/`fullscreen`/`help`; height y placeholder
+por defecto no cambian.

@@ -228,6 +228,18 @@ class AgendaSanitizationRegressionTest extends TestCase
         $this->assertStringContainsString('SUMMERNOTE_DEFAULT_HEIGHT = 900', $app);
         $this->assertStringContainsString('Escribe el contenido del contrato aquí...', $app);
 
+        // Barra minima comun a todos los editores: nada despues de 'table'.
+        $start = strpos($app, 'SUMMERNOTE_DEFAULT_TOOLBAR = [');
+        $this->assertNotFalse($start, 'no se encontro la toolbar por defecto');
+        $toolbar = substr($app, $start, strpos($app, '];', $start) - $start);
+
+        $this->assertStringContainsString("['table', ['table']]", $toolbar);
+        $this->assertStringNotContainsString('codeview', $toolbar);
+        $this->assertStringNotContainsString('picture', $toolbar);
+        $this->assertStringNotContainsString('video', $toolbar);
+        $this->assertStringNotContainsString("'link'", $toolbar);
+        $this->assertStringNotContainsString('fullscreen', $toolbar);
+
         $acta = file_get_contents(base_path('resources/views/marketing/seguimiento_ventas/partials/form_acta_entrega.blade.php'));
         $this->assertStringContainsString("'class' => 'form-control summernote', 'id' => 'contenido'", $acta);
         $this->assertStringNotContainsString('data-height', $acta);

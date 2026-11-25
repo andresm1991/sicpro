@@ -263,14 +263,16 @@ $(function () {
     // data-placeholder en el textarea y cae aqui via .each().
     var SUMMERNOTE_DEFAULT_PLACEHOLDER = 'Escribe el contenido del contrato aquí...';
     var SUMMERNOTE_DEFAULT_HEIGHT = 900;
+    // Barra minima: solo formato. Se quitaron 'insert' (link/picture/video) y
+    // 'view' (fullscreen/codeview/help) porque el sanitizador descarta imagenes
+    // y video, y 'codeview' exponia el HTML crudo del editor sin pasar por la
+    // allowlist.
     var SUMMERNOTE_DEFAULT_TOOLBAR = [
         ['style', ['style']],
         ['font', ['bold', 'underline', 'clear']],
         ['color', ['color']],
         ['para', ['ul', 'ol', 'paragraph']],
-        ['table', ['table']],
-        ['insert', ['link', 'picture', 'video']],
-        ['view', ['fullscreen', 'codeview', 'help']]
+        ['table', ['table']]
     ];
 
     function summernoteOptions($el) {
