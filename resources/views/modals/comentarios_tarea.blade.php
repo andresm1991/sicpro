@@ -64,7 +64,7 @@
 
                         <div class="col-12 form-group">
                             {{ Form::label('', 'Comentarios', ['class' => 'col-form-label']) }}
-                            {{ Form::textarea('comentario', '', ['class' => 'form-control', 'id' => 'comentario', 'placeholder' => 'Añadir un comentario...', 'rows' => '3']) }}
+                            {{ Form::textarea('comentario', '', ['class' => 'form-control summernote', 'id' => 'comentario', 'placeholder' => 'Añadir un comentario...', 'rows' => '3', 'data-height' => '200', 'data-placeholder' => 'Añadir un comentario...']) }}
                         </div>
                     </div>
 

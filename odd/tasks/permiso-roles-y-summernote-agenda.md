@@ -79,7 +79,6 @@ Verificación:
   `resources/views/tareas/partials/list.blade.php` y en la vista de detalle.
 
 ### S6 — Sin regresión en el editor global existente
-
 `resources/js/app.js:261` inicializa `.summernote` para contratos y actas de entrega
 (`marketing/seguimiento_ventas/partials/form_reserva.blade.php:224`,
 `form_acta_entrega.blade.php:29`). Ese comportamiento no debe cambiar.
@@ -88,7 +87,6 @@ Verificación: para ambos formularios, el init conserva `height: 900` y el
 `placeholder` de contrato.
 
 ## Tasks
-
 | ID | Specs | Ruta | Commit | Evidencia |
 | -- | ----- | ---- | ------ | --------- |
 | T1 | S1, S2, S3 | inline (parent) | `permiso sistema.roles.*` + gate por permiso | `RolesPermissionGateTest` 9/9 verde |
@@ -153,11 +151,31 @@ parásito cierra el wrapper del sanitizador y deja caer texto posterior en silen
 R3-004 la allowlist permite `<a>` dentro del propio `<a class="agregar-comentario">` de
 la tarjeta del listado, así que los anchors anidados pueden romper el excerpt.
 
-**L11 (revisión nativa, lineage `review-a4511034dbf335d7`):** revisión ordinaria de tres lentes
-(risk, reliability, readability) sobre el rango `24b14747..7fdd6829`. Encontró el bypass de
+**L11 (revisión nativa, lineage `review-a4511034dbf335d7`):** revisión ordinaria de tres lentes(risk, reliability, readability) sobre el rango `24b14747..7fdd6829`. Encontró el bypass de
 `href` ofuscado (R2-1/R3-001), que fue corregido en `7fdd6829` y validado por el validador
 dirigido del proveedor. Resultado: `native-approved-acknowledgement-completed`, autoridad
 quemada, entrega por política ordinaria del repositorio. Hallazgos informativos no bloqueantes
 que quedan como follow-up: R1-001 (`strip_tags` en comentarios puede perder texto con forma de
 etiqueta), R2-2, R3-003 (`</div>` suelto cierra el wrapper del sanitizador y descarta texto
 posterior), R3-004 (`<a>` permitido dentro del `<a>` de la tarjeta del listado), R3-005.
+
+**L12 (usuario, cambio de requisito, textual):** «vemos el summernote de agenda no esta aplicado a los demas textarea falto el de COMENTARIOs»
+
+### S7 — Summernote tambien en el campo `comentario` de /agenda
+
+Motivo textual del usuario (L12): «falto el de COMENTARIOs».
+
+Anula la decision de texto plano de L8-B1: el comentario pasa a ser contenido de editor.
+
+Superficies: `resources/views/modals/comentarios_tarea.blade.php:67` (id `comentario`, el que usa
+`#guardar-comentario`) y `resources/views/tareas/comentarios.blade.php:59` (pagina huerfana).
+
+Verificacion:
+- Los dos `comentario` se inicializan como editor Summernote con las opciones de agenda.
+- Al escribir se sanitiza con la misma allowlist de `App\Support\HtmlSanitizer` (se revierte el
+  `strip_tags` de L8-B1); `<script>` y `on*` no sobreviven, `<p>`/`<strong>`/`<ul>` si.
+- Al leer (`getComentariosTarea`) se sanitiza tambien, para cubrir filas anteriores al editor.
+- El listado renderiza el comentario formateado dentro de un `div.comentario`, sin doble
+  escapado: `A & B` se ve `A & B`, no `A &amp; B`.
+- La edicion inline de un comentario tambien es editor y conserva el formato al aceptar y al
+  cancelar.

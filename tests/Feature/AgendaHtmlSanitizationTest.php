@@ -149,10 +149,10 @@ class AgendaHtmlSanitizationTest extends TestCase
             $tarea->fresh()->descripcion
         );
 
-        // El comentario es texto plano: se le quitan las etiquetas, sin
-        // serializar a HTML (no debe aparecer &amp; ni &lt;).
+        // El comentario es contenido del editor (S7): se sanitiza con la
+        // misma allowlist que la descripcion.
         $this->assertSame(
-            'Nota buenaalert(9)n',
+            '<p>Nota <em>buena</em></p><b>n</b>',
             ComentarioTarea::latest('id')->firstOrFail()->comentario
         );
 
@@ -165,7 +165,7 @@ class AgendaHtmlSanitizationTest extends TestCase
         )->assertOk()->assertJson(['success' => true]);
 
         $this->assertSame(
-            'xfin si',
+            '<a>x</a><p>fin <strong>si</strong></p>',
             $comentario->fresh()->comentario
         );
     }

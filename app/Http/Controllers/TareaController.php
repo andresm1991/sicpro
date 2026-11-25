@@ -141,10 +141,10 @@ class TareaController extends Controller
                     ComentarioTarea::create([
                         'tarea_id' => $request->tarea_id,
                         'usuario_id' => auth()->user()->id,
-                        // El comentario es texto plano, no pasa por el editor: se le
-                        // quitan las etiquetas y se guarda sin serializar a HTML, para
-                        // no convertir "A & B" en "A &amp; B". Se escapa al mostrarlo.
-                        'comentario' => strip_tags((string) $request->comentario),
+                        // El comentario es contenido del editor (S7): se sanitiza
+                        // con la misma allowlist que la descripcion. El cast evita
+                        // guardar null en una columna NOT NULL.
+                        'comentario' => HtmlSanitizer::clean((string) $request->comentario),
                     ]);
                 }
 
@@ -203,6 +203,10 @@ class TareaController extends Controller
             $categoria = Tarea::find($request->tarea_id)->categoria->id ?? null;
 
             foreach ($comentarios as $comentario) {
+                // Las filas guardadas antes del editor nunca pasaron por el
+                // sanitizador (S7): se limpian tambien al leer para que una
+                // etiqueta vieja no se ejecute al interpolar en crudo.
+                $comentario->comentario = HtmlSanitizer::clean($comentario->comentario);
                 $comentario->created_at_formateado = $comentario->created_at_formateado;
                 $comentario->updated_at_formateado = $comentario->updated_at_formateado;
             }
@@ -220,9 +224,9 @@ class TareaController extends Controller
             try {
                 DB::beginTransaction();
                 $comentario = ComentarioTarea::find($request->comentarioId);
-                // Texto plano: se le quitan las etiquetas y se guarda sin serializar
-                // a HTML; el escapado ocurre al mostrarlo.
-                $comentario->comentario = strip_tags((string) $request->comentario);
+                // Contenido del editor (S7): misma allowlist que la descripcion.
+                // El cast evita guardar null en una columna NOT NULL.
+                $comentario->comentario = HtmlSanitizer::clean((string) $request->comentario);
                 $comentario->save();
                 DB::commit();
                 return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);

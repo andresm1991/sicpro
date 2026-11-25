@@ -5,8 +5,9 @@ $(function () {
 
     var estadoActual = 0;
 
-    // Los comentarios son texto plano: se escapan antes de interpolarlos en el
-    // HTML del listado para que una fila vieja con etiquetas no se ejecute.
+    // Los comentarios ya son HTML sanitizado en el servidor (S7): se
+    // interpolan en crudo dentro de un div. escapeHtml solo se conserva para
+    // el nombre del usuario.
     function escapeHtml(value) {
         return $('<div></div>').text(value === null || value === undefined ? '' : value).html();
     }
@@ -30,6 +31,53 @@ $(function () {
         } else {
             $field.val(html || '');
         }
+    }
+
+    // Editor inline para un comentario: mismas opciones de agenda que los
+    // textareas fijos (altura 200, placeholder de comentario).
+    function initComentarioEditor($field) {
+        $field.summernote({
+            placeholder: $field.data('placeholder') || 'Añadir un comentario...',
+            tabsize: 2,
+            height: $field.data('height') || 200,
+            toolbar: [
+                ['style', ['style']],
+                ['font', ['bold', 'underline', 'clear']],
+                ['color', ['color']],
+                ['para', ['ul', 'ol', 'paragraph']],
+                ['table', ['table']],
+                ['insert', ['link', 'picture', 'video']],
+                ['view', ['fullscreen', 'codeview', 'help']]
+            ]
+        });
+    }
+
+    function destroyComentarioEditor($field) {
+        if ($field.length && $field.next('.note-editor').length) {
+            $field.summernote('destroy');
+        }
+    }
+
+    // Solo puede haber un comentario en edicion: restaura cualquier otro
+    // para no filtrar su HTML al nuevo editor.
+    function restoreInlineEditors($exceptItem) {
+        $('.list-comentarios .tarea-item').each(function () {
+            const $other = $(this);
+            if ($exceptItem && $other.is($exceptItem)) {
+                return;
+            }
+            const $otherField = $other.find('textarea');
+            if ($otherField.length) {
+                const originalHtml = $otherField.data('original');
+                destroyComentarioEditor($otherField);
+                const $comentario = $('<div class="mb-1 comentario"></div>').html(originalHtml);
+                $otherField.replaceWith($comentario);
+                $other.find('.editar').show();
+                $other.find('.eliminar').show();
+                $other.find('.separator').show();
+                $other.find('.d-flex.gap-2').remove();
+            }
+        });
     }
 
     $('#guardar').on('click', function () {
@@ -101,8 +149,9 @@ $(function () {
 
         var data = getFormData(form);
 
-        // El textarea queda oculto tras el editor: se lee con la API.
+        // Los textarea quedan ocultos tras el editor: se leen con la API.
         data.descripcion = summernoteCode(form.find('textarea[name=descripcion]'));
+        data.comentario = summernoteCode(form.find('textarea[name=comentario]'));
 
         $.ajax({
             url: 'agenda/guardar-comentario',
@@ -120,7 +169,7 @@ $(function () {
                 }).then((result) => {
                     if (response.success) {
                         getComentariosTarea();
-                        $("#comentario").val('');
+                        setSummernoteCode(form.find('textarea[name=comentario]'), '');
                     }
                 });
 
@@ -185,14 +234,17 @@ $(function () {
         e.preventDefault();
 
         const $item = $(this).closest('.tarea-item'); // Obtener el contenedor de la tarea
-        // El comentario es texto plano (su textarea no es un editor): se lee y
-        // se reescribe como texto para no inyectar HTML.
-        const comentarioOriginal = $item.find('.comentario').text(); // Guardar el comentario original
+        restoreInlineEditors($item);
+        // El comentario ya es HTML sanitizado: se lee con .html() para
+        // conservar el formato en el editor.
+        const comentarioOriginal = $item.find('.comentario').html(); // Guardar el comentario original
 
-        // Convertir el <p> en un <textarea>
-        const $textarea = $('<textarea class="form-control mb-1"></textarea>').val(comentarioOriginal);
+        // Convertir el <div> en un <textarea> con las opciones de agenda
+        const $textarea = $('<textarea class="form-control mb-1" data-height="200" data-placeholder="Añadir un comentario..."></textarea>');
         $textarea.data('original', comentarioOriginal);
         $item.find('.comentario').replaceWith($textarea);
+        $textarea.val(comentarioOriginal);
+        initComentarioEditor($textarea);
 
         // Agregar botones de "Aceptar" y "Cancelar"
         const $botones = $(
@@ -266,7 +318,8 @@ $(function () {
 
         const $item = $(this).closest('.tarea-item'); // Obtener el contenedor de la tarea
         const comentarioId = $item.data('id'); // Obtener el ID de la tarea
-        const nuevoComentario = $item.find('textarea').val(); // Obtener el nuevo comentario
+        const $field = $item.find('textarea');
+        const nuevoComentario = summernoteCode($field); // Leer el HTML del editor
 
         // Enviar los datos actualizados mediante AJAX
         $.ajax({
@@ -278,8 +331,11 @@ $(function () {
                 $('#comentarioTareaModal #modal-overlay').show();
             },
             success: function (response) {
-                // Volver al estado original
-                const $comentario = $('<p class="mb-1 comentario"></p>').text(nuevoComentario);
+                // Destruir el editor para no filtrar su HTML a otra fila y
+                // volver al estado original con el HTML en crudo (el servidor
+                // ya lo sanitizo).
+                destroyComentarioEditor($field);
+                const $comentario = $('<div class="mb-1 comentario"></div>').html(nuevoComentario);
                 $item.find('textarea').replaceWith($comentario);
 
                 // Restaurar los botones originales
@@ -307,10 +363,12 @@ $(function () {
         e.preventDefault();
 
         const $item = $(this).closest('.tarea-item'); // Obtener el contenedor de la tarea
-        const comentarioOriginal = $item.find('textarea').data('original'); // Recuperar el comentario original
+        const $field = $item.find('textarea');
+        const comentarioOriginal = $field.data('original'); // Recuperar el comentario original
 
-        // Volver al estado original
-        const $comentario = $('<p class="mb-1 comentario"></p>').text(comentarioOriginal);
+        // Destruir el editor y volver al HTML original en crudo.
+        destroyComentarioEditor($field);
+        const $comentario = $('<div class="mb-1 comentario"></div>').html(comentarioOriginal);
         $item.find('textarea').replaceWith($comentario);
 
         // Restaurar los botones originales
@@ -539,7 +597,7 @@ $(function () {
                                                 <h6 class="mb-1">${escapeHtml(tarea.usuario.nombre)}</h6>
                                                 <small class="text-muted">${tarea.updated_at_formateado}</small>
                                             </div>
-                                            <p class="mb-1 comentario">${escapeHtml(tarea.comentario)}</p>
+                                            <div class="mb-1 comentario">${tarea.comentario}</div>
                                             <a href="#" class="text-dark font-weight-bold font-size-12 editar">Editar</a>  <span class="separator">|</span>  <a href="#" class="text-dark font-weight-bold font-size-12 eliminar">Eliminar</a>
                                         </div>
                                     </div>`);

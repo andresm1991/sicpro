@@ -69,11 +69,11 @@ class AgendaSanitizationRegressionTest extends TestCase
     }
 
     /** @test */
-    public function s5_el_comentario_de_texto_plano_vuelve_tal_cual_se_escribio()
+    public function s7_el_comentario_rico_conserva_formato_y_sanitiza()
     {
         $user = $this->admin('reg_comment');
         $tarea = $this->tarea($user, '<p>base</p>');
-        $texto = 'Revisar A & B y 5 < 10';
+        $texto = 'A & B y 5 < 10';
 
         $this->actingAs($user)->post('agenda/guardar-comentario', [
             'tarea_id' => $tarea->id,
@@ -84,21 +84,54 @@ class AgendaSanitizationRegressionTest extends TestCase
             'categoria_tarea' => CatalogoDato::getIdCatalogo('categoria.agenda.laboral'),
         ], $this->ajax())->assertOk();
 
-        // El textarea #comentario es texto plano: el valor no debe volver con
-        // &amp; / &lt;, porque la UI lo vuelve a escapar al mostrarlo.
-        $this->assertSame($texto, ComentarioTarea::latest('id')->firstOrFail()->comentario);
+        // El comentario es HTML (S7): el sanitizador serializa el texto plano
+        // una sola vez (& -> &amp;, < -> &lt;). Al interpolarlo en crudo en
+        // el div se ve "A & B y 5 < 10" sin doble-encoding (&amp;amp;).
+        // No se puede esperar igualdad literal porque la columna guarda HTML.
+        $stored = ComentarioTarea::latest('id')->firstOrFail()->comentario;
+        $this->assertSame('A &amp; B y 5 &lt; 10', $stored);
+        $this->assertStringNotContainsString('&amp;amp;', $stored);
+        $this->assertSame($texto, html_entity_decode($stored, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
 
         $this->actingAs($user)->post('agenda/guardar-comentario', [
             'tarea_id' => $tarea->id,
             'titulo' => $tarea->titulo,
             'descripcion' => '<p>base</p>',
-            'comentario' => '<script>alert(1)</script>hola',
+            'comentario' => '<p>Hola <strong>x</strong></p><script>alert(1)</script><img src=x onerror="alert(2)">',
             'list_usuarios' => [],
             'categoria_tarea' => CatalogoDato::getIdCatalogo('categoria.agenda.laboral'),
         ], $this->ajax())->assertOk();
 
-        $this->assertStringNotContainsString('<script', ComentarioTarea::latest('id')->firstOrFail()->comentario);
-        $this->assertStringContainsString('hola', ComentarioTarea::latest('id')->firstOrFail()->comentario);
+        $storedHtml = ComentarioTarea::latest('id')->firstOrFail()->comentario;
+        $this->assertStringContainsString('<strong>x</strong>', $storedHtml);
+        $this->assertStringNotContainsString('<script', $storedHtml);
+        $this->assertStringNotContainsStringIgnoringCase('onerror', $storedHtml);
+    }
+
+    /** @test */
+    public function s7_get_comentarios_tarea_sanitiza_filas_anteriores_al_editor()
+    {
+        $user = $this->admin('reg_legacy_comment');
+        $tarea = $this->tarea($user, '<p>base</p>');
+
+        // Fila guardada antes del editor: nunca paso por el sanitizador.
+        $legacy = ComentarioTarea::create([
+            'tarea_id' => $tarea->id,
+            'usuario_id' => $user->id,
+            'comentario' => '<script>alert(1)</script><p>legado <strong>ok</strong></p>',
+        ]);
+
+        $response = $this->actingAs($user)->get(
+            'agenda/comentarios-tarea?tarea_id=' . $tarea->id,
+            $this->ajax()
+        );
+
+        $response->assertOk()->assertJson(['success' => true]);
+
+        $payload = collect($response->json('comentarios'))->firstWhere('id', $legacy->id);
+        $this->assertNotNull($payload);
+        $this->assertStringNotContainsString('<script', $payload['comentario']);
+        $this->assertStringContainsString('<strong>ok</strong>', $payload['comentario']);
     }
 
     /** @test */
