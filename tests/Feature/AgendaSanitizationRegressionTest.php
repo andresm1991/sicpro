@@ -128,6 +128,21 @@ class AgendaSanitizationRegressionTest extends TestCase
 
         $this->assertStringNotContainsStringIgnoringCase('javascript:', $stored);
         $this->assertStringNotContainsStringIgnoringCase('onclick', $stored);
+        $this->assertDoesNotMatchRegularExpression('#href\s*=#i', $stored);
+
+        // Control positivo: la allowlist no es vacuamente estricta.
+        $this->actingAs($user)->post('agenda/guardar-tarea', [
+            'titulo' => 'href permitido',
+            'descripcion' => '<a href="https://sicpro.test/x?a=1&amp;b=2">bien</a>'
+                . '<a href="/ruta/relativa">rel</a><a href="#ancla">anc</a>',
+        ], $this->ajax())->assertOk();
+
+        $storedOk = Tarea::latest('id')->firstOrFail()->descripcion;
+
+        $this->assertStringNotContainsStringIgnoringCase('javascript:', $storedOk);
+        $this->assertMatchesRegularExpression('/href\s*=\s*"https:\/\/sicpro\.test\/x\?a=1&amp;b=2"/i', $storedOk);
+        $this->assertMatchesRegularExpression('/href\s*=\s*"\/ruta\/relativa"/i', $storedOk);
+        $this->assertMatchesRegularExpression('/href\s*=\s*"#ancla"/i', $storedOk);
     }
 
     /** @test */

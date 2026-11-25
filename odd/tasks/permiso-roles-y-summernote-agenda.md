@@ -137,3 +137,18 @@ solo dos niveles, así que los permisos de tercer nivel del módulo `sistema`
 (`sistema.usuarios.ver`, `sistema.configuracion.ver`, `sistema.productos.*`, etc.)
 siguen sin ser asignables desde la UI. Los roles no administradores los obtienen solo por
 el comodín de `RoleTableSeeder`.
+
+**L10 (corrección de revisión):** R3-002 (sin cambio de código, disposición
+documentada): `/public` está íntegramente gitignoreado (`.gitignore:2`), por lo que
+`public/js/app.js` y `public/js/tareas_scripts.js` nunca pueden aparecer en el candidato
+de revisión; son salida de build generada por `npm run prod` (`webpack.mix.js:27`
+`mix.copyDirectory('resources/js', 'public/js')`). La copia de trabajo YA está
+sincronizada y `s6_el_espejo_publico_del_js_esta_actualizado` lo fija.
+Regla href (R2-1/R3-001): normalizar el candidato quitando `[\x00-\x20\x7f]` en toda
+la cadena, rechazar el vacío, admitir solo `http://`, `https://`, `mailto:`, `tel:` o URL
+relativa, y guardar el valor NORMALIZADO, nunca el original ofuscado.
+Follow-ups aceptados (no se corrigen ahora): R1-001 `strip_tags` en comentarios de texto
+plano puede borrar texto que parece etiqueta (`use <file> now`); R3-003 un `</div>`
+parásito cierra el wrapper del sanitizador y deja caer texto posterior en silencio;
+R3-004 la allowlist permite `<a>` dentro del propio `<a class="agregar-comentario">` de
+la tarjeta del listado, así que los anchors anidados pueden romper el excerpt.

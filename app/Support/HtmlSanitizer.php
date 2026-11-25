@@ -15,9 +15,15 @@ namespace App\Support;
  * - Cualquier otro elemento se elimina pero se conserva su contenido de
  *   texto (unwrap), excepto <script> y <style>, cuyo contenido se elimina
  *   por completo (incluidos sus hijos).
- * - Se eliminan TODOS los atributos excepto href en <a>. Los href con
- *   esquema javascript:, data: o vbscript: se rechazan (se quita el
- *   atributo pero se conserva el texto del enlace).
+ * - Se eliminan TODOS los atributos excepto href en <a>. El href se
+ *   normaliza quitando TODOS los caracteres de control y espacios
+ *   (\x00-\x20 y \x7f) en cualquier posicion, no solo al inicio, y
+ *   luego se decide por allowlist: vacio se rechaza; con esquema solo se
+ *   conserva http://, https://, mailto: o tel: (cualquier otro esquema
+ *   como javascript:, data:, vbscript: o file: se rechaza quitando el
+ *   atributo pero conservando el texto del enlace); sin esquema es URL
+ *   relativa (#ancla, /ruta) y se conserva el valor NORMALIZADO, nunca el
+ *   original ofuscado.
  * - Decision documentada sobre imagenes: las <img> NO estan en la
  *   allowlist y se eliminan por completo. El base64 que Summernote incrusta
  *   al pegar imagenes es un peligro de formato de datos (bloat en la BD,
@@ -125,11 +131,7 @@ class HtmlSanitizer
         $href = null;
 
         if ($tag === 'a' && $element->hasAttribute('href')) {
-            $candidate = trim($element->getAttribute('href'));
-
-            if ($candidate !== '' && self::isSafeHref($candidate)) {
-                $href = $candidate;
-            }
+            $href = self::normalizeHref($element->getAttribute('href'));
         }
 
         while ($element->attributes->length > 0) {
@@ -141,19 +143,36 @@ class HtmlSanitizer
         }
     }
 
-    private static function isSafeHref(string $href): bool
+    /**
+     * Normaliza el candidato y decide por allowlist. Devuelve el valor
+     * NORMALIZADO a conservar, o null si debe rechazarse (sin href).
+     *
+     * DOMDocument ya decodifico entidades (&#9;, &#10;, &#x6a;, ...) dentro
+     * del href, y los navegadores ignoran tabulaciones/saltos al leer el
+     * esquema, asi que no basta mirar el prefijo: hay que quitar todos los
+     * caracteres de control y espacios en cualquier posicion antes de
+     * decidir, y guardar el valor normalizado.
+     */
+    private static function normalizeHref(string $href): ?string
     {
-        // DOMDocument ya decodifico entidades (&#106;avascript: llega aqui
-        // como javascript:), asi que basta con mirar el esquema inicial,
-        // ignorando espacios y caracteres de control previos.
-        $head = strtolower(preg_replace('/^[\x00-\x20]+/', '', $href));
+        $normalized = preg_replace('/[\x00-\x20\x7f]+/', '', $href);
 
-        foreach (['javascript:', 'data:', 'vbscript:'] as $scheme) {
-            if (str_starts_with($head, $scheme)) {
-                return false;
-            }
+        if ($normalized === null || $normalized === '') {
+            return null;
         }
 
-        return true;
+        if (preg_match('/^[a-zA-Z][a-zA-Z0-9+.\-]*:/', $normalized) === 1) {
+            $lower = strtolower($normalized);
+
+            foreach (['http://', 'https://', 'mailto:', 'tel:'] as $allowed) {
+                if (str_starts_with($lower, $allowed)) {
+                    return $normalized;
+                }
+            }
+
+            return null;
+        }
+
+        return $normalized;
     }
 }
