@@ -11,11 +11,6 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RoleController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:Administrador');
-    }
-
     /**
      * Display a listing of roles with permission and user counts.
      */

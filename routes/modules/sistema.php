@@ -74,11 +74,11 @@ Route::group(['prefix' => 'sistema', 'as' => 'sistema.', 'middleware' => 'permis
         Route::get('/configuraciones/detalle/{config}', [ConfiguracionController::class, 'detalle'])->name('detalle');
     });
 
-    // Roles y Permisos — Admin only (also enforced in RoleController constructor)
-    Route::group(['prefix' => 'roles', 'as' => 'roles.', 'middleware' => 'role:Administrador'], function () {
+    // Roles y Permisos — permission-based (sistema.roles.ver / sistema.roles.gestionar)
+    Route::group(['prefix' => 'roles', 'as' => 'roles.', 'middleware' => 'permission:sistema.roles.ver'], function () {
         Route::get('/', [RoleController::class, 'index'])->name('index');
         Route::get('/{role}/editar', [RoleController::class, 'edit'])->name('edit');
-        Route::put('/{role}/update', [RoleController::class, 'update'])->name('update');
+        Route::put('/{role}/update', [RoleController::class, 'update'])->name('update')->middleware('permission:sistema.roles.gestionar');
     });
 
     require base_path('routes/modules/cliente.php');

@@ -294,6 +294,12 @@ class PermissionTableSeeder extends Seeder
         Permission::firstOrCreate(['name' => 'sistema.clientes.editar', 'guard_name' => 'web'], ['descripcion' => 'Editar clientes del sistema', 'parent_id' => $sistemaClientes->id]);
         Permission::firstOrCreate(['name' => 'sistema.clientes.eliminar', 'guard_name' => 'web'], ['descripcion' => 'Eliminar clientes del sistema', 'parent_id' => $sistemaClientes->id]);
 
+        // Sistema - Roles y Permisos
+        // Se cuelgan directamente de 'sistema' porque la pantalla de edición de roles
+        // solo renderiza dos niveles (Permission::whereNull('parent_id') + hijos directos).
+        Permission::firstOrCreate(['name' => 'sistema.roles.ver', 'guard_name' => 'web'], ['descripcion' => 'Ver roles y permisos', 'parent_id' => $sistema->id]);
+        Permission::firstOrCreate(['name' => 'sistema.roles.gestionar', 'guard_name' => 'web'], ['descripcion' => 'Gestionar roles y permisos', 'parent_id' => $sistema->id]);
+
         app()->make(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }

@@ -62,6 +62,10 @@ class RoleTableSeeder extends Seeder
                 ->orWhere('name', 'like', 'sistema%');
         })->whereNotIn('name', [
             'reporteria.financiero.ver',
+            // La gestión de roles y permisos solo se otorga de forma explícita,
+            // nunca por el comodín 'sistema%'.
+            'sistema.roles.ver',
+            'sistema.roles.gestionar',
         ])->pluck('name')->toArray();
         $gerencial->syncPermissions($gerencialPermissions);
 
