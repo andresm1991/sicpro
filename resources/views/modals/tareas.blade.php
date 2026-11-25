@@ -26,7 +26,7 @@
 
                         <div class="col-12 form-group">
                             <label class="col-form-label">Desacripción</label>
-                            {{ Form::textarea('descripcion', '', ['class' => 'form-control', 'rows' => '5', 'placeholder' => 'Ingrese el Detalle']) }}
+                            {{ Form::textarea('descripcion', '', ['class' => 'form-control summernote', 'rows' => '5', 'placeholder' => 'Ingrese el Detalle', 'data-height' => '200', 'data-placeholder' => 'Ingrese el detalle de la tarea...']) }}
                         </div>
 
                         <div class="col-12 form-group">

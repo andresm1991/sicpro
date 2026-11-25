@@ -11,13 +11,13 @@
                         <div class="list-group-item list-group-item-action">
                             <a href="javascript:void(0);" class="text-decoration-none text-dark agregar-comentario"
                                 id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
-                                data-descripcion="{{ $task->descripcion }}" data-estado = "{{ $task->estado_id }}"
+                                data-descripcion="{{ agendaSanitize($task->descripcion) }}" data-estado = "{{ $task->estado_id }}"
                                 data-colaboradores="{{ $task->usuario_tareas->pluck('id') }}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">{{ $task->titulo }}</h5>
                                     <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                 </div>
-                                <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                <div class="text-truncate-max-line-3 mb-1">{!! agendaSanitize($task->descripcion) !!}</div>
 
                             </a>
                             <p class="card-text"><small class="text-primary">Creado por:
@@ -47,13 +47,13 @@
                         <div class="list-group-item list-group-item-action">
                             <a href="javascript:void(0);" class="text-decoration-none text-dark agregar-comentario"
                                 id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
-                                data-descripcion="{{ $task->descripcion }}" data-estado = "{{ $task->estado_id }}"
+                                data-descripcion="{{ agendaSanitize($task->descripcion) }}" data-estado = "{{ $task->estado_id }}"
                                 data-colaboradores="{{ $task->usuario_tareas->pluck('id') }}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">{{ $task->titulo }}</h5>
                                     <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                 </div>
-                                <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                <div class="text-truncate-max-line-3 mb-1">{!! agendaSanitize($task->descripcion) !!}</div>
                             </a>
                             <p class="card-text"><small class="text-primary">Creado por:
                                     {{ $task->usuario->nombre }} </small></p>
@@ -81,13 +81,13 @@
                         <div class="list-group-item list-group-item-action">
                             <a href="javascript:void(0);" class="text-decoration-none text-dark agregar-comentario"
                                 id="{{ $task->id }}" data-titulo="{{ $task->titulo }}"
-                                data-descripcion="{{ $task->descripcion }}" data-estado = "{{ $task->estado_id }}"
+                                data-descripcion="{{ agendaSanitize($task->descripcion) }}" data-estado = "{{ $task->estado_id }}"
                                 data-colaboradores="{{ $task->usuario_tareas->pluck('id') }}">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h5 class="mb-1">{{ $task->titulo }}</h5>
                                     <small class="text-muted">{{ $task->created_at_formateado }}</small>
                                 </div>
-                                <p class="text-truncate-max-line-3 mb-1">{{ $task->descripcion }}</p>
+                                <div class="text-truncate-max-line-3 mb-1">{!! agendaSanitize($task->descripcion) !!}</div>
                             </a>
                             <p class="card-text"><small class="text-primary">Creado por:
                                     {{ $task->usuario->nombre }} </small></p>

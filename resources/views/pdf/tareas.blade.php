@@ -178,7 +178,7 @@
                         <ul class="list-group">
                             @foreach ($tareas as $tarea)
                                 <li class="list-group-item">
-                                    <strong>{{ $tarea->titulo }}</strong> - {{ $tarea->descripcion }}
+                                    <strong>{{ $tarea->titulo }}</strong> - {{ agendaPlainText($tarea->descripcion) }}
                                     @if ($tarea->categoria)
                                         <span class="badge bg-secondary">{{ $tarea->categoria->descripcion }}</span>
                                     @endif

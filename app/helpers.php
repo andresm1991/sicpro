@@ -1061,3 +1061,55 @@ if (!function_exists('sumarTiempos')) {
         return empty($resultado) ? '0 minutos' : implode(' ', $resultado);
     }
 }
+if (!function_exists('agendaSanitize')) {
+    /**
+     * HTML seguro para mostrar la descripcion de una tarea de la agenda (S5).
+     *
+     * Devuelve el valor SIN escapar: se usa con `{!! !!}` en el cuerpo de una
+     * etiqueta y con `{{ }}` en atributos (Blade los escapa y el navegador los
+     * decodifica). Las filas guardadas antes del editor nunca pasaron por el
+     * sanitizador, asi que se limpian tambien al leer. El camino rapido evita
+     * parsear el DOM cuando el texto no trae etiquetas.
+     *
+     * @param  string|null  $value
+     * @return string
+     */
+    function agendaSanitize($value)
+    {
+        $value = (string) $value;
+
+        if ($value === '' || strpos($value, '<') === false) {
+            return $value;
+        }
+
+        return (string) \App\Support\HtmlSanitizer::clean($value);
+    }
+}
+
+if (!function_exists('agendaPlainText')) {
+    /**
+     * Texto plano de la descripcion de una tarea para los PDF de la agenda.
+     *
+     * La columna ahora guarda HTML (editor Summernote). Los PDF siguen siendo
+     * texto: se convierten los cortes de bloque en saltos de linea, se quitan
+     * las etiquetas y se decodifican las entidades para que no aparezca
+     * "&lt;p&gt;hola&lt;/p&gt;" en el documento.
+     *
+     * @param  string|null  $value
+     * @return string
+     */
+    function agendaPlainText($value)
+    {
+        $text = (string) $value;
+
+        if ($text === '') {
+            return '';
+        }
+
+        $text = preg_replace('#<br\s*/?>#i', "\n", $text);
+        $text = preg_replace('#</(p|div|li|h[1-6]|blockquote|tr)>#i', "\n", $text);
+        $text = html_entity_decode(strip_tags($text), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        return trim(preg_replace("/\n{3,}/", "\n\n", $text));
+    }
+}

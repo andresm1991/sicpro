@@ -36,7 +36,9 @@
                         {{ Form::hidden('tarea_id') }}
                         <div class="row">
                             <div class="col-12 form-group">
-                                <textarea name="descripcion" id="descripcion" class="form-control text-uppercase form-control-plaintext">{{ $tarea->descripcion }}</textarea>
+                                <textarea name="descripcion" id="descripcion" data-height="200"
+                                    data-placeholder="Ingrese el detalle de la tarea..."
+                                    class="form-control summernote">{!! agendaSanitize($tarea->descripcion) !!}</textarea>
                             </div>
 
                             <div class="col-12 form-group">

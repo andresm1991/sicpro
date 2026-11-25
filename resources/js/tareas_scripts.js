@@ -5,9 +5,39 @@ $(function () {
 
     var estadoActual = 0;
 
+    // Los comentarios son texto plano: se escapan antes de interpolarlos en el
+    // HTML del listado para que una fila vieja con etiquetas no se ejecute.
+    function escapeHtml(value) {
+        return $('<div></div>').text(value === null || value === undefined ? '' : value).html();
+    }
+
+    // La descripcion de la agenda vive en un editor Summernote: .val() ya no
+    // lee ni escribe su contenido y se usa la API ('code'). Los selectores
+    // van acotados al modal/formulario porque 'descripcion' existe en mas de
+    // un formulario de la pagina. Si el editor aun no esta inicializado se
+    // cae al textarea plano.
+    function summernoteCode($field) {
+        if ($field.length && $field.next('.note-editor').length) {
+            return $field.summernote('code');
+        }
+
+        return $field.val();
+    }
+
+    function setSummernoteCode($field, html) {
+        if ($field.length && $field.next('.note-editor').length) {
+            $field.summernote('code', html || '');
+        } else {
+            $field.val(html || '');
+        }
+    }
+
     $('#guardar').on('click', function () {
         var form = $("#form_tarea");
         var data = getFormData(form);
+
+        // El textarea queda oculto tras el editor: se lee con la API.
+        data.descripcion = summernoteCode(form.find('textarea[name=descripcion]'));
 
         $.ajax({
             url: 'agenda/guardar-tarea',
@@ -71,6 +101,9 @@ $(function () {
 
         var data = getFormData(form);
 
+        // El textarea queda oculto tras el editor: se lee con la API.
+        data.descripcion = summernoteCode(form.find('textarea[name=descripcion]'));
+
         $.ajax({
             url: 'agenda/guardar-comentario',
             headers: { 'X-CSRF-TOKEN': csrf },
@@ -127,11 +160,10 @@ $(function () {
         let colaboradores = $(this).data('colaboradores');
         estadoActual = $(this).data('estado');
 
-        const $textarea = $('#descripcion');
-
-        // Establecer el contenido del textarea antes de ajustar la altura
-        $textarea.val(descripcion);
-        // Ajustar la altura dinámicamente al escribir
+        // El editor Summernote se alimenta con su API ('code'); .val() ya no
+        // aplica. data-descripcion llega escapado en el atributo y jQuery lo
+        // decodifica al leerlo.
+        setSummernoteCode($('#comentarioTareaModal textarea[name=descripcion]'), descripcion);
 
 
         // Asignar valores a otros campos del modal
@@ -153,10 +185,13 @@ $(function () {
         e.preventDefault();
 
         const $item = $(this).closest('.tarea-item'); // Obtener el contenedor de la tarea
+        // El comentario es texto plano (su textarea no es un editor): se lee y
+        // se reescribe como texto para no inyectar HTML.
         const comentarioOriginal = $item.find('.comentario').text(); // Guardar el comentario original
 
         // Convertir el <p> en un <textarea>
-        const $textarea = $('<textarea class="form-control mb-1" data-original="' + comentarioOriginal + '"></textarea>').val(comentarioOriginal);
+        const $textarea = $('<textarea class="form-control mb-1"></textarea>').val(comentarioOriginal);
+        $textarea.data('original', comentarioOriginal);
         $item.find('.comentario').replaceWith($textarea);
 
         // Agregar botones de "Aceptar" y "Cancelar"
@@ -413,16 +448,14 @@ $(function () {
     $(document).on('hidden.bs.modal', '#comentarioTareaModal', function () {
         //window.location.href = url;
 
-        // Al cerrar, el alto vuelve a automático: la próxima tarea puede tener una
-        // descripción más larga y no debe heredar el alto de la anterior.
-        $('#descripcion').css('height', 'auto');
+        // Al cerrar se vacia el editor: la proxima tarea no debe heredar el
+        // HTML de la anterior.
+        setSummernoteCode($('#comentarioTareaModal textarea[name=descripcion]'), '');
     });
 
-    // Se ajusta el alto de la descripción en un manejador propio para que un error
-    // al inicializar los select2 no deje el texto de la tarea oculto.
-    $(document).on('shown.bs.modal', '#comentarioTareaModal', function () {
-        adjustTextareaHeight($('#descripcion'));
-        observeDescripcionWidth();
+    $(document).on('hidden.bs.modal', '#tareasModal', function () {
+        // Nueva tarea: no heredar el HTML del editor al reabrir el modal.
+        setSummernoteCode($('#tareasModal textarea[name=descripcion]'), '');
     });
 
     $(document).on('shown.bs.modal', '#tareasModal, #comentarioTareaModal, #filtroExportarTareasModal', function () {
@@ -503,10 +536,10 @@ $(function () {
                     $("#comentarios").append(`<div class="list-group list-comentarios">
                                         <div class="list-group-item list-group-item-action tarea-item" data-id="${tarea.id}">
                                             <div class="d-flex w-100 justify-content-between">
-                                                <h6 class="mb-1">${tarea.usuario.nombre}</h6>
+                                                <h6 class="mb-1">${escapeHtml(tarea.usuario.nombre)}</h6>
                                                 <small class="text-muted">${tarea.updated_at_formateado}</small>
                                             </div>
-                                            <p class="mb-1 comentario">${tarea.comentario}</p>
+                                            <p class="mb-1 comentario">${escapeHtml(tarea.comentario)}</p>
                                             <a href="#" class="text-dark font-weight-bold font-size-12 editar">Editar</a>  <span class="separator">|</span>  <a href="#" class="text-dark font-weight-bold font-size-12 eliminar">Eliminar</a>
                                         </div>
                                     </div>`);
@@ -523,9 +556,6 @@ $(function () {
             },
             complete: function () {
                 $('#comentarioTareaModal #modal-overlay').hide();
-                // Los comentarios cambian el ancho útil del cuerpo del modal y el
-                // texto se reacomoda en más líneas: hay que recalcular el alto.
-                adjustTextareaHeight($('#descripcion'));
             }
         }).fail(function (jqXHR, textStatus, errorThrown) {
             switch (jqXHR.status) {
@@ -548,56 +578,8 @@ $(function () {
             }
         });
     }
-    $('#descripcion').off('input').on('input', function () {
-        adjustTextareaHeight($(this));
-    });
-
-    // Ajusta la altura del textarea al contenido. Se suman los bordes porque el
-    // textarea usa box-sizing: border-box y, sin ellos, la última línea queda cortada.
-    function adjustTextareaHeight($textarea) {
-        const textarea = $textarea[0];
-
-        if (!textarea || !$textarea.is(':visible')) {
-            return;
-        }
-
-        const styles = window.getComputedStyle(textarea);
-        const borders = parseFloat(styles.borderTopWidth) + parseFloat(styles.borderBottomWidth);
-
-        textarea.style.height = 'auto'; // Restablece la altura
-        textarea.style.height = (textarea.scrollHeight + borders) + 'px'; // Ajusta la altura al contenido
-    }
-
-    // Cuando el ancho del cuerpo del modal cambia (por ejemplo al aparecer los
-    // comentarios o la barra de desplazamiento) el texto se reacomoda en más
-    // líneas. Sin recalcular el alto, el final de la descripción queda oculto.
-    function observeDescripcionWidth() {
-        const textarea = document.getElementById('descripcion');
-
-        if (!textarea || typeof ResizeObserver === 'undefined') {
-            return;
-        }
-
-        const container = textarea.closest('.modal-body') || textarea.parentElement;
-
-        if (!container || container.dataset.descripcionObserver === 'true') {
-            return;
-        }
-
-        let lastWidth = 0;
-
-        const observer = new ResizeObserver(function () {
-            if (container.clientWidth === lastWidth) {
-                return;
-            }
-
-            lastWidth = container.clientWidth;
-            adjustTextareaHeight($(textarea));
-        });
-
-        observer.observe(container);
-        container.dataset.descripcionObserver = 'true';
-    }
+    // Nota: el auto-ajuste de alto de #descripcion y su ResizeObserver se
+    // eliminaron: peleaban con el editor Summernote, que gestiona su altura.
 
     // Función para verificar si la URL tiene un número al final
     function hasIdInUrl() {

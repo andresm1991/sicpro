@@ -13,6 +13,7 @@ use App\Enums\PushNotificationsEnum;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Services\PushNotificationService;
+use App\Support\HtmlSanitizer;
 
 class TareaController extends Controller
 {
@@ -101,7 +102,7 @@ class TareaController extends Controller
                 $tarea = Tarea::create([
                     'usuario_id' => auth()->user()->id,
                     'titulo' => $request->titulo,
-                    'descripcion' => $request->descripcion,
+                    'descripcion' => HtmlSanitizer::clean($request->descripcion),
                     'estado_id' => CatalogoDato::getIdCatalogo('estados.tarea.porhacer'),
                     'categoria_id' => is_numeric($request->categoria_tarea) ? $request->categoria_tarea : (isset($request->categoria_tarea) ? newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda') : CatalogoDato::getIdCatalogo('categoria.agenda.laboral')),
                 ]);
@@ -140,7 +141,10 @@ class TareaController extends Controller
                     ComentarioTarea::create([
                         'tarea_id' => $request->tarea_id,
                         'usuario_id' => auth()->user()->id,
-                        'comentario' => $request->comentario,
+                        // El comentario es texto plano, no pasa por el editor: se le
+                        // quitan las etiquetas y se guarda sin serializar a HTML, para
+                        // no convertir "A & B" en "A &amp; B". Se escapa al mostrarlo.
+                        'comentario' => strip_tags((string) $request->comentario),
                     ]);
                 }
 
@@ -165,7 +169,7 @@ class TareaController extends Controller
 
                 $tarea = Tarea::find($request->tarea_id);
                 $tarea->titulo = $request->titulo;
-                $tarea->descripcion = $request->descripcion;
+                $tarea->descripcion = HtmlSanitizer::clean($request->descripcion);
 
                 if (isset($request->categoria_tarea) && $tarea->categoria_id != $request->categoria_tarea) {
                     $tarea->categoria_id = is_numeric($request->categoria_tarea) ? $request->categoria_tarea : newChildrenCatalogoDatos($request->categoria_tarea, 'categorias.agenda');
@@ -216,7 +220,9 @@ class TareaController extends Controller
             try {
                 DB::beginTransaction();
                 $comentario = ComentarioTarea::find($request->comentarioId);
-                $comentario->comentario = $request->comentario;
+                // Texto plano: se le quitan las etiquetas y se guarda sin serializar
+                // a HTML; el escapado ocurre al mostrarlo.
+                $comentario->comentario = strip_tags((string) $request->comentario);
                 $comentario->save();
                 DB::commit();
                 return response()->json(['success' => true, 'message' => MessagesConstant::UPDATE]);
